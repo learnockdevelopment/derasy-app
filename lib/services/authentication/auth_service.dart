@@ -178,15 +178,15 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> login({
-    required String email,
+    required String loginField,
     required String password,
   }) async {
-    print('🔐 [AUTH] Starting login for email: $email');
+    print('🔐 [AUTH] Starting login for: $loginField');
     print('🔐 [AUTH] Password: ${password.replaceAll(RegExp(r'.'), '*')}');
 
     try {
       final requestBody = {
-        'email': email,
+        'login_field': loginField,
         'password': password,
       };
 
@@ -220,94 +220,6 @@ class AuthService {
     } catch (e) {
       print('🔐 [AUTH] Login error: $e');
       throw Exception('Network error: $e');
-    }
-  }
-
-  static Future<Map<String, dynamic>> sendOtpToEmail({
-    required String email,
-  }) async {
-    print('🔐 [AUTH] Starting send OTP to email: $email');
-
-    try {
-      final requestBody = {
-        'email': email,
-      };
-
-      print(
-          '🔐 [AUTH] Sending POST request to: $_baseUrl${ApiConstants.otpMailEndpoint}');
-      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
-
-      final response = await http.post(
-        Uri.parse('$_baseUrl${ApiConstants.otpMailEndpoint}'),
-        headers: ApiConstants.defaultHeaders,
-        body: jsonEncode(requestBody),
-      );
-
-      print('🔐 [AUTH] Response status: ${response.statusCode}');
-      print('🔐 [AUTH] Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-        print('🔐 [AUTH] OTP sent to email successfully');
-        return responseData;
-      } else {
-        print(
-            '🔐 [AUTH] Send OTP to email failed with status: ${response.statusCode}');
-        String errorMessage = response.body.isNotEmpty
-            ? response.body
-            : 'Server returned ${response.statusCode} with no message';
-        throw AuthException(
-            'Send OTP to email failed: $errorMessage', response.statusCode);
-      }
-    } catch (e) {
-      print('🔐 [AUTH] Send OTP to email error: $e');
-      if (e is AuthException) rethrow;
-      throw AuthException('Network error: $e', 0);
-    }
-  }
-
-  static Future<Map<String, dynamic>> validateOtpFromEmail({
-    required String email,
-    required String otp,
-  }) async {
-    print('🔐 [AUTH] Starting validate OTP from email: $email');
-
-    try {
-      final requestBody = {
-        'email': email,
-        'otp': otp,
-      };
-
-      print(
-          '🔐 [AUTH] Sending POST request to: $_baseUrl${ApiConstants.validateOtpMailEndpoint}');
-      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
-
-      final response = await http.post(
-        Uri.parse('$_baseUrl${ApiConstants.validateOtpMailEndpoint}'),
-        headers: ApiConstants.defaultHeaders,
-        body: jsonEncode(requestBody),
-      );
-
-      print('🔐 [AUTH] Response status: ${response.statusCode}');
-      print('🔐 [AUTH] Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-        print('🔐 [AUTH] OTP validation successful');
-        return responseData;
-      } else {
-        print(
-            '🔐 [AUTH] Validate OTP from email failed with status: ${response.statusCode}');
-        String errorMessage = response.body.isNotEmpty
-            ? response.body
-            : 'Server returned ${response.statusCode} with no message';
-        throw AuthException('Validate OTP from email failed: $errorMessage',
-            response.statusCode);
-      }
-    } catch (e) {
-      print('🔐 [AUTH] Validate OTP from email error: $e');
-      if (e is AuthException) rethrow;
-      throw AuthException('Network error: $e', 0);
     }
   }
 
@@ -524,6 +436,223 @@ class AuthService {
       }
     } catch (e) {
       print('🔐 [AUTH] Change password error: $e');
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
+
+  // Verify Email with OTP
+  static Future<Map<String, dynamic>> verifyEmailOtp({
+    required int userId,
+    required String otp,
+  }) async {
+    print('🔐 [AUTH] Starting email verification for user: $userId');
+    print('🔐 [AUTH] OTP: ${otp.replaceAll(RegExp(r'.'), '*')}');
+
+    try {
+      final requestBody = {
+        'user_id': userId,
+        'otp': otp,
+      };
+
+      print('🔐 [AUTH] Sending POST request to: $_baseUrl/auth/verify-email');
+      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/verify-email'),
+        headers: ApiConstants.defaultHeaders,
+        body: jsonEncode(requestBody),
+      );
+
+      print('🔐 [AUTH] Response status: ${response.statusCode}');
+      print('🔐 [AUTH] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🔐 [AUTH] Email verification successful');
+        return responseData;
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorMessage =
+            errorData['message'] ?? 'Email verification failed';
+        print('🔐 [AUTH] Email verification failed: $errorMessage');
+        throw AuthException(errorMessage, response.statusCode);
+      }
+    } catch (e) {
+      print('🔐 [AUTH] Email verification error: $e');
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
+
+  // Verify Phone with OTP
+  static Future<Map<String, dynamic>> verifyPhoneOtp({
+    required int userId,
+    required String otp,
+  }) async {
+    print('🔐 [AUTH] Starting phone verification for user: $userId');
+    print('🔐 [AUTH] OTP: ${otp.replaceAll(RegExp(r'.'), '*')}');
+
+    try {
+      final requestBody = {
+        'user_id': userId,
+        'otp': otp,
+      };
+
+      print('🔐 [AUTH] Sending POST request to: $_baseUrl/auth/verify-phone');
+      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/verify-phone'),
+        headers: ApiConstants.defaultHeaders,
+        body: jsonEncode(requestBody),
+      );
+
+      print('🔐 [AUTH] Response status: ${response.statusCode}');
+      print('🔐 [AUTH] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🔐 [AUTH] Phone verification successful');
+        return responseData;
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorMessage =
+            errorData['message'] ?? 'Phone verification failed';
+        print('🔐 [AUTH] Phone verification failed: $errorMessage');
+        throw AuthException(errorMessage, response.statusCode);
+      }
+    } catch (e) {
+      print('🔐 [AUTH] Phone verification error: $e');
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
+
+  // Send OTP to Email for Password Reset
+  static Future<Map<String, dynamic>> sendOtpToEmail({
+    required String email,
+  }) async {
+    print('🔐 [AUTH] Starting send OTP to email for: $email');
+
+    try {
+      final requestBody = {
+        'email': email,
+      };
+
+      print('🔐 [AUTH] Sending POST request to: $_baseUrl/auth/otp_mail');
+      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/otp_mail'),
+        headers: ApiConstants.defaultHeaders,
+        body: jsonEncode(requestBody),
+      );
+
+      print('🔐 [AUTH] Response status: ${response.statusCode}');
+      print('🔐 [AUTH] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🔐 [AUTH] Send OTP to email successful');
+        return responseData;
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorMessage = errorData['message'] ?? 'Failed to send OTP';
+        print('🔐 [AUTH] Send OTP to email failed: $errorMessage');
+        throw AuthException(errorMessage, response.statusCode);
+      }
+    } catch (e) {
+      print('🔐 [AUTH] Send OTP to email error: $e');
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
+
+  // Validate OTP from Email
+  static Future<Map<String, dynamic>> validateOtpFromEmail({
+    required String email,
+    required String otp,
+  }) async {
+    print('🔐 [AUTH] Starting validate OTP for email: $email');
+
+    try {
+      final requestBody = {
+        'email': email,
+        'otp': otp,
+      };
+
+      print(
+          '🔐 [AUTH] Sending POST request to: $_baseUrl/auth/validate_otp_mail');
+      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/validate_otp_mail'),
+        headers: ApiConstants.defaultHeaders,
+        body: jsonEncode(requestBody),
+      );
+
+      print('🔐 [AUTH] Response status: ${response.statusCode}');
+      print('🔐 [AUTH] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🔐 [AUTH] Validate OTP successful');
+        return responseData;
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorMessage = errorData['message'] ?? 'OTP validation failed';
+        print('🔐 [AUTH] Validate OTP failed: $errorMessage');
+        throw AuthException(errorMessage, response.statusCode);
+      }
+    } catch (e) {
+      print('🔐 [AUTH] Validate OTP error: $e');
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
+
+  // Reset Password
+  static Future<Map<String, dynamic>> resetPasswordWithOtp({
+    required String email,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    print('🔐 [AUTH] Starting reset password for: $email');
+
+    try {
+      final requestBody = {
+        'email': email,
+        'otp': otp,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      };
+
+      print('🔐 [AUTH] Sending POST request to: $_baseUrl/auth/reset_password');
+      print('🔐 [AUTH] Request body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/reset_password'),
+        headers: ApiConstants.defaultHeaders,
+        body: jsonEncode(requestBody),
+      );
+
+      print('🔐 [AUTH] Response status: ${response.statusCode}');
+      print('🔐 [AUTH] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        print('🔐 [AUTH] Reset password successful');
+        return responseData;
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorMessage = errorData['message'] ?? 'Reset password failed';
+        print('🔐 [AUTH] Reset password failed: $errorMessage');
+        throw AuthException(errorMessage, response.statusCode);
+      }
+    } catch (e) {
+      print('🔐 [AUTH] Reset password error: $e');
       if (e is AuthException) rethrow;
       throw AuthException('Network error: $e', 0);
     }

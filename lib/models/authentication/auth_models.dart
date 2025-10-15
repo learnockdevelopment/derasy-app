@@ -76,21 +76,42 @@ class VerifyEmailRequest {
 }
 
 class VerifyEmailResponse {
-  final bool sent;
-  final bool verified;
-  final String? devCode;
+  final bool success;
+  final String message;
+  final VerifyEmailData? data;
+  final int statusCode;
 
   VerifyEmailResponse({
-    required this.sent,
-    required this.verified,
-    this.devCode,
+    required this.success,
+    required this.message,
+    this.data,
+    required this.statusCode,
   });
 
   factory VerifyEmailResponse.fromJson(Map<String, dynamic> json) {
     return VerifyEmailResponse(
-      sent: (json['sent'] as bool?) ?? false,
-      verified: (json['verified'] as bool?) ?? false,
-      devCode: json['devCode']?.toString(),
+      success: (json['success'] as bool?) ?? false,
+      message: json['message']?.toString() ?? '',
+      data:
+          json['data'] != null ? VerifyEmailData.fromJson(json['data']) : null,
+      statusCode: (json['status_code'] as int?) ?? 0,
+    );
+  }
+}
+
+class VerifyEmailData {
+  final UserData? user;
+  final String? accountStatus;
+
+  VerifyEmailData({
+    this.user,
+    this.accountStatus,
+  });
+
+  factory VerifyEmailData.fromJson(Map<String, dynamic> json) {
+    return VerifyEmailData(
+      user: json['user'] != null ? UserData.fromJson(json['user']) : null,
+      accountStatus: json['account_status']?.toString(),
     );
   }
 }
@@ -121,21 +142,42 @@ class VerifyPhoneRequest {
 }
 
 class VerifyPhoneResponse {
-  final bool sent;
-  final bool verified;
-  final String? devCode;
+  final bool success;
+  final String message;
+  final VerifyPhoneData? data;
+  final int statusCode;
 
   VerifyPhoneResponse({
-    required this.sent,
-    required this.verified,
-    this.devCode,
+    required this.success,
+    required this.message,
+    this.data,
+    required this.statusCode,
   });
 
   factory VerifyPhoneResponse.fromJson(Map<String, dynamic> json) {
     return VerifyPhoneResponse(
-      sent: (json['sent'] as bool?) ?? false,
-      verified: (json['verified'] as bool?) ?? false,
-      devCode: json['devCode']?.toString(),
+      success: (json['success'] as bool?) ?? false,
+      message: json['message']?.toString() ?? '',
+      data:
+          json['data'] != null ? VerifyPhoneData.fromJson(json['data']) : null,
+      statusCode: (json['status_code'] as int?) ?? 0,
+    );
+  }
+}
+
+class VerifyPhoneData {
+  final UserData? user;
+  final String? accountStatus;
+
+  VerifyPhoneData({
+    this.user,
+    this.accountStatus,
+  });
+
+  factory VerifyPhoneData.fromJson(Map<String, dynamic> json) {
+    return VerifyPhoneData(
+      user: json['user'] != null ? UserData.fromJson(json['user']) : null,
+      accountStatus: json['account_status']?.toString(),
     );
   }
 }

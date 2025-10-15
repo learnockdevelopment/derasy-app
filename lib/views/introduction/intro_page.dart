@@ -16,6 +16,8 @@ class IntroPage extends StatefulWidget {
 
 class _IntroPageState extends State<IntroPage> {
   final PageController _pageController = PageController();
+  int _currentPage = 0;
+  bool _isNavigating = false;
 
   @override
   void dispose() {
@@ -24,11 +26,40 @@ class _IntroPageState extends State<IntroPage> {
   }
 
   void _goToLogin() {
+    if (_isNavigating) return;
+    _isNavigating = true;
+
     try {
       final box = Get.find<GetStorage>();
       box.write('has_seen_intro', true);
-    } catch (_) {}
-    Get.offNamed(AppRoutes.login);
+      print('✅ Intro completed, navigating to login');
+    } catch (e) {
+      print('❌ Error saving intro state: $e');
+    }
+
+    // Add a small delay to ensure state is saved
+    Future.delayed(const Duration(milliseconds: 100), () {
+      try {
+        Get.offNamed(AppRoutes.login);
+        print('✅ Successfully navigated to login page');
+      } catch (e) {
+        print('❌ Error navigating to login: $e');
+        _isNavigating = false; // Reset navigation flag on error
+      }
+    });
+  }
+
+  void _goToNextPage() {
+    if (_isNavigating) return;
+
+    if (_currentPage < 2) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _goToLogin();
+    }
   }
 
   @override
@@ -37,8 +68,7 @@ class _IntroPageState extends State<IntroPage> {
       IntroData(
         title: 'welcome_to_kids_cottage'.tr,
         subtitle: 'nurturing_young_minds'.tr,
-        image: AssetsManager.design1,
-        planeImage: AssetsManager.design1,
+        image: AssetsManager.design2,
         color: AppColors.primary,
         backgroundColor: AppColors.primary,
         shadowColor: AppColors.primary,
@@ -47,8 +77,7 @@ class _IntroPageState extends State<IntroPage> {
       IntroData(
         title: 'expert_care'.tr,
         subtitle: 'care_description'.tr,
-        image: AssetsManager.design2,
-        planeImage: AssetsManager.design2,
+        image: AssetsManager.design1,
         color: Color(0xFF2D5A87), // Medium blue to match design2
         backgroundColor: Color(0xFF2D5A87),
         shadowColor: Color(0xFF2D5A87),
@@ -58,7 +87,6 @@ class _IntroPageState extends State<IntroPage> {
         title: 'safe_environment'.tr,
         subtitle: 'safety_description'.tr,
         image: AssetsManager.design3,
-        planeImage: AssetsManager.design3,
         color: Color(0xFF0F2F4A), // Darker blue to match design3
         backgroundColor: Color(0xFF0F2F4A),
         shadowColor: Color(0xFF0F2F4A),
@@ -74,7 +102,9 @@ class _IntroPageState extends State<IntroPage> {
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
-              setState(() {});
+              setState(() {
+                _currentPage = index;
+              });
             },
             itemCount: introData.length,
             itemBuilder: (context, index) {
@@ -85,14 +115,7 @@ class _IntroPageState extends State<IntroPage> {
                 data: data,
                 index: index,
                 isLastPage: isLastPage,
-                onNext: isLastPage
-                    ? _goToLogin
-                    : () {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
+                onNext: _goToNextPage,
                 pageController: _pageController,
                 pageCount: introData.length,
               );
@@ -153,8 +176,6 @@ class IntroWidget extends StatefulWidget {
 class _IntroWidgetState extends State<IntroWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _fadeAnimation;
-  bool _hasTriggeredNext = false;
   bool _isDisposed = false;
 
   @override
@@ -162,23 +183,13 @@ class _IntroWidgetState extends State<IntroWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 800),
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
 
-    // Start animation after a short delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!_isDisposed && mounted) {
-        _controller.forward();
-      }
-    });
+    // Start animation immediately without delay
+    if (!_isDisposed && mounted) {
+      _controller.forward();
+    }
   }
 
   @override
@@ -186,14 +197,15 @@ class _IntroWidgetState extends State<IntroWidget>
     super.didUpdateWidget(oldWidget);
     // Reset animation state when widget updates (page changes)
     if (oldWidget.index != widget.index) {
-      _hasTriggeredNext = false;
-      _controller.reset();
-      // Restart animation for new page
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (!_isDisposed && mounted) {
-          _controller.forward();
-        }
-      });
+      _restartAnimation();
+    }
+  }
+
+  void _restartAnimation() {
+    _controller.reset();
+    // Restart animation for new page immediately
+    if (!_isDisposed && mounted) {
+      _controller.forward();
     }
   }
 
@@ -211,6 +223,8 @@ class _IntroWidgetState extends State<IntroWidget>
     final isLastPage = widget.isLastPage;
 
     return Container(
+      width: double.infinity,
+      height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -223,100 +237,98 @@ class _IntroWidgetState extends State<IntroWidget>
         ),
       ),
       child: Stack(
+        fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Image.asset(
-                data.image,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                gaplessPlayback: true,
-                isAntiAlias: true,
-                filterQuality: FilterQuality.high,
-                errorBuilder: (context, error, stackTrace) {
-                  print('❌ Image loading error for ${data.image}: $error');
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          data.color.withOpacity(0.8),
-                          data.color.withOpacity(0.6),
-                        ],
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_not_supported,
-                            size: 60.w,
-                            color: AppColors.white.withOpacity(0.7),
-                          ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'Image not available',
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.white.withOpacity(0.7),
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: 0.9 + (0.1 * _controller.value),
+                  child: Transform.translate(
+                    offset: Offset(0, 20 * (1 - _controller.value)),
+                    child: Opacity(
+                      opacity: _controller.value,
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                              spreadRadius: 0,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          data.color.withOpacity(0.3),
-                          data.color.withOpacity(0.1),
-                        ],
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 40.w,
-                            height: 40.h,
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.white.withOpacity(0.8),
-                              ),
+                            BoxShadow(
+                              color: widget.data.color.withOpacity(0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 15),
+                              spreadRadius: 5,
                             ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Image.asset(
+                            widget.data.image,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            gaplessPlayback: true,
+                            isAntiAlias: true,
+                            filterQuality: FilterQuality.high,
+                            alignment: Alignment.center,
+                            errorBuilder: (context, error, stackTrace) {
+                              print(
+                                  '❌ Image loading error for ${widget.data.image}: $error');
+                              return Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      widget.data.color.withOpacity(0.8),
+                                      widget.data.color.withOpacity(0.6),
+                                    ],
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.child_care,
+                                        size: 80.w,
+                                        color: AppColors.white.withOpacity(0.8),
+                                      ),
+                                      SizedBox(height: 16.h),
+                                      Text(
+                                        'Welcome to Kids Cottage',
+                                        style: AppFonts.robotoBold20.copyWith(
+                                          color:
+                                              AppColors.white.withOpacity(0.9),
+                                          fontSize: 20.sp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'Loading...',
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.white.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
-          // Gradient overlay for better text readability
+          // Subtle overlay for better visual appeal
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -324,89 +336,162 @@ class _IntroWidgetState extends State<IntroWidget>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.3),
+                    Colors.transparent,
                     Colors.black.withOpacity(0.1),
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.2),
                   ],
+                  stops: [0.0, 0.7, 1.0],
                 ),
               ),
             ),
           ),
-          // Main content - positioned lower
+          // Enhanced gradient overlay for better text readability
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.1),
+                    Colors.black.withOpacity(0.2),
+                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.6),
+                  ],
+                  stops: [0.0, 0.3, 0.6, 0.8, 1.0],
+                ),
+              ),
+            ),
+          ),
+          // Main content - positioned lower with better spacing
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30.w),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30.w, 20.h, 30.w, 40.h),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.1),
+                    Colors.black.withOpacity(0.3),
+                  ],
+                ),
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Circular indicators above text
                   _CircularIndicator(
                     activeIndex: index,
                     count: widget.pageCount,
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 30.h),
 
-                  // Title and subtitle - centered
-                  Text(
-                    data.title,
-                    style: AppFonts.robotoBold24.copyWith(
-                      color: AppColors.white,
-                      height: 1.2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.5),
-                          offset: Offset(0, 2),
-                          blurRadius: 4,
+                  // Title and subtitle - centered with better spacing
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w),
+                    child: Column(
+                      children: [
+                        Text(
+                          data.title,
+                          style: AppFonts.robotoBold24.copyWith(
+                            color: AppColors.white,
+                            height: 1.3,
+                            fontSize: 28
+                                .sp
+                                .clamp(20.sp, 32.sp), // Responsive font size
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.7),
+                                offset: Offset(0, 2),
+                                blurRadius: 6,
+                              ),
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                offset: Offset(0, 1),
+                                blurRadius: 3,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          data.subtitle,
+                          style: AppFonts.bodyLarge.copyWith(
+                            color: AppColors.white.withOpacity(0.95),
+                            height: 1.6,
+                            fontSize: 16
+                                .sp
+                                .clamp(14.sp, 18.sp), // Responsive font size
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.5),
+                                offset: Offset(0, 1),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 10.h),
-                  Text(
-                    data.subtitle,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.white.withOpacity(0.9),
-                      height: 1.5,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.3),
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 50.h),
 
-                  // Next/Get Started button
-                  SizedBox(
+                  // Next/Get Started button with enhanced design
+                  Container(
                     width: double.infinity,
-                    height: 45.h,
+                    height: 50.h.clamp(45.h, 55.h), // Responsive height
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.4),
+                          offset: Offset(0, 4),
+                          blurRadius: 12,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
-                      onPressed: widget.onNext,
+                      onPressed: () {
+                        if (!_isDisposed && mounted) {
+                          widget.onNext();
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.r),
+                          borderRadius: BorderRadius.circular(25.r),
                         ),
                       ),
                       child: Text(
                         isLastPage ? 'start_learning'.tr : 'next'.tr,
                         style: AppFonts.robotoBold16.copyWith(
                           color: AppColors.white,
-                          fontSize: 14.sp,
+                          fontSize:
+                              16.sp.clamp(14.sp, 18.sp), // Responsive font size
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
                   ),
 
                   // Bottom spacing
-                  SizedBox(height: 60.h),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -472,20 +557,27 @@ class _CircularIndicator extends StatelessWidget {
       children: List.generate(count, (i) {
         final bool isActive = i == activeIndex;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: EdgeInsets.symmetric(horizontal: 6.w),
-          width: isActive ? 12.w : 8.w,
-          height: isActive ? 12.h : 8.h,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          margin: EdgeInsets.symmetric(horizontal: 8.w),
+          width: isActive ? 16.w : 10.w,
+          height: isActive ? 16.h : 10.h,
           decoration: BoxDecoration(
-            color: isActive ? AppColors.selectedBlue : AppColors.white,
+            color:
+                isActive ? AppColors.white : AppColors.white.withOpacity(0.5),
             shape: BoxShape.circle,
+            border: Border.all(
+              color: isActive ? AppColors.primary : Colors.transparent,
+              width: 2,
+            ),
             boxShadow: [
               BoxShadow(
                 color: isActive
-                    ? AppColors.selectedBlue.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.3),
-                offset: Offset(0, 2),
-                blurRadius: 4,
+                    ? AppColors.primary.withOpacity(0.4)
+                    : Colors.black.withOpacity(0.2),
+                offset: Offset(0, 3),
+                blurRadius: isActive ? 8 : 4,
+                spreadRadius: isActive ? 1 : 0,
               ),
             ],
           ),
@@ -499,7 +591,6 @@ class IntroData {
   final String title;
   final String subtitle;
   final String image;
-  final String planeImage;
   final Color color;
   final Color backgroundColor;
   final Color shadowColor;
@@ -509,7 +600,6 @@ class IntroData {
     required this.title,
     required this.subtitle,
     required this.image,
-    required this.planeImage,
     required this.color,
     required this.backgroundColor,
     required this.shadowColor,

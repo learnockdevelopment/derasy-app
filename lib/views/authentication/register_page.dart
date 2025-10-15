@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,7 +10,6 @@ import '../../core/constants/countries.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/authentication/auth_service.dart';
 import '../../models/authentication/auth_models.dart';
-import '../../views/widgets/country_selector.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -18,531 +18,345 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _RegisterPageState extends State<RegisterPage>
+    with TickerProviderStateMixin {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isLoading = false;
-  bool _isFormValid = false;
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   Country _selectedCountry = Countries.countries.firstWhere(
     (country) => country.code == 'EG',
     orElse: () => Countries.countries.first,
   );
 
+  late AnimationController _animationController;
+
   @override
   void initState() {
     super.initState();
-    _firstNameController.addListener(_validateForm);
-    _lastNameController.addListener(_validateForm);
-    _emailController.addListener(_validateForm);
-    _phoneController.addListener(_validateForm);
-    _passwordController.addListener(_validateForm);
+    print('📝 [REGISTER] RegisterPage initState called');
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _animationController.forward();
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
+    print('📝 [REGISTER] RegisterPage dispose called');
+    _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  void _validateForm() {
-    final firstName = _firstNameController.text.trim();
-    final lastName = _lastNameController.text.trim();
-    final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
-    final password = _passwordController.text.trim();
-
-    setState(() {
-      _isFormValid = _isValidName(firstName) &&
-          _isValidName(lastName) &&
-          _isValidEmail(email) &&
-          _isValidPhone(phone) &&
-          _isValidPassword(password);
-    });
-  }
-
-  bool _isValidName(String name) {
-    if (name.isEmpty) return false;
-    // Name should not contain numbers
-    return !RegExp(r'[0-9]').hasMatch(name);
-  }
-
-  bool _isValidEmail(String email) {
-    if (email.isEmpty) return false;
-    return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(email);
-  }
-
-  bool _isValidPhone(String phone) {
-    if (phone.isEmpty) return false;
-    // Phone should contain only numbers
-    return RegExp(r'^[0-9]+$').hasMatch(phone) && phone.length >= 7;
-  }
-
-  bool _isValidPassword(String password) {
-    if (password.isEmpty) return false;
-    return password.length >= 6;
-  }
-
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await AuthService.register(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: '${_selectedCountry.dialCode}${_phoneController.text.trim()}',
-        password: _passwordController.text.trim(),
-        role: 'student',
-      );
-
-      final registerResponse = RegisterResponse.fromJson(response);
-
+  void _validateForm() async {
+    if (_formKey.currentState?.validate() ?? false) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
 
-      // Navigate to home page after successful registration
-      Get.offAllNamed<void>(AppRoutes.home);
+      final email = _emailController.text.trim();
+      final phone =
+          '${_selectedCountry.dialCode}${_phoneController.text.trim()}';
 
-      Get.snackbar(
-        'success'.tr,
-        registerResponse.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primary,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      Get.snackbar(
-        'error'.tr,
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
+      try {
+        final response = await AuthService.register(
+          firstName: _nameController.text.trim().split(' ').first,
+          lastName: _nameController.text.trim().split(' ').length > 1
+              ? _nameController.text.trim().split(' ').skip(1).join(' ')
+              : '',
+          email: email,
+          phone: phone,
+          password: _passwordController.text.trim(),
+          role: 'user', // Default role
+        ).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            throw Exception(
+                'Registration request timed out. Please check your internet connection.');
+          },
+        );
+
+        print('📝 [REGISTER] Registration response received: $response');
+
+        if (response.isEmpty) {
+          throw Exception('Empty response from server');
+        }
+
+        final registerResponse = RegisterResponse.fromJson(response);
+
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        print('📝 [REGISTER] Navigating to email verification');
+
+        // Navigate to email verification
+        Get.offNamed<void>(
+          AppRoutes.verifyEmail,
+          arguments: {
+            'userId': registerResponse.data.id,
+            'email': email,
+          },
+        );
+
+        Get.snackbar(
+          'Success',
+          'Registration successful! Please verify your email address.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.primary,
+          colorText: Colors.white,
+        );
+      } catch (e) {
+        print('📝 [REGISTER] Registration error: $e');
+
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        String errorMessage = 'An unexpected error occurred. Please try again.';
+
+        if (e.toString().contains('SocketException') ||
+            e.toString().contains('TimeoutException')) {
+          errorMessage =
+              'Network error. Please check your internet connection.';
+        } else if (e.toString().contains('FormatException')) {
+          errorMessage = 'Invalid response from server. Please try again.';
+        } else if (e.toString().contains('Email already exists')) {
+          errorMessage = 'An account with this email already exists.';
+        } else if (e.toString().contains('Phone already exists')) {
+          errorMessage = 'An account with this phone number already exists.';
+        } else if (e.toString().isNotEmpty) {
+          errorMessage = e.toString().replaceAll('Exception: ', '');
+        }
+
+        Get.snackbar(
+          'Error',
+          errorMessage,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white,
-                Color(0xFFF8F9FF),
-              ],
-            ),
-          ),
-          child: SafeArea(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          _buildBackground(),
+          Center(
             child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              child: FadeTransition(
+                opacity: _animationController,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Header with logo and company name
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 20.h),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Image.asset(
-                                AssetsManager.logo,
-                                width: 60.w,
-                                height: 60.h,
-                              ),
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'app_name'.tr,
-                              style: AppFonts.robotoBold24.copyWith(
-                                color: AppColors.primary,
-                                fontSize: 28.sp,
-                              ),
-                            ),
-                            Text(
-                              'app_tagline'.tr,
-                              style: AppFonts.robotoRegular16.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 16.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 20.h),
-
-                    // Create Account title
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: Text(
-                        'sign_up'.tr,
-                        style: AppFonts.robotoBold28.copyWith(
-                          color: AppColors.primary,
-                          fontSize: 32.sp,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: Text(
-                        'nursery_description'.tr,
-                        style: AppFonts.robotoRegular16.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 16.sp,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 20.h),
-
-                    // Form content
-                    Padding(
-                      padding: EdgeInsets.all(24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // First Name Field
-                          _buildTextField(
-                            controller: _firstNameController,
-                            label: 'first_name'.tr,
-                            hint: 'your_first_name'.tr,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'first_name_required'.tr;
-                              }
-                              if (!_isValidName(value)) {
-                                return 'name_no_numbers'.tr;
-                              }
-                              return null;
-                            },
-                          ),
-
-                          SizedBox(height: 24.h),
-
-                          // Last Name Field
-                          _buildTextField(
-                            controller: _lastNameController,
-                            label: 'last_name'.tr,
-                            hint: 'your_last_name'.tr,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'last_name_required'.tr;
-                              }
-                              if (!_isValidName(value)) {
-                                return 'name_no_numbers'.tr;
-                              }
-                              return null;
-                            },
-                          ),
-
-                          SizedBox(height: 24.h),
-
-                          // Phone Number Field with Country Selector
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'phone_number'.tr,
-                                style: AppFonts.robotoMedium14.copyWith(
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              SizedBox(height: 8.h),
-                              Row(
-                                children: [
-                                  // Country Selector
-                                  GestureDetector(
-                                    onTap: () => _showCountrySelector(),
-                                    child: Container(
-                                      width: 90.w,
-                                      height: 48.h,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.grey100,
-                                        borderRadius:
-                                            BorderRadius.circular(24.r),
-                                        border: Border.all(
-                                          color: AppColors.grey200,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 8.w),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              _selectedCountry.flag,
-                                              style: TextStyle(fontSize: 16.sp),
-                                            ),
-                                            SizedBox(width: 4.w),
-                                            Flexible(
-                                              child: Text(
-                                                _selectedCountry.dialCode,
-                                                style: AppFonts.robotoMedium12
-                                                    .copyWith(
-                                                  color: AppColors.textPrimary,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            SizedBox(width: 2.w),
-                                            Icon(
-                                              Icons.keyboard_arrow_down,
-                                              color: AppColors.textSecondary,
-                                              size: 14.w,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  SizedBox(width: 12.w),
-
-                                  // Phone Number Field
-                                  Expanded(
-                                    child: Container(
-                                      height: 48.h,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.grey100,
-                                        borderRadius:
-                                            BorderRadius.circular(24.r),
-                                        border: Border.all(
-                                          color: AppColors.grey200,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: TextFormField(
-                                        controller: _phoneController,
-                                        keyboardType: TextInputType.phone,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter
-                                              .digitsOnly,
-                                        ],
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'phone_required'.tr;
-                                          }
-                                          if (!_isValidPhone(value)) {
-                                            return 'phone_invalid'.tr;
-                                          }
-                                          return null;
-                                        },
-                                        style:
-                                            AppFonts.robotoRegular16.copyWith(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                        decoration: InputDecoration(
-                                          hintText: 'phone_placeholder'.tr,
-                                          hintStyle:
-                                              AppFonts.robotoRegular14.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
-                                          border: InputBorder.none,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 16.w,
-                                            vertical: 16.h,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: 24.h),
-
-                          // Email Field
-                          _buildTextField(
-                            controller: _emailController,
-                            label: 'email'.tr,
-                            hint: 'email_placeholder'.tr,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'email_required'.tr;
-                              }
-                              if (!_isValidEmail(value)) {
-                                return 'email_invalid'.tr;
-                              }
-                              return null;
-                            },
-                          ),
-
-                          SizedBox(height: 24.h),
-
-                          // Password Field
-                          _buildPasswordField(),
-
-                          SizedBox(height: 48.h),
-
-                          // Sign Up Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48.h,
-                            child: ElevatedButton(
-                              onPressed: (_isLoading || !_isFormValid)
-                                  ? null
-                                  : _register,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24.r),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? SizedBox(
-                                      width: 24.w,
-                                      height: 24.h,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    )
-                                  : Text(
-                                      'sign_up'.tr,
-                                      style: AppFonts.robotoBold16,
-                                    ),
-                            ),
-                          ),
-
-                          SizedBox(height: 32.h),
-
-                          // Login Link
-                          Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'already_have_account'.tr,
-                                  style: AppFonts.robotoRegular14.copyWith(
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      Get.toNamed<void>(AppRoutes.login),
-                                  child: Text(
-                                    'login'.tr,
-                                    style: AppFonts.robotoBold14.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildRegisterForm(),
                   ],
                 ),
               ),
             ),
           ),
-        ));
-  }
-
-  void _showCountrySelector() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => CountrySelector(
-        selectedCountry: _selectedCountry,
-        onCountrySelected: (country) {
-          setState(() {
-            _selectedCountry = country;
-            _validateForm();
-          });
-        },
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppFonts.robotoMedium14.copyWith(
-            color: AppColors.textPrimary,
+  Widget _buildBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(AssetsManager.login),
+            fit: BoxFit.cover,
           ),
         ),
-        SizedBox(height: 8.h),
-        Container(
-          height: 48.h,
-          decoration: BoxDecoration(
-            color: AppColors.grey100,
-            borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: AppColors.grey200,
-              width: 1,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterForm() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Text(
+              'Create Account',
+              style: AppFonts.robotoBold24.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 24.sp,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Sign up to get started',
+              style: AppFonts.robotoRegular16.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 14.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            _buildNameField(),
+            SizedBox(height: 20.h),
+            _buildEmailField(),
+            SizedBox(height: 20.h),
+            _buildPhoneField(),
+            SizedBox(height: 16.h),
+            _buildPasswordField(),
+            SizedBox(height: 16.h),
+            _buildConfirmPasswordField(),
+            SizedBox(height: 24.h),
+            _buildRegisterButton(),
+            SizedBox(height: 20.h),
+            _buildLoginLink(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNameField() {
+    return TextFormField(
+      controller: _nameController,
+      keyboardType: TextInputType.name,
+      textCapitalization: TextCapitalization.words,
+      decoration: InputDecoration(
+        labelText: 'Full Name',
+        hintText: 'Enter your full name',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your full name';
+        }
+        if (value.length < 2) {
+          return 'Name must be at least 2 characters long';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildEmailField() {
+    return TextFormField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        labelText: 'Email Address',
+        hintText: 'Enter your email',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Email is required';
+        }
+        if (!GetUtils.isEmail(value)) {
+          return 'Please enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: _showCountryPicker,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: AppColors.grey50,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.grey200),
+            ),
+            child: Text(
+              _selectedCountry.dialCode,
+              style: AppFonts.robotoMedium16.copyWith(fontSize: 16.sp),
             ),
           ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
           child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            validator: validator,
-            style: AppFonts.robotoRegular16.copyWith(
-              color: AppColors.textPrimary,
-            ),
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: AppFonts.robotoRegular14.copyWith(
-                color: AppColors.textSecondary,
+              labelText: 'Phone Number',
+              hintText: 'Enter your phone number',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 16.h,
-              ),
+              prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
             ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Phone number is required';
+              }
+              if (value.length < 7) {
+                return 'Phone number must be at least 7 digits';
+              }
+              return null;
+            },
           ),
         ),
       ],
@@ -550,67 +364,192 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildPasswordField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'password'.tr,
-          style: AppFonts.robotoMedium14.copyWith(
-            color: AppColors.textPrimary,
+    return TextFormField(
+      controller: _passwordController,
+      obscureText: !_isPasswordVisible,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        hintText: 'Enter your password',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: AppColors.textSecondary,
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Password is required';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters long';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return TextFormField(
+      controller: _confirmPasswordController,
+      obscureText: !_isConfirmPasswordVisible,
+      decoration: InputDecoration(
+        labelText: 'Confirm Password',
+        hintText: 'Re-enter your password',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        prefixIcon: Icon(Icons.lock_reset, color: AppColors.primary),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: AppColors.textSecondary,
+          ),
+          onPressed: () {
+            setState(() {
+              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+            });
+          },
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please confirm your password';
+        }
+        if (value != _passwordController.text) {
+          return 'Passwords do not match';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildRegisterButton() {
+    return Container(
+      width: double.infinity,
+      height: 50.h,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _validateForm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
-        SizedBox(height: 8.h),
-        Container(
-          height: 48.h,
-          decoration: BoxDecoration(
-            color: AppColors.grey100,
-            borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: AppColors.grey200,
-              width: 1,
-            ),
-          ),
-          child: TextFormField(
-            controller: _passwordController,
-            obscureText: !_isPasswordVisible,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'password_required'.tr;
-              }
-              if (value.length < 6) {
-                return 'password_too_short'.tr;
-              }
-              return null;
-            },
-            style: AppFonts.robotoRegular16.copyWith(
-              color: AppColors.textPrimary,
-            ),
-            decoration: InputDecoration(
-              hintText: 'password_placeholder'.tr,
-              hintStyle: AppFonts.robotoRegular14.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 16.h,
-              ),
-              suffixIcon: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-                child: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: AppColors.textSecondary,
-                  size: 20.w,
+        child: _isLoading
+            ? SizedBox(
+                width: 24.w,
+                height: 24.h,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                'Sign Up',
+                style: AppFonts.robotoBold16.copyWith(
+                  color: Colors.white,
+                  fontSize: 18.sp,
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildLoginLink() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Already have an account?',
+          style: AppFonts.robotoRegular14.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14.sp,
+          ),
+        ),
+        SizedBox(width: 5.w),
+        GestureDetector(
+          onTap: () => Get.offNamed<void>(AppRoutes.login),
+          child: Text(
+            'Login',
+            style: AppFonts.robotoBold14.copyWith(
+              color: AppColors.primary,
+              fontSize: 14.sp,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showCountryPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        height: 400.h,
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          children: [
+            Text(
+              'Select Country',
+              style: AppFonts.robotoBold20.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 20.sp,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Expanded(
+              child: ListView.builder(
+                itemCount: Countries.countries.length,
+                itemBuilder: (context, index) {
+                  final country = Countries.countries[index];
+                  return ListTile(
+                    leading: Text(
+                      country.flag,
+                      style: TextStyle(fontSize: 24.sp),
+                    ),
+                    title: Text(
+                      country.name,
+                      style: AppFonts.robotoMedium16.copyWith(fontSize: 16.sp),
+                    ),
+                    subtitle: Text(
+                      country.dialCode,
+                      style: AppFonts.robotoRegular14.copyWith(fontSize: 14.sp),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _selectedCountry = country;
+                      });
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

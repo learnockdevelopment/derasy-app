@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,10 +6,7 @@ import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/assets.dart';
-import '../../core/constants/countries.dart';
-import '../../core/routes/app_routes.dart';
 import '../../services/authentication/auth_service.dart';
-import '../../views/widgets/country_selector.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({Key? key}) : super(key: key);
@@ -17,507 +15,511 @@ class ForgotPasswordPage extends StatefulWidget {
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _identifierController = TextEditingController();
+  final _emailController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isEmailSelected = true;
-  bool _isIdentifierValid = false;
-  Country _selectedCountry = Countries.countries.firstWhere(
-    (country) => country.code == 'EG',
-    orElse: () => Countries.countries.first,
-  );
+  bool _isEmailSent = false;
+  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
-    _identifierController.addListener(_validateForm);
+    print('🔑 [FORGOT_PASSWORD] ForgotPasswordPage initState called');
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _animationController.forward();
   }
 
   @override
   void dispose() {
-    _identifierController.dispose();
+    print('🔑 [FORGOT_PASSWORD] ForgotPasswordPage dispose called');
+    _emailController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  void _validateForm() {
-    final identifier = _identifierController.text.trim();
-
-    setState(() {
-      _isIdentifierValid = _isValidIdentifier(identifier);
-    });
-  }
-
-  bool _isValidIdentifier(String identifier) {
-    if (identifier.isEmpty) return false;
-    if (_isEmailSelected) {
-      return _isValidEmail(identifier);
-    } else {
-      return _isValidPhone(identifier);
-    }
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(email);
-  }
-
-  bool _isValidPhone(String phone) {
-    return RegExp(r'^[0-9]+$').hasMatch(phone) && phone.length >= 7;
-  }
-
-  Future<void> _sendOtp() async {
+  Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      String identifier = _isEmailSelected
-          ? _identifierController.text.trim()
-          : '${_selectedCountry.dialCode}${_identifierController.text.trim()}';
+      print(
+          '🔑 [FORGOT_PASSWORD] Starting forgot password for: ${_emailController.text.trim()}');
 
-      Map<String, dynamic> response;
-      String? devCode;
+      final response = await AuthService.sendOtpToEmail(
+        email: _emailController.text.trim(),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception(
+              'Request timed out. Please check your internet connection.');
+        },
+      );
 
-      if (_isEmailSelected) {
-        response = await AuthService.sendOtpToEmail(email: identifier);
-        // Extract dev code if available
-        if (response['devCode'] != null) {
-          devCode = response['devCode'].toString();
-        }
-      } else {
-        response = await AuthService.sendOtpToPhone(phoneNumber: identifier);
-        // Extract OTP from message if available
-        if (response['message'] != null &&
-            response['message'].toString().contains(',')) {
-          final parts = response['message'].toString().split(',');
-          if (parts.length > 1) {
-            devCode = parts[1].trim();
-          }
-        }
+      print(
+          '🔑 [FORGOT_PASSWORD] Forgot password response received: $response');
+
+      if (response.isEmpty) {
+        throw Exception('Empty response from server');
       }
 
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _isEmailSent = true;
+      });
+
+      print('🔑 [FORGOT_PASSWORD] Reset email sent successfully');
+
+      Get.snackbar(
+        'Success',
+        'Password reset instructions sent to ${_emailController.text.trim()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.primary,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    } catch (e) {
+      print('🔑 [FORGOT_PASSWORD] Forgot password error: $e');
+
+      if (!mounted) return;
+
       setState(() {
         _isLoading = false;
       });
 
-      // Navigate to verify OTP page
-      Get.toNamed<void>(AppRoutes.verifyForgotPassword, arguments: {
-        'identifier': identifier,
-        'sentVia': _isEmailSelected ? 'email' : 'phone',
-        'devCode': devCode,
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      String errorMessage = 'An unexpected error occurred. Please try again.';
+
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('TimeoutException')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (e.toString().contains('FormatException')) {
+        errorMessage = 'Invalid response from server. Please try again.';
+      } else if (e.toString().contains('Email not found')) {
+        errorMessage = 'No account found with this email address.';
+      } else if (e.toString().isNotEmpty) {
+        errorMessage = e.toString().replaceAll('Exception: ', '');
+      }
+
       Get.snackbar(
-        'error'.tr,
-        e.toString(),
+        'Error',
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print('🔑 [FORGOT_PASSWORD] ForgotPasswordPage build called');
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
-            size: 20.w,
-          ),
-          onPressed: () => Get.back<void>(),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.w),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 20.h),
+      body: Stack(
+        children: [
+          // Blurred background image
+          _buildBlurredBackground(),
 
-                // Header with logo and company name
-                Row(
-                  children: [
-                    Image.asset(
-                      AssetsManager.logo,
-                      width: 40.w,
-                      height: 40.h,
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'app_name'.tr,
-                      style: AppFonts.robotoBold18.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 32.h),
-
-                // Forgot Password title
-                Text(
-                  'forgot_password'.tr,
-                  style: AppFonts.robotoBold24.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                SizedBox(height: 8.h),
-
-                // Description
-                Text(
-                  'forgot_password_description'.tr,
-                  style: AppFonts.robotoRegular14.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                SizedBox(height: 32.h),
-
-                // Method Selector
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.grey100,
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isEmailSelected = true;
-                              _identifierController.clear();
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            decoration: BoxDecoration(
-                              color: _isEmailSelected
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                            child: Text(
-                              'email'.tr,
-                              textAlign: TextAlign.center,
-                              style: AppFonts.robotoMedium14.copyWith(
-                                color: _isEmailSelected
-                                    ? Colors.white
-                                    : AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isEmailSelected = false;
-                              _identifierController.clear();
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            decoration: BoxDecoration(
-                              color: !_isEmailSelected
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                            child: Text(
-                              'phone'.tr,
-                              textAlign: TextAlign.center,
-                              style: AppFonts.robotoMedium14.copyWith(
-                                color: !_isEmailSelected
-                                    ? Colors.white
-                                    : AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: 24.h),
-
-                // Identifier Field
-                _isEmailSelected
-                    ? _buildTextField(
-                        controller: _identifierController,
-                        label: 'email'.tr,
-                        hint: 'email_placeholder'.tr,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'email_required'.tr;
-                          }
-                          if (!_isValidEmail(value)) {
-                            return 'email_invalid'.tr;
-                          }
-                          return null;
-                        },
-                      )
-                    : _buildPhoneField(),
-
-                SizedBox(height: 32.h),
-
-                // Send OTP Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48.h,
-                  child: ElevatedButton(
-                    onPressed:
-                        (_isLoading || !_isIdentifierValid) ? null : _sendOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.r),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? SizedBox(
-                            width: 24.w,
-                            height: 24.h,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            'send_otp'.tr,
-                            style: AppFonts.robotoBold16,
-                          ),
-                  ),
-                ),
-
-                SizedBox(height: 24.h),
-
-                // Back to Login Link
-                Center(
-                  child: GestureDetector(
-                    onTap: () => Get.back<void>(),
-                    child: Text(
-                      'back_to_login'.tr,
-                      style: AppFonts.robotoBold14.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppFonts.robotoMedium14.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          validator: validator,
-          style: AppFonts.robotoRegular16.copyWith(
-            color: AppColors.textPrimary,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppFonts.robotoRegular14.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            filled: true,
-            fillColor: AppColors.grey100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 2,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: AppColors.error,
-                width: 2,
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 16.h,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhoneField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'phone_number'.tr,
-          style: AppFonts.robotoMedium14.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Row(
-          children: [
-            // Country Selector
-            GestureDetector(
-              onTap: () => _showCountrySelector(),
-              child: Container(
-                width: 90.w,
-                height: 48.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey100,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: AppColors.grey200,
-                    width: 1,
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w),
-                  child: Row(
+          // Main content
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+                child: FadeTransition(
+                  opacity: _animationController,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        _selectedCountry.flag,
-                        style: TextStyle(fontSize: 16.sp),
-                      ),
-                      SizedBox(width: 4.w),
-                      Flexible(
-                        child: Text(
-                          _selectedCountry.dialCode,
-                          style: AppFonts.robotoMedium12.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      SizedBox(width: 2.w),
-                      Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppColors.textSecondary,
-                        size: 14.w,
-                      ),
+                      // Forgot password form
+                      _isEmailSent ? _buildEmailSentView() : _buildForgotForm(),
                     ],
                   ),
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            SizedBox(width: 12.w),
+  Widget _buildBlurredBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(AssetsManager.login),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ),
+      ),
+    );
+  }
 
-            // Phone Number Field
-            Expanded(
-              child: Container(
-                height: 48.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey100,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: AppColors.grey200,
-                    width: 1,
-                  ),
-                ),
-                child: TextFormField(
-                  controller: _identifierController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'phone_required'.tr;
-                    }
-                    if (!_isValidPhone(value)) {
-                      return 'phone_invalid'.tr;
-                    }
-                    return null;
-                  },
-                  style: AppFonts.robotoRegular16.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'phone_placeholder'.tr,
-                    hintStyle: AppFonts.robotoRegular14.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
-                    ),
-                  ),
-                ),
+  Widget _buildForgotForm() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // Lock icon
+            Container(
+              width: 80.w,
+              height: 80.h,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.lock_reset,
+                size: 40.w,
+                color: AppColors.primary,
               ),
             ),
+
+            SizedBox(height: 24.h),
+
+            // Title
+            Text(
+              'Forgot Password?',
+              style: AppFonts.robotoBold24.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 24.sp,
+              ),
+            ),
+
+            SizedBox(height: 8.h),
+
+            Text(
+              'Enter your email address and we\'ll send you instructions to reset your password.',
+              style: AppFonts.robotoRegular16.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 14.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            SizedBox(height: 32.h),
+
+            // Email Field
+            _buildEmailField(),
+
+            SizedBox(height: 24.h),
+
+            // Send Button
+            _buildSendButton(),
+
+            SizedBox(height: 20.h),
+
+            // Back to Login
+            _buildBackToLogin(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmailSentView() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Success icon
+          Container(
+            width: 80.w,
+            height: 80.h,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.mark_email_read,
+              size: 40.w,
+              color: AppColors.primary,
+            ),
+          ),
+
+          SizedBox(height: 24.h),
+
+          // Title
+          Text(
+            'Check Your Email',
+            style: AppFonts.robotoBold24.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 24.sp,
+            ),
+          ),
+
+          SizedBox(height: 8.h),
+
+          Text(
+            'We\'ve sent password reset instructions to',
+            style: AppFonts.robotoRegular16.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 14.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          SizedBox(height: 4.h),
+
+          Text(
+            _emailController.text.trim(),
+            style: AppFonts.robotoBold16.copyWith(
+              color: AppColors.primary,
+              fontSize: 16.sp,
+            ),
+          ),
+
+          SizedBox(height: 16.h),
+
+          Text(
+            'Please check your email and follow the instructions to reset your password.',
+            style: AppFonts.robotoRegular14.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          SizedBox(height: 32.h),
+
+          // Back to Login Button
+          _buildBackToLoginButton(),
+
+          SizedBox(height: 16.h),
+
+          // Resend Email
+          _buildResendEmail(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.grey50,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: AppColors.grey200,
+          width: 1,
+        ),
+      ),
+      child: TextFormField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Email is required';
+          }
+          if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+              .hasMatch(value)) {
+            return 'Please enter a valid email';
+          }
+          return null;
+        },
+        style: AppFonts.robotoRegular16.copyWith(
+          color: AppColors.textPrimary,
+          fontSize: 16.sp,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Enter your email address',
+          hintStyle: AppFonts.robotoRegular14.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14.sp,
+          ),
+          prefixIcon: Icon(
+            Icons.email_outlined,
+            color: AppColors.primary,
+            size: 20.w,
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 16.h,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return Container(
+      width: double.infinity,
+      height: 50.h,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _sendResetEmail,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+        child: _isLoading
+            ? SizedBox(
+                width: 24.w,
+                height: 24.h,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                'Send Reset Instructions',
+                style: AppFonts.robotoBold16.copyWith(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildBackToLogin() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Remember your password? ',
+          style: AppFonts.robotoRegular14.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: 14.sp,
+          ),
+        ),
+        GestureDetector(
+          onTap: () => Get.back<void>(),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Text(
+              'Sign In',
+              style: AppFonts.robotoBold14.copyWith(
+                color: Colors.white,
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  void _showCountrySelector() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => CountrySelector(
-        selectedCountry: _selectedCountry,
-        onCountrySelected: (country) {
-          setState(() {
-            _selectedCountry = country;
-          });
-        },
+  Widget _buildBackToLoginButton() {
+    return Container(
+      width: double.infinity,
+      height: 50.h,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () => Get.back<void>(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+        child: Text(
+          'Back to Sign In',
+          style: AppFonts.robotoBold16.copyWith(
+            color: Colors.white,
+            fontSize: 18.sp,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResendEmail() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isEmailSent = false;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: AppColors.grey100,
+          borderRadius: BorderRadius.circular(15.r),
+        ),
+        child: Text(
+          'Send to different email',
+          style: AppFonts.robotoMedium12.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 12.sp,
+          ),
+        ),
       ),
     );
   }

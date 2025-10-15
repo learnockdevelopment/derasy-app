@@ -5,8 +5,8 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
-  static const String forgotPassword = '/forgot-password';
-  static const String verifyForgotPassword = '/verify-forgot-password';
+  static const String otpEmail = '/otp-email';
+  static const String validateOtp = '/validate-otp';
   static const String resetPassword = '/reset-password';
   static const String changePassword = '/change-password';
   static const String verifyEmail = '/verify-email';

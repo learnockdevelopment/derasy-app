@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
@@ -8,53 +9,78 @@ import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/authentication/auth_service.dart';
 
-class ResetPasswordPage extends StatefulWidget {
+class ValidateOtpPage extends StatefulWidget {
   final String email;
-  final String otp;
 
-  const ResetPasswordPage({
+  const ValidateOtpPage({
     Key? key,
     required this.email,
-    required this.otp,
   }) : super(key: key);
 
   @override
-  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
+  State<ValidateOtpPage> createState() => _ValidateOtpPageState();
 }
 
-class _ResetPasswordPageState extends State<ResetPasswordPage>
+class _ValidateOtpPageState extends State<ValidateOtpPage>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final _otpController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
+  bool _isResending = false;
+  int _resendCountdown = 0;
   late AnimationController _animationController;
+  late AnimationController _countdownController;
 
   @override
   void initState() {
     super.initState();
-    print('🔑 [RESET_PASSWORD] ResetPasswordPage initState called');
+    print('🔐 [VALIDATE_OTP] ValidateOtpPage initState called');
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
+
+    _countdownController = AnimationController(
+      duration: const Duration(seconds: 60),
+      vsync: this,
+    );
+
     _animationController.forward();
+    _startResendCountdown();
   }
 
   @override
   void dispose() {
-    print('🔑 [RESET_PASSWORD] ResetPasswordPage dispose called');
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    print('🔐 [VALIDATE_OTP] ValidateOtpPage dispose called');
+    _otpController.dispose();
     _animationController.dispose();
+    _countdownController.dispose();
     super.dispose();
   }
 
-  Future<void> _resetPassword() async {
+  void _startResendCountdown() {
+    setState(() {
+      _resendCountdown = 60;
+    });
+
+    _countdownController.reset();
+    _countdownController.forward();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _resendCountdown--;
+        });
+        if (_resendCountdown > 0) {
+          _startResendCountdown();
+        }
+      }
+    });
+  }
+
+  Future<void> _validateOtp() async {
     if (!_formKey.currentState!.validate()) return;
     if (_isLoading) return;
 
@@ -63,22 +89,20 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     });
 
     try {
-      print('🔑 [RESET_PASSWORD] Starting password reset for: ${widget.email}');
+      print('🔐 [VALIDATE_OTP] Starting OTP validation for: ${widget.email}');
 
-      final response = await AuthService.resetPasswordWithOtp(
+      final response = await AuthService.validateOtpFromEmail(
         email: widget.email,
-        otp: widget.otp,
-        password: _passwordController.text.trim(),
-        passwordConfirmation: _confirmPasswordController.text.trim(),
+        otp: _otpController.text.trim(),
       ).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
           throw Exception(
-              'Reset request timed out. Please check your internet connection.');
+              'Validation request timed out. Please check your internet connection.');
         },
       );
 
-      print('🔑 [RESET_PASSWORD] Reset response received: $response');
+      print('🔐 [VALIDATE_OTP] Validation response received: $response');
 
       if (response.isEmpty) {
         throw Exception('Empty response from server');
@@ -90,21 +114,26 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
         _isLoading = false;
       });
 
-      print('🔑 [RESET_PASSWORD] Password reset successful');
+      print('🔐 [VALIDATE_OTP] OTP validation successful');
 
-      // Navigate to login page
-      Get.offAllNamed<void>(AppRoutes.login);
+      // Navigate to reset password page
+      Get.toNamed<void>(
+        AppRoutes.resetPassword,
+        arguments: {
+          'email': widget.email,
+          'otp': _otpController.text.trim(),
+        },
+      );
 
       Get.snackbar(
         'Success',
-        'Password reset successfully! Please login with your new password.',
+        'OTP validated successfully!',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.primary,
         colorText: Colors.white,
-        duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      print('🔑 [RESET_PASSWORD] Password reset error: $e');
+      print('🔐 [VALIDATE_OTP] OTP validation error: $e');
 
       if (!mounted) return;
 
@@ -124,8 +153,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
       } else if (e.toString().contains('OTP expired')) {
         errorMessage =
             'Verification code has expired. Please request a new one.';
-      } else if (e.toString().contains('Password confirmation')) {
-        errorMessage = 'Password confirmation does not match.';
       } else if (e.toString().isNotEmpty) {
         errorMessage = e.toString().replaceAll('Exception: ', '');
       }
@@ -141,9 +168,51 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     }
   }
 
+  Future<void> _resendOtp() async {
+    if (_isResending || _resendCountdown > 0) return;
+
+    setState(() {
+      _isResending = true;
+    });
+
+    try {
+      await AuthService.sendOtpToEmail(email: widget.email);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isResending = false;
+      });
+
+      Get.snackbar(
+        'Success',
+        'OTP sent to ${widget.email}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.primary,
+        colorText: Colors.white,
+      );
+
+      _startResendCountdown();
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isResending = false;
+      });
+
+      Get.snackbar(
+        'Error',
+        'Failed to resend OTP. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    print('🔑 [RESET_PASSWORD] ResetPasswordPage build called');
+    print('🔐 [VALIDATE_OTP] ValidateOtpPage build called');
 
     return Scaffold(
       body: Stack(
@@ -161,8 +230,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Reset password form
-                      _buildResetForm(),
+                      // Validate OTP form
+                      _buildValidateForm(),
                     ],
                   ),
                 ),
@@ -193,7 +262,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     );
   }
 
-  Widget _buildResetForm() {
+  Widget _buildValidateForm() {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
@@ -212,7 +281,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
         key: _formKey,
         child: Column(
           children: [
-            // Key icon
+            // Security icon
             Container(
               width: 80.w,
               height: 80.h,
@@ -221,7 +290,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.vpn_key,
+                Icons.security,
                 size: 40.w,
                 color: AppColors.primary,
               ),
@@ -231,7 +300,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
 
             // Title
             Text(
-              'Set New Password',
+              'Enter Verification Code',
               style: AppFonts.robotoBold24.copyWith(
                 color: AppColors.textPrimary,
                 fontSize: 24.sp,
@@ -241,35 +310,44 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
             SizedBox(height: 8.h),
 
             Text(
-              'Enter your new password below',
+              'We sent a verification code to',
               style: AppFonts.robotoRegular16.copyWith(
                 color: AppColors.textSecondary,
                 fontSize: 14.sp,
               ),
-              textAlign: TextAlign.center,
+            ),
+
+            SizedBox(height: 4.h),
+
+            Text(
+              widget.email,
+              style: AppFonts.robotoBold16.copyWith(
+                color: AppColors.primary,
+                fontSize: 16.sp,
+              ),
             ),
 
             SizedBox(height: 32.h),
 
-            // Password Field
-            _buildPasswordField(),
-
-            SizedBox(height: 16.h),
-
-            // Confirm Password Field
-            _buildConfirmPasswordField(),
+            // OTP Field
+            _buildOtpField(),
 
             SizedBox(height: 24.h),
 
-            // Reset Button
-            _buildResetButton(),
+            // Validate Button
+            _buildValidateButton(),
+
+            SizedBox(height: 20.h),
+
+            // Resend OTP
+            _buildResendSection(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildOtpField() {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.grey50,
@@ -280,116 +358,50 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
         ),
       ),
       child: TextFormField(
-        controller: _passwordController,
-        obscureText: !_isPasswordVisible,
+        controller: _otpController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(6),
+        ],
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return 'Password is required';
+            return 'Verification code is required';
           }
-          if (value.length < 6) {
-            return 'Password must be at least 6 characters long';
+          if (value.length != 6) {
+            return 'Verification code must be 6 digits';
           }
           return null;
         },
-        style: AppFonts.robotoRegular16.copyWith(
+        style: AppFonts.robotoBold20.copyWith(
           color: AppColors.textPrimary,
-          fontSize: 16.sp,
+          fontSize: 24.sp,
+          letterSpacing: 8.w,
         ),
+        textAlign: TextAlign.center,
         decoration: InputDecoration(
-          hintText: 'Enter new password',
-          hintStyle: AppFonts.robotoRegular14.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14.sp,
+          hintText: '000000',
+          hintStyle: AppFonts.robotoBold20.copyWith(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            fontSize: 24.sp,
+            letterSpacing: 8.w,
           ),
           prefixIcon: Icon(
-            Icons.lock_outline,
+            Icons.security,
             color: AppColors.primary,
             size: 20.w,
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-              color: AppColors.textSecondary,
-              size: 20.w,
-            ),
-            onPressed: () {
-              setState(() {
-                _isPasswordVisible = !_isPasswordVisible;
-              });
-            },
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: 16.w,
-            vertical: 16.h,
+            vertical: 20.h,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildConfirmPasswordField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grey50,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.grey200,
-          width: 1,
-        ),
-      ),
-      child: TextFormField(
-        controller: _confirmPasswordController,
-        obscureText: !_isConfirmPasswordVisible,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please confirm your password';
-          }
-          if (value != _passwordController.text) {
-            return 'Passwords do not match';
-          }
-          return null;
-        },
-        style: AppFonts.robotoRegular16.copyWith(
-          color: AppColors.textPrimary,
-          fontSize: 16.sp,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Confirm new password',
-          hintStyle: AppFonts.robotoRegular14.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14.sp,
-          ),
-          prefixIcon: Icon(
-            Icons.lock_reset,
-            color: AppColors.primary,
-            size: 20.w,
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _isConfirmPasswordVisible
-                  ? Icons.visibility
-                  : Icons.visibility_off,
-              color: AppColors.textSecondary,
-              size: 20.w,
-            ),
-            onPressed: () {
-              setState(() {
-                _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-              });
-            },
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 16.h,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResetButton() {
+  Widget _buildValidateButton() {
     return Container(
       width: double.infinity,
       height: 50.h,
@@ -405,7 +417,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
         ],
       ),
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _resetPassword,
+        onPressed: _isLoading ? null : _validateOtp,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -423,13 +435,57 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 ),
               )
             : Text(
-                'Reset Password',
+                'Validate OTP',
                 style: AppFonts.robotoBold16.copyWith(
                   color: Colors.white,
                   fontSize: 18.sp,
                 ),
               ),
       ),
+    );
+  }
+
+  Widget _buildResendSection() {
+    return Column(
+      children: [
+        Text(
+          "Didn't receive the code?",
+          style: AppFonts.robotoRegular14.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14.sp,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        GestureDetector(
+          onTap: _resendCountdown > 0 ? null : _resendOtp,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color:
+                  _resendCountdown > 0 ? AppColors.grey200 : AppColors.primary,
+              borderRadius: BorderRadius.circular(15.r),
+            ),
+            child: _isResending
+                ? SizedBox(
+                    width: 16.w,
+                    height: 16.h,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    _resendCountdown > 0
+                        ? 'Resend in ${_resendCountdown}s'
+                        : 'Resend Code',
+                    style: AppFonts.robotoBold12.copyWith(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+          ),
+        ),
+      ],
     );
   }
 }
