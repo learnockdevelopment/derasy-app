@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/assets.dart';
@@ -42,19 +41,18 @@ class _SplashPageState extends State<SplashPage>
   void _navigateToIntro() {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        // Check if this is the first time opening the app
-        final GetStorage storage = GetStorage();
-        final bool isFirstTime = storage.read('is_first_time') ?? true;
+        // Check if user is logged in
+        final bool isLoggedIn = UserStorageService.isLoggedIn();
+        print('🔍 Login check: $isLoggedIn');
 
-        if (isFirstTime) {
-          // First time - show intro
-          storage.write('is_first_time', false);
-          Get.offNamed<void>(AppRoutes.intro);
+        if (isLoggedIn) {
+          // User is logged in - go to home
+          print('📱 User logged in - navigating to home');
+          Get.offNamed<void>(AppRoutes.home);
         } else {
-          // Not first time - check for saved users
-          final savedUsers = UserStorageService.getSavedUsers();
-          // Always go to login (account switching page doesn't exist)
-          Get.offNamed<void>(AppRoutes.login);
+          // User not logged in - always show intro
+          print('📱 User not logged in - navigating to intro');
+          Get.offNamed<void>(AppRoutes.intro);
         }
       }
     });
@@ -70,36 +68,46 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Image.asset(
-                AssetsManager.logo,
-                width: 200.w,
-                height: 200.h,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 120.w,
-                    height: 120.h,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
-                    ),
-                    child: const Icon(
-                      Icons.apps,
-                      size: 60,
-                      color: AppColors.white,
-                    ),
-                  );
-                },
-              ),
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              AssetsManager.logo,
+              width: 80.w,
+              height: 80.h,
+              fit: BoxFit.contain,
+              colorBlendMode: BlendMode.multiply,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 60.w,
+                  height: 60.h,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary,
+                  ),
+                  child: const Icon(
+                    Icons.apps,
+                    size: 30,
+                    color: AppColors.white,
+                  ),
+                );
+              },
             ),
           ),
-          // Removed language toggle on splash per requirements
-        ],
+        ),
       ),
     );
   }

@@ -62,5 +62,7 @@
   "email_placeholder": "أدخل بريدك الإلكتروني",
   "password_min_length": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
   "code_sent_successfully": "تم إرسال الرمز بنجاح",
-  "password_reset_successful": "تم إعادة تعيين كلمة المرور بنجاح"
+  "password_reset_successful": "تم إعادة تعيين كلمة المرور بنجاح",
+  "login_to_your_account": "تسجيل الدخول إلى حسابك",
+  "terms_and_conditions": "الشروط والأحكام"
 }

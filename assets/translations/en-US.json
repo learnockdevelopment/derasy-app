@@ -62,5 +62,7 @@
   "email_placeholder": "Enter your email",
   "password_min_length": "Password must be at least 6 characters",
   "code_sent_successfully": "Code sent successfully",
-  "password_reset_successful": "Password reset successful"
+  "password_reset_successful": "Password reset successful",
+  "login_to_your_account": "Login to Your Account",
+  "terms_and_conditions": "Terms and Conditions"
 }

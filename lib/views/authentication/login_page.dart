@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -32,17 +32,62 @@ class _LoginPageState extends State<LoginPage> {
     orElse: () => Countries.countries.first,
   );
 
+  late AnimationController _animationController;
+  late AnimationController _floatingAnimationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _floatingAnimation;
+
   @override
   void initState() {
     super.initState();
     _identifierController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _floatingAnimationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<double>(
+      begin: 50.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _floatingAnimation = Tween<double>(
+      begin: -10.0,
+      end: 10.0,
+    ).animate(CurvedAnimation(
+      parent: _floatingAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward();
+    _floatingAnimationController.repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _identifierController.dispose();
     _passwordController.dispose();
+    _animationController.dispose();
+    _floatingAnimationController.dispose();
     super.dispose();
   }
 
@@ -124,277 +169,88 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Colors.white,
-              Color(0xFFF8F9FF),
+              AppColors.lightBlue50,
+              AppColors.blue100,
+              AppColors.purple100,
+              AppColors.pink100,
             ],
+            stops: const [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(24.w),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20.h),
+            child: Stack(
+              children: [
+                // Animated background shapes
+                _buildAnimatedBackground(),
 
-                  // Header with logo and company name
-                  Center(
+                // Main content
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: Form(
+                    key: _formKey,
                     child: Column(
                       children: [
-                        Container(
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Image.asset(
-                            AssetsManager.logo,
-                            width: 60.w,
-                            height: 60.h,
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          'app_name'.tr,
-                          style: AppFonts.robotoBold24.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 28.sp,
-                          ),
-                        ),
-                        Text(
-                          'app_tagline'.tr,
-                          style: AppFonts.robotoRegular16.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        SizedBox(height: 40.h),
 
-                  SizedBox(height: 20.h),
-
-                  // Login title
-                  Text(
-                    'login_to_your_account'.tr,
-                    style: AppFonts.robotoBold24.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-
-                  SizedBox(height: 8.h),
-
-                  // Welcome message
-                  Text(
-                    'welcome_back'.tr,
-                    style: AppFonts.robotoBold24.copyWith(
-                      color: AppColors.primary,
-                      fontSize: 28.sp,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'sign_in_to_continue'.tr,
-                    style: AppFonts.robotoRegular16.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 16.sp,
-                    ),
-                  ),
-
-                  SizedBox(height: 32.h),
-
-                  // Login Method Selector
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.grey100,
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isEmailSelected = true;
-                                _identifierController.clear();
-                              });
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              decoration: BoxDecoration(
-                                color: _isEmailSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(16.r),
+                        // Animated header
+                        AnimatedBuilder(
+                          animation: _animationController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _slideAnimation.value),
+                              child: Opacity(
+                                opacity: _fadeAnimation.value,
+                                child: _buildHeader(),
                               ),
-                              child: Text(
-                                'email'.tr,
-                                textAlign: TextAlign.center,
-                                style: AppFonts.robotoMedium14.copyWith(
-                                  color: _isEmailSelected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isEmailSelected = false;
-                                _identifierController.clear();
-                              });
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              decoration: BoxDecoration(
-                                color: !_isEmailSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(16.r),
-                              ),
-                              child: Text(
-                                'phone'.tr,
-                                textAlign: TextAlign.center,
-                                style: AppFonts.robotoMedium14.copyWith(
-                                  color: !_isEmailSelected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Identifier Field
-                  _isEmailSelected
-                      ? _buildTextField(
-                          controller: _identifierController,
-                          label: 'email'.tr,
-                          hint: 'enter_your_email'.tr,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'email_required'.tr;
-                            }
-                            if (!_isValidEmail(value)) {
-                              return 'email_invalid'.tr;
-                            }
-                            return null;
+                            );
                           },
-                        )
-                      : _buildPhoneField(),
-
-                  SizedBox(height: 24.h),
-
-                  // Password Field
-                  _buildPasswordField(),
-
-                  SizedBox(height: 32.h),
-
-                  // Login Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48.h,
-                    child: ElevatedButton(
-                      onPressed:
-                          (_isLoading || !_isIdentifierValid) ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
                         ),
-                      ),
-                      child: _isLoading
-                          ? SizedBox(
-                              width: 24.w,
-                              height: 24.h,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+
+                        SizedBox(height: 40.h),
+
+                        // Login card
+                        AnimatedBuilder(
+                          animation: _animationController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _slideAnimation.value * 0.5),
+                              child: Opacity(
+                                opacity: _fadeAnimation.value,
+                                child: _buildLoginCard(),
                               ),
-                            )
-                          : Text(
-                              'sign_in'.tr,
-                              style: AppFonts.robotoBold16,
-                            ),
-                    ),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // Forgot Password Link
-                  Center(
-                    child: GestureDetector(
-                      onTap: () => Get.toNamed<void>(AppRoutes.forgotPassword),
-                      child: Text(
-                        'forgot_password'.tr,
-                        style: AppFonts.robotoBold14.copyWith(
-                          color: AppColors.primary,
+                            );
+                          },
                         ),
-                      ),
-                    ),
-                  ),
 
-                  SizedBox(height: 16.h),
+                        SizedBox(height: 30.h),
 
-                  // Terms and Conditions
-                  Center(
-                    child: Text(
-                      'terms_and_conditions'.tr,
-                      style: AppFonts.robotoRegular12.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Register Link
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'dont_have_account'.tr,
-                          style: AppFonts.robotoRegular14.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
+                        // Additional options
+                        AnimatedBuilder(
+                          animation: _animationController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _slideAnimation.value * 0.3),
+                              child: Opacity(
+                                opacity: _fadeAnimation.value,
+                                child: _buildAdditionalOptions(),
+                              ),
+                            );
+                          },
                         ),
-                        GestureDetector(
-                          onTap: () => Get.toNamed<void>(AppRoutes.register),
-                          child: Text(
-                            'sign_up'.tr,
-                            style: AppFonts.robotoBold14.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
+
+                        SizedBox(height: 40.h),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -402,11 +258,395 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField({
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _floatingAnimation,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            // Floating circles
+            Positioned(
+              top: 100.h + _floatingAnimation.value,
+              right: 20.w,
+              child: Container(
+                width: 80.w,
+                height: 80.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.orange300.withOpacity(0.3),
+                      AppColors.orange500.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 200.h - _floatingAnimation.value,
+              left: 10.w,
+              child: Container(
+                width: 60.w,
+                height: 60.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.green300.withOpacity(0.3),
+                      AppColors.green500.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 300.h + _floatingAnimation.value * 0.5,
+              right: 30.w,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.purple300.withOpacity(0.3),
+                      AppColors.purple500.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 500.h - _floatingAnimation.value * 0.7,
+              left: 20.w,
+              child: Container(
+                width: 70.w,
+                height: 70.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.blue300.withOpacity(0.3),
+                      AppColors.blue500.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        // Floating logo with animation
+        AnimatedBuilder(
+          animation: _floatingAnimation,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _floatingAnimation.value * 0.5),
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.white,
+                      AppColors.blue50,
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  AssetsManager.logo,
+                  width: 50.w,
+                  height: 50.h,
+                  fit: BoxFit.contain,
+                  colorBlendMode: BlendMode.multiply,
+                ),
+              ),
+            );
+          },
+        ),
+
+        SizedBox(height: 24.h),
+
+        // App name with gradient text
+        ShaderMask(
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [
+              AppColors.primary,
+              AppColors.secondary,
+              AppColors.purple500,
+            ],
+          ).createShader(bounds),
+          child: Text(
+            'app_name'.tr,
+            style: AppFonts.robotoBold32.copyWith(
+              color: Colors.white,
+              fontSize: 36.sp,
+            ),
+          ),
+        ),
+
+        SizedBox(height: 8.h),
+
+        // Tagline
+        Text(
+          'app_tagline'.tr,
+          style: AppFonts.robotoMedium18.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 18.sp,
+          ),
+        ),
+
+        SizedBox(height: 16.h),
+
+        // Welcome message
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: AppColors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(25.r),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Text(
+            'welcome_back'.tr,
+            style: AppFonts.robotoBold20.copyWith(
+              color: AppColors.primary,
+              fontSize: 22.sp,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginCard() {
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(30.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Login title
+          Center(
+            child: Text(
+              'login_to_your_account'.tr,
+              style: AppFonts.robotoBold24.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 26.sp,
+              ),
+            ),
+          ),
+
+          SizedBox(height: 8.h),
+
+          Center(
+            child: Text(
+              'sign_in_to_continue'.tr,
+              style: AppFonts.robotoRegular16.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 16.sp,
+              ),
+            ),
+          ),
+
+          SizedBox(height: 32.h),
+
+          // Login Method Selector
+          _buildLoginMethodSelector(),
+
+          SizedBox(height: 24.h),
+
+          // Identifier Field
+          _isEmailSelected
+              ? _buildModernTextField(
+                  controller: _identifierController,
+                  label: 'email'.tr,
+                  hint: 'enter_your_email'.tr,
+                  keyboardType: TextInputType.emailAddress,
+                  icon: Icons.email_outlined,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'email_required'.tr;
+                    }
+                    if (!_isValidEmail(value)) {
+                      return 'email_invalid'.tr;
+                    }
+                    return null;
+                  },
+                )
+              : _buildPhoneField(),
+
+          SizedBox(height: 20.h),
+
+          // Password Field
+          _buildModernPasswordField(),
+
+          SizedBox(height: 32.h),
+
+          // Login Button
+          _buildModernLoginButton(),
+
+          SizedBox(height: 20.h),
+
+          // Forgot Password Link
+          Center(
+            child: GestureDetector(
+              onTap: () => Get.toNamed<void>(AppRoutes.forgotPassword),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: AppColors.blue50,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  'forgot_password'.tr,
+                  style: AppFonts.robotoMedium14.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginMethodSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.grey50,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: AppColors.grey200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isEmailSelected = true;
+                  _identifierController.clear();
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                decoration: BoxDecoration(
+                  color:
+                      _isEmailSelected ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.email_outlined,
+                      color: _isEmailSelected
+                          ? Colors.white
+                          : AppColors.textSecondary,
+                      size: 18.w,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'email'.tr,
+                      style: AppFonts.robotoMedium14.copyWith(
+                        color: _isEmailSelected
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isEmailSelected = false;
+                  _identifierController.clear();
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: !_isEmailSelected
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.phone_outlined,
+                      color: !_isEmailSelected
+                          ? Colors.white
+                          : AppColors.textSecondary,
+                      size: 18.w,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'phone'.tr,
+                      style: AppFonts.robotoMedium14.copyWith(
+                        color: !_isEmailSelected
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernTextField({
     required TextEditingController controller,
     required String label,
     required String hint,
     TextInputType? keyboardType,
+    IconData? icon,
     String? Function(String?)? validator,
   }) {
     return Column(
@@ -414,50 +654,47 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Text(
           label,
-          style: AppFonts.robotoMedium14.copyWith(
+          style: AppFonts.robotoMedium16.copyWith(
             color: AppColors.textPrimary,
+            fontSize: 16.sp,
           ),
         ),
         SizedBox(height: 8.h),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          validator: validator,
-          style: AppFonts.robotoRegular16.copyWith(
-            color: AppColors.textPrimary,
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.grey50,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: AppColors.grey200,
+              width: 1,
+            ),
           ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppFonts.robotoRegular14.copyWith(
-              color: AppColors.textSecondary,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            validator: validator,
+            style: AppFonts.robotoRegular16.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 16.sp,
             ),
-            filled: true,
-            fillColor: AppColors.grey100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 2,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: AppFonts.robotoRegular14.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 14.sp,
               ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: AppColors.error,
-                width: 2,
+              prefixIcon: icon != null
+                  ? Icon(
+                      icon,
+                      color: AppColors.primary,
+                      size: 20.w,
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 16.h,
               ),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 16.h,
             ),
           ),
         ),
@@ -471,8 +708,9 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Text(
           'phone_number'.tr,
-          style: AppFonts.robotoMedium14.copyWith(
+          style: AppFonts.robotoMedium16.copyWith(
             color: AppColors.textPrimary,
+            fontSize: 16.sp,
           ),
         ),
         SizedBox(height: 8.h),
@@ -482,40 +720,41 @@ class _LoginPageState extends State<LoginPage> {
             GestureDetector(
               onTap: () => _showCountrySelector(),
               child: Container(
-                width: 90.w,
-                height: 48.h,
+                width: 100.w,
+                height: 56.h,
                 decoration: BoxDecoration(
-                  color: AppColors.grey100,
-                  borderRadius: BorderRadius.circular(24.r),
+                  color: AppColors.grey50,
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: AppColors.grey200,
                     width: 1,
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         _selectedCountry.flag,
-                        style: TextStyle(fontSize: 16.sp),
+                        style: TextStyle(fontSize: 18.sp),
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 6.w),
                       Flexible(
                         child: Text(
                           _selectedCountry.dialCode,
-                          style: AppFonts.robotoMedium12.copyWith(
+                          style: AppFonts.robotoMedium14.copyWith(
                             color: AppColors.textPrimary,
+                            fontSize: 14.sp,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      SizedBox(width: 2.w),
+                      SizedBox(width: 4.w),
                       Icon(
                         Icons.keyboard_arrow_down,
                         color: AppColors.textSecondary,
-                        size: 14.w,
+                        size: 16.w,
                       ),
                     ],
                   ),
@@ -528,10 +767,10 @@ class _LoginPageState extends State<LoginPage> {
             // Phone Number Field
             Expanded(
               child: Container(
-                height: 48.h,
+                height: 56.h,
                 decoration: BoxDecoration(
-                  color: AppColors.grey100,
-                  borderRadius: BorderRadius.circular(24.r),
+                  color: AppColors.grey50,
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: AppColors.grey200,
                     width: 1,
@@ -554,11 +793,18 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   style: AppFonts.robotoRegular16.copyWith(
                     color: AppColors.textPrimary,
+                    fontSize: 16.sp,
                   ),
                   decoration: InputDecoration(
                     hintText: 'phone_placeholder'.tr,
                     hintStyle: AppFonts.robotoRegular14.copyWith(
                       color: AppColors.textSecondary,
+                      fontSize: 14.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.phone_outlined,
+                      color: AppColors.primary,
+                      size: 20.w,
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
@@ -575,22 +821,22 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildModernPasswordField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'password'.tr,
-          style: AppFonts.robotoMedium14.copyWith(
+          style: AppFonts.robotoMedium16.copyWith(
             color: AppColors.textPrimary,
+            fontSize: 16.sp,
           ),
         ),
         SizedBox(height: 8.h),
         Container(
-          height: 48.h,
           decoration: BoxDecoration(
-            color: AppColors.grey100,
-            borderRadius: BorderRadius.circular(12.r),
+            color: AppColors.grey50,
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: AppColors.grey200,
               width: 1,
@@ -610,11 +856,18 @@ class _LoginPageState extends State<LoginPage> {
             },
             style: AppFonts.robotoRegular16.copyWith(
               color: AppColors.textPrimary,
+              fontSize: 16.sp,
             ),
             decoration: InputDecoration(
               hintText: 'enter_your_password'.tr,
               hintStyle: AppFonts.robotoRegular14.copyWith(
                 color: AppColors.textSecondary,
+                fontSize: 14.sp,
+              ),
+              prefixIcon: Icon(
+                Icons.lock_outline,
+                color: AppColors.primary,
+                size: 20.w,
               ),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(
@@ -634,6 +887,145 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernLoginButton() {
+    return Container(
+      width: double.infinity,
+      height: 56.h,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.secondary,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: (_isLoading || !_isIdentifierValid) ? null : _login,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+        ),
+        child: _isLoading
+            ? SizedBox(
+                width: 24.w,
+                height: 24.h,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'sign_in'.tr,
+                    style: AppFonts.robotoBold16.copyWith(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 20.w,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildAdditionalOptions() {
+    return Column(
+      children: [
+        // Terms and Conditions
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: AppColors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Text(
+            'terms_and_conditions'.tr,
+            style: AppFonts.robotoRegular12.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 12.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+
+        SizedBox(height: 20.h),
+
+        // Register Link
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: AppColors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'dont_have_account'.tr,
+                style: AppFonts.robotoRegular14.copyWith(
+                  color: AppColors.textPrimary,
+                  fontSize: 14.sp,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Get.toNamed<void>(AppRoutes.register),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    'sign_up'.tr,
+                    style: AppFonts.robotoBold14.copyWith(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

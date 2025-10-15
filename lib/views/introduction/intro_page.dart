@@ -153,25 +153,53 @@ class IntroWidget extends StatefulWidget {
 class _IntroWidgetState extends State<IntroWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  bool _hasTriggeredNext = false;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1200),
     );
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {});
-        widget.onNext();
-        _controller.reset();
+    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start animation after a short delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!_isDisposed && mounted) {
+        _controller.forward();
       }
     });
   }
 
   @override
+  void didUpdateWidget(IntroWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset animation state when widget updates (page changes)
+    if (oldWidget.index != widget.index) {
+      _hasTriggeredNext = false;
+      _controller.reset();
+      // Restart animation for new page
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!_isDisposed && mounted) {
+          _controller.forward();
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _isDisposed = true;
     _controller.dispose();
     super.dispose();
   }
@@ -181,6 +209,7 @@ class _IntroWidgetState extends State<IntroWidget>
     final data = widget.data;
     final index = widget.index;
     final isLastPage = widget.isLastPage;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -196,25 +225,95 @@ class _IntroWidgetState extends State<IntroWidget>
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              data.image,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        data.color.withOpacity(0.8),
-                        data.color.withOpacity(0.6),
-                      ],
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Image.asset(
+                data.image,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                gaplessPlayback: true,
+                isAntiAlias: true,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  print('❌ Image loading error for ${data.image}: $error');
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          data.color.withOpacity(0.8),
+                          data.color.withOpacity(0.6),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.image_not_supported,
+                            size: 60.w,
+                            color: AppColors.white.withOpacity(0.7),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Image not available',
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: AppColors.white.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          data.color.withOpacity(0.3),
+                          data.color.withOpacity(0.1),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 40.w,
+                            height: 40.h,
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Loading...',
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: AppColors.white.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           // Gradient overlay for better text readability

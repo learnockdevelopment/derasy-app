@@ -29,8 +29,8 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/png/maskable-icon.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/png/logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/png/white_logo.png"
 
 flutter:
   uses-material-design: true
