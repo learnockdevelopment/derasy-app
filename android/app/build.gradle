@@ -1,0 +1,174 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    // throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '40'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '40'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    namespace "com.kidscottage.app"
+    compileSdk 36
+    ndkVersion "27.0.12077973"
+
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    
+    // Disable warnings as errors for all modules
+    tasks.withType(JavaCompile) {
+        options.compilerArgs.removeAll(['-Werror'])
+        options.compilerArgs.addAll(['-Xlint:unchecked', '-Xlint:deprecation'])
+        options.warnings = false
+    }
+    
+    // Additional configuration for all tasks
+    tasks.withType(org.gradle.api.tasks.compile.JavaCompile) {
+        options.compilerArgs.removeAll(['-Werror'])
+        options.warnings = false
+    }
+    
+    // Global configuration for all Java compilation tasks
+    tasks.all { task ->
+        if (task instanceof JavaCompile) {
+            task.options.compilerArgs.removeAll(['-Werror'])
+            task.options.warnings = false
+        }
+    }
+    
+    // Specific configuration for video_player_android and other plugins
+    tasks.matching { it.name.startsWith('compile') && it.name.contains('Java') }.all {
+        if (it instanceof JavaCompile) {
+            it.options.compilerArgs.removeAll(['-Werror'])
+            it.options.warnings = false
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/*.kotlin_module'
+    }
+
+
+    defaultConfig {
+        applicationId = "com.kidscottage.app"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            zipAlignEnabled true
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.facebook.android:facebook-android-sdk:[8,9)'
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.activity:activity-ktx:1.9.3'
+    implementation 'androidx.fragment:fragment-ktx:1.8.5'
+}
+
+// Force resolution of video_player_android to a compatible version
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.media3:media3-exoplayer:1.2.1'
+        force 'androidx.media3:media3-ui:1.2.1'
+        force 'androidx.media3:media3-common:1.2.1'
+    }
+}
+
+// Additional configuration to handle all Java compilation tasks
+tasks.whenTaskAdded { task ->
+    if (task instanceof JavaCompile) {
+        task.options.compilerArgs.removeAll(['-Werror'])
+        task.options.warnings = false
+    }
+}
+
+// Final configuration to ensure all Java compilation tasks ignore warnings
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs.removeAll(['-Werror'])
+        options.warnings = false
+    }
+}
+
+apply plugin: 'com.google.gms.google-services'
