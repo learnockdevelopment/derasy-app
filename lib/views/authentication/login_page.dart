@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'dart:ui';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
@@ -15,23 +17,41 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _emailController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
+    
+    // Initialize animation
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    _animationController.forward();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -259,410 +279,319 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Enhanced Header with gradient background
-              Container(
-                width: double.infinity,
-                height: 320.h,
+      body: Stack(
+        children: [
+          // Blurred background image - fills entire page
+          SizedBox.expand(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryLight,
-                      AppColors.primary.withOpacity(0.9),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30.r),
-                    bottomRight: Radius.circular(30.r),
+                  image: DecorationImage(
+                    image: AssetImage(AssetsManager.login),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                child: Stack(
+              ),
+            ),
+          ),
+          // Dark overlay for better contrast
+          Container(
+            color: Colors.black.withOpacity(0.3),
+          ),
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
                   children: [
-                    // Background decorative elements
-                    Positioned(
-                      top: 40.h,
-                      right: 30.w,
-                      child: Container(
-                        width: 80.w,
-                        height: 80.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(40.r),
+                    SizedBox(height: 40.h),
+                    
+                    // Compact Logo and Title
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Icon(
+                            Icons.school,
+                            color: AppColors.primary,
+                            size: 28.sp,
+                          ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 60.h,
-                      left: 30.w,
-                      child: Container(
-                        width: 50.w,
-                        height: 50.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(25.r),
-                        ),
-                      ),
-                    ),
-                    // Content
-                    Padding(
-                      padding: EdgeInsets.all(24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 20.h),
-                          // Logo and title
-                          Row(
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: EdgeInsets.all(12.w),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(16.r),
-                                ),
-                                child: Icon(
-                                  Icons.school,
-                                  color: AppColors.white,
-                                  size: 32.sp,
+                              Text(
+                                'welcome_back'.tr,
+                                style: AppFonts.cairoBold20.copyWith(
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'welcome_back'.tr,
-                                      style: AppFonts.cairoBold28.copyWith(
-                                        color: AppColors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      'sign_in_to_continue'.tr,
-                                      style: AppFonts.cairoRegular16.copyWith(
-                                        color: AppColors.white.withOpacity(0.9),
-                                      ),
-                                    ),
-                                  ],
+                              SizedBox(height: 2.h),
+                              Text(
+                                'sign_in_to_continue'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 30.h),
-                          // Security badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20.r),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 50.h),
+
+                    // Compact Form
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Container(
+                        padding: EdgeInsets.all(24.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.grey200,
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.security,
-                                  color: AppColors.white,
-                                  size: 16.sp,
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Compact Form Title
+                              Text(
+                                'login_to_your_account'.tr,
+                                style: AppFonts.cairoBold18.copyWith(
+                                  color: AppColors.textPrimary,
                                 ),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'Secure Login',
-                                  style: AppFonts.cairoMedium14.copyWith(
-                                    color: AppColors.white,
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 5.h),
+                              Text(
+                                'enter_credentials_to_access'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 24.h),
+
+                              // Email Field
+                              TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                style: AppFonts.cairoRegular14,
+                                decoration: InputDecoration(
+                                  labelText: 'email'.tr,
+                                  labelStyle: AppFonts.cairoRegular14,
+                                  hintText: 'enter_your_email'.tr,
+                                  hintStyle: AppFonts.cairoRegular12.copyWith(
+                                    color: AppColors.grey400,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    color: AppColors.primary,
+                                    size: 20.sp,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderSide: BorderSide(color: AppColors.grey300),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderSide: BorderSide(
+                                      color: AppColors.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 16.h,
                                   ),
                                 ),
-                              ],
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'email_required'.tr;
+                                  }
+                                  if (!_isValidEmail(value)) {
+                                    return 'enter_valid_email'.tr;
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 16.h),
+
+                              // Password Field
+                              TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            style: AppFonts.cairoRegular14,
+                            decoration: InputDecoration(
+                              labelText: 'password'.tr,
+                              labelStyle: AppFonts.cairoRegular14,
+                              hintText: 'password_placeholder'.tr,
+                              hintStyle: AppFonts.cairoRegular12.copyWith(
+                                color: AppColors.grey400,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_outlined,
+                                color: AppColors.primary,
+                                size: 20.sp,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide:
+                                    BorderSide(color: AppColors.grey300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: AppColors.grey50,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'password_required'.tr;
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 8.h),
+
+                          // Forgot Password Link
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                _showForgotPasswordDialog();
+                              },
+                              child: Text(
+                                'forgot_password'.tr,
+                                style: AppFonts.cairoBold12.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20.h),
+
+                          // Login Button
+                          SizedBox(
+                            height: 50.h,
+                            child: ElevatedButton(
+                              onPressed: _isFormValid() && !_isLoading
+                                  ? () {
+                                      _login();
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                disabledBackgroundColor: AppColors.grey300,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: _isLoading
+                                  ? SizedBox(
+                                      height: 20.h,
+                                      width: 20.w,
+                                      child: const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.login,
+                                          color: Colors.white,
+                                          size: 18.sp,
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Text(
+                                          'sign_in'.tr,
+                                          style: AppFonts.cairoBold16.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                          SizedBox(height: 20.h),
+
+                          // Sign Up Link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'dont_have_account'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Get.toNamed(AppRoutes.register);
+                                },
+                                child: Text(
+                                  'sign_up'.tr,
+                                  style: AppFonts.cairoBold12.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // Login Form with enhanced design
-              Container(
-                margin: EdgeInsets.all(20.w),
-                padding: EdgeInsets.all(28.w),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.grey200,
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Form Title
-                      Text(
-                        'Login to Your Account',
-                        style: AppFonts.cairoBold20.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Enter your credentials to access your account',
-                        style: AppFonts.cairoRegular14.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 30.h),
-
-                      // Email Field with enhanced design
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'email'.tr,
-                          hintText: 'enter_your_email'.tr,
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.email_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'email_required'.tr;
-                          }
-                          if (!_isValidEmail(value)) {
-                            return 'enter_valid_email'.tr;
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Password Field with enhanced design
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'password'.tr,
-                          hintText: 'password_placeholder'.tr,
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.lock_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'password_required'.tr;
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 12.h),
-
-                      // Forgot Password Link with enhanced design
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            _showForgotPasswordDialog();
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 12.w, vertical: 8.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                          child: Text(
-                            'forgot_password'.tr,
-                            style: AppFonts.cairoBold14.copyWith(
-                              color: AppColors.primary,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Login Button with enhanced design
-                      Container(
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _isFormValid() && !_isLoading
-                              ? () {
-                                  print(
-                                      '🔐 [LOGIN] Button onPressed triggered');
-                                  _login();
-                                }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.w,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.login,
-                                      color: Colors.white,
-                                      size: 20.sp,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      'sign_in'.tr,
-                                      style: AppFonts.cairoBold16.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Sign Up Link with enhanced design
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.grey50,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'dont_have_account'.tr,
-                              style: AppFonts.cairoRegular14.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                            SizedBox(width: 4.w),
-                            TextButton(
-                              onPressed: () {
-                                Get.toNamed(AppRoutes.register);
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 4.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.r),
-                                ),
-                              ),
-                              child: Text(
-                                'sign_up'.tr,
-                                style: AppFonts.cairoBold14.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ),
+                    SizedBox(height: 40.h),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

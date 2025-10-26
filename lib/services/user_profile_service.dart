@@ -19,7 +19,7 @@ class UserProfileService {
         throw Exception('No authentication token found');
       }
 
-      final url = Uri.parse('$_baseUrl/api/me');
+      final url = Uri.parse('$_baseUrl/me');
       final headers = ApiConstants.getAuthHeaders(token);
 
       print('👤 [USER PROFILE API] Getting user profile...');
@@ -79,7 +79,7 @@ class UserProfileService {
         throw Exception('No authentication token found');
       }
 
-      final url = Uri.parse('$_baseUrl/api/me');
+      final url = Uri.parse('$_baseUrl/me');
       final headers = ApiConstants.getAuthHeaders(token);
       headers['Content-Type'] = 'application/json';
 

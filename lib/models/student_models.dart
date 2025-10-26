@@ -60,13 +60,30 @@ class Student {
       avatar: json['avatar'],
       profileImage: json['profileImage'],
       image: json['image'],
-      studentStatus: StudentStatus.fromJson(json['studentStatus'] ?? {}),
-      studentClass: StudentClass.fromJson(json['class'] ?? {}),
-      parent: StudentParent.fromJson(json['parent'] ?? {}),
-      schoolId: SchoolInfo.fromJson(json['schoolId'] ?? {}),
-      stage: StageInfo.fromJson(json['stage'] ?? {}),
-      grade: GradeInfo.fromJson(json['grade'] ?? {}),
-      section: SectionInfo.fromJson(json['section'] ?? {}),
+      studentStatus: json['studentStatus'] != null && json['studentStatus'] is Map
+          ? StudentStatus.fromJson(json['studentStatus'])
+          : StudentStatus.fromJson({}),
+      studentClass: json['class'] != null && json['class'] is Map
+          ? StudentClass.fromJson(json['class'])
+          : StudentClass.fromJson({}),
+      parent: json['parent'] != null && json['parent'] is Map
+          ? StudentParent.fromJson(json['parent'])
+          : StudentParent.fromJson({}),
+      schoolId: json['schoolId'] != null && json['schoolId'] is Map
+          ? SchoolInfo.fromJson(json['schoolId'])
+          : SchoolInfo.fromJson({}),
+      stage: json['stage'] != null && json['stage'] is Map
+          ? StageInfo.fromJson(json['stage'])
+          : StageInfo.fromJson({'name': json['stage']?.toString() ?? 'N/A'}),
+      grade: json['grade'] != null && json['grade'] is Map
+          ? GradeInfo.fromJson(json['grade'])
+          : GradeInfo.fromJson({
+              '_id': json['grade']?.toString() ?? '',
+              'name': 'N/A'
+            }),
+      section: json['section'] != null && json['section'] is Map
+          ? SectionInfo.fromJson(json['section'])
+          : SectionInfo.fromJson({'name': json['section']?.toString() ?? 'N/A'}),
       moodleUser: json['moodleUser'] != null
           ? MoodleUser.fromJson(json['moodleUser'])
           : null,

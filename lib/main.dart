@@ -9,6 +9,7 @@ import 'core/constants/app_colors.dart';
 import 'core/constants/app_fonts.dart';
 import 'core/translations/app_translations.dart';
 import 'core/controllers/language_controller.dart';
+import 'core/controllers/app_config_controller.dart';
 
 void main() async {
   try {
@@ -23,6 +24,12 @@ void main() async {
 
     Get.put(LanguageController());
     print('✅ Language controller initialized');
+
+    // Initialize and fetch app configuration
+    Get.put(AppConfigController());
+    print('✅ App config controller initialized');
+    await AppConfigController.to.loadAppConfig();
+    print('✅ App configuration loaded');
 
     runApp(const DerasyApp());
     print('✅ App started');

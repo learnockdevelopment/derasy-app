@@ -44,6 +44,9 @@ class ApiConstants {
 
   // Attendance Endpoints
   static const String getAllAttendanceEndpoint = '/attendance';
+
+  // Public Endpoints (No Auth Required)
+  static const String appConfigEndpoint = '/public/app-config';
   static const String createAttendanceEndpoint = '/attendance/create';
   static const String getAttendanceByChildEndpoint =
       '/attendance/by-child/[childId]';

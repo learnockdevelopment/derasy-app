@@ -320,7 +320,7 @@ class _EditStudentPageState extends State<EditStudentPage> {
         } else {
           print('🎓 [EDIT] Student data is null, going back to previous page');
           // If student data is not available, go back to students list
-          Get.back();
+          Get.back(result: true);
           Get.snackbar(
             'Success',
             'Student updated successfully',

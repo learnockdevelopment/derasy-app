@@ -255,6 +255,8 @@ class AppFonts {
       TextStyle(fontFamily: cairo, fontWeight: bold, fontSize: size18);
   static TextStyle get cairoBold20 =>
       TextStyle(fontFamily: cairo, fontWeight: bold, fontSize: size20);
+  static TextStyle get cairoBold22 =>
+      TextStyle(fontFamily: cairo, fontWeight: bold, fontSize: size22);
   static TextStyle get cairoBold24 =>
       TextStyle(fontFamily: cairo, fontWeight: bold, fontSize: size24);
   static TextStyle get cairoBold28 =>

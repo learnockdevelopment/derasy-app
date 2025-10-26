@@ -34,14 +34,14 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
   void _printStudentData() {
     print('🎓 [STUDENT DETAILS] Student ID: ${widget.student.id}');
     print('🎓 [STUDENT DETAILS] Full Name: ${widget.student.fullName}');
-    print('🎓 [STUDENT DETAILS] Grade: ${widget.student.grade.name}');
-    print('🎓 [STUDENT DETAILS] Section: ${widget.student.section.name}');
+    print('🎓 [STUDENT DETAILS] Grade: ${widget.student.grade.name.isEmpty ? 'N/A' : widget.student.grade.name}');
+    print('🎓 [STUDENT DETAILS] Section: ${widget.student.section.name.isEmpty ? 'N/A' : widget.student.section.name}');
     print('🎓 [STUDENT DETAILS] Status: ${widget.student.status}');
     print('🎓 [STUDENT DETAILS] Age: ${widget.student.ageInOctober}');
     print('🎓 [STUDENT DETAILS] Gender: ${widget.student.gender}');
     print('🎓 [STUDENT DETAILS] National ID: ${widget.student.nationalId}');
-    print('🎓 [STUDENT DETAILS] Parent Name: ${widget.student.parent.name}');
-    print('🎓 [STUDENT DETAILS] Parent Phone: ${widget.student.parent.phone}');
+    print('🎓 [STUDENT DETAILS] Parent Name: ${widget.student.parent.name.isEmpty ? 'N/A' : widget.student.parent.name}');
+    print('🎓 [STUDENT DETAILS] Parent Phone: ${widget.student.parent.phone.isEmpty ? 'N/A' : widget.student.parent.phone}');
     print(
         '🎓 [STUDENT DETAILS] Moodle Username: ${widget.student.moodleUser?.username ?? 'N/A'}');
   }
@@ -137,7 +137,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
-                                    widget.student.grade.name,
+                                    widget.student.grade.name.isNotEmpty 
+                                        ? widget.student.grade.name 
+                                        : 'N/A',
                                     style: AppFonts.bodyMedium.copyWith(
                                       color: Colors.white.withOpacity(0.9),
                                       fontSize: 14.sp,
@@ -439,9 +441,17 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
-              'Parent Name', widget.student.parent.name, Icons.person),
+              'Parent Name', 
+              widget.student.parent.name.isNotEmpty 
+                  ? widget.student.parent.name 
+                  : 'N/A', 
+              Icons.person),
           _buildInfoRow(
-              'Parent Phone', widget.student.parent.phone, Icons.phone),
+              'Parent Phone', 
+              widget.student.parent.phone.isNotEmpty 
+                  ? widget.student.parent.phone 
+                  : 'N/A', 
+              Icons.phone),
         ],
       ),
     );
@@ -483,9 +493,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
             ],
           ),
           SizedBox(height: 16.h),
-          _buildInfoRow('Grade', widget.student.grade.name, Icons.grade),
-          _buildInfoRow('Stage', widget.student.stage.name, Icons.school),
-          _buildInfoRow('Section', widget.student.section.name, Icons.class_),
+          _buildInfoRow('Grade', widget.student.grade.name.isNotEmpty ? widget.student.grade.name : 'N/A', Icons.grade),
+          _buildInfoRow('Stage', widget.student.stage.name.isNotEmpty ? widget.student.stage.name : 'N/A', Icons.school),
+          _buildInfoRow('Section', widget.student.section.name.isNotEmpty ? widget.student.section.name : 'N/A', Icons.class_),
           _buildInfoRow(
               'Moodle Username',
               widget.student.moodleUser?.username ?? 'Not assigned',

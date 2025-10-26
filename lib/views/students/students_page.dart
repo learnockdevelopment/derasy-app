@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -23,6 +24,7 @@ class _StudentsPageState extends State<StudentsPage> {
   bool _isLoading = false;
   String? _schoolId;
   String _searchQuery = '';
+  Timer? _debounceTimer;
 
   // Pagination variables
   int _currentPage = 1;
@@ -45,10 +47,11 @@ class _StudentsPageState extends State<StudentsPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _loadStudents({bool resetPage = false}) async {
+  Future<void> _loadStudents({bool resetPage = false, String? searchQuery}) async {
     if (_schoolId == null) return;
 
     if (resetPage) {
@@ -64,6 +67,7 @@ class _StudentsPageState extends State<StudentsPage> {
         _schoolId!,
         _currentPage,
         _limit,
+        search: searchQuery,
       );
 
       if (mounted) {
@@ -85,8 +89,8 @@ class _StudentsPageState extends State<StudentsPage> {
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Failed to load students: ${e.toString()}',
+        'error'.tr,
+        'failed_to_load_students'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
@@ -104,21 +108,40 @@ class _StudentsPageState extends State<StudentsPage> {
     if (mounted) {
       setState(() {
         _searchQuery = query;
-        if (query.isEmpty) {
+      });
+      
+      // Cancel previous timer
+      _debounceTimer?.cancel();
+      
+      if (query.isEmpty) {
+        // Clear search immediately for instant feedback
+        setState(() {
           _filteredStudents = List.from(_students);
           _isSearchMode = false;
-        } else {
+        });
+        // Reload students without search when cleared
+        _loadStudents(resetPage: true);
+      } else {
+        // When searching, show partial matches from loaded students first (instant feedback)
+        setState(() {
           _filteredStudents = _students
               .where((student) =>
                   student.fullName.toLowerCase().contains(query.toLowerCase()) ||
-                  student.studentCode
-                      .toLowerCase()
-                      .contains(query.toLowerCase()) ||
-                  student.grade.name.toLowerCase().contains(query.toLowerCase()))
+                  student.studentCode.toLowerCase().contains(query.toLowerCase()) ||
+                  student.nationalId.toLowerCase().contains(query.toLowerCase()) ||
+                  (student.grade.name.isNotEmpty 
+                      ? student.grade.name 
+                      : '').toLowerCase().contains(query.toLowerCase()))
               .toList();
           _isSearchMode = true;
-        }
-      });
+        });
+        
+        // Debounce API call to avoid too many requests while typing
+        _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+          // Then search the API for more results (search all students, not just loaded ones)
+          _loadStudents(resetPage: true, searchQuery: query);
+        });
+      }
     }
   }
 
@@ -130,21 +153,21 @@ class _StudentsPageState extends State<StudentsPage> {
   void _goToNextPage() {
     if (_hasNextPage && !_isLoading) {
       _currentPage++;
-      _loadStudents();
+      _loadStudents(searchQuery: _searchQuery.isEmpty ? null : _searchQuery);
     }
   }
 
   void _goToPrevPage() {
     if (_hasPrevPage && !_isLoading) {
       _currentPage--;
-      _loadStudents();
+      _loadStudents(searchQuery: _searchQuery.isEmpty ? null : _searchQuery);
     }
   }
 
   void _goToPage(int page) {
     if (page != _currentPage && page >= 1 && page <= _totalPages && !_isLoading) {
       _currentPage = page;
-      _loadStudents();
+      _loadStudents(searchQuery: _searchQuery.isEmpty ? null : _searchQuery);
     }
   }
 
@@ -156,7 +179,7 @@ class _StudentsPageState extends State<StudentsPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         title: Text(
-          'Students',
+          'students'.tr,
           style: AppFonts.h2.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -172,14 +195,18 @@ class _StudentsPageState extends State<StudentsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
-            onPressed: () {
+            onPressed: () async {
               if (_schoolId != null) {
-                Get.toNamed(AppRoutes.addStudent,
+                final result = await Get.toNamed(AppRoutes.addStudent,
                     arguments: {'schoolId': _schoolId});
+                // Refresh the students list if a student was added
+                if (result == true) {
+                  _loadStudents(resetPage: true);
+                }
               } else {
                 Get.snackbar(
-                  'Error',
-                  'School ID not available',
+                  'error'.tr,
+                  'school_id_not_available'.tr,
                   backgroundColor: Colors.red,
                   colorText: Colors.white,
                 );
@@ -221,7 +248,7 @@ class _StudentsPageState extends State<StudentsPage> {
                 controller: _searchController,
                 onChanged: _filterStudents,
                 decoration: InputDecoration(
-                  hintText: 'Search students...',
+                  hintText: 'search_students'.tr,
                   hintStyle: AppFonts.bodyMedium.copyWith(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
@@ -311,7 +338,7 @@ class _StudentsPageState extends State<StudentsPage> {
           ),
           SizedBox(height: 24.h),
           Text(
-            _isSearchMode ? 'No students found' : 'No students available',
+            _isSearchMode ? 'no_students_found'.tr : 'no_students_available'.tr,
             style: AppFonts.h3.copyWith(
               color: const Color(0xFF1F2937),
               fontWeight: FontWeight.bold,
@@ -321,8 +348,8 @@ class _StudentsPageState extends State<StudentsPage> {
           SizedBox(height: 8.h),
           Text(
             _isSearchMode
-                ? 'Try adjusting your search terms'
-                : 'Students will appear here once added',
+                ? 'try_adjusting_search_terms'.tr
+                : 'students_will_appear_here_once_added'.tr,
             style: AppFonts.bodyMedium.copyWith(
               color: const Color(0xFF6B7280),
               fontSize: 14.sp,
@@ -332,11 +359,17 @@ class _StudentsPageState extends State<StudentsPage> {
           if (!_isSearchMode) ...[
             SizedBox(height: 24.h),
             ElevatedButton.icon(
-              onPressed: () => Get.toNamed(AppRoutes.addStudent,
-                  arguments: {'schoolId': _schoolId}),
+              onPressed: () async {
+                final result = await Get.toNamed(AppRoutes.addStudent,
+                    arguments: {'schoolId': _schoolId});
+                // Refresh the students list if a student was added
+                if (result == true) {
+                  _loadStudents(resetPage: true);
+                }
+              },
               icon: const Icon(Icons.add_rounded, color: Colors.white),
               label: Text(
-                'Add Student',
+                'add_student'.tr,
                 style: AppFonts.bodyMedium.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -373,12 +406,18 @@ class _StudentsPageState extends State<StudentsPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => Get.to(
-            () => StudentDetailsPage(
-              student: student,
-              schoolId: _schoolId,
-            ),
-          ),
+          onTap: () async {
+            final result = await Get.to(
+              () => StudentDetailsPage(
+                student: student,
+                schoolId: _schoolId,
+              ),
+            );
+            // Refresh the students list if a student was deleted or edited
+            if (result == true) {
+              _loadStudents(resetPage: true);
+            }
+          },
           borderRadius: BorderRadius.circular(12.r),
           child: Padding(
             padding: EdgeInsets.all(16.w),
@@ -405,7 +444,9 @@ class _StudentsPageState extends State<StudentsPage> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        student.grade.name,
+                        student.grade.name.isNotEmpty 
+                            ? student.grade.name 
+                            : 'N/A',
                         style: AppFonts.bodyMedium.copyWith(
                           color: const Color(0xFF6B7280),
                           fontSize: 14.sp,
@@ -484,7 +525,7 @@ class _StudentsPageState extends State<StudentsPage> {
             ),
           ),
           child: Text(
-            'Load More',
+            'load_more'.tr,
             style: AppFonts.bodyMedium.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -566,14 +607,14 @@ class _StudentsPageState extends State<StudentsPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Page $_currentPage of $_totalPages',
+                'page_of_total'.tr.replaceAll('{current}', '$_currentPage').replaceAll('{total}', '$_totalPages'),
                 style: AppFonts.bodySmall.copyWith(
                   color: const Color(0xFF6B7280),
                   fontSize: 12.sp,
                 ),
               ),
               Text(
-                '$_totalStudents students total',
+                'students_total'.tr.replaceAll('{count}', '$_totalStudents'),
                 style: AppFonts.bodySmall.copyWith(
                   color: const Color(0xFF6B7280),
                   fontSize: 12.sp,

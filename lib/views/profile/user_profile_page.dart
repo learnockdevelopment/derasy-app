@@ -68,10 +68,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       // Print detailed API response
       print('👤 [USER PROFILE] ===========================================');
-      print('👤 [USER PROFILE] API Response received:');
-      print('👤 [USER PROFILE] Response type: ${apiResponse.runtimeType}');
-      print('👤 [USER PROFILE] Response keys: ${apiResponse.keys.toList()}');
-      print('👤 [USER PROFILE] Full API response: $apiResponse');
+      print('👤 [USER PROFILE] FULL API RESPONSE RECEIVED');
+      print('👤 [USER PROFILE] ===========================================');
+      apiResponse.forEach((key, value) {
+        print('👤 [USER PROFILE] $key: $value');
+      });
       print('👤 [USER PROFILE] ===========================================');
 
       if (apiResponse.containsKey('user')) {
@@ -124,8 +125,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         print(
             '👤 [USER PROFILE] Error loading from local storage: $localError');
         Get.snackbar(
-          'Error',
-          'Failed to load user data: ${e.toString()}',
+          'error'.tr,
+          'failed_to_load_user_data'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -138,8 +139,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     if (_nameController.text.trim().isEmpty ||
         _phoneController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Name and phone are required',
+        'error'.tr,
+        'name_and_phone_required'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -152,12 +153,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     });
 
     try {
-      // For now, we'll use the existing avatar URL or empty string
-      // In a real app, you'd upload the image to a server and get a URL
       String? avatarUrl = _userData?['avatar'];
       if (_selectedImage != null) {
-        // TODO: Upload image to server and get URL
-        // For now, we'll keep the existing avatar
         print(
             '👤 [USER PROFILE] Image selected but not uploaded yet: ${_selectedImage!.path}');
       }
@@ -178,8 +175,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         });
 
         Get.snackbar(
-          'Success',
-          'Profile updated successfully',
+          'success'.tr,
+          'profile_updated_successfully'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -188,8 +185,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     } catch (e) {
       print('👤 [USER PROFILE] Error updating profile: $e');
       Get.snackbar(
-        'Error',
-        'Failed to update profile: ${e.toString()}',
+        'error'.tr,
+        'failed_to_update_profile'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -219,8 +216,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     } catch (e) {
       print('👤 [USER PROFILE] Error picking image: $e');
       Get.snackbar(
-        'Error',
-        'Failed to pick image: ${e.toString()}',
+        'error'.tr,
+        'failed_to_pick_image'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -247,8 +244,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Failed to logout: ${e.toString()}',
+        'error'.tr,
+        'failed_to_logout'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -377,10 +374,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   _buildUserInfoSection(),
                   SizedBox(height: 16.h),
 
-                  // Account Settings Section
-                  _buildAccountSettingsSection(),
-                  SizedBox(height: 16.h),
-
                   // Logout Button
                   _buildLogoutButton(),
                   SizedBox(height: 32.h),
@@ -419,7 +412,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
               SizedBox(width: 12.w),
               Text(
-                'Personal Information',
+                'personal_information'.tr,
                 style: AppFonts.h3.copyWith(
                   color: const Color(0xFF1F2937),
                   fontWeight: FontWeight.bold,
@@ -433,9 +426,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
           // Editable fields when in edit mode
           if (_isEditing) ...[
             _buildEditableField(
-                'Full Name', _nameController, Icons.person_rounded),
+                'full_name'.tr, _nameController, Icons.person_rounded),
             SizedBox(height: 16.h),
-            _buildEditableField('Phone', _phoneController, Icons.phone_rounded),
+            _buildEditableField('phone'.tr, _phoneController, Icons.phone_rounded),
             SizedBox(height: 16.h),
             _buildAvatarField(),
             SizedBox(height: 20.h),
@@ -443,109 +436,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ] else ...[
             // Display mode
             _buildInfoRow(
-                'Full Name', _userData?['name'] ?? 'N/A', Icons.person_rounded),
+                'full_name'.tr, _userData?['name'] ?? 'N/A', Icons.person_rounded),
             SizedBox(height: 12.h),
             _buildInfoRow(
-                'Email', _userData?['email'] ?? 'N/A', Icons.email_rounded),
+                'email'.tr, _userData?['email'] ?? 'N/A', Icons.email_rounded),
             SizedBox(height: 12.h),
             _buildInfoRow(
-                'Phone', _userData?['phone'] ?? 'N/A', Icons.phone_rounded),
+                'phone'.tr, _userData?['phone'] ?? 'N/A', Icons.phone_rounded),
             SizedBox(height: 12.h),
-            _buildInfoRow('Role', _userData?['role'] ?? 'N/A',
+            _buildInfoRow('role'.tr, _userData?['role'] ?? 'N/A',
                 Icons.admin_panel_settings_rounded),
             SizedBox(height: 12.h),
             _buildInfoRow(
-                'User ID', _userData?['id'] ?? 'N/A', Icons.badge_rounded),
+                'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildAccountSettingsSection() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.settings_outlined,
-                color: const Color(0xFF10B981),
-                size: 22.sp,
-              ),
-              SizedBox(width: 12.w),
-              Text(
-                'Account Settings',
-                style: AppFonts.h3.copyWith(
-                  color: const Color(0xFF1F2937),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.sp,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          _buildSettingsTile(
-            icon: Icons.notifications_outlined,
-            title: 'Notifications',
-            subtitle: 'Manage your notification preferences',
-            onTap: () {
-              Get.snackbar(
-                'Info',
-                'Notifications settings coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF3B82F6),
-                colorText: Colors.white,
-              );
-            },
-          ),
-          SizedBox(height: 12.h),
-          _buildSettingsTile(
-            icon: Icons.security_outlined,
-            title: 'Privacy & Security',
-            subtitle: 'Manage your privacy and security settings',
-            onTap: () {
-              Get.snackbar(
-                'Info',
-                'Privacy settings coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF3B82F6),
-                colorText: Colors.white,
-              );
-            },
-          ),
-          SizedBox(height: 12.h),
-          _buildSettingsTile(
-            icon: Icons.language_outlined,
-            title: 'Language',
-            subtitle: 'Change your preferred language',
-            onTap: () {
-              Get.snackbar(
-                'Info',
-                'Language settings coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF3B82F6),
-                colorText: Colors.white,
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildLogoutButton() {
     return Container(
@@ -585,7 +494,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'Logout',
+                  'logout'.tr,
                   style: AppFonts.bodyMedium.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -649,77 +558,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
-        child: Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40.w,
-                height: 40.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF3B82F6),
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppFonts.bodyMedium.copyWith(
-                        color: const Color(0xFF1F2937),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15.sp,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      subtitle,
-                      style: AppFonts.bodySmall.copyWith(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 13.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: const Color(0xFF9CA3AF),
-                size: 16.sp,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildUserAvatar() {
     // Get user image from user data
@@ -826,7 +664,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
             ),
             child: Text(
-              'Cancel',
+              'cancel'.tr,
               style: AppFonts.bodyMedium.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -856,7 +694,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   )
                 : Text(
-                    'Save',
+                    'save'.tr,
                     style: AppFonts.bodyMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -882,7 +720,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             SizedBox(width: 8.w),
             Text(
-              'Profile Picture',
+              'profile_picture'.tr,
               style: AppFonts.bodyMedium.copyWith(
                 color: const Color(0xFF6B7280),
                 fontWeight: FontWeight.w500,
@@ -930,7 +768,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         SizedBox(height: 8.h),
         Center(
           child: Text(
-            'Tap to select image from gallery',
+            'tap_to_select_image_from_gallery'.tr,
             style: AppFonts.bodySmall.copyWith(
               color: const Color(0xFF9CA3AF),
               fontSize: 12.sp,
@@ -966,7 +804,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Select Image',
+            'select_image'.tr,
             style: AppFonts.bodyMedium.copyWith(
               color: Colors.white,
               fontSize: 14.sp,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'dart:ui';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_models.dart';
@@ -14,7 +16,7 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,6 +27,8 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String _passwordStrength = '';
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -36,10 +40,26 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
     _confirmPasswordController.addListener(_validateForm);
+    
+    // Initialize animation
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    _animationController.forward();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -185,315 +205,266 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Enhanced Header with gradient background
-              Container(
-                width: double.infinity,
-                height: 320.h,
+      body: Stack(
+        children: [
+          // Blurred background image - fills entire page
+          SizedBox.expand(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryLight,
-                      AppColors.primary.withOpacity(0.9),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30.r),
-                    bottomRight: Radius.circular(30.r),
+                  image: DecorationImage(
+                    image: AssetImage(AssetsManager.register),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                child: Stack(
+              ),
+            ),
+          ),
+          // Dark overlay for better contrast
+          Container(
+            color: Colors.black.withOpacity(0.3),
+          ),
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
                   children: [
-                    // Background decorative elements
-                    Positioned(
-                      top: 40.h,
-                      right: 30.w,
-                      child: Container(
-                        width: 80.w,
-                        height: 80.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(40.r),
+                    SizedBox(height: 40.h),
+                    
+                    // Compact Logo and Title
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Icon(
+                            Icons.school,
+                            color: AppColors.primary,
+                            size: 28.sp,
+                          ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 60.h,
-                      left: 30.w,
-                      child: Container(
-                        width: 50.w,
-                        height: 50.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(25.r),
-                        ),
-                      ),
-                    ),
-                    // Content
-                    Padding(
-                      padding: EdgeInsets.all(24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 20.h),
-                          // Logo and title
-                          Row(
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: EdgeInsets.all(12.w),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(16.r),
-                                ),
-                                child: Icon(
-                                  Icons.school,
-                                  color: AppColors.white,
-                                  size: 32.sp,
+                              Text(
+                                'welcome_to_Derasy'.tr,
+                                style: AppFonts.cairoBold22.copyWith(
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'welcome_to_Derasy'.tr,
-                                      style: AppFonts.cairoBold28.copyWith(
-                                        color: AppColors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      'nurturing_young_minds'.tr,
-                                      style: AppFonts.cairoRegular16.copyWith(
-                                        color: AppColors.white.withOpacity(0.9),
-                                      ),
-                                    ),
-                                  ],
+                              SizedBox(height: 2.h),
+                              Text(
+                                'nurturing_young_minds'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 30.h),
-                          // Registration badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.person_add,
-                                  color: AppColors.white,
-                                  size: 16.sp,
-                                ),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'Create New Account',
-                                  style: AppFonts.cairoMedium14.copyWith(
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                    SizedBox(height: 50.h),
 
-              // Register Form with enhanced design
-              Container(
-                margin: EdgeInsets.all(20.w),
-                padding: EdgeInsets.all(28.w),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.grey200,
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Form Title
-                      Text(
-                        'Create Your Account',
-                        style: AppFonts.cairoBold20.copyWith(
-                          color: AppColors.textPrimary,
+                    // Compact Form
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Container(
+                        padding: EdgeInsets.all(24.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.grey200,
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Join our parents community today',
-                        style: AppFonts.cairoRegular14.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 30.h),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Compact Form Title
+                              Text(
+                                'create_your_account'.tr,
+                                style: AppFonts.cairoBold18.copyWith(
+                                  color: AppColors.textPrimary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 5.h),
+                              Text(
+                                'join_parents_community'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 24.h),
 
-                      // Name Field with enhanced design
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          labelText: 'Full Name',
-                          hintText: 'Enter your full name',
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
+                              // Name Field
+                          TextFormField(
+                            controller: _nameController,
+                            style: AppFonts.cairoRegular14,
+                            decoration: InputDecoration(
+                              labelText: 'full_name'.tr,
+                              labelStyle: AppFonts.cairoRegular14,
+                              hintText: 'enter_full_name'.tr,
+                              hintStyle: AppFonts.cairoRegular12.copyWith(
+                                color: AppColors.grey400,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.person_outlined,
+                                color: AppColors.primary,
+                                size: 20.sp,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide:
+                                    BorderSide(color: AppColors.grey300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: AppColors.grey50,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.person_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Name is required';
-                          }
-                          if (value.length < 2) {
-                            return 'Name must be at least 2 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Email Field with enhanced design
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'email'.tr,
-                          hintText: 'enter_your_email'.tr,
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.email_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'email_required'.tr;
-                          }
-                          if (!_isValidEmail(value)) {
-                            return 'enter_valid_email'.tr;
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Password Field with enhanced design
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'password'.tr,
-                          hintText: 'password_placeholder'.tr,
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.lock_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'name_required'.tr;
+                              }
+                              if (value.length < 2) {
+                                return 'name_min_length'.tr;
+                              }
+                              return null;
                             },
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
+                          SizedBox(height: 16.h),
+
+                          // Email Field
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: AppFonts.cairoRegular14,
+                            decoration: InputDecoration(
+                              labelText: 'email'.tr,
+                              labelStyle: AppFonts.cairoRegular14,
+                              hintText: 'enter_your_email'.tr,
+                              hintStyle: AppFonts.cairoRegular12.copyWith(
+                                color: AppColors.grey400,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.email_outlined,
+                                color: AppColors.primary,
+                                size: 20.sp,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(color: AppColors.grey300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: AppColors.grey50,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'email_required'.tr;
+                              }
+                              if (!_isValidEmail(value)) {
+                                return 'enter_valid_email'.tr;
+                              }
+                              return null;
+                            },
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
+                          SizedBox(height: 16.h),
+
+                          // Password Field
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            style: AppFonts.cairoRegular14,
+                            decoration: InputDecoration(
+                              labelText: 'password'.tr,
+                              labelStyle: AppFonts.cairoRegular14,
+                              hintText: 'password_placeholder'.tr,
+                              hintStyle: AppFonts.cairoRegular12.copyWith(
+                                color: AppColors.grey400,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_outlined,
+                                color: AppColors.primary,
+                                size: 20.sp,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(color: AppColors.grey300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: AppColors.grey50,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'password_required'.tr;
+                              }
+                              if (value.length < 6) {
+                                return 'password_too_short'.tr;
+                              }
+                              return null;
+                            },
                           ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'password_required'.tr;
-                          }
-                          if (value.length < 6) {
-                            return 'password_too_short'.tr;
-                          }
-                          return null;
-                        },
-                      ),
                       if (_passwordStrength.isNotEmpty) ...[
                         SizedBox(height: 12.h),
                         Container(
@@ -515,7 +486,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                'Password Strength: ',
+                                'password_strength_label'.tr,
                                 style: AppFonts.cairoRegular12.copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 12.sp,
@@ -582,7 +553,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
+                            return 'confirm_password_prompt'.tr;
                           }
                           if (value != _passwordController.text) {
                             return 'passwords_no_match'.tr;
@@ -592,120 +563,89 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       SizedBox(height: 30.h),
 
-                      // Register Button with enhanced design
-                      Container(
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _isFormValid() && !_isLoading
-                              ? () {
-                                  print(
-                                      '🔐 [REGISTER] Button onPressed triggered');
-                                  _register();
-                                }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.w,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.person_add,
-                                      color: Colors.white,
-                                      size: 20.sp,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      'create_account'.tr,
-                                      style: AppFonts.cairoBold16.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Sign In Link with enhanced design
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.grey50,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'already_have_account'.tr,
-                              style: AppFonts.cairoRegular14.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                            SizedBox(width: 4.w),
-                            TextButton(
-                              onPressed: () {
-                                Get.toNamed(AppRoutes.login);
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 4.h),
+                          // Register Button
+                          SizedBox(
+                            height: 50.h,
+                            child: ElevatedButton(
+                              onPressed: _isFormValid() && !_isLoading
+                                  ? () {
+                                      _register();
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                disabledBackgroundColor: AppColors.grey300,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.r),
+                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
+                                elevation: 0,
                               ),
-                              child: Text(
-                                'sign_in'.tr,
-                                style: AppFonts.cairoBold14.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? SizedBox(
+                                      height: 20.h,
+                                      width: 20.w,
+                                      child: const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.person_add,
+                                          color: Colors.white,
+                                          size: 18.sp,
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Text(
+                                          'create_account'.tr,
+                                          style: AppFonts.cairoBold16.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                          SizedBox(height: 20.h),
+
+                          // Sign In Link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'already_have_account'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Get.toNamed(AppRoutes.login);
+                                },
+                                child: Text(
+                                  'sign_in'.tr,
+                                  style: AppFonts.cairoBold12.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ), 
+                    ),
                   ),
                 ),
+                    SizedBox(height: 40.h),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
