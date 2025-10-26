@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "562013974270",
-    "project_id": "medithen-93355",
-    "storage_bucket": "medithen-93355.appspot.com"
+    "project_id": "derasy-app",
+    "storage_bucket": "derasy-app.appspot.com"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:562013974270:android:60cb39f10275d52af17faf",
         "android_client_info": {
-          "package_name": "com.kidscottage.app"
+          "package_name": "com.derasy.app"
         }
       },
       "oauth_client": [

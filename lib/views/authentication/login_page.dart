@@ -1,16 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
-import '../../core/constants/assets.dart';
-import '../../core/constants/countries.dart';
 import '../../core/routes/app_routes.dart';
-import '../../services/authentication/auth_service.dart';
-import '../../models/authentication/auth_models.dart';
-import '../../views/widgets/country_selector.dart';
+import '../../services/auth_service.dart';
+import '../../services/user_storage_service.dart';
+import '../../models/auth_models.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -19,64 +15,43 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _identifierController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  bool _isEmailSelected = true;
-  bool _isIdentifierValid = false;
-  Country _selectedCountry = Countries.countries.firstWhere(
-    (country) => country.code == 'EG',
-    orElse: () => Countries.countries.first,
-  );
-
-  late AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
-    print('🔐 [LOGIN] LoginPage initState called');
-
-    _identifierController.addListener(_validateForm);
+    _emailController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _animationController.forward();
   }
 
   @override
   void dispose() {
-    print('🔐 [LOGIN] LoginPage dispose called');
-    _identifierController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
   void _validateForm() {
-    final identifier = _identifierController.text.trim();
-    final password = _passwordController.text.trim();
-
-    setState(() {
-      _isIdentifierValid =
-          _isValidIdentifier(identifier) && password.isNotEmpty;
-    });
+    setState(() {});
   }
 
-  bool _isValidIdentifier(String identifier) {
-    if (identifier.isEmpty) return false;
-    if (_isEmailSelected) {
-      return _isValidEmail(identifier);
-    } else {
-      return _isValidPhone(identifier);
-    }
+  bool _isFormValid() {
+    final isValid = _emailController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        _isValidEmail(_emailController.text);
+
+    print('🔐 [LOGIN] Form validation: $isValid');
+    print('🔐 [LOGIN] Email: ${_emailController.text.isNotEmpty}');
+    print('🔐 [LOGIN] Password: ${_passwordController.text.isNotEmpty}');
+    print('🔐 [LOGIN] Valid email: ${_isValidEmail(_emailController.text)}');
+
+    return isValid;
   }
 
   bool _isValidEmail(String email) {
@@ -84,58 +59,44 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         .hasMatch(email);
   }
 
-  bool _isValidPhone(String phone) {
-    return RegExp(r'^[0-9]+$').hasMatch(phone) && phone.length >= 7;
-  }
-
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_isLoading) return;
+    print('🔐 [LOGIN] Login button pressed');
+    if (!_formKey.currentState!.validate()) {
+      print('🔐 [LOGIN] Form validation failed');
+      return;
+    }
+    if (_isLoading || !_isFormValid()) {
+      print('🔐 [LOGIN] Form not valid or loading');
+      return;
+    }
 
+    print('🔐 [LOGIN] Starting login process');
     setState(() {
       _isLoading = true;
     });
 
     try {
-      String identifier = _isEmailSelected
-          ? _identifierController.text.trim()
-          : '${_selectedCountry.dialCode}${_identifierController.text.trim()}';
-
-      print('🔐 [LOGIN] Starting login process for: $identifier');
-
-      final response = await AuthService.login(
-        loginField: identifier,
+      final request = LoginRequest(
+        email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception(
-              'Login request timed out. Please check your internet connection.');
-        },
       );
 
-      print('🔐 [LOGIN] Login response received: $response');
-
-      if (response.isEmpty) {
-        throw Exception('Empty response from server');
-      }
-
-      final loginResponse = LoginResponse.fromJson(response);
+      final response = await AuthService.login(request);
 
       if (!mounted) return;
+
+      // Save user data
+      await UserStorageService.saveCurrentUser(response.user, response.token);
 
       setState(() {
         _isLoading = false;
       });
 
-      print('🔐 [LOGIN] Navigating to home page');
       Get.offAllNamed<void>(AppRoutes.home);
 
       Get.snackbar(
         'Success',
-        loginResponse.message.isNotEmpty
-            ? loginResponse.message
-            : 'Login successful',
+        response.message,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.primary,
         colorText: Colors.white,
@@ -151,18 +112,137 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
       String errorMessage = 'An unexpected error occurred. Please try again.';
 
-      if (e.toString().contains('SocketException') ||
+      if (e is AuthException) {
+        errorMessage = e.message;
+      } else if (e.toString().contains('SocketException') ||
           e.toString().contains('TimeoutException')) {
         errorMessage = 'Network error. Please check your internet connection.';
-      } else if (e.toString().contains('FormatException')) {
-        errorMessage = 'Invalid response from server. Please try again.';
-      } else if (e.toString().contains('Invalid credentials')) {
-        errorMessage = 'Invalid email or password. Please try again.';
-      } else if (e.toString().contains('User is banned')) {
-        errorMessage =
-            'Your account has been suspended. Please contact support.';
-      } else if (e.toString().isNotEmpty) {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+      }
+
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  void _showForgotPasswordDialog() {
+    final emailController = TextEditingController();
+
+    Get.dialog(
+      AlertDialog(
+        title: Text(
+          'forgot_password'.tr,
+          style: AppFonts.cairoBold18.copyWith(
+            fontSize: 18.sp,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'enter_email_reset'.tr,
+              style: AppFonts.cairoRegular14.copyWith(
+                fontSize: 14.sp,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 16.h),
+            TextFormField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'email'.tr,
+                hintText: 'enter_your_email'.tr,
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'email_required'.tr;
+                }
+                if (!_isValidEmail(value)) {
+                  return 'enter_valid_email'.tr;
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'cancel'.tr,
+              style: AppFonts.cairoRegular14.copyWith(
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (emailController.text.isNotEmpty &&
+                  _isValidEmail(emailController.text)) {
+                Get.back();
+                await _sendResetPassword(emailController.text.trim());
+              } else {
+                Get.snackbar(
+                  'Error',
+                  'enter_valid_email'.tr,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: AppColors.error,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'send_reset_instructions'.tr,
+              style: AppFonts.cairoBold14.copyWith(
+                fontSize: 14.sp,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendResetPassword(String email) async {
+    try {
+      final request = ResetPasswordRequest(email: email);
+      await AuthService.resetPassword(request);
+
+      Get.toNamed(AppRoutes.verifyEmail, arguments: {
+        'email': email,
+        'isPasswordReset': true,
+      });
+
+      Get.snackbar(
+        'Success',
+        'Reset instructions sent to $email',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.primary,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      print('🔐 [LOGIN] Reset password error: $e');
+
+      String errorMessage =
+          'Failed to send reset instructions. Please try again.';
+
+      if (e is AuthException) {
+        errorMessage = e.message;
       }
 
       Get.snackbar(
@@ -178,498 +258,411 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print('🔐 [LOGIN] LoginPage build called');
-
     return Scaffold(
-      body: Stack(
-        children: [
-          // Blurred background image
-          _buildBlurredBackground(),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Enhanced Header with gradient background
+              Container(
+                width: double.infinity,
+                height: 320.h,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primaryLight,
+                      AppColors.primary.withOpacity(0.9),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30.r),
+                    bottomRight: Radius.circular(30.r),
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Background decorative elements
+                    Positioned(
+                      top: 40.h,
+                      right: 30.w,
+                      child: Container(
+                        width: 80.w,
+                        height: 80.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(40.r),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 60.h,
+                      left: 30.w,
+                      child: Container(
+                        width: 50.w,
+                        height: 50.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(25.r),
+                        ),
+                      ),
+                    ),
+                    // Content
+                    Padding(
+                      padding: EdgeInsets.all(24.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 20.h),
+                          // Logo and title
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(12.w),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16.r),
+                                ),
+                                child: Icon(
+                                  Icons.school,
+                                  color: AppColors.white,
+                                  size: 32.sp,
+                                ),
+                              ),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'welcome_back'.tr,
+                                      style: AppFonts.cairoBold28.copyWith(
+                                        color: AppColors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      'sign_in_to_continue'.tr,
+                                      style: AppFonts.cairoRegular16.copyWith(
+                                        color: AppColors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 30.h),
+                          // Security badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: AppColors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.security,
+                                  color: AppColors.white,
+                                  size: 16.sp,
+                                ),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'Secure Login',
+                                  style: AppFonts.cairoMedium14.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-          // Main content
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-                child: FadeTransition(
-                  opacity: _animationController,
+              // Login Form with enhanced design
+              Container(
+                margin: EdgeInsets.all(20.w),
+                padding: EdgeInsets.all(28.w),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(24.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.grey200,
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Login form
-                      _buildLoginForm(),
+                      // Form Title
+                      Text(
+                        'Login to Your Account',
+                        style: AppFonts.cairoBold20.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Enter your credentials to access your account',
+                        style: AppFonts.cairoRegular14.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 30.h),
+
+                      // Email Field with enhanced design
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: 'email'.tr,
+                          hintText: 'enter_your_email'.tr,
+                          prefixIcon: Container(
+                            margin: EdgeInsets.all(8.w),
+                            padding: EdgeInsets.all(8.w),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Icon(
+                              Icons.email_outlined,
+                              color: AppColors.primary,
+                              size: 20.sp,
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: BorderSide(color: AppColors.grey300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide:
+                                BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: AppColors.grey50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'email_required'.tr;
+                          }
+                          if (!_isValidEmail(value)) {
+                            return 'enter_valid_email'.tr;
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+
+                      // Password Field with enhanced design
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: 'password'.tr,
+                          hintText: 'password_placeholder'.tr,
+                          prefixIcon: Container(
+                            margin: EdgeInsets.all(8.w),
+                            padding: EdgeInsets.all(8.w),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Icon(
+                              Icons.lock_outlined,
+                              color: AppColors.primary,
+                              size: 20.sp,
+                            ),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: BorderSide(color: AppColors.grey300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide:
+                                BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: AppColors.grey50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'password_required'.tr;
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 12.h),
+
+                      // Forgot Password Link with enhanced design
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            _showForgotPasswordDialog();
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12.w, vertical: 8.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                          child: Text(
+                            'forgot_password'.tr,
+                            style: AppFonts.cairoBold14.copyWith(
+                              color: AppColors.primary,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+
+                      // Login Button with enhanced design
+                      Container(
+                        height: 56.h,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary,
+                              AppColors.primaryLight,
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _isFormValid() && !_isLoading
+                              ? () {
+                                  print(
+                                      '🔐 [LOGIN] Button onPressed triggered');
+                                  _login();
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? SizedBox(
+                                  height: 20.h,
+                                  width: 20.w,
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.login,
+                                      color: Colors.white,
+                                      size: 20.sp,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      'sign_in'.tr,
+                                      style: AppFonts.cairoBold16.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 16.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+
+                      // Sign Up Link with enhanced design
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.grey50,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'dont_have_account'.tr,
+                              style: AppFonts.cairoRegular14.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                            SizedBox(width: 4.w),
+                            TextButton(
+                              onPressed: () {
+                                Get.toNamed(AppRoutes.register);
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 4.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                              ),
+                              child: Text(
+                                'sign_up'.tr,
+                                style: AppFonts.cairoBold14.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBlurredBackground() {
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(AssetsManager.login),
-            fit: BoxFit.cover,
+            ],
           ),
         ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Container(
-            color: Colors.black.withOpacity(0.2),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginForm() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Title
-            Text(
-              'Welcome Back',
-              style: AppFonts.robotoBold24.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 24.sp,
-              ),
-            ),
-
-            SizedBox(height: 4.h),
-
-            Text(
-              'Sign in to continue',
-              style: AppFonts.robotoRegular16.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-              ),
-            ),
-
-            SizedBox(height: 20.h),
-
-            // Login Method Selector with Icons
-            _buildMethodSelector(),
-
-            SizedBox(height: 20.h),
-
-            // Identifier Field
-            _isEmailSelected ? _buildEmailField() : _buildPhoneField(),
-
-            SizedBox(height: 16.h),
-
-            // Password Field
-            _buildPasswordField(),
-
-            SizedBox(height: 24.h),
-
-            // Login Button
-            _buildLoginButton(),
-
-            SizedBox(height: 20.h),
-
-            // Forgot Password & Sign Up
-            _buildActionButtons(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMethodSelector() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grey50,
-        borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(
-          color: AppColors.grey200,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isEmailSelected = true;
-                  _identifierController.clear();
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color:
-                      _isEmailSelected ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(15.r),
-                ),
-                child: Icon(
-                  Icons.email_outlined,
-                  color:
-                      _isEmailSelected ? Colors.white : AppColors.textSecondary,
-                  size: 24.w,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isEmailSelected = false;
-                  _identifierController.clear();
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: !_isEmailSelected
-                      ? AppColors.primary
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(15.r),
-                ),
-                child: Icon(
-                  Icons.phone_outlined,
-                  color: !_isEmailSelected
-                      ? Colors.white
-                      : AppColors.textSecondary,
-                  size: 24.w,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grey50,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.grey200,
-          width: 1,
-        ),
-      ),
-      child: TextFormField(
-        controller: _identifierController,
-        keyboardType: TextInputType.emailAddress,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Email is required';
-          }
-          if (!_isValidEmail(value)) {
-            return 'Please enter a valid email';
-          }
-          return null;
-        },
-        style: AppFonts.robotoRegular16.copyWith(
-          color: AppColors.textPrimary,
-          fontSize: 16.sp,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Enter your email',
-          hintStyle: AppFonts.robotoRegular14.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14.sp,
-          ),
-          prefixIcon: Icon(
-            Icons.email_outlined,
-            color: AppColors.primary,
-            size: 20.w,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 16.h,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhoneField() {
-    return Row(
-      children: [
-        // Country Selector
-        GestureDetector(
-          onTap: () => _showCountrySelector(),
-          child: Container(
-            width: 80.w,
-            height: 50.h,
-            decoration: BoxDecoration(
-              color: AppColors.grey50,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: AppColors.grey200,
-                width: 1,
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _selectedCountry.flag,
-                    style: TextStyle(fontSize: 16.sp),
-                  ),
-                  SizedBox(width: 4.w),
-                  Flexible(
-                    child: Text(
-                      _selectedCountry.dialCode,
-                      style: AppFonts.robotoMedium12.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 12.sp,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        SizedBox(width: 12.w),
-
-        // Phone Number Field
-        Expanded(
-          child: Container(
-            height: 50.h,
-            decoration: BoxDecoration(
-              color: AppColors.grey50,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: AppColors.grey200,
-                width: 1,
-              ),
-            ),
-            child: TextFormField(
-              controller: _identifierController,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Phone number is required';
-                }
-                if (!_isValidPhone(value)) {
-                  return 'Please enter a valid phone number';
-                }
-                return null;
-              },
-              style: AppFonts.robotoRegular16.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 16.sp,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Enter phone number',
-                hintStyle: AppFonts.robotoRegular14.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 14.sp,
-                ),
-                prefixIcon: Icon(
-                  Icons.phone_outlined,
-                  color: AppColors.primary,
-                  size: 20.w,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 16.h,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grey50,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.grey200,
-          width: 1,
-        ),
-      ),
-      child: TextFormField(
-        controller: _passwordController,
-        obscureText: !_isPasswordVisible,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Password is required';
-          }
-          if (value.length < 6) {
-            return 'Password must be at least 6 characters';
-          }
-          return null;
-        },
-        style: AppFonts.robotoRegular16.copyWith(
-          color: AppColors.textPrimary,
-          fontSize: 16.sp,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Enter your password',
-          hintStyle: AppFonts.robotoRegular14.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14.sp,
-          ),
-          prefixIcon: Icon(
-            Icons.lock_outline,
-            color: AppColors.primary,
-            size: 20.w,
-          ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 16.h,
-          ),
-          suffixIcon: GestureDetector(
-            onTap: () {
-              setState(() {
-                _isPasswordVisible = !_isPasswordVisible;
-              });
-            },
-            child: Icon(
-              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-              color: AppColors.textSecondary,
-              size: 20.w,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginButton() {
-    return Container(
-      width: double.infinity,
-      height: 50.h,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: (_isLoading || !_isIdentifierValid) ? null : _login,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-        child: _isLoading
-            ? SizedBox(
-                width: 24.w,
-                height: 24.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                'Sign In',
-                style: AppFonts.robotoBold16.copyWith(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                ),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Forgot Password
-        GestureDetector(
-          onTap: () => Get.toNamed<void>(AppRoutes.otpEmail),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: AppColors.blue50,
-              borderRadius: BorderRadius.circular(15.r),
-            ),
-            child: Text(
-              'Forgot Password?',
-              style: AppFonts.robotoMedium12.copyWith(
-                color: AppColors.primary,
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-        ),
-
-        // Sign Up
-        GestureDetector(
-          onTap: () => Get.toNamed<void>(AppRoutes.register),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(15.r),
-            ),
-            child: Text(
-              'Sign Up',
-              style: AppFonts.robotoBold12.copyWith(
-                color: Colors.white,
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showCountrySelector() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => CountrySelector(
-        selectedCountry: _selectedCountry,
-        onCountrySelected: (country) {
-          setState(() {
-            _selectedCountry = country;
-          });
-        },
       ),
     );
   }

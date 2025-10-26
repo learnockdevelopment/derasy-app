@@ -16,7 +16,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Kids Cottage</string>
+		<string>Derasy</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -32,7 +32,7 @@
 			<string>hi</string>
 		</array>
 		<key>CFBundleName</key>
-		<string>news_pro</string>
+		<string>derasy</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -98,7 +98,7 @@
 		<true/>
 		<key>com.apple.developer.associated-domains</key>
 		<array>
-			<string>applinks:kidscottage.com</string>
+			<string>applinks:derasy.com</string>
 		</array>
 	</dict>
 </plist>

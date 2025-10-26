@@ -69,7 +69,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                 children: [
                   Text(
                     'select_country'.tr,
-                    style: AppFonts.robotoBold18.copyWith(
+                    style: AppFonts.cairoBold18.copyWith(
                       color: Colors.white,
                     ),
                   ),
@@ -94,7 +94,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                 onChanged: _filterCountries,
                 decoration: InputDecoration(
                   hintText: 'search_countries'.tr,
-                  hintStyle: AppFonts.robotoRegular14.copyWith(
+                  hintStyle: AppFonts.cairoRegular14.copyWith(
                     color: AppColors.textSecondary,
                   ),
                   prefixIcon: Icon(
@@ -161,13 +161,13 @@ class _CountrySelectorState extends State<CountrySelector> {
                               children: [
                                 Text(
                                   country.name,
-                                  style: AppFonts.robotoMedium14.copyWith(
+                                  style: AppFonts.cairoMedium14.copyWith(
                                     color: AppColors.textPrimary,
                                   ),
                                 ),
                                 Text(
                                   country.dialCode,
-                                  style: AppFonts.robotoRegular12.copyWith(
+                                  style: AppFonts.cairoRegular12.copyWith(
                                     color: AppColors.textSecondary,
                                   ),
                                 ),

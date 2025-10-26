@@ -26,13 +26,13 @@ class ErrorPrompts {
       animationDuration: Duration(milliseconds: 300),
       titleText: Text(
         title,
-        style: AppFonts.robotoBold16.copyWith(
+        style: AppFonts.cairoBold16.copyWith(
           color: Colors.white,
         ),
       ),
       messageText: Text(
         message,
-        style: AppFonts.robotoRegular14.copyWith(
+        style: AppFonts.cairoRegular14.copyWith(
           color: Colors.white,
         ),
       ),
@@ -60,13 +60,13 @@ class ErrorPrompts {
       animationDuration: Duration(milliseconds: 300),
       titleText: Text(
         title,
-        style: AppFonts.robotoBold16.copyWith(
+        style: AppFonts.cairoBold16.copyWith(
           color: Colors.white,
         ),
       ),
       messageText: Text(
         message,
-        style: AppFonts.robotoRegular14.copyWith(
+        style: AppFonts.cairoRegular14.copyWith(
           color: Colors.white,
         ),
       ),
@@ -94,13 +94,13 @@ class ErrorPrompts {
       animationDuration: Duration(milliseconds: 300),
       titleText: Text(
         title,
-        style: AppFonts.robotoBold16.copyWith(
+        style: AppFonts.cairoBold16.copyWith(
           color: Colors.white,
         ),
       ),
       messageText: Text(
         message,
-        style: AppFonts.robotoRegular14.copyWith(
+        style: AppFonts.cairoRegular14.copyWith(
           color: Colors.white,
         ),
       ),

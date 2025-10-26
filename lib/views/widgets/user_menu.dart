@@ -49,7 +49,7 @@ class UserMenu extends StatelessWidget {
               children: [
                 Text(
                   fullName,
-                  style: AppFonts.robotoBold14.copyWith(
+                  style: AppFonts.cairoBold14.copyWith(
                     color: AppColors.textPrimary,
                   ),
                   maxLines: 1,
@@ -58,7 +58,7 @@ class UserMenu extends StatelessWidget {
                 SizedBox(height: 4.h),
                 Text(
                   email,
-                  style: AppFonts.robotoRegular12.copyWith(
+                  style: AppFonts.cairoRegular12.copyWith(
                     color: AppColors.textSecondary,
                   ),
                   maxLines: 1,
@@ -107,7 +107,7 @@ class UserMenu extends StatelessWidget {
               SizedBox(width: 12.w),
               Text(
                 title,
-                style: AppFonts.robotoRegular14.copyWith(
+                style: AppFonts.cairoRegular14.copyWith(
                   color: AppColors.textPrimary,
                 ),
               ),

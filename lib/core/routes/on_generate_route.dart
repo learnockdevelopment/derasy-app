@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../views/introduction/splash_page.dart';
-import '../../views/introduction/intro_page.dart';
 import '../../views/authentication/login_page.dart';
 import '../../views/authentication/register_page.dart';
 import '../../views/home/home_page.dart';
-import '../../views/authentication/otp_email_page.dart';
-import '../../views/authentication/validate_otp_page.dart';
-import '../../views/authentication/reset_password_page.dart';
 import '../../views/authentication/verify_email_page.dart';
-import '../../views/authentication/verify_phone_page.dart';
+import '../../views/authentication/set_new_password_page.dart';
+import '../../views/students/students_page.dart';
+import '../../views/students/data/student_details_page.dart';
+import '../../views/students/management/add_student_page.dart';
+import '../../views/students/management/edit_student_page.dart';
+import '../../views/schools/schools_page.dart';
+import '../../views/schools/school_details_page.dart';
+import '../../views/attendance/attendance_page.dart';
+import '../../views/profile/user_profile_page.dart';
+import '../../models/school_models.dart';
+import '../../models/student_models.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -20,11 +26,6 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const SplashPage(),
-        );
-      case AppRoutes.intro:
-        return GetPageRoute(
-          settings: settings,
-          page: () => const IntroPage(),
         );
       case AppRoutes.login:
         return GetPageRoute(
@@ -42,44 +43,63 @@ class RouteGenerator {
           page: () => const HomePage(),
         );
       case AppRoutes.verifyEmail:
-        final args = settings.arguments as Map<String, dynamic>?;
         return GetPageRoute(
           settings: settings,
-          page: () => VerifyEmailPage(
-            userId: args?['userId'] as int? ?? 0,
-            email: args?['email']?.toString() ?? '',
-          ),
+          page: () => const VerifyEmailPage(),
         );
-      case AppRoutes.verifyPhone:
-        final args = settings.arguments as Map<String, dynamic>?;
+      case AppRoutes.setNewPassword:
         return GetPageRoute(
           settings: settings,
-          page: () => VerifyPhonePage(
-            userId: args?['userId'] as int? ?? 0,
-            phone: args?['phone']?.toString() ?? '',
-          ),
+          page: () => const SetNewPasswordPage(),
         );
-      case AppRoutes.otpEmail:
+      case AppRoutes.students:
         return GetPageRoute(
           settings: settings,
-          page: () => const OtpEmailPage(),
+          page: () => const StudentsPage(),
         );
-      case AppRoutes.validateOtp:
-        final args = settings.arguments as Map<String, dynamic>?;
+      case AppRoutes.schools:
         return GetPageRoute(
           settings: settings,
-          page: () => ValidateOtpPage(
-            email: args?['email']?.toString() ?? '',
-          ),
+          page: () => const SchoolsPage(),
         );
-      case AppRoutes.resetPassword:
-        final args = settings.arguments as Map<String, dynamic>?;
+      case AppRoutes.schoolDetails:
+        final school = settings.arguments as School;
         return GetPageRoute(
           settings: settings,
-          page: () => ResetPasswordPage(
-            email: args?['email']?.toString() ?? '',
-            otp: args?['otp']?.toString() ?? '',
-          ),
+          page: () => SchoolDetailsPage(school: school),
+        );
+      case AppRoutes.studentDetails:
+        final args = settings.arguments as Map<String, dynamic>;
+        final student = args['student'] as Student;
+        final schoolId = args['schoolId'] as String?;
+        return GetPageRoute(
+          settings: settings,
+          page: () => StudentDetailsPage(student: student, schoolId: schoolId),
+        );
+      case AppRoutes.addStudent:
+        final args = settings.arguments as Map<String, dynamic>;
+        final schoolId = args['schoolId'] as String;
+        return GetPageRoute(
+          settings: settings,
+          page: () => AddStudentPage(),
+        );
+      case AppRoutes.editStudent:
+        final args = settings.arguments as Map<String, dynamic>;
+        final student = args['student'] as Student;
+        final schoolId = args['schoolId'] as String;
+        return GetPageRoute(
+          settings: settings,
+          page: () => EditStudentPage(student: student, schoolId: schoolId),
+        );
+      case AppRoutes.attendance:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const AttendancePage(),
+        );
+      case AppRoutes.userProfile:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const UserProfilePage(),
         );
       default:
         return errorRoute();

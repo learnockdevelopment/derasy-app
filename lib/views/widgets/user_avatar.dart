@@ -44,7 +44,9 @@ class UserAvatar extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: imageUrl != null && imageUrl!.isNotEmpty
+        child: imageUrl != null &&
+                imageUrl!.isNotEmpty &&
+                imageUrl!.trim().isNotEmpty
             ? ClipOval(
                 child: Image.network(
                   imageUrl!,
@@ -64,7 +66,7 @@ class UserAvatar extends StatelessWidget {
     return Center(
       child: Text(
         _initials,
-        style: AppFonts.robotoBold16.copyWith(
+        style: AppFonts.cairoBold16.copyWith(
           color: Colors.white,
           fontSize: (size * 0.4).sp,
         ),

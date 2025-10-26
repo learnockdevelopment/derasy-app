@@ -5,7 +5,7 @@ class AppColors {
   static const Color primary = Color(0xFF1A4973);
   static const Color primaryLight = Color(0xFF4A6B8A);
   static const Color primaryDark = Color(0xFF0F2F4A);
-  
+
   // Selection Colors
   static const Color selectedBlue = Color(0xFF7AC1FF);
 
@@ -13,6 +13,11 @@ class AppColors {
   static const Color secondary = Color(0xFFF69220);
   static const Color secondaryLight = Color(0xFFFFB74D);
   static const Color secondaryDark = Color(0xFFE65100);
+
+  // Accent Colors
+  static const Color accent = Color(0xFF4CAF50);
+  static const Color accentLight = Color(0xFF81C784);
+  static const Color accentDark = Color(0xFF388E3C);
 
   // Basic Colors
   static const Color white = Color(0xFFFFFFFF);
@@ -262,7 +267,7 @@ class AppColors {
   static const Color shadow = Color(0x1A000000);
   static const Color shadowLight = Color(0x0A000000);
   static const Color shadowDark = Color(0x33000000);
-  
+
   // Custom Colors
   static const Color lightPeach = Color(0xFFFFDBB2);
 }

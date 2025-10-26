@@ -30,7 +30,7 @@ class LoadingPrompts {
                 // Title
                 Text(
                   title,
-                  style: AppFonts.robotoBold16.copyWith(
+                  style: AppFonts.cairoBold16.copyWith(
                     color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
@@ -39,7 +39,7 @@ class LoadingPrompts {
                   SizedBox(height: 8.h),
                   Text(
                     message,
-                    style: AppFonts.robotoRegular14.copyWith(
+                    style: AppFonts.cairoRegular14.copyWith(
                       color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,

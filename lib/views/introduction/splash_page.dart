@@ -23,6 +23,8 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
+    print('✅ SplashPage initState called');
+
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -36,24 +38,31 @@ class _SplashPageState extends State<SplashPage>
     ));
 
     _animationController.forward();
-    _navigateToIntro();
+    print('✅ Animation started');
+    _navigateToAuth();
   }
 
-  void _navigateToIntro() {
+  void _navigateToAuth() {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        // Check if user is logged in
-        final bool isLoggedIn = UserStorageService.isLoggedIn();
-        print('🔍 Login check: $isLoggedIn');
+        try {
+          // Check if user is logged in
+          final bool isLoggedIn = UserStorageService.isLoggedIn();
+          print('🔍 Login check: $isLoggedIn');
 
-        if (isLoggedIn) {
-          // User is logged in - go to home
-          print('📱 User logged in - navigating to home');
-          Get.offNamed<void>(AppRoutes.home);
-        } else {
-          // User not logged in - always show intro
-          print('📱 User not logged in - navigating to intro');
-          Get.offNamed<void>(AppRoutes.intro);
+          if (isLoggedIn) {
+            // User is logged in - go to home
+            print('📱 User logged in - navigating to home');
+            Get.offNamed<void>(AppRoutes.home);
+          } else {
+            // User not logged in - go to login
+            print('📱 User not logged in - navigating to login');
+            Get.offNamed<void>(AppRoutes.login);
+          }
+        } catch (e) {
+          print('❌ Error in navigation: $e');
+          // Fallback to login page
+          Get.offNamed<void>(AppRoutes.login);
         }
       }
     });
@@ -160,8 +169,8 @@ class _SplashPageState extends State<SplashPage>
                   child: Column(
                     children: [
                       Text(
-                        'Kids Cottage',
-                        style: AppFonts.robotoBold32.copyWith(
+                        'Derasy',
+                        style: AppFonts.cairoBold32.copyWith(
                           color: AppColors.primary,
                           fontSize: 36.sp.clamp(28.sp, 40.sp),
                           letterSpacing: 1.2,

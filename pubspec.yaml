@@ -1,5 +1,5 @@
-name: kids_cottage
-description: Kids Cottage Nursery App
+name: derasy
+description: Derasy Parents Portal - School Management & Student Tracking
 publish_to: "none"
 version: 1.0.0
 
@@ -11,12 +11,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   get: ^4.6.5
   flutter_screenutil: ^5.9.0
   smooth_page_indicator: ^1.1.0
   form_field_validator: ^1.1.0
   get_storage: ^2.1.1
   http: ^1.5.0
+  shimmer: ^3.0.0
+  image_picker: ^1.0.4
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:
@@ -41,68 +49,35 @@ flutter:
     - assets/translations/
 
   fonts:
-    - family: Roboto
+    - family: cairo
       fonts:
-        - asset: assets/fonts/Roboto-Thin.ttf
-          weight: 100
-        - asset: assets/fonts/Roboto-ThinItalic.ttf
-          weight: 100
-          style: italic
-        - asset: assets/fonts/Roboto-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Roboto-LightItalic.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/Roboto-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Roboto-Italic.ttf
-          weight: 400
-          style: italic
-        - asset: assets/fonts/Roboto-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Roboto-MediumItalic.ttf
-          weight: 500
-          style: italic
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Roboto-BoldItalic.ttf
-          weight: 700
-          style: italic
-        - asset: assets/fonts/Roboto-Black.ttf
-          weight: 900
-        - asset: assets/fonts/Roboto-BlackItalic.ttf
-          weight: 900
-          style: italic
-    - family: RobotoCondensed
-      fonts:
-        - asset: assets/fonts/Roboto_Condensed-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Roboto_Condensed-LightItalic.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/Roboto_Condensed-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Roboto_Condensed-Italic.ttf
-          weight: 400
-          style: italic
-        - asset: assets/fonts/Roboto_Condensed-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Roboto_Condensed-BoldItalic.ttf
-          weight: 700
-          style: italic
-    - family: roboto
-      fonts:
-        - asset: assets/fonts/Roboto-ExtraLight.ttf
+        - asset: assets/fonts/cairo-ExtraLight.ttf
           weight: 200
-        - asset: assets/fonts/Roboto-Light.ttf
+        - asset: assets/fonts/cairo-Light.ttf
           weight: 300
-        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/cairo-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Roboto-Medium.ttf
+        - asset: assets/fonts/cairo-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Roboto-SemiBold.ttf
+        - asset: assets/fonts/cairo-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Roboto-Bold.ttf
+        - asset: assets/fonts/cairo-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Roboto-ExtraBold.ttf
+        - asset: assets/fonts/cairo-ExtraBold.ttf
+          weight: 800
+    - family: manrope
+      fonts:
+        - asset: assets/fonts/manrope-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/manrope-Light.ttf
+          weight: 300
+        - asset: assets/fonts/manrope-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/manrope-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/manrope-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/manrope-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/manrope-ExtraBold.ttf
           weight: 800
