@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
-import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/user_storage_service.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../widgets/safe_network_image.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -76,6 +76,10 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    final primary = AppConfigController.to.primaryColorAsColor;
+    final appName = AppConfigController.to.appName;
+    final logoUrl = AppConfigController.to.lightLogoUrl;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -85,9 +89,9 @@ class _SplashPageState extends State<SplashPage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.primary.withOpacity(0.1),
+              primary.withOpacity(0.1),
               AppColors.background,
-              AppColors.primary.withOpacity(0.05),
+              primary.withOpacity(0.05),
             ],
           ),
         ),
@@ -106,13 +110,13 @@ class _SplashPageState extends State<SplashPage>
                       color: AppColors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: primary.withOpacity(0.3),
                           blurRadius: 30,
                           offset: const Offset(0, 15),
                           spreadRadius: 0,
                         ),
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: primary.withOpacity(0.1),
                           blurRadius: 50,
                           offset: const Offset(0, 25),
                           spreadRadius: 0,
@@ -123,38 +127,35 @@ class _SplashPageState extends State<SplashPage>
                       child: Container(
                         width: 100.w,
                         height: 100.h,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: Image.asset(
-                          AssetsManager.logo,
+                        child: SafeNetworkImage(
+                          imageUrl: logoUrl,
                           width: 100.w,
                           height: 100.h,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            print('❌ Primary logo loading error: $error');
-                            return Container(
-                              width: 80.w,
-                              height: 80.h,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppColors.primary,
-                                    AppColors.primary.withOpacity(0.8),
-                                  ],
-                                ),
+                          errorWidget: Container(
+                            width: 80.w,
+                            height: 80.h,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  primary,
+                                  primary.withOpacity(0.8),
+                                ],
                               ),
-                              child: Icon(
-                                Icons.child_care,
-                                size: 40.w,
-                                color: AppColors.white,
-                              ),
-                            );
-                          },
+                            ),
+                            child: Icon(
+                              Icons.child_care,
+                              size: 40.w,
+                              color: AppColors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -169,15 +170,15 @@ class _SplashPageState extends State<SplashPage>
                   child: Column(
                     children: [
                       Text(
-                        'Derasy',
+                        appName,
                         style: AppFonts.cairoBold32.copyWith(
-                          color: AppColors.primary,
+                          color: primary,
                           fontSize: 36.sp.clamp(28.sp, 40.sp),
                           letterSpacing: 1.2,
                           shadows: [
                             Shadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              offset: Offset(0, 2),
+                              color: primary.withOpacity(0.3),
+                              offset: const Offset(0, 2),
                               blurRadius: 8,
                             ),
                           ],
@@ -185,9 +186,9 @@ class _SplashPageState extends State<SplashPage>
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        'Nurturing Young Minds',
+                        'management'.tr,
                         style: AppFonts.bodyLarge.copyWith(
-                          color: AppColors.primary.withOpacity(0.8),
+                          color: primary.withOpacity(0.8),
                           fontSize: 16.sp.clamp(14.sp, 18.sp),
                           letterSpacing: 0.5,
                         ),
@@ -201,31 +202,29 @@ class _SplashPageState extends State<SplashPage>
                 // Loading indicator
                 FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Container(
+                  child: SizedBox(
                     width: 40.w,
                     height: 40.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primary.withOpacity(0.8),
+                        primary.withOpacity(0.8),
                       ),
                     ),
                   ),
                 ),
 
-                // Debug button (remove in production)
                 SizedBox(height: 20.h),
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: TextButton(
                     onPressed: () {
-                      print('🔍 [DEBUG] Direct navigation to login');
                       Get.offNamed(AppRoutes.login);
                     },
                     child: Text(
                       'Debug: Go to Login',
                       style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.primary.withOpacity(0.7),
+                        color: primary.withOpacity(0.7),
                         fontSize: 12.sp,
                       ),
                     ),

@@ -1,14 +1,19 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
 import '../../models/user.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../widgets/safe_network_image.dart';
 
 class VerifyEmailPage extends StatefulWidget {
   const VerifyEmailPage({Key? key}) : super(key: key);
@@ -247,382 +252,225 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Enhanced Header with gradient background
-              Container(
-                width: double.infinity,
-                height: 320.h,
+      body: Stack(
+        children: [
+          // Blurred cover background
+          SizedBox.expand(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryLight,
-                      AppColors.primary.withOpacity(0.9),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30.r),
-                    bottomRight: Radius.circular(30.r),
+                  image: DecorationImage(
+                    image: AssetImage(AssetsManager.login),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                child: Stack(
+              ), 
+            ),
+          ),
+          Container(
+            color: Colors.black.withOpacity(0.35),
+          ),
+          // Foreground content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
                   children: [
-                    // Background decorative elements
-                    Positioned(
-                      top: 40.h,
-                      right: 30.w,
-                      child: Container(
-                        width: 80.w,
-                        height: 80.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(40.r),
+                    SizedBox(height: 40.h),
+                    // Logo and Title row (identical structure as login)
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: SizedBox(
+                            width: 28.w,
+                            height: 28.h,
+                            child: SafeNetworkImage(
+                              imageUrl: AppConfigController.to.lightLogoUrl,
+                              width: 28.w,
+                              height: 28.h,
+                              fit: BoxFit.contain,
+                              errorWidget: Icon(
+                                Icons.verified_user,
+                                color: Colors.white,
+                                size: 28.sp,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 60.h,
-                      left: 30.w,
-                      child: Container(
-                        width: 50.w,
-                        height: 50.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(25.r),
-                        ),
-                      ),
-                    ),
-                    // Content
-                    Padding(
-                      padding: EdgeInsets.all(24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 20.h),
-                          // Logo and title
-                          Row(
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: EdgeInsets.all(12.w),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(16.r),
-                                ),
-                                child: Icon(
-                                  Icons.verified_user,
-                                  color: AppColors.white,
-                                  size: 32.sp,
+                              Text(
+                                _isPasswordReset ? 'reset_password'.tr : 'verify_email'.tr,
+                                style: AppFonts.cairoBold20.copyWith(
+                                  color: Colors.white,
                                 ),
                               ),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'verify_email'.tr,
-                                      style: AppFonts.cairoBold28.copyWith(
-                                        color: AppColors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      _isPasswordReset
-                                          ? 'Reset Password'
-                                          : 'Email Verification',
-                                      style: AppFonts.cairoRegular16.copyWith(
-                                        color: AppColors.white.withOpacity(0.9),
-                                      ),
-                                    ),
-                                  ],
+                              SizedBox(height: 2.h),
+                              Text(
+                                _isPasswordReset ? 'reset_code_sent_message'.tr : 'verification_intro_message'.tr,
+                                style: AppFonts.cairoRegular12.copyWith(
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 30.h),
-                          // Email display
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 12.h),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 50.h),
+                    // Verification Card
+                    Container(
+                      padding: EdgeInsets.all(24.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(20.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.grey200,
+                            blurRadius: 15,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'enter_verification_code'.tr,
+                              style: AppFonts.cairoBold18.copyWith(color: AppColors.textPrimary),
+                              textAlign: TextAlign.center,
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.email,
-                                  color: AppColors.white,
-                                  size: 16.sp,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    _email,
-                                    style: AppFonts.cairoMedium14.copyWith(
-                                      color: AppColors.white,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                            SizedBox(height: 5.h),
+                            Text(
+                              'we_sent_verification_code_to'.tr,
+                              style: AppFonts.cairoRegular12.copyWith(color: AppColors.textSecondary),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 20.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.07),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.email_rounded, color: AppColors.primary, size: 17.sp),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: Text(_email, style: AppFonts.cairoRegular14.copyWith(color: AppColors.textPrimary, fontSize: 14.sp)),
                                   ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            // OTP Field
+                            TextFormField(
+                              controller: _otpController,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              maxLength: 6,
+                              style: AppFonts.cairoBold28.copyWith(fontSize: 28.sp, letterSpacing: 12.w, color: AppColors.primary),
+                              decoration: InputDecoration(
+                                labelText: 'verification_code'.tr,
+                                hintText: '000000',
+                                counterText: '',
+                                prefixIcon: Icon(Icons.verified_user_outlined, color: AppColors.primary, size: 20.sp),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(color: AppColors.grey300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                                ),
+                                filled: true,
+                                fillColor: AppColors.grey50,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'code_required'.tr;
+                                if (value.length != 6) return 'verification_code_must_be_6_characters'.tr;
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: 26.h),
+                            // Main action button
+                            SizedBox(
+                              height: 50.h,
+                              child: ElevatedButton(
+                                onPressed: !_isLoading && _otpController.text.isNotEmpty ? _verifyEmail : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  disabledBackgroundColor: AppColors.grey300,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                  elevation: 0,
+                                ),
+                                child: _isLoading
+                                    ? SizedBox(height: 20.h, width: 20.w, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.verified_user, color: Colors.white, size: 18.sp),
+                                          SizedBox(width: 8.w),
+                                          Text('verify'.tr, style: AppFonts.cairoBold16.copyWith(color: Colors.white)),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                            SizedBox(height: 18.h),
+                            // Resend section
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.timer, color: AppColors.textSecondary, size: 17.sp),
+                                SizedBox(width: 8.w),
+                                Text('didnt_receive_code'.tr, style: AppFonts.cairoRegular12.copyWith(color: AppColors.textSecondary)),
+                                SizedBox(width: 8.w),
+                                TextButton(
+                                  onPressed: _resendCountdown > 0 || _isResending ? null : _resendOtp,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.r)),
+                                  ),
+                                  child: _isResending
+                                      ? SizedBox(height: 16.h, width: 16.w, child: const CircularProgressIndicator(strokeWidth: 2))
+                                      : Text(
+                                          _resendCountdown > 0
+                                              ? 'resend_in_seconds'.tr.replaceAll('{seconds}', _resendCountdown.toString())
+                                              : 'resend_code'.tr,
+                                          style: AppFonts.cairoBold12.copyWith(color: _resendCountdown > 0 ? Colors.grey : AppColors.primary)),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Verification Form with enhanced design
-              Container(
-                margin: EdgeInsets.all(20.w),
-                padding: EdgeInsets.all(28.w),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.grey200,
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Form Title
-                      Text(
-                        'Enter Verification Code',
-                        style: AppFonts.cairoBold20.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'we_sent_verification_code_to'.tr,
-                        style: AppFonts.cairoRegular14.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 30.h),
-
-                      // OTP Field with enhanced design
-                      TextFormField(
-                        controller: _otpController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        maxLength: 6,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        style: AppFonts.cairoBold28.copyWith(
-                          fontSize: 28.sp,
-                          letterSpacing: 12.w,
-                          color: AppColors.primary,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'enter_verification_code'.tr,
-                          hintText: '000000',
-                          counterText: '',
-                          prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.verified_user_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: AppColors.grey50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'verification_code_required'.tr;
-                          }
-                          if (value.length != 6) {
-                            return 'verification_code_must_be_6_characters'.tr;
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 30.h),
-
-                      // Verify Button with enhanced design
-                      Container(
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed:
-                              !_isLoading && _otpController.text.isNotEmpty
-                                  ? () {
-                                      print(
-                                          '🔐 [VERIFY] Button onPressed triggered');
-                                      _verifyEmail();
-                                    }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.w,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.verified_user,
-                                      color: Colors.white,
-                                      size: 20.sp,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      'verify'.tr,
-                                      style: AppFonts.cairoBold16.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Resend Section with enhanced design
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.grey50,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.timer,
-                              color: AppColors.textSecondary,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            Text(
-                              'didnt_receive_code'.tr,
-                              style: AppFonts.cairoRegular14.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
+                            SizedBox(height: 14.h),
+                            // Back to login link
                             TextButton(
-                              onPressed: _resendCountdown > 0 || _isResending
-                                  ? null
-                                  : _resendOtp,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w, vertical: 8.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                              ),
-                              child: _isResending
-                                  ? SizedBox(
-                                      height: 16.h,
-                                      width: 16.w,
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      _resendCountdown > 0
-                                          ? 'resend_in_seconds'.tr.replaceAll(
-                                              '{seconds}',
-                                              _resendCountdown.toString())
-                                          : 'resend_code'.tr,
-                                      style: AppFonts.cairoBold14.copyWith(
-                                        color: _resendCountdown > 0
-                                            ? Colors.grey
-                                            : AppColors.primary,
-                                        fontSize: 14.sp,
-                                      ),
-                                    ),
+                              onPressed: () => Get.offAllNamed(AppRoutes.login),
+                              child: Text('back_to_sign_in'.tr, style: AppFonts.cairoRegular12.copyWith(color: AppColors.textSecondary)),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16.h),
-
-                      // Back to Login
-                      TextButton(
-                        onPressed: () {
-                          Get.offAllNamed(AppRoutes.login);
-                        },
-                        child: Text(
-                          'back_to_sign_in'.tr,
-                          style: AppFonts.cairoRegular14.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 40.h),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

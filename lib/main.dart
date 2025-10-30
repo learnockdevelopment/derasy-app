@@ -7,36 +7,22 @@ import 'core/routes/app_routes.dart';
 import 'core/routes/on_generate_route.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_fonts.dart';
-import 'core/translations/app_translations.dart';
+import 'core/controllers/app_translations.dart';
 import 'core/controllers/language_controller.dart';
-import 'core/controllers/app_config_controller.dart';
+import 'core/controllers/app_config_controller.dart' ;
 
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    print('✅ Flutter binding initialized');
-
     await GetStorage.init();
-    print('✅ GetStorage initialized');
-
     await AppTranslations.loadTranslations();
-    print('✅ Translations loaded');
-
     Get.put(LanguageController());
-    print('✅ Language controller initialized');
-
-    // Initialize and fetch app configuration
     Get.put(AppConfigController());
-    print('✅ App config controller initialized');
     await AppConfigController.to.loadAppConfig();
-    print('✅ App configuration loaded');
-
     runApp(const DerasyApp());
-    print('✅ App started');
   } catch (e) {
     print('❌ Error initializing app: $e');
     print('❌ Stack trace: ${StackTrace.current}');
-    // Fallback initialization
     runApp(const DerasyApp());
   }
 }

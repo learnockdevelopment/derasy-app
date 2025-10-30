@@ -9,6 +9,8 @@ import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../widgets/safe_network_image.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -278,6 +280,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final primary = AppConfigController.to.primaryColorAsColor;
+    final logoUrl = AppConfigController.to.lightLogoUrl;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -314,13 +319,23 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         Container(
                           padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
-                          child: Icon(
-                            Icons.school,
-                            color: AppColors.primary,
-                            size: 28.sp,
+                          child: SizedBox(
+                            width: 28.w,
+                            height: 28.h,
+                            child: SafeNetworkImage(
+                              imageUrl: logoUrl,
+                              width: 28.w,
+                              height: 28.h,
+                              fit: BoxFit.contain,
+                              errorWidget: Icon(
+                                Icons.school,
+                                color: Colors.white,
+                                size: 28.sp,
+                              ),
+                            ),
                           ),
                         ),
                         SizedBox(width: 12.w),
@@ -331,14 +346,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               Text(
                                 'welcome_back'.tr,
                                 style: AppFonts.cairoBold20.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: Colors.white,
                                 ),
                               ),
                               SizedBox(height: 2.h),
                               Text(
                                 'sign_in_to_continue'.tr,
                                 style: AppFonts.cairoRegular12.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -401,7 +416,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   prefixIcon: Icon(
                                     Icons.email_outlined,
-                                    color: AppColors.primary,
+                                    color: primary,
                                     size: 20.sp,
                                   ),
                                   border: OutlineInputBorder(
@@ -411,7 +426,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12.r),
                                     borderSide: BorderSide(
-                                      color: AppColors.primary,
+                                      color: primary,
                                       width: 2,
                                     ),
                                   ),
@@ -448,7 +463,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               ),
                               prefixIcon: Icon(
                                 Icons.lock_outlined,
-                                color: AppColors.primary,
+                                color: primary,
                                 size: 20.sp,
                               ),
                               suffixIcon: IconButton(
@@ -456,7 +471,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   _isPasswordVisible
                                       ? Icons.visibility_off
                                       : Icons.visibility,
-                                  color: AppColors.primary,
+                                  color: primary,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -472,7 +487,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12.r),
                                 borderSide: BorderSide(
-                                  color: AppColors.primary,
+                                  color: primary,
                                   width: 2,
                                 ),
                               ),
@@ -502,7 +517,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               child: Text(
                                 'forgot_password'.tr,
                                 style: AppFonts.cairoBold12.copyWith(
-                                  color: AppColors.primary,
+                                  color: primary,
                                 ),
                               ),
                             ),
@@ -519,7 +534,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     }
                                   : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
+                                backgroundColor: primary,
                                 disabledBackgroundColor: AppColors.grey300,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.r),
@@ -574,7 +589,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 child: Text(
                                   'sign_up'.tr,
                                   style: AppFonts.cairoBold12.copyWith(
-                                    color: AppColors.primary,
+                                    color: primary,
                                   ),
                                 ),
                               ),

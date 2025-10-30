@@ -6,10 +6,10 @@ import '../../core/constants/app_fonts.dart';
 import '../../models/school_models.dart';
 import '../../services/schools_service.dart';
 import '../../services/user_storage_service.dart';
-import '../schools/school_details_page.dart';
 import '../profile/user_profile_page.dart';
-import '../widgets/shimmer_loading.dart';
 import '../widgets/safe_network_image.dart';
+import '../../services/user_profile_service.dart';
+import '../schools/school_details_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -19,7 +19,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isLoading = false;
   List<School> _schools = [];
   Map<String, dynamic>? _userData;
   int _currentIndex = 0;
@@ -32,28 +31,23 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadData() async {
     setState(() {
-      _isLoading = true;
     });
 
     try {
       // Load user data
       final userData = await UserStorageService.getUserData();
-      
-      // Print full user data
+      // Debug prints
       print('🏠 [HOME] ===========================================');
-      print('🏠 [HOME] FULL USER DATA FROM API:');
+      print('🏠 [HOME] FULL USER DATA FROM STORAGE:');
       print('🏠 [HOME] ${userData?.toString() ?? 'null'}');
       print('🏠 [HOME] ===========================================');
-      
-      if (userData != null) {
-        userData.forEach((key, value) {
-          print('🏠 [HOME] $key: $value');
-        });
-      }
-      
+
       setState(() {
         _userData = userData;
       });
+
+      // Ensure avatar is available: if missing, try fetching from API once
+      await _ensureUserAvatarLoaded();
 
       // Load schools
       final response = await SchoolsService.getAllSchools();
@@ -72,15 +66,38 @@ class _HomePageState extends State<HomePage> {
       );
     } finally {
       setState(() {
-        _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _ensureUserAvatarLoaded() async {
+    try {
+      final currentAvatar = _userData?['avatar'] ?? _userData?['profileImage'] ?? _userData?['image'];
+      if (currentAvatar == null || (currentAvatar is String && currentAvatar.trim().isEmpty)) {
+        final profile = await UserProfileService.getCurrentUserProfile();
+        if (mounted) {
+          setState(() {
+            _userData = {
+              ...?_userData,
+              'avatar': profile['avatar'] ?? _userData?['avatar'],
+              'profileImage': profile['profileImage'] ?? _userData?['profileImage'],
+              'image': profile['image'] ?? _userData?['image'],
+              'name': profile['name'] ?? _userData?['name'],
+              'email': profile['email'] ?? _userData?['email'],
+            };
+          });
+        }
+      }
+    } catch (e) {
+      // Silent: fall back to placeholder
+      debugPrint('🏠 [HOME] Unable to fetch avatar from API: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -95,22 +112,22 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHomeContent() {
     return CustomScrollView(
       slivers: [
-        // Enhanced App Bar
-        SliverAppBar( 
+        // Enhanced App Bar (existing)
+        SliverAppBar(
           expandedHeight: 80.h,
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
-          backgroundColor: const Color(0xFF1E3A8A),
+          backgroundColor: AppColors.primary,
           elevation: 0,
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF1E3A8A),
-                    Color(0xFF3B82F6),
-                    Color(0xFF60A5FA),
+                    AppColors.primary.withOpacity(0.98),
+                    AppColors.primary.withOpacity(0.88),
+                    AppColors.primary.withOpacity(0.78),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -192,22 +209,168 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-          ),
+          ), 
         ),
-
-        // Content - Only Schools
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 80.h),
-            child: _buildSchoolsSection(),
+        SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+        if (_schools.isNotEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+              child: _buildSchoolsSuggestions(),
+            ),
           ),
-        ),
       ],
     );
   }
 
   Widget _buildProfileContent() {
     return const UserProfilePage();
+  }
+
+  Widget _buildSchoolsSuggestions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 34.w,
+              height: 34.h,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(Icons.school_rounded, color: AppColors.primary, size: 18.sp),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              'my_schools'.tr,
+              style: AppFonts.h3.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18.sp,
+              ),
+            ),
+          ],
+        ),
+        ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: _schools.length.clamp(0, 4),
+          separatorBuilder: (_, __) => SizedBox(height: 20.h),
+          itemBuilder: (context, index) {
+            final school = _schools[index];
+            final imageUrl = _getSchoolImageUrl(school);
+            return Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14.r),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Get.to(() => SchoolDetailsPage(school: school)),
+                  borderRadius: BorderRadius.circular(14.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(12.w),
+                    child: Row(
+                      children: [
+                        // Left accent
+                        Container(
+                          width: 4.w,
+                          height: 44.h,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2.r),
+                            gradient: LinearGradient(
+                              colors: [AppColors.primary, AppColors.primary.withOpacity(0.6)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        // Logo
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: SizedBox(
+                            width: 42.w,
+                            height: 42.h,
+                            child: SafeSchoolImage(imageUrl: imageUrl, width: 42.w, height: 42.h),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                school.name,
+                                style: AppFonts.h4.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13.5.sp,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 3.h),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on_rounded, color: AppColors.textSecondary, size: 12.sp),
+                                  SizedBox(width: 3.w),
+                                  Expanded(
+                                    child: Text(
+                                      '${school.location?.city ?? 'N/A'}, ${school.location?.governorate ?? 'N/A'}',
+                                      style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 10.5.sp),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.open_in_new_rounded, color: AppColors.primary, size: 14.sp),
+                              SizedBox(width: 4.w),
+                              Text('view_details'.tr, style: AppFonts.labelSmall.copyWith(color: AppColors.primary, fontSize: 10.sp)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String? _getSchoolImageUrl(School school) {
+    if (school.visibilitySettings?.officialLogo?.url.isNotEmpty == true) {
+      return school.visibilitySettings!.officialLogo!.url;
+    } else if (school.media?.schoolImages?.isNotEmpty == true) {
+      return school.media!.schoolImages!.first.url;
+    } else if (school.bannerImage?.isNotEmpty == true) {
+      return school.bannerImage;
+    }
+    return null;
   }
 
   Widget _buildBottomNavBar() {
@@ -261,7 +424,7 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF1E3A8A).withOpacity(0.1)
+              ? AppColors.primary.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
@@ -271,7 +434,7 @@ class _HomePageState extends State<HomePage> {
             Icon(
               icon,
               color: isSelected
-                  ? const Color(0xFF1E3A8A)
+                  ? AppColors.primary
                   : const Color(0xFF9CA3AF),
               size: 24.sp,
             ),
@@ -280,7 +443,7 @@ class _HomePageState extends State<HomePage> {
               label,
               style: AppFonts.labelSmall.copyWith(
                 color: isSelected
-                    ? const Color(0xFF1E3A8A)
+                    ? AppColors.primary
                     : const Color(0xFF9CA3AF),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 12.sp,
@@ -292,293 +455,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSchoolsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Modern Section Header
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF1E3A8A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.school_rounded,
-                color: Colors.white,
-                size: 18.sp,
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              'my_schools'.tr,
-              style: AppFonts.h3.copyWith(
-                color: const Color(0xFF1F2937),
-                fontWeight: FontWeight.bold,
-                fontSize: 18.sp,
-              ),
-            ),
-            const Spacer(),
-            if (_schools.isNotEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: const Color(0xFF10B981).withOpacity(0.3),
-                  ),
-                ),
-                child: Text(
-                  '${_schools.length}',
-                  style: AppFonts.bodySmall.copyWith(
-                    color: const Color(0xFF10B981),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        
-        // Schools List or Empty State
-        if (_isLoading)
-          _buildLoadingShimmer()
-        else if (_schools.isEmpty)
-          _buildEmptyState()
-        else
-          _buildModernSchoolsList(),
-      ],
-    );
-  }
-
-  Widget _buildLoadingShimmer() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 1,
-        childAspectRatio: 3.8,
-        mainAxisSpacing: 10.h,
-      ),
-      itemCount: 3,
-      itemBuilder: (context, index) {
-        return ShimmerListTile(hasAvatar: true, hasSubtitle: true);
-      },
-    );
-  }
-
-  Widget _buildModernSchoolsList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _schools.length,
-              separatorBuilder: (context, index) => SizedBox(height: 8.h),
-      itemBuilder: (context, index) {
-        final school = _schools[index];
-        return _buildModernSchoolCard(school);
-      },
-    );
-  }
-
-  Widget _buildModernSchoolCard(School school) {
-    String? imageUrl = _getSchoolImageUrl(school);
-    
-      return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Get.to(() => SchoolDetailsPage(school: school)),
-          borderRadius: BorderRadius.circular(10.r),
-          child: Padding(
-            padding: EdgeInsets.all(10.w),
-            child: Row(
-              children: [
-                // School Avatar
-                          Container(
-                            width: 40.w,
-                            height: 40.h,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF1E3A8A)],  
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(10.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: SafeSchoolImage(
-                      imageUrl: imageUrl,
-                      width: 40.w,
-                      height: 40.h,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                // School Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              school.name,
-                              style: AppFonts.h4.copyWith(
-                                color: const Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.sp,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 3.h),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            color: const Color(0xFF6B7280),
-                            size: 12.sp,
-                          ),
-                          SizedBox(width: 3.w),
-                          Expanded(
-                            child: Text(
-                              '${school.location?.city ?? 'N/A'}, ${school.location?.governorate ?? 'N/A'}',
-                              style: AppFonts.bodySmall.copyWith(
-                                color: const Color(0xFF6B7280),
-                                fontSize: 11.sp,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: const Color(0xFF3B82F6),
-                  size: 16.sp,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80.w,
-            height: 80.h,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF1E3A8A)],
-              ),
-              borderRadius: BorderRadius.circular(40.r),
-            ),
-            child: Icon(
-              Icons.school_outlined,
-              size: 40.sp,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'no_schools_found'.tr,
-            style: AppFonts.h4.copyWith(
-              color: const Color(0xFF1F2937),
-              fontWeight: FontWeight.bold,
-              fontSize: 18.sp,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'add_first_school'.tr,
-            style: AppFonts.bodyMedium.copyWith(
-              color: const Color(0xFF6B7280),
-              fontSize: 14.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  String? _getSchoolImageUrl(School school) {
-    if (school.visibilitySettings?.officialLogo?.url.isNotEmpty == true) {
-      return school.visibilitySettings!.officialLogo!.url;
-    } else if (school.media?.schoolImages?.isNotEmpty == true) {
-      return school.media!.schoolImages!.first.url;
-    } else if (school.bannerImage?.isNotEmpty == true) {
-      return school.bannerImage;
-    }
-    return null;
-  }
-
   Widget _buildUserAvatar() {
-    // Get user image from user data
-    String? imageUrl = _userData?['avatar'] ??
-        _userData?['profileImage'] ??
-        _userData?['image'];
+    String? imageUrl = _userData?['avatar']?.toString().trim();
+    if (imageUrl == null || imageUrl.isEmpty) {
+      imageUrl = _userData?['profileImage']?.toString().trim();
+    }
+    if (imageUrl == null || imageUrl.isEmpty) {
+      imageUrl = _userData?['image']?.toString().trim();
+    }
 
     return Container(
       width: 44.w,
@@ -601,11 +485,12 @@ class _HomePageState extends State<HomePage> {
       child: ClipOval(
         child: SafeAvatarImage(
           imageUrl: imageUrl,
-          size: 40,
-          backgroundColor: const Color(0xFF1E3A8A),
+          size: 44,
+          backgroundColor: AppColors.primary,
         ),
       ),
     );
   }
+
 
 }

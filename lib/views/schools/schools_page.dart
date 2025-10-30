@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../models/school_models.dart';
 import '../../services/schools_service.dart';
@@ -97,7 +98,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E3A8A),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         title: Text(
           'My Schools',
@@ -126,8 +127,8 @@ class _SchoolsPageState extends State<SchoolsPage> {
           // Search Bar
           Container(
             padding: EdgeInsets.all(16.w),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E3A8A),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(24),
                 bottomRight: Radius.circular(24),
@@ -196,7 +197,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
                     ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: _loadSchools,
-                        color: const Color(0xFF1E3A8A),
+                        color: AppColors.primary,
                         child: ListView.builder(
                           padding: EdgeInsets.all(16.w),
                           itemCount: _filteredSchools.length,
@@ -254,68 +255,52 @@ class _SchoolsPageState extends State<SchoolsPage> {
 
   Widget _buildSchoolCard(School school) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
+      margin: EdgeInsets.only(bottom: 14.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => Get.to(
-            () => SchoolDetailsPage(school: school),
-          ),
-          borderRadius: BorderRadius.circular(16.r),
+          onTap: () => Get.to(() => SchoolDetailsPage(school: school)),
+          borderRadius: BorderRadius.circular(14.r),
           child: Padding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.all(14.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Row
                 Row(
                   children: [
-                    // School Avatar with Image
-                    _buildSchoolAvatar(school),
-                    SizedBox(width: 16.w),
+                    // Accent bar
+                    Container(width: 4.w, height: 48.h, decoration: BoxDecoration(borderRadius: BorderRadius.circular(2.r), gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withOpacity(0.6)], begin: Alignment.topCenter, end: Alignment.bottomCenter))),
+                    SizedBox(width: 12.w),
+                    // Logo
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: SizedBox(width: 48.w, height: 48.h, child: SafeSchoolImage(imageUrl: _getSchoolImageUrlLocal(school), width: 48.w, height: 48.h)),
+                    ),
+                    SizedBox(width: 12.w),
 
                     // School Info
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            school.name,
-                            style: AppFonts.h3.copyWith(
-                              color: const Color(0xFF1F2937),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.sp,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          Text(school.name, style: AppFonts.h4.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14.sp), maxLines: 1, overflow: TextOverflow.ellipsis),
                           SizedBox(height: 4.h),
                           Row(
                             children: [
-                              Icon(
-                                Icons.location_on_rounded,
-                                color: const Color(0xFF6B7280),
-                                size: 16.sp,
-                              ),
+                              Icon(Icons.location_on_rounded, color: AppColors.textSecondary, size: 14.sp),
                               SizedBox(width: 4.w),
                               Expanded(
                                 child: Text(
                                   '${school.location?.city ?? 'N/A'}, ${school.location?.governorate ?? 'N/A'}',
-                                  style: AppFonts.bodyMedium.copyWith(
-                                    color: const Color(0xFF6B7280),
-                                    fontSize: 14.sp,
-                                  ),
+                                  style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -335,71 +320,27 @@ class _SchoolsPageState extends State<SchoolsPage> {
                   ],
                 ),
 
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
 
                 // School Details
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: const Color(0xFFE5E7EB),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      _buildDetailItem(
-                        icon: Icons.phone_rounded,
-                        label: 'Phone',
-                        value: school.location?.mainPhone ?? 'N/A',
-                      ),
-                      SizedBox(width: 16.w),
-                      _buildDetailItem(
-                        icon: Icons.email_rounded,
-                        label: 'Email',
-                        value: school.location?.officialEmail ?? 'N/A',
-                      ),
-                    ],
-                  ),
-                ),
+                Row(children: [
+                  _buildPill(icon: Icons.phone_rounded, text: school.location?.mainPhone ?? 'N/A'),
+                  SizedBox(width: 8.w),
+                  _buildPill(icon: Icons.email_rounded, text: school.location?.officialEmail ?? 'N/A'),
+                ]),
 
                 SizedBox(height: 12.h),
 
                 // Status Badge
-                Row(
-                  children: [
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: const Color(0xFF10B981).withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        'ACTIVE',
-                        style: AppFonts.labelSmall.copyWith(
-                          color: const Color(0xFF10B981),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10.sp,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Tap to view details',
-                      style: AppFonts.labelSmall.copyWith(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
-                ),
+                Row(children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(12.r), border: Border.all(color: AppColors.success.withOpacity(0.3), width: 1)),
+                    child: Text('ACTIVE', style: AppFonts.labelSmall.copyWith(color: AppColors.success, fontWeight: FontWeight.w600, fontSize: 10.sp)),
+                  ),
+                  const Spacer(),
+                  Text('view_details'.tr, style: AppFonts.labelSmall.copyWith(color: AppColors.textSecondary, fontSize: 11.sp)),
+                ]),
               ],
             ),
           ),
@@ -408,94 +349,37 @@ class _SchoolsPageState extends State<SchoolsPage> {
     );
   }
 
-  Widget _buildDetailItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: const Color(0xFF6B7280),
-                size: 14.sp,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                label,
-                style: AppFonts.labelSmall.copyWith(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 10.sp,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 2.h),
-          Text(
-            value,
-            style: AppFonts.bodySmall.copyWith(
-              color: const Color(0xFF1F2937),
-              fontWeight: FontWeight.w600,
-              fontSize: 12.sp,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
+  String? _getSchoolImageUrlLocal(School school) => _getSchoolImageUrl(school);
 
-  Widget _buildSchoolAvatar(School school) {
-    // Get school image from various sources
-    String? imageUrl;
-
-    // Try to get image from visibility settings logo
-    if (school.visibilitySettings?.officialLogo?.url.isNotEmpty == true) {
-      imageUrl = school.visibilitySettings!.officialLogo!.url;
-    }
-    // Try to get image from media school images
-    else if (school.media?.schoolImages?.isNotEmpty == true) {
-      imageUrl = school.media!.schoolImages!.first.url;
-    }
-    // Try to get banner image
-    else if (school.bannerImage?.isNotEmpty == true) {
-      imageUrl = school.bannerImage;
-    }
-
+  Widget _buildPill({required IconData icon, required String text}) {
     return Container(
-      width: 60.w,
-      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1E3A8A),
-            Color(0xFF3B82F6),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E3A8A).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.primary.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(20.r),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.r),
-        child: SafeSchoolImage(
-          imageUrl: imageUrl,
-          width: 60.w,
-          height: 60.h,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.primary, size: 14.sp),
+          SizedBox(width: 6.w),
+          Text(text, style: AppFonts.labelSmall.copyWith(color: AppColors.textPrimary, fontSize: 11.sp)),
+        ],
       ),
     );
   }
+
+  // Helper to resolve school image URL
+  String? _getSchoolImageUrl(School school) {
+    if (school.visibilitySettings?.officialLogo?.url.isNotEmpty == true) {
+      return school.visibilitySettings!.officialLogo!.url;
+    } else if (school.media?.schoolImages?.isNotEmpty == true) {
+      return school.media!.schoolImages!.first.url;
+    } else if (school.bannerImage?.isNotEmpty == true) {
+      return school.bannerImage;
+    }
+    return null;
+  }
+
+
 }

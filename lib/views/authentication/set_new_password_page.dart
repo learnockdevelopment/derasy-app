@@ -102,8 +102,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     try {
       if (_email == null) {
         Get.snackbar(
-          'Error',
-          'Email not found. Please try again.',
+          'error'.tr,
+          'email_not_found_try_again'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
           colorText: Colors.white,
@@ -120,8 +120,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
 
       if (response.success) {
         Get.snackbar(
-          'Success',
-          'Password updated successfully!',
+          'success'.tr,
+          'password_updated_successfully'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.success,
           colorText: Colors.white,
@@ -129,7 +129,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
         Get.offAllNamed(AppRoutes.login);
       } else {
         Get.snackbar(
-          'Error',
+          'error'.tr,
           response.message,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
@@ -138,8 +138,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'An error occurred: ${e.toString()}',
+        'error'.tr,
+        'generic_error_with_message'.tr.replaceAll('{message}', e.toString()),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
@@ -159,7 +159,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Enhanced Header with gradient background
+              // Header with gradient
               Container(
                 width: double.infinity,
                 height: 320.h,
@@ -180,52 +180,41 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                 ),
                 child: Stack(
                   children: [
-                    // Background decorative elements
+                    // Decorative circles for unity
                     Positioned(
-                      top: 40.h,
-                      right: 30.w,
+                      top: 40.h, right: 30.w,
                       child: Container(
-                        width: 80.w,
-                        height: 80.h,
+                        width: 80.w, height: 80.h,
                         decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(40.r),
-                        ),
+                          color: AppColors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(40.r)),
                       ),
                     ),
                     Positioned(
-                      bottom: 60.h,
-                      left: 30.w,
+                      bottom: 60.h, left: 30.w,
                       child: Container(
-                        width: 50.w,
-                        height: 50.h,
+                        width: 50.w, height: 50.h,
                         decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(25.r),
-                        ),
+                          color: AppColors.white.withOpacity(0.07),
+                          borderRadius: BorderRadius.circular(25.r)),
                       ),
                     ),
-                    // Content
+                    // Main icon and label
                     Padding(
                       padding: EdgeInsets.all(24.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 20.h),
-                          // Logo and title
                           Row(
                             children: [
                               Container(
                                 padding: EdgeInsets.all(12.w),
                                 decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.2),
+                                  color: AppColors.white.withOpacity(0.22),
                                   borderRadius: BorderRadius.circular(16.r),
                                 ),
-                                child: Icon(
-                                  Icons.lock_reset,
-                                  color: AppColors.white,
-                                  size: 32.sp,
-                                ),
+                                child: Icon(Icons.lock_reset, color: AppColors.white, size: 32.sp),
                               ),
                               SizedBox(width: 16.w),
                               Expanded(
@@ -233,46 +222,31 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Set New Password',
-                                      style: AppFonts.cairoBold28.copyWith(
-                                        color: AppColors.white,
-                                      ),
+                                      'set_new_password'.tr,
+                                      style: AppFonts.cairoBold28.copyWith(color: AppColors.white),
                                     ),
                                     Text(
-                                      'Create a secure password',
-                                      style: AppFonts.cairoRegular16.copyWith(
-                                        color: AppColors.white.withOpacity(0.9),
-                                      ),
+                                      'create_secure_password'.tr,
+                                      style: AppFonts.cairoRegular16.copyWith(color: AppColors.white.withOpacity(0.88)),
                                     ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 30.h),
-                          // Security badge
+                          SizedBox(height: 32.h),
+                          // Security/lock badge
                           Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                             decoration: BoxDecoration(
-                              color: AppColors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
+                              color: AppColors.white.withOpacity(0.13),
+                              borderRadius: BorderRadius.circular(20.r)),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.security,
-                                  color: AppColors.white,
-                                  size: 16.sp,
-                                ),
+                                Icon(Icons.security, color: AppColors.white, size: 16.sp),
                                 SizedBox(width: 8.w),
-                                Text(
-                                  'Secure Password Reset',
-                                  style: AppFonts.cairoMedium14.copyWith(
-                                    color: AppColors.white,
-                                  ),
-                                ),
+                                Text('secure_password_reset'.tr, style: AppFonts.cairoMedium14.copyWith(color: AppColors.white)),
                               ],
                             ),
                           ),
@@ -282,97 +256,60 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                   ],
                 ),
               ),
-
-              // Password Form with enhanced design
+              // Form card
               Container(
                 margin: EdgeInsets.all(20.w),
                 padding: EdgeInsets.all(28.w),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(24.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.grey200,
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  boxShadow: [BoxShadow(color: AppColors.grey200, blurRadius: 20, offset: Offset(0, 10))],
                 ),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Form Title
                       Text(
-                        'Create New Password',
-                        style: AppFonts.cairoBold20.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
+                        'create_new_password'.tr,
+                        style: AppFonts.cairoBold20.copyWith(color: AppColors.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        'Enter your new password below',
-                        style: AppFonts.cairoRegular14.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        'enter_your_new_password_below'.tr,
+                        style: AppFonts.cairoRegular14.copyWith(color: AppColors.textSecondary),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 30.h),
-
-                      // New Password Field with enhanced design
+                      SizedBox(height: 28.h),
+                      // New PW field
                       TextFormField(
                         controller: _passwordController,
                         obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
-                          labelText: 'New Password',
-                          hintText: 'Enter your new password',
+                          labelText: 'new_password'.tr,
+                          hintText: 'enter_your_new_password'.tr,
                           prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
+                            margin: EdgeInsets.all(8.w), padding: EdgeInsets.all(8.w),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.lock_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
+                              color: AppColors.primary.withOpacity(0.07), borderRadius: BorderRadius.circular(8.r),),
+                            child: Icon(Icons.lock_outlined, color: AppColors.primary, size: 20.sp),),
                           suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
+                            icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility, color: AppColors.primary),
+                            onPressed: () { setState(() { _isPasswordVisible = !_isPasswordVisible; }); },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
+                            borderSide: BorderSide(color: AppColors.grey300)),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
+                            borderSide: BorderSide(color: AppColors.primary, width: 2)),
                           filled: true,
                           fillColor: AppColors.grey50,
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password is required';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
+                          if (value == null || value.isEmpty) return 'password_required'.tr;
+                          if (value.length < 6) return 'password_min_length'.tr;
                           return null;
                         },
                       ),
@@ -381,200 +318,90 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         Container(
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
-                            color: _getPasswordStrengthColor().withOpacity(0.1),
+                            color: _getPasswordStrengthColor().withOpacity(0.09),
                             borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              color:
-                                  _getPasswordStrengthColor().withOpacity(0.3),
-                            ),
+                            border: Border.all(color: _getPasswordStrengthColor().withOpacity(0.23)),
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.security,
-                                color: _getPasswordStrengthColor(),
-                                size: 16.sp,
-                              ),
+                              Icon(Icons.security, color: _getPasswordStrengthColor(), size: 16.sp),
                               SizedBox(width: 8.w),
-                              Text(
-                                'Password Strength: ',
-                                style: AppFonts.cairoRegular12.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12.sp,
-                                ),
-                              ),
-                              Text(
-                                _passwordStrength.toUpperCase(),
-                                style: AppFonts.cairoBold12.copyWith(
-                                  color: _getPasswordStrengthColor(),
-                                  fontSize: 12.sp,
-                                ),
-                              ),
+                              Text('password_strength'.tr, style: AppFonts.cairoRegular12.copyWith(color: AppColors.textSecondary, fontSize: 12.sp)),
+                              Text(_passwordStrength.tr, style: AppFonts.cairoBold12.copyWith(color: _getPasswordStrengthColor(), fontSize: 12.sp)),
                             ],
                           ),
                         ),
                       ],
-                      SizedBox(height: 20.h),
-
-                      // Confirm Password Field with enhanced design
+                      SizedBox(height: 18.h),
+                      // Confirm field
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: !_isConfirmPasswordVisible,
                         decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          hintText: 'Re-enter your new password',
+                          labelText: 'confirm_password'.tr,
+                          hintText: 're_enter_new_password'.tr,
                           prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
+                            margin: EdgeInsets.all(8.w), padding: EdgeInsets.all(8.w),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Icon(
-                              Icons.lock_outlined,
-                              color: AppColors.primary,
-                              size: 20.sp,
-                            ),
-                          ),
+                              color: AppColors.primary.withOpacity(0.07), borderRadius: BorderRadius.circular(8.r),),
+                            child: Icon(Icons.lock_outlined, color: AppColors.primary, size: 20.sp),),
                           suffixIcon: IconButton(
-                            icon: Icon(
-                              _isConfirmPasswordVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isConfirmPasswordVisible =
-                                    !_isConfirmPasswordVisible;
-                              });
-                            },
+                            icon: Icon(_isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, color: AppColors.primary),
+                            onPressed: () { setState(() { _isConfirmPasswordVisible = !_isConfirmPasswordVisible; }); },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.grey300),
-                          ),
+                            borderSide: BorderSide(color: AppColors.grey300)),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16.r),
-                            borderSide:
-                                BorderSide(color: AppColors.primary, width: 2),
-                          ),
+                            borderSide: BorderSide(color: AppColors.primary, width: 2)),
                           filled: true,
                           fillColor: AppColors.grey50,
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
-                          if (value != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
+                          if (value == null || value.isEmpty) return 'please_confirm_your_password'.tr;
+                          if (value != _passwordController.text) return 'passwords_do_not_match'.tr;
                           return null;
                         },
                       ),
-                      SizedBox(height: 30.h),
-
-                      // Submit Button with enhanced design
-                      Container(
+                      SizedBox(height: 28.h),
+                      // Submit/Set button
+                      SizedBox(
                         height: 56.h,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
                         child: ElevatedButton(
-                          onPressed: _isFormValid() && !_isLoading
-                              ? _setNewPassword
-                              : null,
+                          onPressed: _isFormValid() && !_isLoading ? _setNewPassword : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
+                            elevation: 0,
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                           ),
                           child: _isLoading
-                              ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.w,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                              ? SizedBox(height: 20.h, width: 20.w, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.check_circle_outline,
-                                      color: Colors.white,
-                                      size: 20.sp,
-                                    ),
+                                    Icon(Icons.check_circle_outline, color: Colors.white, size: 20.sp),
                                     SizedBox(width: 8.w),
-                                    Text(
-                                      'Set New Password',
-                                      style: AppFonts.cairoBold16.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                      ),
-                                    ),
+                                    Text('set_new_password'.tr, style: AppFonts.cairoBold16.copyWith(color: Colors.white, fontSize: 16.sp)),
                                   ],
                                 ),
                         ),
                       ),
-                      SizedBox(height: 24.h),
-
-                      // Back to Login with enhanced design
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.grey50,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Remember your password? ',
-                              style: AppFonts.cairoRegular14.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 14.sp,
-                              ),
+                      SizedBox(height: 22.h),
+                      // Back to login
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('remember_your_password'.tr, style: AppFonts.cairoRegular14.copyWith(color: AppColors.textSecondary, fontSize: 14.sp)),
+                          TextButton(
+                            onPressed: () => Get.offAllNamed(AppRoutes.login),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Get.offAllNamed(AppRoutes.login);
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 4.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6.r),
-                                ),
-                              ),
-                              child: Text(
-                                'back_to_sign_in'.tr,
-                                style: AppFonts.cairoBold14.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                            child: Text('back_to_sign_in'.tr, style: AppFonts.cairoBold14.copyWith(color: AppColors.primary, fontSize: 14.sp)),
+                          ),
+                        ],
                       ),
                     ],
                   ),

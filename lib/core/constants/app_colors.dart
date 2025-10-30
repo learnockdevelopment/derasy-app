@@ -1,23 +1,44 @@
 import 'package:flutter/material.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 class AppColors {
-  // Primary Colors
-  static const Color primary = Color(0xFF1A4973);
-  static const Color primaryLight = Color(0xFF4A6B8A);
-  static const Color primaryDark = Color(0xFF0F2F4A);
+  // Primary Colors (dynamic from API via AppConfigController)
+  static Color get primary {
+    try {
+      return AppConfigController.to.primaryColorAsColor;
+    } catch (_) {
+      return const Color(0xFF1A4973);
+    }
+  }
+
+  // Optionally derive light/dark variants from primary
+  static Color get primaryLight => primary.withOpacity(0.8);
+  static Color get primaryDark => primary.withOpacity(0.9);
 
   // Selection Colors
   static const Color selectedBlue = Color(0xFF7AC1FF);
 
-  // Secondary Colors
-  static const Color secondary = Color(0xFFF69220);
-  static const Color secondaryLight = Color(0xFFFFB74D);
-  static const Color secondaryDark = Color(0xFFE65100);
+  // Secondary Colors (dynamic from API)
+  static Color get secondary {
+    try {
+      return AppConfigController.to.secondaryColorAsColor;
+    } catch (_) {
+      return const Color(0xFFF69220);
+    }
+  }
+  static Color get secondaryLight => secondary.withOpacity(0.8);
+  static Color get secondaryDark => secondary.withOpacity(0.9);
 
-  // Accent Colors
-  static const Color accent = Color(0xFF4CAF50);
-  static const Color accentLight = Color(0xFF81C784);
-  static const Color accentDark = Color(0xFF388E3C);
+  // Accent Colors (dynamic from API)
+  static Color get accent {
+    try {
+      return AppConfigController.to.accentColorAsColor;
+    } catch (_) {
+      return const Color(0xFF4CAF50);
+    }
+  }
+  static Color get accentLight => accent.withOpacity(0.8);
+  static Color get accentDark => accent.withOpacity(0.9);
 
   // Basic Colors
   static const Color white = Color(0xFFFFFFFF);
@@ -242,19 +263,67 @@ class AppColors {
   static const Color deepPurple900 = Color(0xFF311B92);
 
   // Common UI Colors
-  static const Color success = green500;
-  static const Color warning = orange500;
-  static const Color error = red500;
-  static const Color info = blue500;
+  static Color get success {
+    try {
+      return AppConfigController.to.successColorAsColor;
+    } catch (_) {
+      return green500;
+    }
+  }
+  static Color get warning {
+    try {
+      return AppConfigController.to.warningColorAsColor;
+    } catch (_) {
+      return orange500;
+    }
+  }
+  static Color get error {
+    try {
+      return AppConfigController.to.errorColorAsColor;
+    } catch (_) {
+      return red500;
+    }
+  }
+  static Color get info {
+    try {
+      return AppConfigController.to.infoColorAsColor;
+    } catch (_) {
+      return blue500;
+    }
+  }
 
   // Background Colors
-  static const Color background = Color(0xFFf6fef8);
-  static const Color surface = grey50;
+  static Color get background {
+    try {
+      return AppConfigController.to.backgroundColorAsColor;
+    } catch (_) {
+      return const Color(0xFFf6fef8);
+    }
+  }
+  static Color get surface {
+    try {
+      return AppConfigController.to.surfaceColorAsColor;
+    } catch (_) {
+      return grey50;
+    }
+  }
   static const Color cardBackground = white;
 
   // Text Colors
-  static const Color textPrimary = grey900;
-  static const Color textSecondary = grey600;
+  static Color get textPrimary {
+    try {
+      return AppConfigController.to.textColorAsColor;
+    } catch (_) {
+      return grey900;
+    }
+  }
+  static Color get textSecondary {
+    try {
+      return AppConfigController.to.textSecondaryColorAsColor;
+    } catch (_) {
+      return grey600;
+    }
+  }
   static const Color textHint = grey400;
   static const Color textDisabled = grey300;
 

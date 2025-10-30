@@ -184,25 +184,17 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
               padding: EdgeInsets.all(16.w),
               child: Column(
                 children: [
-                  // Quick Actions
                   _buildQuickActionsSection(),
-                  SizedBox(height: 12.h), // Reduced spacing
+                  SizedBox(height: 12.h),
 
-                  // Student Information
                   _buildStudentInfoSection(),
-                  SizedBox(height: 12.h), // Reduced spacing
+                  SizedBox(height: 12.h),
 
-                  // Parent Information
                   _buildParentInfoSection(),
-                  SizedBox(height: 12.h), // Reduced spacing
+                  SizedBox(height: 12.h),
 
-                  // Academic Information
                   _buildAcademicInfoSection(),
-                  SizedBox(height: 12.h), // Reduced spacing
-
-                  // Additional Actions
-                  _buildAdditionalActionsSection(),
-                  SizedBox(height: 20.h), // Reduced spacing
+                  SizedBox(height: 12.h),
                 ],
               ),
             ),

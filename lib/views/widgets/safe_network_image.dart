@@ -29,9 +29,36 @@ class SafeNetworkImage extends StatelessWidget {
     if (imageUrl == null || 
         imageUrl!.trim().isEmpty || 
         imageUrl!.contains('example.com') ||
-        imageUrl!.contains('placeholder') ||
-        imageUrl!.startsWith('http://localhost') ||
-        imageUrl!.startsWith('http://127.0.0.1')) {
+        imageUrl!.contains('placeholder')) {
+      return _buildFallback();
+    }
+
+    // If this is a local asset path, render as asset image
+    if (imageUrl!.startsWith('assets/')) {
+      return ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: Image.asset(
+          imageUrl!,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('Asset image load error for path: $imageUrl - ${error.toString()}');
+            return _buildFallback();
+          },
+        ),
+      );
+    }
+
+    // Only load http/https URLs; otherwise fallback
+    final lower = imageUrl!.toLowerCase();
+    final isHttp = lower.startsWith('http://') || lower.startsWith('https://');
+    if (!isHttp) {
+      return _buildFallback();
+    }
+
+    // Avoid attempting to decode unsupported formats (e.g., svg)
+    if (lower.endsWith('.svg')) {
       return _buildFallback();
     }
 
@@ -42,8 +69,8 @@ class SafeNetworkImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        filterQuality: FilterQuality.low,
         errorBuilder: (context, error, stackTrace) {
-          // Log the error for debugging but don't show it to user
           debugPrint('Image load error for URL: $imageUrl - ${error.toString()}');
           return _buildFallback();
         },
@@ -51,7 +78,6 @@ class SafeNetworkImage extends StatelessWidget {
           if (loadingProgress == null) return child;
           return _buildPlaceholder();
         },
-        // Add cache headers to prevent unnecessary requests
         headers: const {
           'Cache-Control': 'max-age=3600',
         },
@@ -151,7 +177,7 @@ class SafeSchoolImage extends StatelessWidget {
     required this.imageUrl,
     this.width,
     this.height,
-    this.fit = BoxFit.cover,
+    this.fit = BoxFit.fill,
   }) : super(key: key);
 
   @override

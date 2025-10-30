@@ -98,7 +98,7 @@ class AppConfigController extends GetxController {
 
   /// Get app name
   String get appName {
-    return _appConfig.value?.appName ?? 'Derasy';
+    return _appConfig.value?.appName ?? 'xx';
   }
 
   /// Get app version
@@ -177,5 +177,40 @@ class AppConfigController extends GetxController {
   Color get accentColorAsColor {
     return hexToColor(accentColor, fallback: Colors.orange);
   }
+
+  // Extended colors from API
+  String get backgroundColorHex {
+    return _appConfig.value?.branding.colors.background ?? '#FFFFFF';
+  }
+  String get surfaceColorHex {
+    return _appConfig.value?.branding.colors.surface ?? '#F8FAFC';
+  }
+  String get textColorHex {
+    return _appConfig.value?.branding.colors.text ?? '#1F2937';
+  }
+  String get textSecondaryColorHex {
+    return _appConfig.value?.branding.colors.textSecondary ?? '#6B7280';
+  }
+  String get errorColorHex {
+    return _appConfig.value?.branding.colors.error ?? '#EF4444';
+  }
+  String get warningColorHex {
+    return _appConfig.value?.branding.colors.warning ?? '#F59E0B';
+  }
+  String get successColorHex {
+    return _appConfig.value?.branding.colors.success ?? '#10B981';
+  }
+  String get infoColorHex {
+    return _appConfig.value?.branding.colors.info ?? '#3B82F6';
+  }
+
+  Color get backgroundColorAsColor => hexToColor(backgroundColorHex, fallback: Colors.white);
+  Color get surfaceColorAsColor => hexToColor(surfaceColorHex, fallback: const Color(0xFFF8FAFC));
+  Color get textColorAsColor => hexToColor(textColorHex, fallback: const Color(0xFF1F2937));
+  Color get textSecondaryColorAsColor => hexToColor(textSecondaryColorHex, fallback: const Color(0xFF6B7280));
+  Color get errorColorAsColor => hexToColor(errorColorHex, fallback: Colors.red);
+  Color get warningColorAsColor => hexToColor(warningColorHex, fallback: Colors.orange);
+  Color get successColorAsColor => hexToColor(successColorHex, fallback: Colors.green);
+  Color get infoColorAsColor => hexToColor(infoColorHex, fallback: Colors.blue);
 }
 

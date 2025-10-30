@@ -8,6 +8,8 @@ import '../../core/constants/assets.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_models.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../widgets/safe_network_image.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -204,6 +206,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final primary = AppConfigController.to.primaryColorAsColor;
+    final logoUrl = AppConfigController.to.lightLogoUrl;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -240,13 +245,23 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                         Container(
                           padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
-                          child: Icon(
-                            Icons.school,
-                            color: AppColors.primary,
-                            size: 28.sp,
+                          child: SizedBox(
+                            width: 28.w,
+                            height: 28.h,
+                            child: SafeNetworkImage(
+                              imageUrl: logoUrl,
+                              width: 28.w,
+                              height: 28.h,
+                              fit: BoxFit.contain,
+                              errorWidget: Icon(
+                                Icons.person_add,
+                                color: Colors.white,
+                                size: 28.sp,
+                              ),
+                            ),
                           ),
                         ),
                         SizedBox(width: 12.w),
@@ -255,16 +270,16 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'welcome_to_Derasy'.tr,
-                                style: AppFonts.cairoBold22.copyWith(
-                                  color: AppColors.textPrimary,
+                                'create_account'.tr,
+                                style: AppFonts.cairoBold20.copyWith(
+                                  color: Colors.white,
                                 ),
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                'nurturing_young_minds'.tr,
+                                'register_intro'.tr,
                                 style: AppFonts.cairoRegular12.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],

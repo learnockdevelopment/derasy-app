@@ -108,13 +108,33 @@ class Branding {
   });
 
   factory Branding.fromJson(Map<String, dynamic> json) {
+    // logo can be a map with light/dark, or a map with url, or a string URL
+    final dynamic rawLogo = json['logo'];
+    LogoPaths logo;
+    if (rawLogo is Map<String, dynamic>) {
+      if ((rawLogo['light'] is String) || (rawLogo['dark'] is String)) {
+        logo = LogoPaths.fromJson(rawLogo);
+      } else if (rawLogo['url'] is String && (rawLogo['url'] as String).isNotEmpty) {
+        final url = rawLogo['url'] as String;
+        logo = LogoPaths(light: url, dark: url);
+      } else {
+        logo = LogoPaths.empty();
+      }
+    } else if (rawLogo is String && rawLogo.isNotEmpty) {
+      logo = LogoPaths(light: rawLogo, dark: rawLogo);
+    } else {
+      logo = LogoPaths.empty();
+    }
+
+    // colors must be a map
+    final dynamic rawColors = json['colors'];
+    final parsedColors = (rawColors is Map<String, dynamic>)
+        ? AppColors.fromJson(rawColors)
+        : AppColors.empty();
+
     return Branding(
-      logo: json['logo'] != null && json['logo'] is Map && (json['logo'] as Map).isNotEmpty
-          ? LogoPaths.fromJson(json['logo'] as Map<String, dynamic>)
-          : LogoPaths.empty(),
-      colors: json['colors'] != null && json['colors'] is Map && (json['colors'] as Map).isNotEmpty
-          ? AppColors.fromJson(json['colors'] as Map<String, dynamic>)
-          : AppColors.empty(),
+      logo: logo,
+      colors: parsedColors,
     );
   }
 
@@ -168,26 +188,58 @@ class AppColors {
   final String primary;
   final String secondary;
   final String accent;
+  final String background;
+  final String surface;
+  final String text;
+  final String textSecondary;
+  final String error;
+  final String warning;
+  final String success;
+  final String info;
 
   AppColors({
     required this.primary,
     required this.secondary,
     required this.accent,
+    required this.background,
+    required this.surface,
+    required this.text,
+    required this.textSecondary,
+    required this.error,
+    required this.warning,
+    required this.success,
+    required this.info,
   });
 
   factory AppColors.fromJson(Map<String, dynamic> json) {
     return AppColors(
       primary: json['primary'] as String? ?? '#3b82f6',
-      secondary: json['secondary'] as String? ?? '#64748b',
-      accent: json['accent'] as String? ?? '#f59e0b',
+      secondary: json['secondary'] as String? ?? '#10B981',
+      accent: json['accent'] as String? ?? '#F59E0B',
+      background: json['background'] as String? ?? '#FFFFFF',
+      surface: json['surface'] as String? ?? '#F8FAFC',
+      text: json['text'] as String? ?? '#1F2937',
+      textSecondary: json['textSecondary'] as String? ?? '#6B7280',
+      error: json['error'] as String? ?? '#EF4444',
+      warning: json['warning'] as String? ?? '#F59E0B',
+      success: json['success'] as String? ?? '#10B981',
+      info: json['info'] as String? ?? '#3B82F6',
     );
   }
 
   factory AppColors.empty() {
     return AppColors(
       primary: '#3b82f6',
-      secondary: '#64748b',
-      accent: '#f59e0b',
+      secondary: '#10B981',
+      accent: '#F59E0B',
+      background: '#FFFFFF',
+      surface: '#F8FAFC',
+      text: '#1F2937',
+      textSecondary: '#6B7280',
+      error: '#EF4444',
+      warning: '#F59E0B',
+      success: '#10B981',
+      info: '#3B82F6',
     );
   }
 
@@ -196,6 +248,14 @@ class AppColors {
       'primary': primary,
       'secondary': secondary,
       'accent': accent,
+      'background': background,
+      'surface': surface,
+      'text': text,
+      'textSecondary': textSecondary,
+      'error': error,
+      'warning': warning,
+      'success': success,
+      'info': info,
     };
   }
 }
@@ -242,8 +302,8 @@ class Features {
 }
 
 class MobileConfig {
-  final String minVersion;
-  final bool forceUpdate;
+  final AppMobileMinVersion minVersion;
+  final AppForceUpdate forceUpdate;
   final StoreUrls storeUrls;
 
   MobileConfig({
@@ -253,10 +313,16 @@ class MobileConfig {
   });
 
   factory MobileConfig.fromJson(Map<String, dynamic> json) {
+    final dynamic minV = json['minVersion'];
+    final dynamic forceU = json['forceUpdate'];
     return MobileConfig(
-      minVersion: json['minVersion'] as String? ?? '1.0.0',
-      forceUpdate: json['forceUpdate'] as bool? ?? false,
-      storeUrls: json['storeUrls'] != null
+      minVersion: (minV is Map<String, dynamic>)
+          ? AppMobileMinVersion.fromJson(minV)
+          : AppMobileMinVersion.empty(),
+      forceUpdate: (forceU is Map<String, dynamic>)
+          ? AppForceUpdate.fromJson(forceU)
+          : AppForceUpdate.empty(),
+      storeUrls: json['storeUrls'] != null && json['storeUrls'] is Map<String, dynamic>
           ? StoreUrls.fromJson(json['storeUrls'] as Map<String, dynamic>)
           : StoreUrls.empty(),
     );
@@ -264,17 +330,73 @@ class MobileConfig {
 
   factory MobileConfig.empty() {
     return MobileConfig(
-      minVersion: '1.0.0',
-      forceUpdate: false,
+      minVersion: AppMobileMinVersion.empty(),
+      forceUpdate: AppForceUpdate.empty(),
       storeUrls: StoreUrls.empty(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'minVersion': minVersion,
-      'forceUpdate': forceUpdate,
+      'minVersion': minVersion.toJson(),
+      'forceUpdate': forceUpdate.toJson(),
       'storeUrls': storeUrls.toJson(),
+    };
+  }
+}
+
+class AppMobileMinVersion {
+  final String android;
+  final String ios;
+
+  AppMobileMinVersion({
+    required this.android,
+    required this.ios,
+  });
+
+  factory AppMobileMinVersion.fromJson(Map<String, dynamic> json) {
+    return AppMobileMinVersion(
+      android: json['android'] as String? ?? '1.0.0',
+      ios: json['ios'] as String? ?? '1.0.0',
+    );
+  }
+
+  factory AppMobileMinVersion.empty() {
+    return AppMobileMinVersion(android: '1.0.0', ios: '1.0.0');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'android': android,
+      'ios': ios,
+    };
+  }
+}
+
+class AppForceUpdate {
+  final bool android;
+  final bool ios;
+
+  AppForceUpdate({
+    required this.android,
+    required this.ios,
+  });
+
+  factory AppForceUpdate.fromJson(Map<String, dynamic> json) {
+    return AppForceUpdate(
+      android: json['android'] as bool? ?? false,
+      ios: json['ios'] as bool? ?? false,
+    );
+  }
+
+  factory AppForceUpdate.empty() {
+    return AppForceUpdate(android: false, ios: false);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'android': android,
+      'ios': ios,
     };
   }
 }
