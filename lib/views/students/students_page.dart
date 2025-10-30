@@ -28,10 +28,7 @@ class _StudentsPageState extends State<StudentsPage> {
   String? _schoolId;
   String _searchQuery = '';
   Timer? _debounceTimer;
-  // Schools for dropdown filter
   List<School> _schools = [];
-
-  // Pagination variables
   int _currentPage = 1;
   int _limit = 20;
   int _totalPages = 1;

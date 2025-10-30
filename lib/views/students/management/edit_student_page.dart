@@ -27,7 +27,7 @@ class EditStudentPage extends StatefulWidget {
 class _EditStudentPageState extends State<EditStudentPage> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  final int _totalSteps = 6; // Updated to match StudentSteps.editSteps.length
+  final int _totalSteps = 7; // Updated to match StudentSteps.editSteps.length
 
   // Form controllers
   final _nationalityController = TextEditingController();
@@ -362,7 +362,7 @@ class _EditStudentPageState extends State<EditStudentPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         title: Text(
-          'Edit Student',
+          'edit_student_title'.tr,
           style: AppFonts.h2.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -412,7 +412,8 @@ class _EditStudentPageState extends State<EditStudentPage> {
               children: [
                 _buildNationalityStep(),
                 _buildAgeBirthStep(),
-                _buildNameAddressStep(),
+                _buildNameStep(),
+                _buildAddressStep(),
                 _buildMedicalStep(),
                 _buildMotherStep(),
                 _buildFatherStep(),
@@ -447,7 +448,7 @@ class _EditStudentPageState extends State<EditStudentPage> {
                         side: const BorderSide(color: Color(0xFF6B7280)),
                       ),
                       child: Text(
-                        'Previous',
+                        'previous_step'.tr,
                         style: AppFonts.bodyMedium.copyWith(
                           color: const Color(0xFF6B7280),
                           fontWeight: FontWeight.w600,
@@ -479,8 +480,8 @@ class _EditStudentPageState extends State<EditStudentPage> {
                           )
                         : Text(
                             _currentStep == _totalSteps - 1
-                                ? 'Update Student'
-                                : 'Next',
+                                ? 'update_student_cta'.tr
+                                : 'next_step'.tr,
                             style: AppFonts.bodyMedium.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -991,14 +992,14 @@ class _EditStudentPageState extends State<EditStudentPage> {
     return '${birthdate.day.toString().padLeft(2, '0')}/${birthdate.month.toString().padLeft(2, '0')}/${birthdate.year}';
   }
 
-  Widget _buildNameAddressStep() {
+  Widget _buildNameStep() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
           Text(
-            'Name & Address',
+            'name_and_grade'.tr,
             style: AppFonts.h2.copyWith(
               color: const Color(0xFF1F2937),
               fontWeight: FontWeight.bold,
@@ -1007,7 +1008,7 @@ class _EditStudentPageState extends State<EditStudentPage> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Update the student\'s personal details, academic information, and address.',
+            'Update the student\'s personal details and academic information.',
             style: AppFonts.bodyMedium.copyWith(
               color: const Color(0xFF6B7280),
               fontSize: 16.sp,
@@ -1016,8 +1017,8 @@ class _EditStudentPageState extends State<EditStudentPage> {
           SizedBox(height: 32.h),
           _buildTextField(
             controller: _fullNameController,
-            label: 'Full Name',
-            hint: 'Enter student\'s full name',
+            label: 'full_name'.tr,
+            hint: 'enter_student_full_name'.tr,
             icon: Icons.person_rounded,
           ),
           SizedBox(height: 20.h),
@@ -1030,11 +1031,38 @@ class _EditStudentPageState extends State<EditStudentPage> {
           ),
           SizedBox(height: 20.h),
           _buildGradeDropdown(),
-          SizedBox(height: 20.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressStep() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'address_information'.tr,
+            style: AppFonts.h2.copyWith(
+              color: const Color(0xFF1F2937),
+              fontWeight: FontWeight.bold,
+              fontSize: 24.sp,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Update student address and location details.',
+            style: AppFonts.bodyMedium.copyWith(
+              color: const Color(0xFF6B7280),
+              fontSize: 16.sp,
+            ),
+          ),
+          SizedBox(height: 32.h),
           EnhancedAddressField(
             controller: _addressController,
-            label: 'Address',
-            hint: 'Select student\'s address on map',
+            label: 'address'.tr,
+            hint: 'select_address_on_map'.tr,
             onLocationSelected: (address, latitude, longitude) {
               setState(() {
                 _selectedLatitude = latitude;
@@ -1096,7 +1124,7 @@ class _EditStudentPageState extends State<EditStudentPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Grade',
+          'grade'.tr,
           style: AppFonts.bodyMedium.copyWith(
             color: const Color(0xFF374151),
             fontWeight: FontWeight.w600,

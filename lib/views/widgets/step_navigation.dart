@@ -178,7 +178,11 @@ class StudentSteps {
         ),
         StepInfo(
           icon: Icons.badge_rounded,
-          label: 'Name & Address',
+          label: 'Name & Grade',
+        ),
+        StepInfo(
+          icon: Icons.location_on_rounded,
+          label: 'Address',
         ),
         StepInfo(
           icon: Icons.medical_services_rounded,

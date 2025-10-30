@@ -208,37 +208,37 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     final actions = [
       {
         'icon': Icons.edit_rounded,
-        'label': 'Edit',
+        'label': 'quick_edit'.tr,
         'color': const Color(0xFF3B82F6),
         'onTap': _editStudent,
       },
       {
         'icon': Icons.family_restroom_rounded,
-        'label': 'Guardians',
+        'label': 'quick_guardians'.tr,
         'color': const Color(0xFF10B981),
         'onTap': _manageGuardians,
       },
       {
         'icon': Icons.calendar_today_rounded,
-        'label': 'Attendance',
+        'label': 'quick_attendance'.tr,
         'color': const Color(0xFFF59E0B),
         'onTap': _viewAttendance,
       },
       {
         'icon': Icons.car_rental_rounded,
-        'label': 'Pickup',
+        'label': 'quick_pickup'.tr,
         'color': const Color(0xFF8B5CF6),
         'onTap': _managePickupPermissions,
       },
       {
         'icon': Icons.local_hospital_rounded,
-        'label': 'Clinic',
+        'label': 'quick_clinic'.tr,
         'color': const Color(0xFFEF4444),
         'onTap': _viewClinicRecords,
       },
       {
         'icon': Icons.delete_rounded,
-        'label': 'Delete',
+        'label': 'quick_delete'.tr,
         'color': const Color(0xFF6B7280),
         'onTap': _deleteStudent,
       },
@@ -372,8 +372,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
-              Text(
-                'Student Information',
+          Text(
+            'student_information'.tr,
                 style: AppFonts.h3.copyWith(
                   color: const Color(0xFF1F2937),
                   fontWeight: FontWeight.bold,
@@ -383,14 +383,14 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
             ],
           ),
           SizedBox(height: 16.h),
-          _buildInfoRow('Full Name', widget.student.fullName, Icons.person),
+          _buildInfoRow('full_name'.tr, widget.student.fullName, Icons.person),
           _buildInfoRow(
-              'Student Code', widget.student.studentCode, Icons.badge),
-          _buildInfoRow('Age', widget.student.ageInOctober.toString(),
+              'student_code'.tr, widget.student.studentCode, Icons.badge),
+          _buildInfoRow('age'.tr, widget.student.ageInOctober.toString(),
               Icons.calendar_today),
-          _buildInfoRow('Gender', widget.student.gender.toUpperCase(),
+          _buildInfoRow('gender'.tr, widget.student.gender.toUpperCase(),
               Icons.person_outline),
-          _buildInfoRow('National ID', widget.student.nationalId, Icons.flag),
+          _buildInfoRow('national_id'.tr, widget.student.nationalId, Icons.flag),
         ],
       ),
     );
@@ -421,8 +421,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
-              Text(
-                'Parent Information',
+          Text(
+            'parent_information'.tr,
                 style: AppFonts.h3.copyWith(
                   color: const Color(0xFF1F2937),
                   fontWeight: FontWeight.bold,
@@ -433,16 +433,16 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
           ),
           SizedBox(height: 16.h),
           _buildInfoRow(
-              'Parent Name', 
+              'parent_name'.tr, 
               widget.student.parent.name.isNotEmpty 
                   ? widget.student.parent.name 
-                  : 'N/A', 
+                  : 'n_a'.tr, 
               Icons.person),
           _buildInfoRow(
-              'Parent Phone', 
+              'parent_phone'.tr, 
               widget.student.parent.phone.isNotEmpty 
                   ? widget.student.parent.phone 
-                  : 'N/A', 
+                  : 'n_a'.tr, 
               Icons.phone),
         ],
       ),
@@ -474,8 +474,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
-              Text(
-                'Academic Information',
+          Text(
+            'academic_information'.tr,
                 style: AppFonts.h3.copyWith(
                   color: const Color(0xFF1F2937),
                   fontWeight: FontWeight.bold,
@@ -485,12 +485,12 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
             ],
           ),
           SizedBox(height: 16.h),
-          _buildInfoRow('Grade', widget.student.grade.name.isNotEmpty ? widget.student.grade.name : 'N/A', Icons.grade),
-          _buildInfoRow('Stage', widget.student.stage.name.isNotEmpty ? widget.student.stage.name : 'N/A', Icons.school),
-          _buildInfoRow('Section', widget.student.section.name.isNotEmpty ? widget.student.section.name : 'N/A', Icons.class_),
+          _buildInfoRow('grade'.tr, widget.student.grade.name.isNotEmpty ? widget.student.grade.name : 'n_a'.tr, Icons.grade),
+          _buildInfoRow('stage'.tr, widget.student.stage.name.isNotEmpty ? widget.student.stage.name : 'n_a'.tr, Icons.school),
+          _buildInfoRow('section'.tr, widget.student.section.name.isNotEmpty ? widget.student.section.name : 'n_a'.tr, Icons.class_),
           _buildInfoRow(
-              'Moodle Username',
-              widget.student.moodleUser?.username ?? 'Not assigned',
+              'moodle_username'.tr,
+              widget.student.moodleUser?.username ?? 'not_assigned'.tr,
               Icons.computer),
         ],
       ),

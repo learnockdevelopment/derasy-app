@@ -341,7 +341,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         title: Text(
-          'Add Student',
+          'add_student_title'.tr,
           style: AppFonts.h2.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -428,7 +428,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                         side: const BorderSide(color: Color(0xFF6B7280)),
                       ),
                       child: Text(
-                        'Previous',
+                        'previous_step'.tr,
                         style: AppFonts.bodyMedium.copyWith(
                           color: const Color(0xFF6B7280),
                           fontWeight: FontWeight.w600,
@@ -460,8 +460,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
                           )
                         : Text(
                             _currentStep == _totalSteps - 1
-                                ? 'Create Account'
-                                : 'Next',
+                                ? 'create_account_cta'.tr
+                                : 'next_step'.tr,
                             style: AppFonts.bodyMedium.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -525,7 +525,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Select Nationality',
+                            'select_nationality'.tr,
                             style: AppFonts.h3.copyWith(
                               color: const Color(0xFF1F2937),
                               fontWeight: FontWeight.bold,
@@ -815,7 +815,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Identity Information',
+                        'identity_information'.tr,
                         style: AppFonts.h3.copyWith(
                           color: const Color(0xFF1F2937),
                           fontWeight: FontWeight.bold,
@@ -825,8 +825,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
                       SizedBox(height: 2.h),
                       Text(
                         _selectedNationality == 'Egyptian'
-                            ? 'Enter 14-digit National ID for auto-extraction'
-                            : 'Enter passport number for identification',
+                            ? 'enter_14_digit_national_id'.tr
+                            : 'enter_passport_number'.tr,
                         style: AppFonts.bodySmall.copyWith(
                           color: const Color(0xFF6B7280),
                           fontSize: 11.sp,
@@ -866,8 +866,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
                       ? _nationalIdController
                       : _passportController,
                   label: _selectedNationality == 'Egyptian'
-                      ? 'National ID'
-                      : 'Passport Number',
+                      ? 'national_id'.tr
+                      : 'passport'.tr,
                   hint: _selectedNationality == 'Egyptian'
                       ? 'Enter 14-digit National ID'
                       : 'Enter passport number',
@@ -906,7 +906,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                         size: 20.sp,
                       ),
                       label: Text(
-                        'Generate Data from National ID',
+                        'generate_data_from_national_id'.tr,
                         style: AppFonts.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                           fontSize: 16.sp,
@@ -942,7 +942,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        'Data Extracted Successfully',
+                        'data_extracted_successfully'.tr,
                         style: AppFonts.bodyMedium.copyWith(
                           color: const Color(0xFF10B981),
                           fontWeight: FontWeight.w600,
@@ -1047,7 +1047,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Personal Information',
+                        'personal_information_section'.tr,
                         style: AppFonts.h3.copyWith(
                           color: const Color(0xFF1F2937),
                           fontWeight: FontWeight.bold,
@@ -1093,24 +1093,12 @@ class _AddStudentPageState extends State<AddStudentPage> {
               children: [
                 _buildEnhancedTextField(
                   controller: _fullNameController,
-                  label: 'Full Name',
-                  hint: 'Enter student\'s full name',
+                  label: 'full_name'.tr,
+                  hint: 'enter_student_full_name'.tr,
                   icon: Icons.person_rounded,
                 ),
                 SizedBox(height: 20.h),
                 _buildGradeDropdown(),
-                SizedBox(height: 20.h),
-                EnhancedAddressField(
-                  controller: _addressController,
-                  label: 'Address',
-                  hint: 'Select student\'s address on map',
-                  onLocationSelected: (address, latitude, longitude) {
-                    setState(() {
-                      _selectedLatitude = latitude;
-                      _selectedLongitude = longitude;
-                    });
-                  },
-                ),
                 if (_selectedNationality == 'Other') ...[
                   SizedBox(height: 20.h),
                   _buildBirthdateField(),
@@ -1136,7 +1124,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
         Row(
           children: [
             Text(
-              'Grade',
+              'grade'.tr,
               style: AppFonts.bodyMedium.copyWith(
                 color: const Color(0xFF374151),
                 fontWeight: FontWeight.w600,
@@ -1222,8 +1210,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Birthdate',
+          Text(
+            'birthdate'.tr,
           style: AppFonts.bodyMedium.copyWith(
             color: const Color(0xFF374151),
             fontWeight: FontWeight.w600,
@@ -1251,7 +1239,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                 Text(
                   _selectedBirthdate != null
                       ? '${_selectedBirthdate!.day}/${_selectedBirthdate!.month}/${_selectedBirthdate!.year}'
-                      : 'Select birthdate',
+                      : 'birthdate'.tr,
                   style: AppFonts.bodyMedium.copyWith(
                     color: _selectedBirthdate != null
                         ? const Color(0xFF1F2937)
@@ -1350,7 +1338,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Address Information',
+                        'address_information'.tr,
                         style: AppFonts.h3.copyWith(
                           color: const Color(0xFF1F2937),
                           fontWeight: FontWeight.bold,
@@ -1377,8 +1365,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
           // Address Field
           EnhancedAddressField(
             controller: _addressController,
-            label: 'Address',
-            hint: 'Enter student address',
+            label: 'address'.tr,
+            hint: 'enter_student_address'.tr,
             onLocationSelected: (address, latitude, longitude) {
               setState(() {
                 _selectedLatitude = latitude;
@@ -1463,8 +1451,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
           // Medical Notes Field
           _buildEnhancedTextField(
             controller: TextEditingController(),
-            label: 'Medical Notes',
-            hint: 'Enter any medical notes (optional)',
+            label: 'medical_notes'.tr,
+            hint: 'medical_notes_optional'.tr,
             icon: Icons.notes_rounded,
             maxLines: 3,
           ),
@@ -1562,7 +1550,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    'Create Account',
+                    'create_account_cta'.tr,
                     style: AppFonts.bodyLarge.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
