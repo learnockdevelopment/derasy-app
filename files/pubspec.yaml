@@ -1,0 +1,67 @@
+name: derasy
+description: School Management & Student Tracking
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  iconly: ^1.0.1
+  get: ^4.6.5
+  flutter_screenutil: ^5.9.0
+  smooth_page_indicator: ^1.1.0
+  form_field_validator: ^1.1.0
+  get_storage: ^2.1.1
+  http: ^1.5.0
+  shimmer: ^3.0.0
+  image_picker: ^1.0.4
+  flutter_svg: ^2.0.9
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  permission_handler: ^11.0.1
+  country_code_picker: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  flutter_launcher_icons: ^0.13.1
+
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/png/maskable-icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/png/white_logo.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/svg/
+    - assets/png/
+    - assets/animations/
+    - assets/translations/
+    - assets/fonts/
+
+  fonts:
+    - family: Almarai
+      fonts:
+        - asset: assets/fonts/Almarai-Bold.ttf
+          weight: 100
+        - asset: assets/fonts/Almarai-ExtraBold.ttf
+          weight: 300
+        - asset: assets/fonts/Almarai-Light.ttf
+          weight: 400
+        - asset: assets/fonts/Almarai-Regular.ttf
+          weight: 500
+       
+       

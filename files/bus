@@ -1,0 +1,1203 @@
+1. Get All Buses
+URL: GET /api/schools/my/[id]/buses
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+status: Filter by bus status (optional) - active, inactive, maintenance
+busType: Filter by bus type (optional) - standard, mini, large
+search: Search term (optional) - Searches across busNumber, plateNumber, motorNumber, chassisNumber, manufacturer, model
+Response Cases:
+
+200 Success: Buses retrieved
+{
+  "buses": [
+    {
+      "_id": "bus_id",
+      "busNumber": "BUS-001",
+      "plateNumber": "ABC-123",
+      "motorNumber": "MOTOR123",
+      "chassisNumber": "CHASSIS123",
+      "capacity": 50,
+      "currentOccupancy": 30,
+      "status": "active",
+      "busType": "standard",
+      "manufacturer": "Mercedes",
+      "model": "Sprinter",
+      "year": 2020,
+      "color": "Yellow",
+      "driver": {
+        "_id": "driver_id",
+        "name": "Ahmed Ali",
+        "email": "ahmed@example.com",
+        "phone": "+201234567890",
+        "username": "ahmed_driver"
+      },
+      "assistant": {
+        "_id": "assistant_id",
+        "name": "Mohamed Hassan",
+        "email": "mohamed@example.com",
+        "phone": "+201234567891",
+        "username": "mohamed_assistant"
+      },
+      "assignedStudents": [
+        {
+          "_id": "assignment_id",
+          "student": {
+            "_id": "student_id",
+            "fullName": "Student Name",
+            "studentCode": "STU001"
+          },
+          "route": "Route A",
+          "stop": "Stop 1",
+          "pickupTime": "07:00",
+          "returnTime": "14:00",
+          "status": "active",
+          "assignedDate": "2024-01-15T00:00:00Z"
+        }
+      ],
+      "gps": {
+        "enabled": true,
+        "deviceId": "GPS123",
+        "trackingUrl": "https://tracking.example.com/bus-001"
+      },
+      "routes": [],
+      "notes": "Regular maintenance required",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-15T00:00:00Z"
+    }
+  ]
+}
+400 Bad Request: Invalid school ID
+403 Forbidden: Not authorized
+404 Not Found: School not found
+500 Internal Server Error: Server error
+2. Create Bus
+URL: POST /api/schools/my/[id]/buses
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "busNumber": "BUS-001",
+  "plateNumber": "ABC-123",
+  "motorNumber": "MOTOR123",
+  "chassisNumber": "CHASSIS123",
+  "capacity": 50,
+  "driver": "driver_user_id",
+  "assistant": "assistant_user_id",
+  "status": "active",
+  "busType": "standard",
+  "manufacturer": "Mercedes",
+  "model": "Sprinter",
+  "year": 2020,
+  "color": "Yellow",
+  "gpsEnabled": true,
+  "gpsDeviceId": "GPS123",
+  "insurance": {
+    "provider": "Insurance Co",
+    "policyNumber": "POL123",
+    "expiryDate": "2025-12-31"
+  },
+  "registration": {
+    "number": "REG123",
+    "expiryDate": "2025-12-31"
+  },
+  "inspection": {
+    "lastInspection": "2024-01-01",
+    "nextInspection": "2024-07-01"
+  },
+  "gps": {
+    "enabled": true,
+    "deviceId": "GPS123",
+    "trackingUrl": "https://tracking.example.com/bus-001"
+  },
+  "routes": [],
+  "notes": "Regular maintenance required"
+}
+Required Fields:
+
+busNumber: Bus number/identifier
+plateNumber: License plate number
+motorNumber: Motor/engine number
+chassisNumber: Chassis number
+capacity: Maximum passenger capacity
+Response Cases:
+
+201 Created: Bus created successfully
+{
+  "message": "تم إنشاء الحافلة بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "busNumber": "BUS-001",
+    "plateNumber": "ABC-123",
+    "capacity": 50,
+    "currentOccupancy": 0,
+    "driver": {
+      "name": "Ahmed Ali",
+      "email": "ahmed@example.com"
+    },
+    "assistant": {
+      "name": "Mohamed Hassan",
+      "email": "mohamed@example.com"
+    }
+  }
+}
+400 Bad Request: Missing required fields or duplicate bus number/plate/motor/chassis
+403 Forbidden: Not authorized
+404 Not Found: School not found
+500 Internal Server Error: Server error
+3. Get Specific Bus
+URL: GET /api/schools/my/[id]/buses/[busId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Response Cases:
+
+200 Success: Bus details retrieved
+{
+  "bus": {
+    "_id": "bus_id",
+    "busNumber": "BUS-001",
+    "plateNumber": "ABC-123",
+    "motorNumber": "MOTOR123",
+    "chassisNumber": "CHASSIS123",
+    "capacity": 50,
+    "currentOccupancy": 30,
+    "status": "active",
+    "busType": "standard",
+    "driver": {
+      "_id": "driver_id",
+      "name": "Ahmed Ali",
+      "email": "ahmed@example.com",
+      "phone": "+201234567890",
+      "username": "ahmed_driver",
+      "avatar": "https://example.com/avatar.jpg"
+    },
+    "assistant": {
+      "_id": "assistant_id",
+      "name": "Mohamed Hassan",
+      "email": "mohamed@example.com",
+      "phone": "+201234567891",
+      "username": "mohamed_assistant",
+      "avatar": "https://example.com/avatar2.jpg"
+    },
+    "assignedStudents": [
+      {
+        "_id": "assignment_id",
+        "student": {
+          "_id": "student_id",
+          "fullName": "Student Name",
+          "studentCode": "STU001",
+          "stage": { "name": "Primary" },
+          "grade": { "name": "Grade 1" },
+          "class": { "name": "Class A" }
+        },
+        "route": "Route A",
+        "stop": "Stop 1",
+        "pickupTime": "07:00",
+        "returnTime": "14:00",
+        "status": "active"
+      }
+    ],
+    "gps": {
+      "enabled": true,
+      "deviceId": "GPS123",
+      "trackingUrl": "https://tracking.example.com/bus-001"
+    },
+    "routes": [],
+    "notes": "Regular maintenance required"
+  }
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+4. Update Bus
+URL: PUT /api/schools/my/[id]/buses/[busId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body: (All fields optional)
+
+{
+  "busNumber": "BUS-002",
+  "plateNumber": "XYZ-456",
+  "motorNumber": "MOTOR456",
+  "chassisNumber": "CHASSIS456",
+  "capacity": 60,
+  "driver": "new_driver_id",
+  "assistant": "new_assistant_id",
+  "status": "active",
+  "busType": "large",
+  "manufacturer": "Mercedes",
+  "model": "Sprinter XL",
+  "year": 2021,
+  "color": "Blue",
+  "gpsEnabled": true,
+  "gpsDeviceId": "GPS456",
+  "insurance": {},
+  "registration": {},
+  "inspection": {},
+  "gps": {},
+  "routes": [],
+  "notes": "Updated notes",
+  "isActive": true
+}
+Response Cases:
+
+200 Success: Bus updated successfully
+{
+  "message": "تم تحديث الحافلة بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "busNumber": "BUS-002",
+    "capacity": 60,
+    "currentOccupancy": 30
+  }
+}
+400 Bad Request: Invalid IDs or duplicate bus number/plate/motor/chassis
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+5. Delete Bus
+URL: DELETE /api/schools/my/[id]/buses/[busId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Response Cases:
+
+200 Success: Bus deleted successfully
+{
+  "message": "تم حذف الحافلة بنجاح"
+}
+400 Bad Request: Bus has active student assignments
+{
+  "message": "لا يمكن حذف الحافلة لأنها تحتوي على 5 طالب مسجل"
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+6. Get Bus Routes
+URL: GET /api/schools/my/[id]/buses/[busId]/routes
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+isActive: Filter by active status (optional) - true or false
+Response Cases:
+
+200 Success: Routes retrieved
+{
+  "routes": [
+    {
+      "_id": "route_id",
+      "name": "Route A",
+      "description": "Main route through downtown",
+      "stops": [
+        {
+          "name": "Stop 1",
+          "address": "123 Main St",
+          "coordinates": {
+            "lat": 30.0444,
+            "lng": 31.2357
+          },
+          "order": 1,
+          "arrivalTime": "07:00",
+          "departureTime": "14:30"
+        }
+      ],
+      "schedule": {
+        "morning": {
+          "pickupTime": "07:00",
+          "returnTime": ""
+        },
+        "afternoon": {
+          "pickupTime": "",
+          "returnTime": "14:30"
+        }
+      },
+      "isActive": true
+    }
+  ]
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+7. Add Bus Route
+URL: POST /api/schools/my/[id]/buses/[busId]/routes
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "name": "Route A",
+  "description": "Main route through downtown",
+  "stops": [
+    {
+      "name": "Stop 1",
+      "address": "123 Main St",
+      "coordinates": {
+        "lat": 30.0444,
+        "lng": 31.2357
+      },
+      "order": 1,
+      "arrivalTime": "07:00",
+      "departureTime": "14:30"
+    }
+  ],
+  "schedule": {
+    "morning": {
+      "pickupTime": "07:00",
+      "returnTime": ""
+    },
+    "afternoon": {
+      "pickupTime": "",
+      "returnTime": "14:30"
+    }
+  },
+  "isActive": true
+}
+Required Fields:
+
+name: Route name (must be unique per bus)
+Response Cases:
+
+200 Success: Route added successfully
+{
+  "message": "تم إضافة الخط بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "routes": [...]
+  }
+}
+400 Bad Request: Missing route name or duplicate route name
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+8. Update Bus Route
+URL: PUT /api/schools/my/[id]/buses/[busId]/routes
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "routeId": "route_id",
+  "name": "Route A Updated",
+  "description": "Updated description",
+  "stops": [...],
+  "schedule": {
+    "morning": {
+      "pickupTime": "07:15",
+      "returnTime": ""
+    },
+    "afternoon": {
+      "pickupTime": "",
+      "returnTime": "14:45"
+    }
+  },
+  "isActive": false
+}
+Required Fields:
+
+routeId: Route ID to update
+Response Cases:
+
+200 Success: Route updated successfully
+{
+  "message": "تم تحديث الخط بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "routes": [...]
+  }
+}
+400 Bad Request: Missing routeId or duplicate route name
+403 Forbidden: Not authorized
+404 Not Found: Bus or route not found
+500 Internal Server Error: Server error
+9. Delete Bus Route
+URL: DELETE /api/schools/my/[id]/buses/[busId]/routes?routeId=[routeId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+routeId: Route ID to delete
+Response Cases:
+
+200 Success: Route deleted successfully
+{
+  "message": "تم حذف الخط بنجاح"
+}
+400 Bad Request: Route has active student assignments
+{
+  "message": "لا يمكن حذف الخط لأنه يحتوي على 3 طالب مسجل"
+}
+400 Bad Request: Missing routeId or invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus or route not found
+500 Internal Server Error: Server error
+10. Get Bus Lines
+URL: GET /api/schools/my/[id]/buses/[busId]/lines
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+date: Filter by date (optional) - Format: YYYY-MM-DD
+tripType: Filter by trip type (optional) - morning, afternoon, both
+status: Filter by status (optional) - scheduled, in_progress, completed
+Response Cases:
+
+200 Success: Bus lines retrieved
+{
+  "busLines": [
+    {
+      "_id": "line_id",
+      "bus": "bus_id",
+      "school": "school_id",
+      "date": "2024-01-15T00:00:00Z",
+      "tripType": "morning",
+      "routeName": "Route A",
+      "stations": [
+        {
+          "order": 1,
+          "name": "Station 1",
+          "address": "123 Main St",
+          "coordinates": {
+            "lat": 30.0444,
+            "lng": 31.2357
+          },
+          "arrivalTime": "07:00",
+          "departureTime": "07:15",
+          "status": "completed",
+          "arrivedAt": "2024-01-15T07:00:00Z",
+          "departedAt": "2024-01-15T07:15:00Z",
+          "students": [
+            {
+              "student": {
+                "_id": "student_id",
+                "fullName": "Student Name",
+                "studentCode": "STU001"
+              },
+              "attendanceStatus": "present",
+              "attendanceTime": "2024-01-15T07:05:00Z",
+              "recordedBy": "user_id",
+              "notes": "On time"
+            }
+          ]
+        }
+      ],
+      "driver": {
+        "_id": "driver_id",
+        "name": "Ahmed Ali",
+        "email": "ahmed@example.com"
+      },
+      "assistant": {
+        "_id": "assistant_id",
+        "name": "Mohamed Hassan",
+        "email": "mohamed@example.com"
+      },
+      "status": "in_progress",
+      "startedAt": "2024-01-15T07:00:00Z",
+      "completedAt": null,
+      "notes": "Running on schedule"
+    }
+  ]
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+11. Create Bus Line
+URL: POST /api/schools/my/[id]/buses/[busId]/lines
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body: (Either routeName OR stations array required)
+
+{
+  "date": "2024-01-15",
+  "tripType": "morning",
+  "routeName": "Route A",
+  "stations": [
+    {
+      "order": 1,
+      "name": "Station 1",
+      "address": "123 Main St",
+      "coordinates": {
+        "lat": 30.0444,
+        "lng": 31.2357
+      },
+      "arrivalTime": "07:00",
+      "departureTime": "07:15",
+      "students": [
+        {
+          "student": "student_id",
+          "attendanceStatus": "pending"
+        }
+      ]
+    }
+  ],
+  "driver": "driver_id",
+  "assistant": "assistant_id",
+  "notes": "Regular morning route"
+}
+Required Fields:
+
+date: Date for the bus line (format: YYYY-MM-DD)
+tripType: Type of trip - morning, afternoon, or both
+Either routeName (to create from existing route) OR stations array (to create manually)
+Response Cases:
+
+201 Created: Bus line created successfully
+{
+  "message": "تم إنشاء خط الحافلة بنجاح",
+  "busLine": {
+    "_id": "line_id",
+    "date": "2024-01-15T00:00:00Z",
+    "tripType": "morning",
+    "status": "scheduled",
+    "stations": [...]
+  }
+}
+400 Bad Request: Missing required fields, duplicate bus line, or invalid data
+{
+  "message": "خط الحافلة موجود بالفعل لهذا التاريخ ونوع الرحلة"
+}
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+12. Get Specific Bus Line
+URL: GET /api/schools/my/[id]/buses/[busId]/lines/[lineId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+Response Cases:
+
+200 Success: Bus line details retrieved
+{
+  "busLine": {
+    "_id": "line_id",
+    "bus": {
+      "_id": "bus_id",
+      "busNumber": "BUS-001",
+      "plateNumber": "ABC-123"
+    },
+    "date": "2024-01-15T00:00:00Z",
+    "tripType": "morning",
+    "stations": [...],
+    "driver": {...},
+    "assistant": {...},
+    "status": "in_progress"
+  }
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus line not found
+500 Internal Server Error: Server error
+13. Update Bus Line
+URL: PUT /api/schools/my/[id]/buses/[busId]/lines/[lineId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+Body: (All fields optional)
+
+{
+  "stations": [...],
+  "driver": "driver_id",
+  "assistant": "assistant_id",
+  "status": "completed",
+  "tripType": "afternoon",
+  "notes": "Updated notes"
+}
+Response Cases:
+
+200 Success: Bus line updated successfully
+{
+  "message": "تم تحديث خط الحافلة بنجاح",
+  "busLine": {
+    "_id": "line_id",
+    "status": "completed",
+    "completedAt": "2024-01-15T14:30:00Z"
+  }
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus line not found
+500 Internal Server Error: Server error
+14. Delete Bus Line
+URL: DELETE /api/schools/my/[id]/buses/[busId]/lines/[lineId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+Response Cases:
+
+200 Success: Bus line deleted successfully
+{
+  "message": "تم حذف خط الحافلة بنجاح"
+}
+400 Bad Request: Cannot delete line in progress
+{
+  "message": "لا يمكن حذف خط الحافلة أثناء تنفيذه"
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus line not found
+500 Internal Server Error: Server error
+15. Mark Station Arrival
+URL: POST /api/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/arrival
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+stationOrder: Station order number (integer)
+Response Cases:
+
+200 Success: Station arrival marked
+{
+  "message": "تم تسجيل وصول الحافلة إلى المحطة",
+  "busLine": {
+    "_id": "line_id",
+    "stations": [
+      {
+        "order": 1,
+        "status": "arrived",
+        "arrivedAt": "2024-01-15T07:00:00Z"
+      }
+    ]
+  }
+}
+400 Bad Request: Invalid IDs or station order
+403 Forbidden: Not authorized
+404 Not Found: Bus line not found
+500 Internal Server Error: Server error
+16. Mark Station Departure
+URL: POST /api/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/departure
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+stationOrder: Station order number (integer)
+Response Cases:
+
+200 Success: Station departure marked
+{
+  "message": "تم تسجيل مغادرة الحافلة من المحطة",
+  "busLine": {
+    "_id": "line_id",
+    "stations": [
+      {
+        "order": 1,
+        "status": "departed",
+        "departedAt": "2024-01-15T07:15:00Z"
+      }
+    ]
+  }
+}
+400 Bad Request: Invalid IDs or station order
+403 Forbidden: Not authorized
+404 Not Found: Bus line not found
+500 Internal Server Error: Server error
+17. Update Student Attendance at Station
+URL: POST /api/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/attendance
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+stationOrder: Station order number (integer)
+Body:
+
+{
+  "studentId": "student_id",
+  "attendanceStatus": "present",
+  "attendanceTime": "2024-01-15T07:05:00Z",
+  "notes": "On time"
+}
+Required Fields:
+
+studentId: Student ID
+attendanceStatus: Attendance status - present, absent, late, no_show
+Response Cases:
+
+200 Success: Attendance updated
+{
+  "message": "تم تحديث حضور الطالب بنجاح",
+  "busLine": {
+    "_id": "line_id",
+    "stations": [
+      {
+        "order": 1,
+        "students": [
+          {
+            "student": {
+              "_id": "student_id",
+              "fullName": "Student Name",
+              "studentCode": "STU001"
+            },
+            "attendanceStatus": "present",
+            "attendanceTime": "2024-01-15T07:05:00Z",
+            "recordedBy": {
+              "_id": "user_id",
+              "name": "User Name",
+              "email": "user@example.com"
+            },
+            "notes": "On time"
+          }
+        ]
+      }
+    ]
+  }
+}
+400 Bad Request: Missing required fields or invalid attendance status
+403 Forbidden: Not authorized
+404 Not Found: Bus line or station not found
+500 Internal Server Error: Server error
+18. Bulk Update Student Attendance at Station
+URL: PUT /api/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/attendance
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+lineId: Bus Line ID (24-character MongoDB ObjectId)
+stationOrder: Station order number (integer)
+Body:
+
+{
+  "attendanceRecords": [
+    {
+      "studentId": "student_id_1",
+      "attendanceStatus": "present",
+      "attendanceTime": "2024-01-15T07:05:00Z",
+      "notes": "On time"
+    },
+    {
+      "studentId": "student_id_2",
+      "attendanceStatus": "late",
+      "attendanceTime": "2024-01-15T07:10:00Z",
+      "notes": "Arrived 10 minutes late"
+    }
+  ]
+}
+Required Fields:
+
+attendanceRecords: Array of attendance records, each containing:
+studentId: Student ID
+attendanceStatus: Attendance status - present, absent, late, no_show
+Response Cases:
+
+200 Success: Attendance records updated
+{
+  "message": "تم تحديث حضور الطلاب بنجاح",
+  "busLine": {
+    "_id": "line_id",
+    "stations": [...]
+  }
+}
+400 Bad Request: Missing or invalid attendance records
+403 Forbidden: Not authorized
+404 Not Found: Bus line or station not found
+500 Internal Server Error: Server error
+19. Get Bus Students
+URL: GET /api/schools/my/[id]/buses/[busId]/students
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+status: Filter by assignment status (optional) - active, suspended, transferred
+Response Cases:
+
+200 Success: Students retrieved
+{
+  "students": [
+    {
+      "_id": "assignment_id",
+      "student": {
+        "_id": "student_id",
+        "fullName": "Student Name",
+        "studentCode": "STU001",
+        "stage": { "name": "Primary" },
+        "grade": { "name": "Grade 1" },
+        "class": { "name": "Class A" }
+      },
+      "route": "Route A",
+      "stop": "Stop 1",
+      "pickupTime": "07:00",
+      "returnTime": "14:00",
+      "status": "active",
+      "assignedDate": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+20. Assign Student to Bus
+URL: POST /api/schools/my/[id]/buses/[busId]/students
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "studentId": "student_id",
+  "route": "Route A",
+  "stop": "Stop 1",
+  "pickupTime": "07:00",
+  "returnTime": "14:00"
+}
+Required Fields:
+
+studentId: Student ID
+Response Cases:
+
+200 Success: Student assigned successfully
+{
+  "message": "تم تسجيل الطالب في الحافلة بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "currentOccupancy": 31,
+    "assignedStudents": [...]
+  }
+}
+400 Bad Request: Missing studentId, student already assigned, or bus at capacity
+{
+  "message": "الحافلة ممتلئة، لا يمكن إضافة المزيد من الطلاب"
+}
+403 Forbidden: Not authorized
+404 Not Found: Bus or student not found
+500 Internal Server Error: Server error
+Note: If the provided stop doesn't exist in the route, it will be automatically added to the route's stops.
+
+21. Update Student Assignment
+URL: PUT /api/schools/my/[id]/buses/[busId]/students
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "assignmentId": "assignment_id",
+  "route": "Route B",
+  "stop": "Stop 2",
+  "pickupTime": "07:15",
+  "returnTime": "14:15",
+  "status": "active"
+}
+Required Fields:
+
+assignmentId: Assignment ID to update
+Response Cases:
+
+200 Success: Assignment updated successfully
+{
+  "message": "تم تحديث تسجيل الطالب بنجاح",
+  "bus": {
+    "_id": "bus_id",
+    "assignedStudents": [...]
+  }
+}
+400 Bad Request: Missing assignmentId or invalid status
+403 Forbidden: Not authorized
+404 Not Found: Bus or assignment not found
+500 Internal Server Error: Server error
+Valid Status Values:
+
+active: Student is actively using the bus
+suspended: Student assignment is temporarily suspended
+transferred: Student has been transferred to another bus
+22. Remove Student from Bus
+URL: DELETE /api/schools/my/[id]/buses/[busId]/students?assignmentId=[assignmentId]
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+assignmentId: Assignment ID to remove
+Response Cases:
+
+200 Success: Student removed successfully
+{
+  "message": "تم إزالة الطالب من الحافلة بنجاح"
+}
+400 Bad Request: Missing assignmentId or invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus or assignment not found
+500 Internal Server Error: Server error
+23. Get Bus Location
+URL: GET /api/schools/my/[id]/buses/[busId]/location
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Query Parameters:
+
+hours: Number of hours of location history to retrieve (optional, default: 24)
+Response Cases:
+
+200 Success: Location data retrieved
+{
+  "currentLocation": {
+    "coordinates": {
+      "lat": 30.0444,
+      "lng": 31.2357
+    },
+    "address": "123 Main St, Cairo",
+    "speed": 45.5,
+    "heading": 180,
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "accuracy": 10.5
+  },
+  "locationHistory": [
+    {
+      "coordinates": {
+        "lat": 30.0440,
+        "lng": 31.2350
+      },
+      "address": "120 Main St, Cairo",
+      "speed": 40.0,
+      "heading": 175,
+      "timestamp": "2024-01-15T10:25:00Z",
+      "accuracy": 12.0
+    }
+  ],
+  "gpsEnabled": true
+}
+400 Bad Request: Invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+24. Update Bus Location
+URL: POST /api/schools/my/[id]/buses/[busId]/location
+
+Headers:
+
+{
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+}
+Path Parameters:
+
+id: School ID (24-character MongoDB ObjectId)
+busId: Bus ID (24-character MongoDB ObjectId)
+Body:
+
+{
+  "lat": 30.0444,
+  "lng": 31.2357,
+  "address": "123 Main St, Cairo",
+  "speed": 45.5,
+  "heading": 180,
+  "accuracy": 10.5
+}
+Required Fields:
+
+lat: Latitude coordinate
+lng: Longitude coordinate
+Response Cases:
+
+200 Success: Location updated successfully
+{
+  "message": "تم تحديث موقع الحافلة بنجاح",
+  "location": {
+    "coordinates": {
+      "lat": 30.0444,
+      "lng": 31.2357
+    },
+    "address": "123 Main St, Cairo",
+    "speed": 45.5,
+    "heading": 180,
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "accuracy": 10.5
+  }
+}
+400 Bad Request: Missing coordinates or invalid IDs
+403 Forbidden: Not authorized
+404 Not Found: Bus not found
+500 Internal Server Error: Server error
+Note: Location history is automatically maintained (last 1000 points). Each location update adds a new entry to the history.
+
+This documentation covers all the major API endpoints in the Derasy platform. For additional endpoints or detailed implementation, please refer to the source code in the /src/app/api/ directory.
+
+ 
