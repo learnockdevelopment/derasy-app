@@ -8,6 +8,7 @@ import '../../models/school_models.dart';
 import '../../models/admission_models.dart';
 import '../../services/admission_service.dart';
 import '../../services/schools_service.dart';
+import '../../services/students_service.dart';
 import '../../core/routes/app_routes.dart';
 import '../../../widgets/safe_network_image.dart';
 import '../../../widgets/shimmer_loading.dart';
@@ -59,12 +60,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       final response = await SchoolsService.getAllSchools();
       if (mounted) {
         setState(() {
-          _allSchools = response.schools
-              .where((school) => school.admissionOpen)
-              .toList();
+          // Get ALL schools without filtering by admissionOpen
+          _allSchools = response.schools;
           _filteredSchools = _allSchools;
           _isLoadingSchools = false;
         });
+        print('🏫 [APPLY_TO_SCHOOLS] Loaded ${_allSchools.length} schools (all schools)');
       }
     } catch (e) {
       if (mounted) {
@@ -112,7 +113,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
     if (_selectedChild == null) {
       Get.snackbar(
         'error'.tr,
-        'Please select a child first',
+        'please_select_child_first'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
@@ -123,7 +124,22 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
     if (_selectedSchools.isEmpty) {
       Get.snackbar(
         'error'.tr,
-        'Please select at least one school',
+        'please_select_at_least_one_school'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Check if child already has a school (transfer mode)
+    final isTransfer = _selectedChild!.schoolId.id.isNotEmpty;
+    
+    // For transfer, only allow selecting one school
+    if (isTransfer && _selectedSchools.length > 1) {
+      Get.snackbar(
+        'error'.tr,
+        'please_select_only_one_school_for_transfer'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
@@ -153,7 +169,9 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
 
       Get.snackbar(
         'success'.tr,
-        response.message,
+        isTransfer 
+            ? 'transfer_request_submitted_successfully'.tr
+            : response.message,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.success,
         colorText: Colors.white,
@@ -169,7 +187,9 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
         _isSubmitting = false;
       });
 
-      String errorMessage = 'Failed to apply. Please try again.';
+      String errorMessage = isTransfer 
+          ? 'failed_to_transfer'.tr
+          : 'failed_to_apply'.tr;
       if (e is AdmissionException) {
         errorMessage = e.message;
       }
@@ -197,7 +217,9 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Apply to Schools',
+          _selectedChild != null && _selectedChild!.schoolId.id.isNotEmpty
+              ? 'transfer_to_school'.tr
+              : 'apply_to_schools'.tr,
           style: AppFonts.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -209,6 +231,8 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
         children: [
           // Selected Child Info
           if (_selectedChild != null)
+            Column(
+              children: [
             Container(
               padding: EdgeInsets.all(16.w),
               color: AppColors.primaryBlue.withOpacity(0.1),
@@ -221,63 +245,153 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Child: ${_selectedChild!.fullName}',
+                              '${'child_colon'.tr}: ${_selectedChild!.fullName}',
                           style: AppFonts.bodyMedium.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 14.sp,
                           ),
                         ),
+                            if (_selectedChild!.schoolId.id.isNotEmpty) ...[
+                              SizedBox(height: 4.h),
+                              Text(
+                                '${'current_school_colon'.tr}: ${_selectedChild!.schoolId.name}',
+                                style: AppFonts.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                            ],
                       ],
                     ),
                   ),
                 ],
               ),
             ),
+                if (_selectedChild!.schoolId.id.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    color: AppColors.warning.withOpacity(0.1),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.warning, size: 18.sp),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            'this_will_transfer_your_child'.tr,
+                            style: AppFonts.bodySmall.copyWith(
+                              color: AppColors.warning,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
 
-          // Search Bar
+          // Modern Search Bar
           Padding(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: AppColors.primaryBlue.withOpacity(0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
             child: TextField(
               controller: _searchController,
               onChanged: _filterSchools,
+                style: AppFonts.bodyMedium.copyWith(fontSize: 13.sp),
               decoration: InputDecoration(
-                hintText: 'Search schools...',
-                prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+                  hintText: 'search_schools_placeholder'.tr,
+                  hintStyle: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 13.sp,
+                  ),
+                  prefixIcon: Container(
+                    padding: EdgeInsets.all(10.w),
+                    child: Icon(Icons.search, color: AppColors.primaryBlue, size: 20.sp),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 ),
-                filled: true,
-                fillColor: AppColors.surface,
               ),
             ),
           ),
 
-          // Selected Schools Summary
+          // Modern Selected Schools Summary
           if (_selectedSchools.isNotEmpty)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.success.withOpacity(0.15),
+                    AppColors.success.withOpacity(0.08),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: AppColors.success.withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
               color: AppColors.success.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.success, size: 20.sp),
-                  SizedBox(width: 8.w),
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(Icons.check_circle, color: AppColors.success, size: 18.sp),
+                  ),
+                  SizedBox(width: 12.w),
                   Expanded(
-                    child: Text(
-                      '${_selectedSchools.length} school(s) selected',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_selectedSchools.length} ${_selectedSchools.length == 1 ? 'school'.tr : 'schools'.tr} ${'selected'.tr}',
                       style: AppFonts.bodyMedium.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.sp,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          '${'total_colon'.tr} ${_calculateTotalFee()} EGP',
+                          style: AppFonts.bodySmall.copyWith(
                         color: AppColors.success,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14.sp,
+                            fontSize: 12.sp,
                       ),
                     ),
-                  ),
-                  Text(
-                    'Total: ${_calculateTotalFee()} EGP',
-                    style: AppFonts.bodyMedium.copyWith(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.sp,
+                      ],
                     ),
                   ),
                 ],
@@ -306,7 +420,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                                 size: 64.sp, color: AppColors.textSecondary),
                             SizedBox(height: 16.h),
                             Text(
-                              'No schools found',
+                              'no_schools_found'.tr,
                               style: AppFonts.h4.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -324,21 +438,33 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                           final admissionFee = school.admissionFee?.amount ?? 0.0;
 
                           return Container(
-                            margin: EdgeInsets.only(bottom: 12.h),
+                            margin: EdgeInsets.only(bottom: 10.h),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              gradient: isSelected
+                                  ? LinearGradient(
+                                      colors: [
+                                        AppColors.primaryBlue.withOpacity(0.1),
+                                        AppColors.primaryBlue.withOpacity(0.05),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : null,
+                              color: isSelected ? null : AppColors.surface,
                               borderRadius: BorderRadius.circular(16.r),
                               border: Border.all(
                                 color: isSelected
                                     ? AppColors.primaryBlue
                                     : AppColors.grey200,
-                                width: isSelected ? 2 : 1,
+                                width: isSelected ? 2.5 : 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                                  color: isSelected
+                                      ? AppColors.primaryBlue.withOpacity(0.2)
+                                      : Colors.black.withOpacity(0.04),
+                                  blurRadius: isSelected ? 12 : 8,
+                                  offset: Offset(0, isSelected ? 6 : 4),
                                 ),
                               ],
                             ),
@@ -348,43 +474,101 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                                 onTap: () => _toggleSchoolSelection(school),
                                 borderRadius: BorderRadius.circular(16.r),
                                 child: Padding(
-                                  padding: EdgeInsets.all(16.w),
+                                  padding: EdgeInsets.all(14.w),
                                   child: Row(
                                     children: [
-                                      // Selection Checkbox
+                                      // Modern Selection Checkbox
                                       Container(
-                                        width: 24.w,
-                                        height: 24.h,
+                                        width: 22.w,
+                                        height: 22.h,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
+                                          gradient: isSelected
+                                              ? LinearGradient(
+                                                  colors: [
+                                                    AppColors.primaryBlue,
+                                                    AppColors.primaryBlue.withOpacity(0.8),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                )
+                                              : null,
+                                          color: isSelected ? null : Colors.transparent,
                                           border: Border.all(
                                             color: isSelected
                                                 ? AppColors.primaryBlue
                                                 : AppColors.grey400,
-                                            width: 2,
+                                            width: 2.5,
                                           ),
-                                          color: isSelected
-                                              ? AppColors.primaryBlue
-                                              : Colors.transparent,
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: AppColors.primaryBlue.withOpacity(0.4),
+                                                    blurRadius: 8,
+                                                    offset: const Offset(0, 3),
+                                                  ),
+                                                ]
+                                              : null,
                                         ),
                                         child: isSelected
                                             ? Icon(Icons.check,
-                                                size: 16.sp, color: Colors.white)
+                                                size: 14.sp, color: Colors.white)
                                             : null,
                                       ),
                                       SizedBox(width: 12.w),
-                                      // School Logo
+                                      // School Logo with modern design
                                       if (school.media?.schoolImages?.isNotEmpty == true ||
                                           school.bannerImage?.isNotEmpty == true)
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(8.r),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12.r),
+                                            border: Border.all(
+                                              color: AppColors.primaryBlue.withOpacity(0.2),
+                                              width: 1.5,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.08),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12.r),
                                           child: SafeNetworkImage(
                                             imageUrl: school.media?.schoolImages?.isNotEmpty == true
                                                 ? school.media!.schoolImages!.first.url
                                                 : school.bannerImage ?? '',
-                                            width: 50.w,
-                                            height: 50.h,
+                                              width: 56.w,
+                                              height: 56.h,
                                             fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        Container(
+                                          width: 56.w,
+                                          height: 56.h,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppColors.primaryBlue.withOpacity(0.2),
+                                                AppColors.primaryBlue.withOpacity(0.1),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            borderRadius: BorderRadius.circular(12.r),
+                                            border: Border.all(
+                                              color: AppColors.primaryBlue.withOpacity(0.3),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.school_rounded,
+                                            color: AppColors.primaryBlue,
+                                            size: 28.sp,
                                           ),
                                         ),
                                       SizedBox(width: 12.w),
@@ -399,47 +583,73 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                                               style: AppFonts.h4.copyWith(
                                                 color: AppColors.textPrimary,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 15.sp,
+                                                fontSize: 14.sp,
+                                                letterSpacing: 0.2,
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            SizedBox(height: 4.h),
+                                            SizedBox(height: 6.h),
                                             if (school.location?.governorate != null)
-                                              Row(
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primaryBlue.withOpacity(0.08),
+                                                  borderRadius: BorderRadius.circular(6.r),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Icon(Icons.location_on,
-                                                      size: 12.sp,
-                                                      color:
-                                                          AppColors.textSecondary),
-                                                  SizedBox(width: 4.w),
+                                                        size: 11.sp,
+                                                        color: AppColors.primaryBlue),
+                                                    SizedBox(width: 3.w),
                                                   Text(
                                                     school.location!.governorate,
-                                                    style:
-                                                        AppFonts.bodySmall.copyWith(
-                                                      color: AppColors.textSecondary,
-                                                      fontSize: 12.sp,
+                                                      style: AppFonts.bodySmall.copyWith(
+                                                        color: AppColors.primaryBlue,
+                                                        fontSize: 10.sp,
+                                                        fontWeight: FontWeight.w600,
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                            SizedBox(height: 4.h),
-                                            Row(
+                                              ),
+                                            if (school.location?.governorate != null) SizedBox(height: 4.h),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    AppColors.success.withOpacity(0.15),
+                                                    AppColors.success.withOpacity(0.08),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                                borderRadius: BorderRadius.circular(6.r),
+                                                border: Border.all(
+                                                  color: AppColors.success.withOpacity(0.3),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(Icons.payments,
-                                                    size: 12.sp,
-                                                    color: AppColors.primaryBlue),
-                                                SizedBox(width: 4.w),
+                                                      size: 11.sp,
+                                                      color: AppColors.success),
+                                                  SizedBox(width: 3.w),
                                                 Text(
                                                   '$admissionFee EGP',
-                                                  style:
-                                                      AppFonts.bodySmall.copyWith(
-                                                    color: AppColors.primaryBlue,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12.sp,
+                                                    style: AppFonts.bodySmall.copyWith(
+                                                      color: AppColors.success,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 10.sp,
                                                   ),
                                                 ),
                                               ],
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -491,7 +701,9 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                           ),
                         )
                       : Text(
-                          'Apply to ${_selectedSchools.length} School(s)',
+                          _selectedChild != null && _selectedChild!.schoolId.id.isNotEmpty
+                              ? '${'transfer_to'.tr} ${_selectedSchools.length} ${'school_s'.tr}'
+                              : '${'apply_to'.tr} ${_selectedSchools.length} ${'school_s'.tr}',
                           style: AppFonts.h4.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

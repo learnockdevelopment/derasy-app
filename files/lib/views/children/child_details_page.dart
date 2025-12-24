@@ -43,117 +43,186 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with Avatar
+            // Compact Header with Avatar
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(24.w),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     AppColors.primaryBlue,
-                    AppColors.primaryBlue.withOpacity(0.8),
+                    AppColors.primaryBlue.withOpacity(0.85),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              child: Column(
+              child: Row(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.white,
-                        width: 4,
+                        width: 3,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                     child: ClipOval(
                       child: SizedBox(
-                        width: 100.w,
-                        height: 100.h,
+                        width: 70.w,
+                        height: 70.h,
                         child: SafeAvatarImage(
                           imageUrl: imageUrl?.isNotEmpty == true ? imageUrl : null,
-                          size: 100,
+                          size: 70,
                           backgroundColor: Colors.white.withOpacity(0.2),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    child.fullName,
-                    style: AppFonts.h2.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22.sp,
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          child.fullName,
+                          style: AppFonts.h3.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.sp,
+                            letterSpacing: 0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (child.studentCode.isNotEmpty) ...[
+                          SizedBox(height: 4.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Text(
+                              '${'code_colon'.tr} ${child.studentCode}',
+                              style: AppFonts.bodySmall.copyWith(
+                                color: Colors.white.withOpacity(0.95),
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  if (child.studentCode.isNotEmpty) ...[
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Code: ${child.studentCode}',
-                      style: AppFonts.bodySmall.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
 
-            // Action Buttons
+            // Compact Action Buttons
             Padding(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _navigateToApply(),
-                      icon: Icon(Icons.school_rounded, size: 20.sp),
-                      label: Text(
-                        'Apply to Schools',
-                        style: AppFonts.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14.sp,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _navigateToApply(),
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryBlue,
+                                AppColors.primaryBlue.withOpacity(0.85),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryBlue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.school_rounded, size: 16.sp, color: Colors.white),
+                              SizedBox(width: 6.w),
+                              Text(
+                                child.schoolId.id.isNotEmpty ? 'transfer_to_school'.tr : 'apply_to_schools'.tr,
+                                style: AppFonts.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.sp,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        elevation: 2,
                       ),
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: 10.w),
                   Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _viewApplications(),
-                      icon: Icon(Icons.assignment_rounded, size: 20.sp),
-                      label: Text(
-                        'View Applications',
-                        style: AppFonts.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primaryBlue,
-                        side: BorderSide(color: AppColors.primaryBlue, width: 2),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _viewApplications(),
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(
+                              color: AppColors.primaryBlue,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.assignment_rounded, size: 16.sp, color: AppColors.primaryBlue),
+                              SizedBox(width: 6.w),
+                              Text(
+                                'view_applications'.tr,
+                                style: AppFonts.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.sp,
+                                  color: AppColors.primaryBlue,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -169,51 +238,51 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                 children: [
                   _buildInfoCard(
                     icon: Icons.person_outline,
-                    title: 'Personal Information',
+                    title: 'personal_information'.tr,
                     children: [
-                      _buildInfoRow('Full Name', child.fullName),
+                      _buildInfoRow('full_name'.tr, child.fullName),
                       if (child.gender.isNotEmpty)
-                        _buildInfoRow('Gender', child.gender.toUpperCase()),
+                        _buildInfoRow('gender'.tr, child.gender.toUpperCase()),
                       if (child.birthDate.isNotEmpty)
-                        _buildInfoRow('Birth Date', child.birthDate),
+                        _buildInfoRow('birth_date_label'.tr, child.birthDate),
                       if (child.ageInOctober > 0)
-                        _buildInfoRow('Age', '${child.ageInOctober} years'),
+                        _buildInfoRow('age'.tr, '${child.ageInOctober} ${'years'.tr}'),
                       if (child.nationalId.isNotEmpty)
-                        _buildInfoRow('National ID', child.nationalId),
+                        _buildInfoRow('national_id_label'.tr, child.nationalId),
                     ],
                   ),
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 10.h),
                   if (child.schoolId.name.isNotEmpty || child.studentClass.name.isNotEmpty)
                     _buildInfoCard(
                       icon: Icons.school_outlined,
-                      title: 'Academic Information',
+                      title: 'academic_information'.tr,
                       children: [
                         if (child.schoolId.name.isNotEmpty)
-                          _buildInfoRow('School', child.schoolId.name),
+                          _buildInfoRow('school_label'.tr, child.schoolId.name),
                         if (child.stage.name.isNotEmpty)
-                          _buildInfoRow('Stage', child.stage.name),
+                          _buildInfoRow('stage'.tr, child.stage.name),
                         if (child.grade.name.isNotEmpty)
-                          _buildInfoRow('Grade', child.grade.name),
+                          _buildInfoRow('grade'.tr, child.grade.name),
                         if (child.section.name.isNotEmpty)
-                          _buildInfoRow('Section', child.section.name),
+                          _buildInfoRow('section'.tr, child.section.name),
                         if (child.studentClass.name.isNotEmpty)
-                          _buildInfoRow('Class', child.studentClass.name),
+                          _buildInfoRow('class'.tr, child.studentClass.name),
                       ],
                     ),
                   if (child.schoolId.name.isNotEmpty || child.studentClass.name.isNotEmpty)
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 10.h),
                   if (child.address.isNotEmpty || child.medicalNotes.isNotEmpty)
                     _buildInfoCard(
                       icon: Icons.info_outline,
-                      title: 'Additional Information',
+                      title: 'additional_information'.tr,
                       children: [
                         if (child.address.isNotEmpty)
-                          _buildInfoRow('Address', child.address),
+                          _buildInfoRow('address'.tr, child.address),
                         if (child.medicalNotes.isNotEmpty)
-                          _buildInfoRow('Medical Notes', child.medicalNotes),
+                          _buildInfoRow('medical_notes'.tr, child.medicalNotes),
                       ],
                     ),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 16.h),
                 ],
               ),
             ),
@@ -229,15 +298,31 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16.r),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.surface,
+            AppColors.surface.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(
+          color: AppColors.primaryBlue.withOpacity(0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: AppColors.primaryBlue.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -247,25 +332,40 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8.w),
+                padding: EdgeInsets.all(7.w),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryBlue,
+                      AppColors.primaryBlue.withOpacity(0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+                child: Icon(icon, color: Colors.white, size: 16.sp),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w),
               Text(
                 title,
                 style: AppFonts.h4.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           ...children,
         ],
       ),
@@ -273,18 +373,28 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: AppColors.grey200.withOpacity(0.5),
+          width: 1,
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100.w,
+            width: 90.w,
             child: Text(
               label,
               style: AppFonts.bodySmall.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 13.sp,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -293,8 +403,8 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
               value,
               style: AppFonts.bodyMedium.copyWith(
                 color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                fontSize: 12.sp,
               ),
             ),
           ),
@@ -308,7 +418,13 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
   }
 
   void _viewApplications() {
-    Get.toNamed(AppRoutes.applications);
+    Get.toNamed(
+      AppRoutes.applications,
+      arguments: {
+        'childId': widget.child.id,
+        'child': widget.child,
+      },
+    );
   }
 }
 

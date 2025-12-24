@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../core/constants/api_constants.dart';
 import '../models/student_models.dart';
 import '../models/pagination_models.dart';
@@ -500,6 +502,239 @@ class StudentsService {
       }
     } catch (e) {
       print('👶 [ADD_CHILDREN] Error adding child(ren): $e');
+      if (e is StudentsException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Extract data from birth certificate using AI
+  static Future<BirthCertificateExtractionResponse> extractBirthCertificate(File imageFile) async {
+    try {
+      print('📄 [EXTRACT] Extracting data from birth certificate');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.extractBirthCertificateEndpoint;
+      
+      // Create multipart request
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        ApiConstants.apiKeyHeader: ApiConstants.apiKey,
+      });
+
+      // Add file
+      final fileBytes = await imageFile.readAsBytes();
+      final fileName = imageFile.path.split('/').last;
+      final mimeType = fileName.toLowerCase().endsWith('.png') 
+          ? 'image/png' 
+          : fileName.toLowerCase().endsWith('.webp')
+              ? 'image/webp'
+              : 'image/jpeg';
+      
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'birthCertificate',
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType.parse(mimeType),
+        ),
+      );
+
+      print('📄 [EXTRACT] URL: $url');
+      print('📄 [EXTRACT] File: $fileName (${fileBytes.length} bytes)');
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('📄 [EXTRACT] Response status: ${response.statusCode}');
+      print('📄 [EXTRACT] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        try {
+          final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+          return BirthCertificateExtractionResponse.fromJson(responseData);
+        } catch (e) {
+          print('📄 [EXTRACT] Error parsing JSON: $e');
+          throw StudentsException('Failed to parse extraction response: $e');
+        }
+      } else if (response.statusCode == 409) {
+        // Child with this national ID already exists
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(
+            'Child with this national ID already exists. ${errorData['existingChildId'] != null ? 'Child ID: ${errorData['existingChildId']}' : ''}',
+          );
+        } catch (e) {
+          throw StudentsException('Child with this national ID already exists');
+        }
+      } else if (response.statusCode == 503) {
+        // Service unavailable - AI error
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          final canContinue = errorData['canContinue'] == true;
+          throw BirthCertificateExtractionException(
+            errorData['message']?.toString() ?? 'OCR extraction failed. Please enter data manually.',
+            canContinue: canContinue,
+          );
+        } catch (e) {
+          if (e is BirthCertificateExtractionException) {
+            rethrow;
+          }
+          throw BirthCertificateExtractionException(
+            'OCR extraction failed. Please enter data manually.',
+            canContinue: true,
+          );
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Failed to extract birth certificate data');
+        } catch (e) {
+          throw StudentsException('Failed to extract birth certificate data: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('📄 [EXTRACT] Error extracting birth certificate: $e');
+      if (e is StudentsException || e is BirthCertificateExtractionException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Update child information
+  static Future<Map<String, dynamic>> updateChild(String childId, Map<String, dynamic> updateData) async {
+    try {
+      print('👶 [UPDATE_CHILD] Updating child: $childId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = '${_baseUrl}${ApiConstants.updateChildEndpoint}/$childId';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('👶 [UPDATE_CHILD] URL: $url');
+      print('👶 [UPDATE_CHILD] Headers: $headers');
+      print('👶 [UPDATE_CHILD] Body: ${jsonEncode(updateData)}');
+
+      final response = await http.put(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(updateData),
+      );
+
+      print('👶 [UPDATE_CHILD] Response status: ${response.statusCode}');
+      print('👶 [UPDATE_CHILD] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        try {
+          final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+          return responseData;
+        } catch (e) {
+          print('👶 [UPDATE_CHILD] Error parsing JSON: $e');
+          throw StudentsException('Failed to parse response: $e');
+        }
+      } else if (response.statusCode == 400) {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Validation error');
+        } catch (e) {
+          throw StudentsException('Bad request: ${response.body}');
+        }
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException('Unauthorized: ${errorData['message']}');
+        } catch (e) {
+          throw StudentsException('Unauthorized: ${response.body}');
+        }
+      } else if (response.statusCode == 404) {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Child not found or unauthorized');
+        } catch (e) {
+          throw StudentsException('Child not found: ${response.body}');
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Failed to update child');
+        } catch (e) {
+          throw StudentsException('Failed to update child: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('👶 [UPDATE_CHILD] Error updating child: $e');
+      if (e is StudentsException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Delete child
+  static Future<void> deleteChild(String childId) async {
+    try {
+      print('👶 [DELETE_CHILD] Deleting child: $childId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = '${_baseUrl}${ApiConstants.deleteChildEndpoint}/$childId';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('👶 [DELETE_CHILD] URL: $url');
+      print('👶 [DELETE_CHILD] Headers: $headers');
+
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: headers,
+      );
+
+      print('👶 [DELETE_CHILD] Response status: ${response.statusCode}');
+      print('👶 [DELETE_CHILD] Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return;
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException('Unauthorized: ${errorData['message']}');
+        } catch (e) {
+          throw StudentsException('Unauthorized: ${response.body}');
+        }
+      } else if (response.statusCode == 404) {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Child not found or unauthorized');
+        } catch (e) {
+          throw StudentsException('Child not found: ${response.body}');
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Failed to delete child');
+        } catch (e) {
+          throw StudentsException('Failed to delete child: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('👶 [DELETE_CHILD] Error deleting child: $e');
       if (e is StudentsException) {
         rethrow;
       } else {

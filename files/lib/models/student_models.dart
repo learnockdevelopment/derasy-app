@@ -20,6 +20,9 @@ class Student {
   final GradeInfo grade;
   final SectionInfo section;
   final MoodleUser? moodleUser;
+  final String? nationality;
+  final String? passport;
+  final Map<String, dynamic>? specialNeeds;
 
   Student({
     required this.id,
@@ -43,23 +46,30 @@ class Student {
     required this.grade,
     required this.section,
     this.moodleUser,
+    this.nationality,
+    this.passport,
+    this.specialNeeds,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
-      id: json['_id'] ?? '',
-      fullName: json['fullName'] ?? '',
-      studentCode: json['studentCode'] ?? '',
-      nationalId: json['nationalId'] ?? '',
-      gender: json['gender'] ?? '',
-      birthDate: json['birthDate'] ?? '',
-      ageInOctober: json['ageInOctober'] ?? 0,
-      address: json['address'] ?? '',
-      medicalNotes: json['medicalNotes'] ?? '',
-      status: json['status'] ?? '',
-      avatar: json['avatar'],
-      profileImage: json['profileImage'],
-      image: json['image'],
+      id: _parseStringField(json['_id']) ?? '',
+      fullName: _parseStringField(json['fullName']) ?? '',
+      studentCode: _parseStringField(json['studentCode']) ?? '',
+      nationalId: _parseStringField(json['nationalId']) ?? '',
+      gender: _parseStringField(json['gender']) ?? '',
+      birthDate: _parseStringField(json['birthDate']) ?? '',
+      ageInOctober: json['ageInOctober'] is int
+          ? json['ageInOctober'] as int
+          : (json['ageInOctober'] is String
+              ? int.tryParse(json['ageInOctober']) ?? 0
+              : 0),
+      address: _parseStringField(json['address']) ?? '',
+      medicalNotes: _parseStringField(json['medicalNotes']) ?? '',
+      status: _parseStringField(json['status']) ?? '',
+      avatar: _parseStringField(json['avatar']),
+      profileImage: _parseStringField(json['profileImage']),
+      image: _parseStringField(json['image']),
       studentStatus: json['studentStatus'] != null && json['studentStatus'] is Map
           ? StudentStatus.fromJson(json['studentStatus'])
           : StudentStatus.fromJson({}),
@@ -86,6 +96,11 @@ class Student {
           : SectionInfo.fromJson({'name': json['section']?.toString() ?? 'N/A'}),
       moodleUser: json['moodleUser'] != null
           ? MoodleUser.fromJson(json['moodleUser'])
+          : null,
+      nationality: _parseStringField(json['nationality']),
+      passport: _parseStringField(json['passport']),
+      specialNeeds: json['specialNeeds'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(json['specialNeeds'])
           : null,
     );
   }
@@ -138,6 +153,7 @@ class Student {
     return SchoolInfo(
       id: schoolJson['_id'] ?? schoolJson['id'] ?? '',
       name: name,
+      educationSystem: schoolJson['educationSystem']?.toString(),
     );
   }
 
@@ -175,6 +191,25 @@ class Student {
       id: classJson['_id'] ?? classJson['id'] ?? '',
       name: name,
     );
+  }
+
+  // Helper method to safely parse string fields that might be Maps or other types
+  static String? _parseStringField(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    if (value is Map) {
+      // Try to extract a meaningful string from the map
+      if (value.containsKey('name')) return value['name']?.toString();
+      if (value.containsKey('value')) return value['value']?.toString();
+      if (value.containsKey('text')) return value['text']?.toString();
+      return null;
+    }
+    // For other types, try to convert to string
+    try {
+      return value.toString();
+    } catch (e) {
+      return null;
+    }
   }
 }
 
@@ -244,13 +279,15 @@ class StudentParent {
 class SchoolInfo {
   final String id;
   final String name;
+  final String? educationSystem;
 
-  SchoolInfo({required this.id, required this.name});
+  SchoolInfo({required this.id, required this.name, this.educationSystem});
 
   factory SchoolInfo.fromJson(Map<String, dynamic> json) {
     return SchoolInfo(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
+      educationSystem: json['educationSystem']?.toString(),
     );
   }
 
@@ -258,6 +295,7 @@ class SchoolInfo {
     return {
       '_id': id,
       'name': name,
+      if (educationSystem != null) 'educationSystem': educationSystem,
     };
   }
 }
@@ -406,6 +444,8 @@ class AddChildRequest {
   final String? birthPlace;
   final String? currentSchool;
   final String? currentGrade;
+  final String? schoolId;
+  final int? ageInOctober;
   final Map<String, dynamic>? birthCertificate;
 
   AddChildRequest({
@@ -420,6 +460,8 @@ class AddChildRequest {
     this.birthPlace,
     this.currentSchool,
     this.currentGrade,
+    this.schoolId,
+    this.ageInOctober,
     this.birthCertificate,
   });
 
@@ -456,6 +498,15 @@ class AddChildRequest {
     if (currentGrade != null && currentGrade!.isNotEmpty) {
       json['currentGrade'] = currentGrade;
     }
+    if (schoolId != null && schoolId!.isNotEmpty) {
+      json['schoolId'] = schoolId;
+    }
+    // Add ageInOctober: 163 if student is not added to a school
+    if (schoolId == null || schoolId!.isEmpty) {
+      json['ageInOctober'] = ageInOctober ?? 163;
+    } else if (ageInOctober != null) {
+      json['ageInOctober'] = ageInOctober;
+    }
     if (birthCertificate != null) {
       json['birthCertificate'] = birthCertificate;
     }
@@ -482,6 +533,157 @@ class AddChildrenResponse {
           [],
     );
   }
+}
+
+// Birth Certificate Extraction Models
+class BirthCertificateExtractionResponse {
+  final bool success;
+  final ExtractedData extractedData;
+  final String? extractedText;
+  final String? documentType;
+
+  BirthCertificateExtractionResponse({
+    required this.success,
+    required this.extractedData,
+    this.extractedText,
+    this.documentType,
+  });
+
+  factory BirthCertificateExtractionResponse.fromJson(Map<String, dynamic> json) {
+    return BirthCertificateExtractionResponse(
+      success: json['success'] ?? false,
+      extractedData: ExtractedData.fromJson(json['extractedData'] as Map<String, dynamic>),
+      extractedText: json['extractedText']?.toString(),
+      documentType: json['documentType']?.toString(),
+    );
+  }
+}
+
+class ExtractedData {
+  final String? arabicFullName;
+  final String? fullName;
+  final String? arabicFirstName;
+  final String? arabicLastName;
+  final String? firstName;
+  final String? lastName;
+  final String? nationalId;
+  final String? birthDate;
+  final String? gender;
+  final String? nationality;
+  final String? birthPlace;
+  final String? religion;
+  final AgeInComingOctober? ageInComingOctober;
+  final String? fatherNationalId;
+  final String? motherNationalId;
+  final List<String>? parentNationalIds;
+  final BirthCertificateImage? birthCertificateImage;
+
+  ExtractedData({
+    this.arabicFullName,
+    this.fullName,
+    this.arabicFirstName,
+    this.arabicLastName,
+    this.firstName,
+    this.lastName,
+    this.nationalId,
+    this.birthDate,
+    this.gender,
+    this.nationality,
+    this.birthPlace,
+    this.religion,
+    this.ageInComingOctober,
+    this.fatherNationalId,
+    this.motherNationalId,
+    this.parentNationalIds,
+    this.birthCertificateImage,
+  });
+
+  factory ExtractedData.fromJson(Map<String, dynamic> json) {
+    return ExtractedData(
+      arabicFullName: json['arabicFullName']?.toString(),
+      fullName: json['fullName']?.toString(),
+      arabicFirstName: json['arabicFirstName']?.toString(),
+      arabicLastName: json['arabicLastName']?.toString(),
+      firstName: json['firstName']?.toString(),
+      lastName: json['lastName']?.toString(),
+      nationalId: json['nationalId']?.toString(),
+      birthDate: json['birthDate']?.toString(),
+      gender: json['gender']?.toString(),
+      nationality: json['nationality']?.toString(),
+      birthPlace: json['birthPlace']?.toString(),
+      religion: json['religion']?.toString(),
+      ageInComingOctober: json['ageInComingOctober'] != null
+          ? AgeInComingOctober.fromJson(json['ageInComingOctober'] as Map<String, dynamic>)
+          : null,
+      fatherNationalId: json['fatherNationalId']?.toString(),
+      motherNationalId: json['motherNationalId']?.toString(),
+      parentNationalIds: json['parentNationalIds'] != null
+          ? (json['parentNationalIds'] as List<dynamic>).map((e) => e.toString()).toList()
+          : null,
+      birthCertificateImage: json['birthCertificateImage'] != null
+          ? BirthCertificateImage.fromJson(json['birthCertificateImage'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class AgeInComingOctober {
+  final int years;
+  final int months;
+  final int totalMonths;
+  final String targetDate;
+  final String formatted;
+
+  AgeInComingOctober({
+    required this.years,
+    required this.months,
+    required this.totalMonths,
+    required this.targetDate,
+    required this.formatted,
+  });
+
+  factory AgeInComingOctober.fromJson(Map<String, dynamic> json) {
+    return AgeInComingOctober(
+      years: json['years'] ?? 0,
+      months: json['months'] ?? 0,
+      totalMonths: json['totalMonths'] ?? 0,
+      targetDate: json['targetDate']?.toString() ?? '',
+      formatted: json['formatted']?.toString() ?? '',
+    );
+  }
+}
+
+class BirthCertificateImage {
+  final String data;
+  final String mimeType;
+  final int size;
+  final String name;
+
+  BirthCertificateImage({
+    required this.data,
+    required this.mimeType,
+    required this.size,
+    required this.name,
+  });
+
+  factory BirthCertificateImage.fromJson(Map<String, dynamic> json) {
+    return BirthCertificateImage(
+      data: json['data']?.toString() ?? '',
+      mimeType: json['mimeType']?.toString() ?? 'image/jpeg',
+      size: json['size'] ?? 0,
+      name: json['name']?.toString() ?? 'birth_certificate.jpg',
+    );
+  }
+}
+
+class BirthCertificateExtractionException implements Exception {
+  final String message;
+  final bool canContinue;
+
+  BirthCertificateExtractionException(this.message, {this.canContinue = false});
+
+  @override
+  String toString() => 'BirthCertificateExtractionException: $message';
 }
 
 // Request Models

@@ -51,7 +51,29 @@ class SchoolsService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final schoolsResponse = SchoolsResponse.fromJson(jsonData);
+        
+        // Handle case where API returns a list directly instead of an object
+        SchoolsResponse schoolsResponse;
+        if (jsonData is List) {
+          // API returned a list directly
+          print('🏫 [SCHOOLS] API returned list directly, converting to response format');
+          schoolsResponse = SchoolsResponse(
+            success: true,
+            message: 'Schools loaded successfully',
+            schools: jsonData
+                .map((school) => school is Map<String, dynamic>
+                    ? School.fromJson(school)
+                    : null)
+                .where((school) => school != null)
+                .cast<School>()
+                .toList(),
+          );
+        } else if (jsonData is Map<String, dynamic>) {
+          // API returned an object with schools array
+          schoolsResponse = SchoolsResponse.fromJson(jsonData);
+        } else {
+          throw SchoolsException('Unexpected response format from server');
+        }
 
         // Cache the schools data
         if (schoolsResponse.schools.isNotEmpty) {
@@ -99,6 +121,66 @@ class SchoolsService {
         }
       }
       
+      if (e is SchoolsException) {
+        rethrow;
+      } else {
+        throw SchoolsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get a single school by ID
+  static Future<School> getSchoolById(String schoolId) async {
+    try {
+      print('🏫 [SCHOOLS] Getting school by ID: $schoolId');
+
+      // Get stored token
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw SchoolsException('No authentication token found');
+      }
+
+      final url = '$_baseUrl/schools/my/$schoolId';
+      print('🏫 [SCHOOLS] Get school URL: $url');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
+
+      print('🏫 [SCHOOLS] Get school response status: ${response.statusCode}');
+      print('🏫 [SCHOOLS] Get school response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData is Map<String, dynamic>) {
+          // Handle response with "school" wrapper
+          if (jsonData.containsKey('school')) {
+            return School.fromJson(jsonData['school']);
+          }
+          // Handle direct school object
+          return School.fromJson(jsonData);
+        } else {
+          throw SchoolsException('Unexpected response format from server');
+        }
+      } else if (response.statusCode == 403) {
+        final jsonData = json.decode(response.body);
+        final error = SchoolsError.fromJson(jsonData);
+        throw SchoolsException('Unauthorized access: ${error.message}',
+            error: error);
+      } else if (response.statusCode == 404) {
+        throw SchoolsException('School not found');
+      } else {
+        throw SchoolsException(
+            'Failed to get school. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error getting school by ID: $e');
       if (e is SchoolsException) {
         rethrow;
       } else {

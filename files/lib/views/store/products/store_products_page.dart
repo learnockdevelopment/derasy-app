@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:iconly/iconly.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/assets.dart';
@@ -9,9 +10,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/store_models.dart';
 import '../../../services/store_service.dart';
 import '../../../services/user_storage_service.dart';
+import '../../../widgets/bottom_nav_bar_widget.dart';
 import '../../../widgets/safe_network_image.dart';
 import '../../../widgets/shimmer_loading.dart';
-import '../../../widgets/top_app_bar_widget.dart';
+import '../../../widgets/hero_section_widget.dart';
 
 class StoreProductsPage extends StatefulWidget {
   const StoreProductsPage({Key? key}) : super(key: key);
@@ -144,41 +146,54 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     _loadProducts(resetPage: true);
   }
 
+  int _getCurrentIndex() {
+    final route = Get.currentRoute;
+    if (route == AppRoutes.home) return 0;
+    if (route == AppRoutes.myStudents) return 1;
+    if (route == AppRoutes.applications) return 2;
+    if (route == AppRoutes.storeProducts || route == AppRoutes.store) return 3;
+    return 3; // Default to Store
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
+    return Scaffold(
+      backgroundColor: AppColors.grey200,
+      body: CustomScrollView(
       slivers: [
-        // Top App Bar Widget
-        TopAppBarWidget(
-          userData: _userData,
-          showLoading: _userData == null,
+        // Hero Section
+        SliverAppBar(
+          expandedHeight: 140.h,
+          floating: false,
+          pinned: true,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 0,
+          collapsedHeight: 140.h,
+          flexibleSpace: FlexibleSpaceBar(
+            background: HeroSectionWidget(
+              userData: _userData,
+              searchController: _searchController,
+              showSearchBar: true,
+            ),
+          ),
         ),
-        // Search and Categories
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        // Categories Filter
         SliverToBoxAdapter(
           child: Container(
             color: Colors.white,
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Search Bar
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: InputDecoration(
-                      hintText: 'search_products'.tr,
-                      hintStyle: AppFonts.bodyMedium.copyWith(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: AppFonts.size14,
-                      ),
-                      prefixIcon: Icon(Icons.search_rounded, color: AppColors.primaryBlue, size: 20.sp),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                    ),
+                Text(
+                  'categories'.tr,
+                  style: AppFonts.h4.copyWith(
+                    color: AppColors.textPrimary,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 12.h),
@@ -231,38 +246,110 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           SliverFillRemaining(child: _buildEmptyState())
         else
           SliverPadding(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: _buildProductCard(_products[index]),
-                ),
+                (context, index) => _buildProductCard(_products[index]),
                 childCount: _products.length,
               ),
             ),
           ),
       ],
+    ),
+      bottomNavigationBar: BottomNavBarWidget(
+        currentIndex: _getCurrentIndex(),
+        onTap: (index) {},
+      ),
+      floatingActionButton: _buildCustomerServiceButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildCustomerServiceButton() {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.4),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.2),
+                  blurRadius: 18,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: FloatingActionButton.small(
+              heroTag: "customer_service_fab_store",
+              onPressed: () {
+                Get.toNamed(AppRoutes.chatbot);
+              },
+              backgroundColor: AppColors.primaryBlue,
+              child: Icon(IconlyBroken.chat, color: Colors.white, size: 20.sp),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCategoryChip(Category? category, String label) {
     final isSelected = _selectedCategory?.id == category?.id;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) {
-        setState(() {
-          _selectedCategory = selected ? category : null;
-        });
-        _loadProducts(resetPage: true);
-      },
-      selectedColor: AppColors.primaryBlue,
-      labelStyle: AppFonts.bodyMedium.copyWith(
-        color: isSelected ? Colors.white : const Color(0xFF1F2937),
-        fontSize: AppFonts.size12,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedCategory = isSelected ? null : category;
+          });
+          _loadProducts(resetPage: true);
+        },
+        borderRadius: BorderRadius.circular(20.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primaryBlue : Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
+              width: 1.5,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: Text(
+            label,
+            style: AppFonts.bodyMedium.copyWith(
+              color: isSelected ? Colors.white : AppColors.textPrimary,
+              fontSize: 13.sp,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
+        ),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
     );
   }
 
@@ -273,148 +360,227 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         (product.discount!.global != null && product.discount!.global! > 0);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16.r),
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.06),
+      color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16.r),
         onTap: () {
           Get.toNamed(AppRoutes.storeProductDetails, arguments: {'productId': product.id});
         },
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          margin: EdgeInsets.only(bottom: 12.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
             color: Colors.white,
-          ),
-          child: Row(
-            children: [
-              // Product Icon/Image
-              Container(
-                width: 70.w,
-                height: 70.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
-                  color: const Color(0xFF8B5CF6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: product.images.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: SafeNetworkImage(
-                          imageUrl: product.images.first,
-                          width: 70.w,
-                          height: 70.w,
-                          fit: BoxFit.cover,
-                          errorWidget: Icon(
-                            Icons.shopping_bag_rounded,
-                            color: Colors.white,
-                            size: 32.sp,
-                          ),
-                        ),
-                      )
-                    : Icon(
-                        Icons.shopping_bag_rounded,
-                        color: Colors.white,
-                        size: 32.sp,
-                      ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
               ),
-              SizedBox(width: 14.w),
-              // Product Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            product.titleAr,
-                            style: AppFonts.bodyLarge.copyWith(
-                              color: const Color(0xFF1F2937),
-                              fontWeight: FontWeight.bold,
-                              fontSize: AppFonts.size16,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (product.isFeatured)
-                          Container(
-                            margin: EdgeInsets.only(left: 8.w),
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                            decoration: BoxDecoration(
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image Section
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16.r),
+                      topRight: Radius.circular(16.r),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      height: 160.h,
+                      color: AppColors.primaryBlue.withOpacity(0.05),
+                      child: product.images.isNotEmpty
+                          ? SafeNetworkImage(
+                              imageUrl: product.images.first,
+                              width: double.infinity,
+                              height: 160.h,
+                              fit: BoxFit.cover,
+                              errorWidget: Container(
+                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                child: Icon(
+                                  Icons.shopping_bag_rounded,
+                                  color: AppColors.primaryBlue,
+                                  size: 48.sp,
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              Icons.shopping_bag_rounded,
                               color: AppColors.primaryBlue,
-                              borderRadius: BorderRadius.circular(6.r),
+                              size: 48.sp,
                             ),
-                            child: Text(
+                    ),
+                  ),
+                  // Featured Badge
+                  if (product.isFeatured)
+                    Positioned(
+                      top: 12.h,
+                      right: 12.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryBlue.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: Colors.white,
+                              size: 14.sp,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
                               'featured'.tr,
                               style: AppFonts.bodySmall.copyWith(
                                 color: Colors.white,
-                                fontSize: AppFonts.size10,
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (hasDiscount)
-                              Text(
-                                '${product.price.toStringAsFixed(0)} ${'egp'.tr}',
-                                style: AppFonts.bodySmall.copyWith(
-                                  color: const Color(0xFF9CA3AF),
-                                  fontSize: AppFonts.size10,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                            Text(
-                              '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
-                              style: AppFonts.bodyMedium.copyWith(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
-                                fontSize: AppFonts.size14,
                               ),
                             ),
                           ],
                         ),
-                        const Spacer(),
+                      ),
+                    ),
+                  // Discount Badge
+                  if (hasDiscount)
+                    Positioned(
+                      top: 12.h,
+                      left: 12.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.error.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.local_offer_rounded,
+                              color: Colors.white,
+                              size: 14.sp,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              '${product.discount!.global?.toStringAsFixed(0) ?? ''}%',
+                              style: AppFonts.bodySmall.copyWith(
+                                color: Colors.white,
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              // Product Info Section
+              Padding(
+                padding: EdgeInsets.all(14.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product Title
+                    Text(
+                      product.titleAr,
+                      style: AppFonts.h4.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.sp,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 12.h),
+                    // Price and Stock Row
+                    Row(
+                      children: [
+                        // Price Section
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (hasDiscount)
+                                Text(
+                                  '${product.price.toStringAsFixed(0)} ${'egp'.tr}',
+                                  style: AppFonts.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12.sp,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              SizedBox(height: hasDiscount ? 4.h : 0),
+                              Text(
+                                '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
+                                style: AppFonts.h3.copyWith(
+                                  color: AppColors.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Stock Status
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                           decoration: BoxDecoration(
                             color: product.stock > 0
-                                ? const Color(0xFF10B981).withOpacity(0.15)
-                                : const Color(0xFFEF4444).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8.r),
+                                ? AppColors.success.withOpacity(0.1)
+                                : AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(
+                              color: product.stock > 0
+                                  ? AppColors.success.withOpacity(0.3)
+                                  : AppColors.error.withOpacity(0.3),
+                              width: 1.5,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 product.stock > 0 ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                size: 14.sp,
-                                color: product.stock > 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                size: 16.sp,
+                                color: product.stock > 0 ? AppColors.success : AppColors.error,
                               ),
-                              SizedBox(width: 4.w),
+                              SizedBox(width: 6.w),
                               Text(
                                 product.stock > 0 ? 'in_stock'.tr : 'out_of_stock'.tr,
-                                style: AppFonts.bodySmall.copyWith(
-                                  color: product.stock > 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                  fontSize: AppFonts.size10,
-                                  fontWeight: FontWeight.w600,
+                                style: AppFonts.bodyMedium.copyWith(
+                                  color: product.stock > 0 ? AppColors.success : AppColors.error,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -422,39 +588,14 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                         ),
                       ],
                     ),
-                    if (hasDiscount) ...[
-                      SizedBox(height: 6.h),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6.r),
-                        ),
-                        child: Text(
-                          '${product.discount!.global?.toStringAsFixed(0) ?? ''}% ${'discount'.tr}',
-                          style: AppFonts.bodySmall.copyWith(
-                            color: const Color(0xFFEF4444),
-                            fontSize: AppFonts.size10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
-              ),
-              SizedBox(width: 8.w),
-              // Arrow Icon
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppColors.primaryBlue,
-                size: 18.sp,
               ),
             ],
           ),
         ),
-          ),
-        );
+      ),
+    );
   }
 
   Widget _buildEmptyState() {

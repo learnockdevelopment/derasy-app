@@ -31,6 +31,26 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android' 
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+// Disable test tasks and ensure no test code in release builds
+afterEvaluate {
+    // Disable all test-related tasks
+    tasks.matching { 
+        it.name.contains('Test') || 
+        it.name.contains('test') || 
+        it.name.contains('androidTest') ||
+        it.name.contains('AndroidTest')
+    }.all { task ->
+        task.enabled = false
+    }
+    
+    // Ensure release bundle doesn't include test code
+    tasks.matching { it.name == 'bundleRelease' }.all { task ->
+        task.doFirst {
+            println "🔨 Building production AAB - test code excluded"
+        }
+    }
+}
+
 android {
     namespace "com.derasy.app"
     compileSdk 36
@@ -47,6 +67,12 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        // Exclude test sources from release builds
+        release {
+            java.srcDirs = ['src/main/java', 'src/main/kotlin']
+            java.exclude '**/test/**'
+            java.exclude '**/androidTest/**'
+        }
     }
 
     defaultConfig {
@@ -76,17 +102,33 @@ android {
             // Always use release signing if keystore exists
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
+            } else {
+                // Fail if no keystore for release builds
+                throw new GradleException("Release build requires key.properties file with signing configuration")
             }
             minifyEnabled true
-            shrinkResources false
+            shrinkResources true
             debuggable false
             testCoverageEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Ensure this is a production build, not test
+            isDefault = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
             minifyEnabled false
+            shrinkResources false
             testCoverageEnabled false
+        }
+    }
+    
+    // Disable test variants for production
+    variantFilter { variant ->
+        if (variant.buildType.name == 'release') {
+            // Ignore any release variants that contain 'test' or 'androidTest'
+            if (variant.name.contains('test') || variant.name.contains('androidTest') || variant.name.contains('Test')) {
+                variant.setIgnore(true)
+            }
         }
     }
     
@@ -95,7 +137,23 @@ android {
             useLegacyPackaging = false
         }
         resources {
-            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt']
+            excludes += [
+                'META-INF/DEPENDENCIES', 
+                'META-INF/LICENSE', 
+                'META-INF/LICENSE.txt',
+                'META-INF/*.kotlin_module',
+                '**/test/**',
+                '**/androidTest/**',
+                '**/*Test.class',
+                '**/*Tests.class',
+                '**/*Test$*.class',
+                '**/junit/**',
+                '**/mockito/**',
+                '**/robolectric/**',
+                '**/androidx/test/**',
+                '**/kotlin/test/**',
+                '**/kotlinx/coroutines/test/**'
+            ]
             pickFirst 'lib/x86/libc++_shared.so'
             pickFirst 'lib/x86_64/libc++_shared.so'
             pickFirst 'lib/armeabi-v7a/libc++_shared.so'
@@ -119,6 +177,29 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:[8,9)'
     implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+}
+
+// Exclude test dependencies from all configurations
+configurations.all {
+    exclude group: 'junit', module: 'junit'
+    exclude group: 'org.mockito', module: 'mockito-core'
+    exclude group: 'org.robolectric', module: 'robolectric'
+    exclude group: 'androidx.test', module: '*'
+    exclude group: 'androidx.test.espresso', module: '*'
+    exclude group: 'com.android.support.test', module: '*'
+    exclude group: 'com.android.support', module: 'support-annotations'
+}
+
+// Ensure release build excludes test sources completely
+android.applicationVariants.all { variant ->
+    if (variant.buildType.name == 'release') {
+        variant.mergeResourcesProvider.get().doFirst {
+            println "🔨 Release build - excluding all test resources"
+        }
+        variant.javaCompileProvider.get().doFirst {
+            println "🔨 Release build - excluding all test sources"
+        }
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

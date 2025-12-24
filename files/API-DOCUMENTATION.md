@@ -41,7 +41,7 @@
 | GET    | /api/users/search | Search users |
 | POST   | /api/create-user | Create a new user |
 | GET    | /api/user/seed | Seed user data |
-
+ 
 ## School Management APIs
 ### Employees
 | Method | Endpoint | Description | Auth |
@@ -85,7 +85,7 @@ Authorization: Bearer <token>
 | POST   | /api/schools/my/[id]/buses/[busId]/students | Assign student to bus | Yes |
 | PUT    | /api/schools/my/[id]/buses/[busId]/students | Update student assignment (by assignmentId in body) | Yes |
 | DELETE | /api/schools/my/[id]/buses/[busId]/students?assignmentId= | Remove student from bus | Yes |
-
+ 
 ## App Settings APIs
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|

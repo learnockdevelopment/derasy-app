@@ -4,13 +4,13 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../core/constants/app_fonts.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../services/maintenance_service.dart';
 import '../../widgets/safe_network_image.dart';
-import '../../widgets/top_app_bar_widget.dart';
-import '../../services/user_storage_service.dart';
+import '../../widgets/bottom_nav_bar_widget.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({Key? key}) : super(key: key);
@@ -263,38 +263,161 @@ class _UserProfilePageState extends State<UserProfilePage> {
     print('👤 [USER PROFILE] _userData is null: ${_userData == null}');
     print('👤 [USER PROFILE] ===========================================');
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: CustomScrollView(
-        slivers: [
-          // Top App Bar Widget
-          TopAppBarWidget(
-            userData: _userData,
-            showLoading: _userData == null,
+      backgroundColor: AppColors.grey200,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryBlue,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          'profile'.tr,
+          style: AppFonts.h3.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              // User Profile Card with Image, Name, Email
+              _buildProfileCard(),
+              SizedBox(height: 16.h),
 
-          // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                children: [
-                  // User Information Section
-                  _buildUserInfoSection(),
-                  SizedBox(height: 16.h),
+              // User Information Section
+              _buildUserInfoSection(),
+              SizedBox(height: 16.h),
 
-                  // Maintenance Settings (Admin/Moderator only)
-                  if (UserStorageService.isAdminOrModerator())
-                    _buildMaintenanceSection(),
-                  if (UserStorageService.isAdminOrModerator())
-                  SizedBox(height: 16.h),
+              // Maintenance Settings (Admin/Moderator only)
+              if (UserStorageService.isAdminOrModerator())
+                _buildMaintenanceSection(),
+              if (UserStorageService.isAdminOrModerator())
+                SizedBox(height: 16.h),
 
-                  // Logout Button
-                  _buildLogoutButton(),
-                  SizedBox(height: 32.h),
-                ],
+              // Logout Button
+              _buildLogoutButton(),
+              SizedBox(height: 32.h),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomNavBarWidget(
+        currentIndex: 3,
+        onTap: (index) {},
+      ),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    final userName = _userData?['name'] ?? 
+                    _userData?['fullName'] ?? 
+                    'user'.tr;
+    final userEmail = _userData?['email'] ?? 'N/A';
+    final avatarUrl = _userData?['avatar']?.toString() ?? 
+                     _userData?['profileImage']?.toString();
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Profile Image
+          Container(
+            width: 100.w,
+            height: 100.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primaryBlue.withOpacity(0.3),
+                width: 3,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
+            child: ClipOval(
+              child: avatarUrl != null && avatarUrl.isNotEmpty
+                  ? SafeNetworkImage(
+                      imageUrl: avatarUrl,
+                      width: 100.w,
+                      height: 100.w,
+                      fit: BoxFit.cover,
+                      errorWidget: Container(
+                        color: AppColors.primaryBlue,
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 50.sp,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: AppColors.primaryBlue,
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 50.sp,
+                      ),
+                    ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          // User Name
+          Text(
+            userName,
+            style: AppFonts.h3.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+              fontSize: 20.sp,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 8.h),
+          // User Email
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.email_rounded,
+                size: 16.sp,
+                color: AppColors.textSecondary,
+              ),
+              SizedBox(width: 6.w),
+              Flexible(
+                child: Text(
+                  userEmail,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 14.sp,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -303,14 +426,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildUserInfoSection() {
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -320,18 +443,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.person_outline_rounded,
-                color: const Color(0xFF3B82F6),
-                size: AppFonts.size22,
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  Icons.person_outline_rounded,
+                  color: AppColors.primaryBlue,
+                  size: 20.sp,
+                ),
               ),
               SizedBox(width: 12.w),
               Text(
                 'personal_information'.tr,
-                style: AppFonts.h3.copyWith(
-                  color: const Color(0xFF1F2937),
+                style: AppFonts.h4.copyWith(
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: AppFonts.size20,
+                  fontSize: 16.sp,
                 ),
               ),
             ],
@@ -349,13 +479,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             SizedBox(height: 20.h),
             _buildSaveCancelButtons(),
           ] else ...[
-            // Display mode
-            _buildInfoRow(
-                'full_name'.tr, _userData?['name'] ?? 'N/A', Icons.person_rounded),
-            SizedBox(height: 12.h),
-            _buildInfoRow(
-                'email'.tr, _userData?['email'] ?? 'N/A', Icons.email_rounded),
-            SizedBox(height: 12.h),
+            // Display mode - show phone, role, and user ID only (name and email are in profile card)
             _buildInfoRow(
                 'phone'.tr, _userData?['phone'] ?? 'N/A', Icons.phone_rounded),
             SizedBox(height: 12.h),

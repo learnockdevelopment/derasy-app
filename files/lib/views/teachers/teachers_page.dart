@@ -13,6 +13,7 @@ import '../../services/grades_service.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/safe_network_image.dart';
+import 'package:iconly/iconly.dart';
 
 class TeachersPage extends StatefulWidget {
   const TeachersPage({Key? key}) : super(key: key);
@@ -212,39 +213,85 @@ class _TeachersPageState extends State<TeachersPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-                            onPressed: () => Get.back(),
-                            splashRadius: 23,
-                          ),
                           const Spacer(),
-                          Text('teachers'.tr, style: AppFonts.h2.copyWith(
+                          Text('school_follow'.tr, style: AppFonts.h2.copyWith(
                               color: Colors.white, fontWeight: FontWeight.bold, fontSize: AppFonts.size20)),
                           const Spacer(),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(28.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryBlue.withOpacity(0.25),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                )
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Material(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Bus Button
+                              Container(
+                                margin: EdgeInsets.only(right: 8.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => Get.toNamed(AppRoutes.buses),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(IconlyBold.discovery, color: Colors.white, size: 18.sp),
+                                          SizedBox(width: 6.w),
+                                          Text(
+                                            'buses'.tr,
+                                            style: AppFonts.bodyMedium.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13.sp,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Refresh Button
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
                                   color: Colors.transparent,
                                   shape: const CircleBorder(),
                                   child: IconButton(
-                                    icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 23),
+                                    icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
                                     tooltip: 'refresh'.tr,
                                     onPressed: () => _loadTeachers(),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

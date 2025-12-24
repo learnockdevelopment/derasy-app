@@ -11,7 +11,7 @@ import '../../views/authentication/register_page.dart';
 import '../../views/home/home_page.dart';
 import '../../views/authentication/verify_email_page.dart';
 import '../../views/authentication/set_new_password_page.dart';
-import '../../views/students/students_page.dart';
+import '../../views/students/my_students_page.dart';
 import '../../views/students/data/student_details_page.dart';
 import '../../views/teachers/teachers_page.dart';
 import '../../views/teachers/teacher_details_page.dart';
@@ -23,6 +23,7 @@ import '../../views/schools/schools_page.dart';
 import '../../views/schools/school_details_page.dart';
 import '../../views/attendance/attendance_page.dart';
 import '../../views/profile/user_profile_page.dart';
+import '../../views/notifications/notifications_page.dart';
 import '../../views/chatbot/chatbot_page.dart';
 import '../../views/teachers/management/add_teacher_page.dart';
 import '../../views/teachers/management/edit_teacher_page.dart';
@@ -44,6 +45,7 @@ import '../../views/children/child_details_page.dart';
 import '../../views/admission/apply_to_schools_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
+import '../../views/school_follow/school_follow_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -85,10 +87,10 @@ class RouteGenerator {
           settings: settings,
           page: () => const SetNewPasswordPage(),
         );
-      case AppRoutes.students:
+      case AppRoutes.myStudents:
         return GetPageRoute(
           settings: settings,
-          page: () => const StudentsPage(),
+          page: () => const MyStudentsPage(),
         );
       case AppRoutes.teachers:
         return GetPageRoute(
@@ -147,10 +149,20 @@ class RouteGenerator {
           settings: settings,
           page: () => const AttendancePage(),
         );
+      case AppRoutes.schoolFollow:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const SchoolFollowPage(),
+        );
       case AppRoutes.userProfile:
         return GetPageRoute(
           settings: settings,
           page: () => const UserProfilePage(),
+        );
+      case AppRoutes.notifications:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const NotificationsPage(),
         );
       case AppRoutes.chatbot:
         return GetPageRoute(
@@ -265,9 +277,13 @@ class RouteGenerator {
           page: () => const ApplyToSchoolsPage(),
         );
       case AppRoutes.applications:
+        final args = settings.arguments as Map<String, dynamic>?;
         return GetPageRoute(
           settings: settings,
-          page: () => const ApplicationsPage(),
+          page: () => ApplicationsPage(
+            childId: args?['childId'],
+            child: args?['child'],
+          ),
         );
       case AppRoutes.applicationDetails:
         return GetPageRoute(

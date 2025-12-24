@@ -26,8 +26,14 @@ class AppRoutes {
   // Attendance Routes
   static const String attendance = '/attendance';
 
+  // School Follow Routes
+  static const String schoolFollow = '/school-follow';
+
   // Profile Routes
   static const String userProfile = '/user-profile';
+
+  // Notifications Routes
+  static const String notifications = '/notifications';
 
   // Chatbot Routes
   static const String chatbot = '/chatbot';
@@ -46,6 +52,7 @@ class AppRoutes {
   // Children Routes
   static const String addChild = '/add-child';
   static const String childDetails = '/child-details';
+  static const String myStudents = '/my-students';
 
   // Admission Routes
   static const String applyToSchools = '/apply-to-schools';

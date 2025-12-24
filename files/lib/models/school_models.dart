@@ -235,7 +235,17 @@ class SchoolOwnership {
     return SchoolOwnership(
       owner: json['owner'],
       moderators: (json['moderators'] as List<dynamic>?)
-              ?.map((mod) => SchoolModerator.fromJson(mod))
+              ?.map((mod) {
+                // Handle both string IDs and full moderator objects
+                if (mod is String) {
+                  return SchoolModerator(id: mod, email: '');
+                } else if (mod is Map<String, dynamic>) {
+                  return SchoolModerator.fromJson(mod);
+                }
+                return null;
+              })
+              .where((mod) => mod != null)
+              .cast<SchoolModerator>()
               .toList() ??
           [],
     );
@@ -446,17 +456,23 @@ class SchoolBusFees {
 class SchoolLocation {
   final String governorate;
   final String city;
+  final String? district;
+  final String? educationalAdministration;
   final String? mainPhone;
   final String? secondaryPhone;
   final String? officialEmail;
+  final String? website;
   final Map<String, String>? socialMedia;
 
   SchoolLocation({
     required this.governorate,
     required this.city,
+    this.district,
+    this.educationalAdministration,
     this.mainPhone,
     this.secondaryPhone,
     this.officialEmail,
+    this.website,
     this.socialMedia,
   });
 
@@ -464,9 +480,12 @@ class SchoolLocation {
     return SchoolLocation(
       governorate: json['governorate'] ?? '',
       city: json['city'] ?? '',
+      district: json['district'],
+      educationalAdministration: json['educationalAdministration'],
       mainPhone: json['mainPhone'],
       secondaryPhone: json['secondaryPhone'],
       officialEmail: json['officialEmail'],
+      website: json['website'],
       socialMedia: json['socialMedia'] != null
           ? Map<String, String>.from(json['socialMedia'])
           : null,
@@ -617,7 +636,7 @@ class SchoolIdCard {
       publicId: json['publicId'],
       url: json['url'],
       width: json['width'] ?? 0,
-      envelope: json['envelope'] != null
+      envelope: json['envelope'] != null && json['envelope'] is Map<String, dynamic>
           ? SchoolEnvelope.fromJson(json['envelope'])
           : null,
     );
@@ -760,9 +779,12 @@ class SchoolMobileApps {
 
   factory SchoolMobileApps.fromJson(Map<String, dynamic> json) {
     return SchoolMobileApps(
-      android:
-          json['android'] != null ? SchoolApp.fromJson(json['android']) : null,
-      ios: json['ios'] != null ? SchoolApp.fromJson(json['ios']) : null,
+      android: json['android'] != null && json['android'] is Map<String, dynamic>
+          ? SchoolApp.fromJson(json['android'])
+          : null,
+      ios: json['ios'] != null && json['ios'] is Map<String, dynamic>
+          ? SchoolApp.fromJson(json['ios'])
+          : null,
     );
   }
 }
@@ -876,8 +898,26 @@ class SchoolsResponse {
     required this.schools,
   });
 
-  factory SchoolsResponse.fromJson(Map<String, dynamic> json) {
+  factory SchoolsResponse.fromJson(dynamic json) {
     try {
+      // Handle case where API returns a list directly
+      if (json is List) {
+        print('🏫 [SCHOOLS RESPONSE] API returned list directly with ${json.length} schools');
+        return SchoolsResponse(
+          success: true,
+          message: 'Schools loaded successfully',
+          schools: json
+              .map((school) => school is Map<String, dynamic>
+                  ? School.fromJson(school)
+                  : null)
+              .where((school) => school != null)
+              .cast<School>()
+              .toList(),
+        );
+      }
+      
+      // Handle case where API returns an object
+      if (json is Map<String, dynamic>) {
       print(
           '🏫 [SCHOOLS RESPONSE] Parsing response with ${json['schools']?.length ?? 0} schools');
       return SchoolsResponse(
@@ -892,6 +932,9 @@ class SchoolsResponse {
                 .toList() ??
             [],
       );
+      }
+      
+      throw Exception('Unexpected JSON format: ${json.runtimeType}');
     } catch (e) {
       print('🏫 [SCHOOLS RESPONSE] Error parsing schools response: $e');
       print('🏫 [SCHOOLS RESPONSE] Problematic JSON: $json');

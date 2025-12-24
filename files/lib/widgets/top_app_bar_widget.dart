@@ -12,11 +12,13 @@ import 'shimmer_loading.dart';
 class TopAppBarWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
   final bool showLoading;
+  final bool showCart;
 
   const TopAppBarWidget({
     Key? key,
     this.userData,
     this.showLoading = false,
+    this.showCart = false,
   }) : super(key: key);
 
   @override
@@ -52,7 +54,7 @@ class TopAppBarWidget extends StatelessWidget {
                       // User Avatar with Badge
                       _buildUserAvatar(),
                       SizedBox(width: 14.w),
-                      // User Details
+                      // User Details with Greeting
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,21 +72,12 @@ class TopAppBarWidget extends StatelessWidget {
                                 ),
                               )
                             else
-                              Text(
-                                userData?['name'] ?? 'user'.tr,
-                                style: AppFonts.h2.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppFonts.size20,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            SizedBox(height: 2.h),
+                              _buildGreeting(),
+                            SizedBox(height: 4.h),
                             if (showLoading)
                               ShimmerLoading(
                                 child: Container(
-                                  height: 14.h,
+                                  height: 16.h,
                                   width: 150.w,
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
@@ -94,10 +87,11 @@ class TopAppBarWidget extends StatelessWidget {
                               )
                             else
                               Text(
-                                userData?['email'] ?? '',
-                                style: AppFonts.bodySmall.copyWith(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: AppFonts.size12,
+                                userData?['name'] ?? 'user'.tr,
+                                style: AppFonts.h3.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18.sp,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -105,11 +99,17 @@ class TopAppBarWidget extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Cart Icon
+                      // Cart Icon (only shown when showCart is true)
+                      if (showCart)
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => Get.toNamed(AppRoutes.storeCart),
+                            onTap: () {
+                              // Prevent double navigation
+                              if (Get.currentRoute != AppRoutes.storeCart) {
+                                Get.toNamed(AppRoutes.storeCart);
+                              }
+                            },
                           borderRadius: BorderRadius.circular(12.r),
                           child: Container(
                             padding: EdgeInsets.all(8.w),
@@ -141,6 +141,42 @@ class TopAppBarWidget extends StatelessWidget {
     );
   }
 
+  Widget _buildGreeting() {
+    final hour = DateTime.now().hour;
+    String greeting;
+    IconData greetingIcon;
+    
+    if (hour < 12) {
+      greeting = 'good_morning'.tr;
+      greetingIcon = Icons.wb_sunny_rounded;
+    } else if (hour < 17) {
+      greeting = 'good_afternoon'.tr;
+      greetingIcon = Icons.wb_twilight_rounded;
+    } else {
+      greeting = 'good_evening'.tr;
+      greetingIcon = Icons.nightlight_round;
+    }
+
+    return Row(
+      children: [
+        Icon(
+          greetingIcon,
+          color: Colors.white.withOpacity(0.9),
+          size: 18.sp,
+        ),
+        SizedBox(width: 6.w),
+        Text(
+          greeting,
+          style: AppFonts.bodyMedium.copyWith(
+            color: Colors.white.withOpacity(0.95),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildUserAvatar() {
     if (showLoading) {
       return ShimmerLoading(
@@ -148,7 +184,7 @@ class TopAppBarWidget extends StatelessWidget {
           width: 44.w,
           height: 44.h,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(12.r),
             color: Colors.white.withOpacity(0.3),
             border: Border.all(
               color: Colors.white.withOpacity(0.3),
@@ -195,7 +231,7 @@ class TopAppBarWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withOpacity(0.3),
           width: 2.5,
@@ -207,7 +243,7 @@ class TopAppBarWidget extends StatelessWidget {
             width: 44.w,
             height: 44.h,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(12.r),
               color: Colors.white,
               border: Border.all(
                 color: Colors.white.withOpacity(0.3),
@@ -221,7 +257,8 @@ class TopAppBarWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: ClipOval(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
               child: SafeAvatarImage(
                 imageUrl: imageUrl?.isNotEmpty == true ? imageUrl : null,
                 size: 44,
@@ -237,7 +274,7 @@ class TopAppBarWidget extends StatelessWidget {
               height: 14.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(4.r),
                 border: Border.all(
                   color: Colors.white,
                   width: 2,

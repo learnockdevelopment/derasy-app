@@ -8,6 +8,7 @@ import '../../services/schools_service.dart';
 import 'school_details_page.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/safe_network_image.dart';
+import '../../widgets/bottom_nav_bar_widget.dart';
 
 class SchoolsPage extends StatefulWidget {
   const SchoolsPage({Key? key}) : super(key: key);
@@ -228,6 +229,10 @@ class _SchoolsPageState extends State<SchoolsPage> {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavBarWidget(
+        currentIndex: 1,
+        onTap: (index) {},
+      ),
     );
   }
 
@@ -312,17 +317,22 @@ class _SchoolsPageState extends State<SchoolsPage> {
                         children: [
                           Text(school.name, style: AppFonts.h4.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14.sp), maxLines: 1, overflow: TextOverflow.ellipsis),
                           SizedBox(height: 4.h),
-                          Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.location_on_rounded, color: AppColors.textSecondary, size: 14.sp),
-                              SizedBox(width: 4.w),
-                              Expanded(
-                                child: Text(
-                                  '${school.location?.city ?? 'N/A'}, ${school.location?.governorate ?? 'N/A'}',
-                                  style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on_rounded, color: AppColors.textSecondary, size: 14.sp),
+                                  SizedBox(width: 4.w), 
+                                  Expanded(
+                                    child: Text(
+                                      _buildLocationText(school.location),
+                                      style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -398,6 +408,37 @@ class _SchoolsPageState extends State<SchoolsPage> {
       return school.bannerImage;
     }
     return null;
+  }
+
+  // Helper to build location text with all available location details
+  String _buildLocationText(SchoolLocation? location) {
+    if (location == null) {
+      return 'N/A';
+    }
+    
+    final List<String> locationParts = [];
+    
+    if (location.district != null && location.district!.isNotEmpty) {
+      locationParts.add(location.district!);
+    }
+    
+    if (location.city.isNotEmpty) {
+      locationParts.add(location.city);
+    }
+    
+    if (location.educationalAdministration != null && location.educationalAdministration!.isNotEmpty) {
+      locationParts.add(location.educationalAdministration!);
+    }
+    
+    if (location.governorate.isNotEmpty) {
+      locationParts.add(location.governorate);
+    }
+    
+    if (locationParts.isEmpty) {
+      return 'N/A';
+    }
+    
+    return locationParts.join(', ');
   }
 
 

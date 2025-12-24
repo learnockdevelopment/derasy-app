@@ -32,6 +32,9 @@ class ApiConstants {
   static const String getRelatedChildrenEndpoint = '/children/get-related';
   static const String addChildrenEndpoint = '/children';
   static const String getChildrenBySchoolEndpoint = '/children';
+  static const String extractBirthCertificateEndpoint = '/children/extract-birth-certificate';
+  static const String updateChildEndpoint = '/children/get-related'; // PUT /api/children/get-related/[id]
+  static const String deleteChildEndpoint = '/children/get-related'; // DELETE /api/children/get-related/[id]
 
   // Admission Endpoints
   static const String applyToSchoolsEndpoint = '/admission/apply';
@@ -63,7 +66,7 @@ class ApiConstants {
       '/attendance/by-child/[childId]';
 
   // Schools Endpoints
-  static const String getAllSchoolsEndpoint = '/schools/my';
+  static const String getAllSchoolsEndpoint = '/schools';
 
   // Chatbot Endpoints
   static const String chatbotEndpoint = '/chatbot';
