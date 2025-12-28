@@ -8,14 +8,24 @@ import '../core/routes/app_routes.dart';
 
 class HeroSectionWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
-  final TextEditingController? searchController;
-  final bool showSearchBar;
+  final String? pageTitle;
+  final String? actionButtonText;
+  final IconData? actionButtonIcon;
+  final VoidCallback? onActionTap;
+  final bool showGreeting;
+  final bool isButtonDisabled;
+  final String? disabledMessage;
 
   const HeroSectionWidget({
     Key? key,
     this.userData,
-    this.searchController,
-    this.showSearchBar = true,
+    this.pageTitle,
+    this.actionButtonText,
+    this.actionButtonIcon,
+    this.onActionTap,
+    this.showGreeting = false,
+    this.isButtonDisabled = false,
+    this.disabledMessage,
   }) : super(key: key);
 
   @override
@@ -42,67 +52,79 @@ class HeroSectionWidget extends StatelessWidget {
     return Container( 
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primaryBlue,
-            AppColors.primaryBlue.withOpacity(0.8),
-          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryBlue,
+            AppColors.primaryBlue.withOpacity(0.9),
+            AppColors.primaryGreen.withOpacity(0.85),
+            AppColors.primaryGreen.withOpacity(0.75),
+          ],
+          stops: const [0.0, 0.3, 0.7, 1.0],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24.r),
           bottomRight: Radius.circular(24.r),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.2),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
       ),
       child: Stack(
         children: [
           // Content
           Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 50.h, 20.w, showSearchBar ? 20.h : 10.h),
+            padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 20.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Greeting, User Name, and Notification Icon
+                // Top Row: Greeting/Page Name and Icons
                 Row(
                   children: [
-                    Icon(
-                      greetingIcon,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            greeting,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: Colors.white.withOpacity(0.95),
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            userName,
-                            style: AppFonts.h3.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.sp, 
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                    if (showGreeting) ...[
+                      Icon(
+                        greetingIcon,
+                        color: Colors.white,
+                        size: 20.sp,
                       ),
-                    ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              greeting,
+                              style: AppFonts.bodyMedium.copyWith(
+                                color: Colors.white.withOpacity(0.95),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              userName,
+                              style: AppFonts.h3.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.sp, 
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      // Page Name with small font
+                      if (pageTitle != null)
+                        Expanded(
+                          child: Text(
+                            pageTitle!,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                        ),
+                    ],
                     // Icons Row
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -154,7 +176,7 @@ class HeroSectionWidget extends StatelessWidget {
                                     color: Colors.white,
                                     size: 22.sp,
                                   ),
-                                  // Notification badge
+                                  // Notification badge 
                                   Positioned(
                                     right: 8.w,
                                     top: 8.w,
@@ -180,39 +202,76 @@ class HeroSectionWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (showSearchBar && searchController != null) ...[
-                  Spacer(),
-                  // Search Bar - Sticked to bottom
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                // Action Button (page title removed from home page)
+                // Action Button
+                if (actionButtonText != null && onActionTap != null) ...[
+                  SizedBox(height: 16.h),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Opacity(
+                      opacity: isButtonDisabled ? 0.4 : 1.0,
+                      child: Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14.r),
+                        child: InkWell(
+                          onTap: isButtonDisabled ? null : onActionTap,
+                          borderRadius: BorderRadius.circular(14.r),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (actionButtonIcon != null) ...[
+                                  Icon(
+                                    actionButtonIcon,
+                                    color: AppColors.primaryBlue,
+                                    size: 18.sp,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                ],
+                                Text(
+                                  actionButtonText!,
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: AppColors.primaryBlue,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: searchController,
-                      style: AppFonts.bodyMedium.copyWith(fontSize: 13.sp),
-                      decoration: InputDecoration(
-                        hintText: 'search'.tr,
-                        hintStyle: AppFonts.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 13.sp,
-                        ),
-                        prefixIcon: Container(
-                          padding: EdgeInsets.all(10.w),
-                          child: Icon(IconlyBroken.search, color: AppColors.primaryBlue, size: 20.sp),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                       ),
                     ),
                   ),
+                  // Disabled message below button
+                  if (isButtonDisabled && disabledMessage != null) ...[
+                    SizedBox(height: 8.h),
+                    Align(
+                      alignment: Alignment.centerLeft, 
+                      child: Text(
+                        disabledMessage!,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),

@@ -9,6 +9,7 @@ import 'school_details_page.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
+import '../../widgets/global_chatbot_widget.dart';
 
 class SchoolsPage extends StatefulWidget {
   const SchoolsPage({Key? key}) : super(key: key);
@@ -233,8 +234,11 @@ class _SchoolsPageState extends State<SchoolsPage> {
         currentIndex: 1,
         onTap: (index) {},
       ),
+      floatingActionButton: DraggableChatbotWidget(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
 
   Widget _buildEmptyState() {
     return Center(

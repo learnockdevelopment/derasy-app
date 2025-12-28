@@ -1,220 +1,225 @@
 # Derasy Platform API Documentation
 
-## Table of Contents
-1. [Authentication APIs](#authentication-apis)
-2. [User Management APIs](#user-management-apis)
-3. [School Management APIs](#school-management-apis)
-4. [Student Management APIs](#student-management-apis)
-5. [Children Management APIs](#children-management-apis)
-6. [Admission Flow APIs](#admission-flow-apis)
-7. [Attendance APIs](#attendance-apis)
-7. [Card Management APIs](#card-management-apis)
-8. [Admin APIs](#admin-apis)
-9. [Notification APIs](#notification-apis)
-10. [Chatbot APIs](#chatbot-apis)
-11. [Store Management APIs](#store-management-apis)
-12. [Bus Management APIs](#bus-management-apis)
-13. [Other APIs](#other-apis)
+> **📖 Documentation Files:**
+> - **[API-README.md](./API-README.md)** - Quick start guide and common use cases
+> - **[API-WORKFLOWS.md](./API-WORKFLOWS.md)** - Step-by-step workflows and code examples
+> - **This file** - Complete API reference
 
 ---
 
-## How to Use
-- All endpoints are under `/api/`
-- Most endpoints require authentication via Bearer token in the `Authorization` header
-- For detailed request/response examples, see each section below
+## 📚 Table of Contents
+1. [Quick Start Guide](#quick-start-guide)
+2. [Authentication](#authentication)
+3. [Children Management APIs](#children-management-apis)
+  - [Add Child with Birth Certificate Extraction](#add-child-with-birth-certificate-extraction)
+  - [Two-Step Document Upload Flow](#two-step-document-upload-flow)
+  - [OTP Verification Flow for Existing Children](#otp-verification-flow-for-existing-children)
+  - [Non-Egyptian Child Requests Flow](#non-egyptian-child-requests-flow)
+  - [Admin: Non-Egyptian Child Requests Management](#admin-non-egyptian-child-requests-management)
+  - [Get Children](#get-children)
+  - [Update Child](#update-child)
+  - [Upload Documents](#upload-documents)
+4. [Admission Flow APIs](#admission-flow-apis)
+5. [Common Workflows](#common-workflows)
+6. [Error Handling](#error-handling)
 
 ---
 
-## Authentication APIs
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST   | /api/login | User login |
-| POST   | /api/logout | User logout |
-| POST   | /api/register | User registration |
-| POST   | /api/auth/sign-in | Auth sign-in (NextAuth) |
-| POST   | /api/login/token | Token-based login |
+## 🚀 Quick Start Guide
 
-## User Management APIs
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET    | /api/users/me | Get current user profile |
-| GET    | /api/users/search | Search users |
-| POST   | /api/create-user | Create a new user |
-| GET    | /api/user/seed | Seed user data |
- 
-## School Management APIs
-### Employees
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/schools/my/[id]/hr/employees | List all employees for a school | Yes |
-| GET    | /api/schools/my/[id]/hr/employees?employeeId= | Get single employee by ID | Yes |
-| POST   | /api/schools/my/[id]/hr/employees | Add new employee | Yes |
-| PUT    | /api/schools/my/[id]/hr/employees | Update employee (by employeeId in body) | Yes |
-| DELETE | /api/schools/my/[id]/hr/employees?employeeId= | Delete employee by ID | Yes |
+### Base URL
+All API endpoints are under `/api/`
 
-#### Example: Get all employees
+### Authentication
+Most endpoints require authentication via Bearer token:
 ```http
-GET /api/schools/my/1234567890abcdef12345678/hr/employees
-Authorization: Bearer <token>
+Authorization: Bearer <your_token>
 ```
 
-#### Example: Add employee
+### Content Types
+- **JSON APIs:** `Content-Type: application/json`
+- **File Upload APIs:** `Content-Type: multipart/form-data`
+
+---
+
+## 🔐 Authentication
+
+### Login
 ```http
-POST /api/schools/my/1234567890abcdef12345678/hr/employees
+POST /api/login
 Content-Type: application/json
-Authorization: Bearer <token>
+
 {
-  "user": "userId",
-  "emptype": "typeId",
-  ...
+  "email": "user@example.com",
+  "password": "password123"
 }
 ```
 
-### Buses - Routes
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/schools/my/[id]/buses/[busId]/routes | List all routes for a bus | Yes |
-| POST   | /api/schools/my/[id]/buses/[busId]/routes | Add new route | Yes |
-| PUT    | /api/schools/my/[id]/buses/[busId]/routes | Update route (by routeId in body) | Yes |
-| DELETE | /api/schools/my/[id]/buses/[busId]/routes?routeId= | Delete route by ID | Yes |
-
-### Buses - Students
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/schools/my/[id]/buses/[busId]/students | List all students assigned to a bus | Yes |
-| POST   | /api/schools/my/[id]/buses/[busId]/students | Assign student to bus | Yes |
-| PUT    | /api/schools/my/[id]/buses/[busId]/students | Update student assignment (by assignmentId in body) | Yes |
-| DELETE | /api/schools/my/[id]/buses/[busId]/students?assignmentId= | Remove student from bus | Yes |
- 
-## App Settings APIs
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/app-settings | Get all app settings | Yes |
-| POST   | /api/app-settings | Create/update settings | Admin |
-| PUT    | /api/app-settings | Update specific section | Admin |
-
-## Secure Example API
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/secure-example | Secure GET (API key required) | API Key |
-| POST   | /api/secure-example | Secure POST (API key required) | API Key |
-| PUT    | /api/secure-example | Secure PUT (admin API key) | API Key |
-| DELETE | /api/secure-example | Secure DELETE (admin API key) | API Key |
-
-#### Example: Secure GET
-```http
-GET /api/secure-example?page=1&limit=10
-x-api-key: <your-api-key>
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "user_id",
+    "role": "parent",
+    "email": "user@example.com"
+  }
+}
 ```
 
 ---
 
-### Store Orders API
+## 👶 Children Management APIs
 
-| Method | Path | Description | Auth | Notes |
-|--------|------|-------------|------|-------|
-| GET    | /api/store/orders | List orders (user or admin) | Yes | Admin sees all, user sees own |
-| POST   | /api/store/orders | Create new order from cart | Yes | Deducts from wallet |
-| GET    | /api/store/orders/[id] | Get order by ID | Yes | User or admin |
-| PUT    | /api/store/orders/[id] | Update order status | Yes (admin/moderator/school_owner) | |
+### Add Child with Birth Certificate Extraction
 
-### Store Cart API
+This is the **recommended flow** for adding a child with automatic data extraction from birth certificate.
 
-| Method | Path | Description | Auth | Notes |
-|--------|------|-------------|------|-------|
-| GET    | /api/store/cart | Get user cart | Yes | Uses cookies |
-| POST   | /api/store/cart | Add item to cart | Yes | |
-| DELETE | /api/store/cart | Remove item from cart | Yes | |
-| PUT    | /api/store/cart | Update cart item quantity | Yes | |
+#### Step 1: Extract Birth Certificate Data
 
-### Store Categories API
+**Endpoint:** `POST /api/children/extract-birth-certificate`
 
-| Method | Path | Description | Auth | Notes |
-|--------|------|-------------|------|-------|
-| GET    | /api/store/categories | List categories | No | Supports parent filter |
-| POST   | /api/store/categories | Create category | Yes (admin/moderator/school_owner) | |
-| GET    | /api/store/categories/[id] | Get category by ID | No | |
-| PUT    | /api/store/categories/[id] | Update category | Yes (admin/moderator/school_owner) | |
-| DELETE | /api/store/categories/[id] | Delete category | Yes (admin/moderator/school_owner) | Soft delete, only if no products/subcategories |
+**Description:** Extracts data from Egyptian birth certificate, National ID, or Passport using Google Gemini AI. This endpoint also validates parent National ID if provided.
+
+**Request:**
+```http
+POST /api/children/extract-birth-certificate
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form Data:
+- birthCertificate: [image file] (required)
+```
+
+**Response (200 Success):**
+```json
+{
+  "success": true,
+  "extractedData": {
+    "arabicFullName": "نور الدین محمود سید عبد المبدى محمد علی",
+    "fullName": "Nour El Din Mahmoud",
+    "arabicFirstName": "نور الدین",
+    "arabicLastName": "محمود سید عبد المبدى محمد علی",
+    "firstName": "Nour",
+    "lastName": "El Din Mahmoud",
+    "nationalId": "31303170105673",
+    "birthDate": "2013-06-03",
+    "gender": "male",
+    "nationality": "Egyptian",
+    "birthPlace": "القاهره / مصر الجديده",
+    "religion": "Muslim",
+    "ageInComingOctober": {
+      "years": 11,
+      "months": 4,
+      "totalMonths": 136,
+      "targetDate": "2025-10-01",
+      "formatted": "11 years and 4 months"
+    },
+    "fatherNationalId": "27206102102338",
+    "motherNationalId": "27707280201101",
+    "parentNationalIds": ["27206102102338", "27707280201101"],
+    "birthCertificateImage": {
+      "data": "base64_encoded_image",
+      "mimeType": "image/jpeg",
+      "size": 123456,
+      "name": "birth_certificate.jpg"
+    }
+  },
+  "extractedText": "جمهورية مصر العربية\nشهادة ميلاد...",
+  "documentType": "birth_certificate"
+}
+```
+
+**Response (409 Conflict - National ID exists):**
+```json
+{
+  "message": "Child with this national ID already exists",
+  "existingChildId": "child_id"
+}
+```
+
+**Response (503 Service Unavailable - AI Error):**
+```json
+{
+  "message": "OCR extraction failed. Please enter data manually.",
+  "error": "Error details",
+  "canContinue": true
+}
+```
+
+**Notes:**
+- ✅ Automatically detects document type (birth_certificate, national_id, passport)
+- ✅ Extracts child's National ID from top of document
+- ✅ Extracts both father's and mother's National IDs
+- ✅ Converts Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩) to standard digits
+- ✅ Handles Arabic written years (e.g., "عام الفان و ثلاثه عشر" = 2013)
+- ✅ Calculates age in coming October automatically
+- ✅ Combines child name + father name for full Arabic name
+- ✅ Validates National ID uniqueness before extraction completes
 
 ---
 
-## Children Management APIs
+#### Step 2: Add Child with Extracted Data
 
-### Add Child (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST   | /api/children | Add child(ren) for authenticated parent | Yes (parent) |
+**Endpoint:** `POST /api/children`
 
-**Request Headers:**
+**Description:** Creates a new child record. Can use extracted data from Step 1.
+
+**Request:**
 ```http
+POST /api/children
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
 **Request Body:**
-- Can be a single object or an array of objects
-- **Required fields:** `arabicFullName` OR `fullName`, `gender`, `birthDate`
-- **Optional fields:** `nationalId`, `nationality`, `religion`, `birthPlace`, `desiredGrade`, `currentSchool`, `currentGrade`, `zone`, `specialNeeds`, `languagePreference`, `healthStatus`, `schoolId`, `birthCertificate`
-
-**Birth Certificate Format:**
-The `birthCertificate` field can be included to automatically extract data and save the certificate as a document:
 ```json
 {
-  "birthCertificate": {
-    "data": "base64_encoded_image_string",
-    "mimeType": "image/jpeg"
-  }
-}
-```
-
-**Example Request:**
-```json
-{
-  "arabicFullName": "أحمد محمد",
-  "fullName": "Ahmed Mohamed",
+  "arabicFullName": "نور الدین محمود سید عبد المبدى محمد علی",
+  "fullName": "Nour El Din Mahmoud",
   "gender": "male",
-  "birthDate": "2015-05-15",
-  "nationalId": "12345678901234",
+  "birthDate": "2013-06-03",
+  "nationalId": "31303170105673",
   "nationality": "Egyptian",
+  "birthPlace": "القاهره / مصر الجديده",
   "religion": "Muslim",
-  "birthPlace": "Cairo",
-  "desiredGrade": "Grade 1",
+  "desiredGrade": "Grade 5",
   "currentSchool": "Previous School Name",
-  "currentGrade": "KG2",
-  "zone": "القاهرة",
-  "specialNeeds": {
-    "hasNeeds": false,
-    "description": ""
-  },
-  "languagePreference": {
-    "primaryLanguage": "Arabic",
-    "secondaryLanguage": "English"
-  },
-  "healthStatus": {
-    "vaccinated": true,
-    "notes": ""
-  },
-  "schoolId": "school_id_if_transferring",
   "birthCertificate": {
-    "data": "data:image/jpeg;base64,/9j/4AAQ...",
+    "data": "base64_encoded_image_from_step_1",
     "mimeType": "image/jpeg"
   }
 }
 ```
 
-**Response Cases:**
-- **201 Created:** Child(ren) added successfully
+**Required Fields:**
+- `arabicFullName` OR `fullName` (at least one)
+- `gender` (must be: "male", "female", or "other")
+- `birthDate` (format: "YYYY-MM-DD")
+
+**Optional Fields:**
+- `nationalId` (14 digits)
+- `nationality` (defaults to "Egyptian")
+- `religion` ("Muslim", "Christian", or "Other")
+- `birthPlace`
+- `desiredGrade`
+- `currentSchool`
+- `schoolId` (if transferring from another school)
+- `birthCertificate` (object with `data` and `mimeType`)
+
+**Response (201 Created):**
 ```json
 {
   "message": "1 child(ren) added successfully",
   "children": [
     {
       "_id": "child_id",
-      "arabicFullName": "أحمد محمد",
-      "fullName": "Ahmed Mohamed",
+      "arabicFullName": "نور الدین محمود سید عبد المبدى محمد علی",
+      "fullName": "Nour El Din Mahmoud",
       "gender": "male",
-      "birthDate": "2015-05-15T00:00:00.000Z",
+      "birthDate": "2013-06-03T00:00:00.000Z",
+      "nationalId": "31303170105673",
+      "ageInOctober": 136,
       "parent": {
         "user": "parent_user_id",
         "type": "father"
@@ -231,14 +236,13 @@ The `birthCertificate` field can be included to automatically extract data and s
           "uploadedAt": "2024-01-15T10:00:00.000Z"
         }
       ],
-      "createdAt": "2024-01-15T10:00:00.000Z",
-      "updatedAt": "2024-01-15T10:00:00.000Z"
+      "createdAt": "2024-01-15T10:00:00.000Z"
     }
   ]
 }
 ```
 
-- **400 Bad Request:** Missing required fields
+**Response (400 Bad Request):**
 ```json
 {
   "message": "Missing required fields in one or more children",
@@ -251,399 +255,721 @@ The `birthCertificate` field can be included to automatically extract data and s
 }
 ```
 
-- **403 Forbidden:** Unauthorized
+**Response (409 Conflict - Child Already Exists):**
 ```json
 {
-  "message": "Unauthorized"
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal Server Error",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Automatically sends confirmation email to parent after successful creation
-- Parent ID is automatically set from authenticated user: `{ user: ObjectId, type: "father" }`
-- Supports batch creation (array of children)
-- Birth certificate is automatically saved to `documents` array with label `birth_certificate`
-- `studentStatus.status` defaults to `"newcomer"` if not provided
-- `desiredGrade` is optional (not required)
-
----
-
-### Get Children by School (School Owner)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/children?schoolId= | Get children list for a school | Yes (school_owner) |
-
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-```
-
-**Query Parameters:**
-- `schoolId` (required): School ID
-
-**Example Request:**
-```http
-GET /api/children?schoolId=1234567890abcdef12345678
-Authorization: Bearer <token>
-```
-
-**Response Cases:**
-- **200 Success:**
-```json
-{
-  "children": [
+  "message": "Child with this National ID already exists",
+  "error": "CHILD_EXISTS",
+  "child": {
+    "id": "child_id",
+    "fullName": "نور الدین محمود سید عبد المبدى محمد علی",
+    "schoolName": "School Name",
+    "nationalId": "31303170105673"
+  },
+  "guardians": [
     {
-      "_id": "child_id",
-      "fullName": "Ahmed Mohamed"
+      "userId": "guardian_user_id",
+      "name": "Guardian Name",
+      "relation": "father",
+      "phones": ["01234567890", "01123456789"]
     }
   ]
 }
 ```
 
-- **400 Bad Request:** School ID missing
+**Response (409 Conflict - Child Already in Parent's List):**
 ```json
 {
-  "message": "School ID is required"
+  "message": "This child is already in your children list",
+  "error": "CHILD_ALREADY_ADDED",
+  "child": {
+    "id": "child_id",
+    "fullName": "Child Name"
+  }
 }
 ```
 
-- **403 Forbidden:** Unauthorized
+**Notes:**
+- ✅ Automatically calculates `ageInOctober` (in months) from `birthDate`
+- ✅ Saves birth certificate to `documents` array automatically
+- ✅ Sends confirmation email to parent
+- ✅ Supports batch creation (array of children)
+- ✅ Checks for duplicate children in parent's list
+- ✅ For new Egyptian children, `nationalId` is stored in `temporaryNationalId` field (not in primary `nationalId`) to prevent incorrect usage
+- ✅ If child with same National ID exists, returns guardian phone numbers for OTP verification
+
+---
+
+### Two-Step Document Upload Flow
+
+This flow is used when you need to **validate parent identity** before extracting child data.
+
+#### Step 1: Upload Parent National ID Card
+
+**Endpoint:** `POST /api/children/extract-birth-certificate`
+
+**Description:** Upload parent's National ID card to extract parent's National ID number.
+
+**Request:**
+```http
+POST /api/children/extract-birth-certificate
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form Data:
+- birthCertificate: [parent_national_id_image] (required)
+```
+
+**Response (200 Success):**
 ```json
 {
-  "message": "Unauthorized"
+  "success": true,
+  "extractedData": {
+    "nationalId": "27206102102338",
+    "arabicFullName": "محمود سید عبد المبدى محمد علی",
+    "birthDate": "1980-02-22",
+    "gender": "male"
+  },
+  "documentType": "national_id"
+}
+```
+
+**Frontend Action:** Store `extractedData.nationalId` as `parentNationalId` for validation in Step 2.
+
+---
+
+#### Step 2: Upload Child Birth Certificate
+
+**Endpoint:** `POST /api/children/extract-birth-certificate`
+
+**Description:** Upload child's birth certificate. The API will validate that the parent's National ID from Step 1 matches either the father's or mother's ID in the certificate.
+
+**Request:**
+```http
+POST /api/children/extract-birth-certificate
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form Data:
+- birthCertificate: [child_birth_certificate_image] (required)
+```
+
+**Response (200 Success - Parent ID Matched):**
+```json
+{
+  "success": true,
+  "extractedData": {
+    "arabicFullName": "نور الدین محمود سید عبد المبدى محمد علی",
+    "nationalId": "31303170105673",
+    "birthDate": "2013-06-03",
+    "gender": "male",
+    "fatherNationalId": "27206102102338",
+    "motherNationalId": "27707280201101",
+    "parentNationalIds": ["27206102102338", "27707280201101"],
+    "birthCertificateImage": { ... }
+  },
+  "extractedText": "...",
+  "documentType": "birth_certificate"
+}
+```
+
+**Frontend Validation Logic:**
+```javascript
+// After receiving response from Step 2
+const parentNationalId = "27206102102338"; // From Step 1
+const fatherId = extractedData.fatherNationalId; // "27206102102338"
+const motherId = extractedData.motherNationalId; // "27707280201101"
+
+// Check if parent ID matches either father or mother
+const isValid = parentNationalId === fatherId || parentNationalId === motherId;
+
+if (isValid) {
+  // ✅ Parent verified - proceed to add child
+  // Use extractedData to fill form and call POST /api/children
+} else {
+  // ❌ Show error: Parent ID mismatch
+  // Display both IDs for user to verify
+}
+```
+
+**Response (if parent ID not found in certificate):**
+The API will still return extracted data, but frontend should show a warning:
+```javascript
+// Warning message:
+"⚠️ Parent National ID not found in birth certificate. 
+You can continue manually, but please verify the data."
+```
+
+**Notes:**
+- ✅ API extracts both father's and mother's National IDs
+- ✅ Frontend should compare parent ID from Step 1 with both parent IDs from Step 2
+- ✅ If match found → proceed to add child
+- ✅ If no match → show error but allow manual entry
+
+---
+
+### OTP Verification Flow for Existing Children
+
+When a parent tries to add a child with a National ID that already exists in the system, the API returns a `409 Conflict` response with guardian information. The parent must verify their identity via OTP before the child can be linked to their account.
+
+#### Step 1: Send OTP to Guardian Phone
+
+**Endpoint:** `POST /api/children/send-otp`
+
+**Description:** Sends an OTP to a selected guardian's phone number for verification.
+
+**Request:**
+```http
+POST /api/children/send-otp
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "childId": "child_id",
+  "guardianUserId": "guardian_user_id",
+  "phoneNumber": "01234567890"
+}
+```
+
+**Required Fields:**
+- `childId` - The ID of the existing child
+- `guardianUserId` - The ID of the guardian whose phone will receive the OTP
+- `phoneNumber` - The phone number to send OTP to (must belong to the guardian)
+
+**Response (200 Success):**
+```json
+{
+  "message": "OTP sent successfully",
+  "phoneNumber": "01234567890"
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Phone number does not belong to this guardian",
+  "details": {
+    "requestedPhone": "01234567890",
+    "availablePhones": ["01234567890", "01123456789"]
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "message": "Guardian not found"
+}
+```
+
+**Notes:**
+- ✅ Phone numbers are normalized (trimmed, spaces removed) before comparison
+- ✅ OTP is valid for 10 minutes
+- ✅ OTP is stored in the guardian's User model
+
+---
+
+#### Step 2: Verify OTP and Link Child
+
+**Endpoint:** `POST /api/children/verify-otp`
+
+**Description:** Verifies the OTP code and links the child to the parent's account.
+
+**Request:**
+```http
+POST /api/children/verify-otp
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "childId": "child_id",
+  "guardianUserId": "guardian_user_id",
+  "otp": "123456"
+}
+```
+
+**Required Fields:**
+- `childId` - The ID of the existing child
+- `guardianUserId` - The ID of the guardian who received the OTP
+- `otp` - The 6-digit OTP code (test OTP: `123456` for development)
+
+**Response (200 Success):**
+```json
+{
+  "message": "OTP verified successfully. Child linked to your account.",
+  "child": {
+    "id": "child_id",
+    "fullName": "Child Name"
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Invalid OTP code. Please check and try again."
+}
+```
+
+**Response (400 Bad Request - Expired):**
+```json
+{
+  "message": "OTP code has expired. Please request a new verification code."
+}
+```
+
+**Response (400 Bad Request - No OTP):**
+```json
+{
+  "message": "No OTP found. Please request a new OTP."
+}
+```
+
+**Notes:**
+- ✅ Test OTP `123456` bypasses validation for development/testing
+- ✅ On successful verification, the parent is added to the child's `guardians` array
+- ✅ The child's `parent` field is updated to reference the new parent
+- ✅ OTP is cleared after successful verification
+- ✅ Confirmation email is sent to the parent
+
+---
+
+### Non-Egyptian Child Requests Flow
+
+For non-Egyptian children, parents must submit a request that requires admin approval before the child is added to the system.
+
+#### Step 1: Submit Non-Egyptian Child Request
+
+**Endpoint:** `POST /api/children/non-egyptian-request`
+
+**Description:** Creates a request to add a non-Egyptian child. Requires parent and child passport uploads.
+
+**Request:**
+```http
+POST /api/children/non-egyptian-request
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `parentPassport` - Parent's passport image/file (required)
+- `childPassport` - Child's passport image/file (required)
+- `fullName` - Child's full name in English (optional)
+- `arabicFullName` - Child's full name in Arabic (required if fullName not provided)
+- `firstName` - Child's first name (optional)
+- `lastName` - Child's last name (optional)
+- `birthDate` - Child's birth date in YYYY-MM-DD format (required)
+- `gender` - Child's gender: "male", "female", or "other" (required)
+- `nationality` - Child's nationality (defaults to "Non-Egyptian")
+- `birthPlace` - Place of birth (optional)
+- `religion` - Religion (optional)
+- `desiredGrade` - Desired grade level (optional)
+- `schoolId` - School ID if transferring (optional)
+- `currentSchool` - Current school name (optional)
+
+**Response (201 Created):**
+```json
+{
+  "message": "Request submitted successfully",
+  "request": {
+    "id": "request_id",
+    "status": "pending",
+    "requestedAt": "2024-01-15T10:00:00.000Z"
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Parent passport is required"
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Child name is required"
+}
+```
+
+**Notes:**
+- ✅ Passports are uploaded to ImageKit cloud storage
+- ✅ Request status starts as "pending"
+- ✅ Admin must approve or reject the request
+- ✅ Parent can view request status in their children list
+
+---
+
+#### Step 2: Get Parent's Non-Egyptian Requests
+
+**Endpoint:** `GET /api/children/non-egyptian-requests`
+
+**Description:** Get all non-Egyptian child requests submitted by the authenticated parent.
+
+**Request:**
+```http
+GET /api/children/non-egyptian-requests
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "requests": [
+    {
+      "_id": "request_id",
+      "fullName": "John Doe",
+      "arabicFullName": "جون دو",
+      "birthDate": "2015-05-10T00:00:00.000Z",
+      "gender": "male",
+      "nationality": "Non-Egyptian",
+      "status": "pending",
+      "parentPassport": {
+        "url": "https://imagekit.io/...",
+        "uploadedAt": "2024-01-15T10:00:00.000Z"
+      },
+      "childPassport": {
+        "url": "https://imagekit.io/...",
+        "uploadedAt": "2024-01-15T10:00:00.000Z"
+      },
+      "requestedAt": "2024-01-15T10:00:00.000Z",
+      "rejectionReason": null,
+      "childId": null
+    }
+  ],
+  "count": 1
+}
+```
+
+**Request Statuses:**
+- `pending` - Waiting for admin review
+- `approved` - Request approved, child created
+- `rejected` - Request rejected (includes `rejectionReason`)
+
+---
+
+### Admin: Non-Egyptian Child Requests Management
+
+#### Get All Non-Egyptian Requests
+
+**Endpoint:** `GET /api/admin/non-egyptian-requests`
+
+**Description:** Get all non-Egyptian child requests (admin only). Can filter by status.
+
+**Request:**
+```http
+GET /api/admin/non-egyptian-requests?status=pending
+Authorization: Bearer <admin_token>
+```
+
+**Query Parameters:**
+- `status` (optional) - Filter by status: "pending", "approved", "rejected", or omit for all
+
+**Response (200 Success):**
+```json
+{
+  "requests": [
+    {
+      "_id": "request_id",
+      "requestedBy": {
+        "_id": "parent_user_id",
+        "name": "Parent Name",
+        "email": "parent@example.com",
+        "phone": "01234567890"
+      },
+      "fullName": "John Doe",
+      "arabicFullName": "جون دو",
+      "birthDate": "2015-05-10T00:00:00.000Z",
+      "gender": "male",
+      "nationality": "Non-Egyptian",
+      "status": "pending",
+      "parentPassport": {
+        "url": "https://imagekit.io/...",
+        "uploadedAt": "2024-01-15T10:00:00.000Z"
+      },
+      "childPassport": {
+        "url": "https://imagekit.io/...",
+        "uploadedAt": "2024-01-15T10:00:00.000Z"
+      },
+      "requestedAt": "2024-01-15T10:00:00.000Z",
+      "schoolId": {
+        "_id": "school_id",
+        "name": "School Name",
+        "nameAr": "اسم المدرسة"
+      }
+    }
+  ],
+  "count": 1
 }
 ```
 
 ---
 
-### Get All Related Children (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/children/get-related | Get all children related to authenticated parent | Yes (parent) |
+#### Approve Non-Egyptian Request
 
-**Request Headers:**
+**Endpoint:** `POST /api/admin/non-egyptian-requests/[id]/approve`
+
+**Description:** Approves a non-Egyptian child request and creates the child in the database (admin only).
+
+**Request:**
 ```http
-Authorization: Bearer <token>
+POST /api/admin/non-egyptian-requests/request_id/approve
+Authorization: Bearer <admin_token>
 ```
 
-**Example Request:**
+**Response (200 Success):**
+```json
+{
+  "message": "Request approved and child created successfully",
+  "child": {
+    "id": "child_id",
+    "fullName": "John Doe"
+  },
+  "request": {
+    "id": "request_id",
+    "status": "approved"
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Request is already approved"
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "message": "Request not found"
+}
+```
+
+**Notes:**
+- ✅ Creates a new Child document with all request data
+- ✅ Adds parent to child's guardians array
+- ✅ Uploads passport documents to child's documents array (labeled as "other")
+- ✅ Updates request status to "approved"
+- ✅ Links child ID to request for tracking
+
+---
+
+#### Reject Non-Egyptian Request
+
+**Endpoint:** `POST /api/admin/non-egyptian-requests/[id]/reject`
+
+**Description:** Rejects a non-Egyptian child request with a reason (admin only).
+
+**Request:**
+```http
+POST /api/admin/non-egyptian-requests/request_id/reject
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "rejectionReason": "Missing required documents or incomplete information"
+}
+```
+
+**Required Fields:**
+- `rejectionReason` - Reason for rejection (required, cannot be empty)
+
+**Response (200 Success):**
+```json
+{
+  "message": "Request rejected successfully",
+  "request": {
+    "id": "request_id",
+    "status": "rejected",
+    "rejectionReason": "Missing required documents or incomplete information"
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Rejection reason is required"
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "Request is already rejected"
+}
+```
+
+**Notes:**
+- ✅ Updates request status to "rejected"
+- ✅ Stores rejection reason for parent to view
+- ✅ Records admin who rejected the request
+- ✅ Parent can see rejection reason in their children list
+
+---
+
+### Get Children
+
+#### Get All Related Children (Parent)
+
+**Endpoint:** `GET /api/children/get-related`
+
+**Description:** Get all children related to authenticated parent (as parent or guardian).
+
+**Request:**
 ```http
 GET /api/children/get-related
 Authorization: Bearer <token>
 ```
 
-**Response Cases:**
-- **200 Success:**
+**Response (200 Success):**
 ```json
 {
   "children": [
     {
       "_id": "child_id",
-      "arabicFullName": "أحمد محمد",
-      "fullName": "Ahmed Mohamed",
+      "arabicFullName": "نور الدین محمود",
+      "fullName": "Nour El Din",
       "gender": "male",
-      "birthDate": "2015-05-15T00:00:00.000Z",
-      "nationalId": "12345678901234",
-      "nationality": "Egyptian",
-      "religion": "Muslim",
-      "currentSchool": "Previous School",
-      "desiredGrade": "Grade 1",
-      "parent": {
-        "_id": "parent_id",
-        "fullName": "Parent Name",
-        "email": "parent@example.com",
-        "phone": "01234567890"
-      },
+      "birthDate": "2013-06-03T00:00:00.000Z",
+      "nationalId": "31303170105673",
+      "ageInOctober": 136,
       "parent": {
         "user": {
           "_id": "parent_id",
           "fullName": "Parent Name",
-          "email": "parent@example.com",
-          "phone": "01234567890"
+          "email": "parent@example.com"
         },
         "type": "father"
       },
       "schoolId": {
         "_id": "school_id",
         "name": "School Name",
-        "nameAr": "اسم المدرسة",
-        "logo": { "url": "logo_url" },
-        "branches": []
+        "nameAr": "اسم المدرسة"
       },
-      "stage": {
-        "_id": "stage_id",
-        "name": "Primary",
-        "nameAr": "ابتدائي"
-      },
-      "grade": {
-        "_id": "grade_id",
-        "name": "Grade 1",
-        "nameAr": "الصف الأول"
-      },
-      "section": {
-        "_id": "section_id",
-        "name": "Section A",
-        "nameAr": "قسم أ"
-      },
-      "class": {
-        "_id": "class_id",
-        "name": "Class 1A",
-        "nameAr": "فصل 1أ"
-      },
-      "guardians": [
-        {
-          "user": {
-            "_id": "guardian_id",
-            "fullName": "Guardian Name",
-            "email": "guardian@example.com",
-            "phone": "01234567891"
-          },
-          "relation": "father",
-          "isParent": true
-        }
-      ],
-      "documents": [
-        {
-          "url": "document_url",
-          "label": "birth_certificate",
-          "source": "uploaded",
-          "uploadedAt": "2024-01-15T10:00:00.000Z"
-        }
-      ],
-      "createdAt": "2024-01-15T10:00:00.000Z",
-      "updatedAt": "2024-01-15T10:00:00.000Z"
+      "documents": [...],
+      "createdAt": "2024-01-15T10:00:00.000Z"
     }
   ]
 }
 ```
 
-- **403 Forbidden:** Unauthorized
-```json
-{
-  "message": "Unauthorized"
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal server error",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Returns children where the user is either the parent or a guardian
-- Handles both legacy parent structure (ObjectId) and new structure ({ user: ObjectId, type: String })
-- All related data (school, stage, grade, section, class, guardians) are populated
-- Results are sorted by creation date (newest first)
-
 ---
 
-### Get Single Child by ID (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/children/get-related/[id] | Get single child by ID | Yes (parent) |
+#### Get Single Child by ID
 
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-```
+**Endpoint:** `GET /api/children/get-related/[id]`
 
-**Example Request:**
+**Description:** Get detailed information about a specific child.
+
+**Request:**
 ```http
 GET /api/children/get-related/694a93b4707b36f746049ffa
 Authorization: Bearer <token>
 ```
 
-**Response Cases:**
-- **200 Success:**
+**Response (200 Success):**
 ```json
 {
   "child": {
     "_id": "child_id",
-    "arabicFullName": "أحمد محمد",
-    "fullName": "Ahmed Mohamed",
+    "arabicFullName": "نور الدین محمود",
+    "fullName": "Nour El Din",
     "gender": "male",
-    "birthDate": "2015-05-15T00:00:00.000Z",
+    "birthDate": "2013-06-03T00:00:00.000Z",
+    "nationalId": "31303170105673",
+    "ageInOctober": 136,
     "schoolId": {
       "_id": "school_id",
       "name": "School Name",
       "nameAr": "اسم المدرسة",
-      "logo": { "url": "logo_url" },
-      "branches": [],
-      "type": "Private",
-      "location": {
-        "governorate": "Cairo",
-        "city": "Cairo",
-        "district": "Nasr City"
-      },
-      "contactEmail": "school@example.com",
-      "contactPhone": "01234567890",
-      "languages": ["Arabic", "English"]
+      "logo": { "url": "logo_url" }
     },
-    "documents": [],
+    "documents": [...],
     "profileImage": { "url": "profile_url" },
     "createdAt": "2024-01-15T10:00:00.000Z"
   }
 }
 ```
 
-- **403 Forbidden:** Unauthorized
-```json
-{
-  "message": "Unauthorized"
-}
-```
-
-- **404 Not Found:**
-```json
-{
-  "message": "Child not found"
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal server error",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Verifies parent ownership before returning child data
-- Populates all related school information including branches, location, and contact details
-
 ---
 
-### Update Child (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| PUT    | /api/children/get-related/[id] | Update child information | Yes (parent) |
+### Update Child
 
-**Request Headers:**
+**Endpoint:** `PUT /api/children/get-related/[id]`
+
+**Description:** Update child information. Only provided fields will be updated.
+
+**Request:**
 ```http
+PUT /api/children/get-related/694a93b4707b36f746049ffa
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Request Body:**
-- All fields are optional
-- Only include fields you want to update
-- **Important:** Do not send empty strings for enum fields (`religion`, `languagePreference.primaryLanguage`)
-
-**Example Request:**
+**Request Body (all fields optional):**
 ```json
 {
   "currentSchool": "New School Name",
-  "currentGrade": "KG2",
-  "desiredGrade": "Grade 1",
+  "desiredGrade": "Grade 6",
   "religion": "Muslim",
-  "zone": "القاهرة",
   "birthPlace": "Cairo",
   "specialNeeds": {
     "hasNeeds": false,
     "description": ""
-  },
-  "languagePreference": {
-    "primaryLanguage": "Arabic",
-    "secondaryLanguage": "English"
-  },
-  "healthStatus": {
-    "vaccinated": true,
-    "notes": "All vaccinations up to date"
   }
 }
 ```
 
-**Response Cases:**
-- **200 Success:**
+**Response (200 Success):**
 ```json
 {
   "message": "Child updated successfully",
   "child": {
     "_id": "child_id",
     "currentSchool": "New School Name",
-    "desiredGrade": "Grade 1",
     "updatedAt": "2024-01-15T11:00:00.000Z"
   }
 }
 ```
 
-- **400 Bad Request:** Validation error
-```json
-{
-  "message": "Child validation failed: religion: `` is not a valid enum value"
-}
-```
-
-- **403 Forbidden:** Unauthorized
-```json
-{
-  "message": "Unauthorized"
-}
-```
-
-- **404 Not Found:**
-```json
-{
-  "message": "Child not found or unauthorized"
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal server error",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Only updates fields that are provided in the request body
-- Empty strings for enum fields are ignored (not updated)
-- Verifies parent ownership before updating
+**Important Notes:**
+- ⚠️ Do NOT send empty strings for enum fields (`religion`, `languagePreference.primaryLanguage`)
+- ⚠️ `ageInOctober` is **read-only** - it's automatically calculated from `birthDate`
+- ✅ Only updates fields that are provided in the request
 
 ---
 
-### Upload Child Document/Profile Image (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| PUT    | /api/children/get-related/[id]/upload | Upload document or profile image for child | Yes (parent) |
+### Upload Documents
 
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-```
+**Endpoint:** `PUT /api/children/get-related/[id]/upload`
 
-**Form Data:**
-- `file` (required): Image or PDF file
-- `label` (optional): Document label/name
-- `type` (required): Either `"document"` or `"profile"`
+**Description:** Upload profile image or document for a child.
 
-**Example Request:**
+**Request:**
 ```http
 PUT /api/children/get-related/694a93b4707b36f746049ffa/upload
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
 
-file: [binary file data]
-label: "Birth Certificate"
-type: "document"
+Form Data:
+- file: [image or PDF file] (required)
+- label: "Document Name" (optional, for documents only)
+- type: "profile" or "document" (required)
 ```
 
-**Response Cases:**
-- **200 Success:**
+**Response (200 Success):**
 ```json
 {
   "message": "Uploaded successfully",
@@ -657,519 +983,320 @@ type: "document"
       {
         "url": "https://imagekit.io/...",
         "publicId": "file_id",
-        "label": "Birth Certificate"
+        "label": "Document Name"
       }
     ]
   }
 }
 ```
 
-- **400 Bad Request:** Invalid file
-```json
-{
-  "message": "Invalid file"
-}
-```
+---
 
-- **401 Unauthorized:**
-```json
-{
-  "message": "Unauthorized"
-}
-```
+## 📋 Common Workflows
 
-- **404 Not Found:**
-```json
-{
-  "message": "Child not found"
-}
-```
+### Workflow 1: Add Child with Automatic Data Extraction (Recommended)
 
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal error",
-  "error": "Error message details"
-}
-```
+**Use Case:** Parent wants to add a child using birth certificate with automatic data extraction.
 
-**Notes:**
-- Files are uploaded to ImageKit
-- Profile images are stored in `profileImage` field
-- Documents are added to `documents` array
-- Verifies parent ownership before uploading
+**Steps:**
+1. **Extract Data from Birth Certificate**
+   ```javascript
+   const formData = new FormData();
+   formData.append('birthCertificate', file);
+   
+   const response = await fetch('/api/children/extract-birth-certificate', {
+     method: 'POST',
+     headers: { 'Authorization': `Bearer ${token}` },
+     body: formData
+   });
+   
+   const { extractedData, birthCertificateImage } = await response.json();
+   ```
+
+2. **Auto-fill Form with Extracted Data**
+   ```javascript
+   const formData = {
+     arabicFullName: extractedData.arabicFullName,
+     fullName: extractedData.fullName,
+     gender: extractedData.gender,
+     birthDate: extractedData.birthDate,
+     nationalId: extractedData.nationalId,
+     nationality: extractedData.nationality || 'Egyptian',
+     birthPlace: extractedData.birthPlace,
+     religion: extractedData.religion,
+     birthCertificate: extractedData.birthCertificateImage
+   };
+   ```
+
+3. **Add Child**
+   ```javascript
+   const response = await fetch('/api/children', {
+     method: 'POST',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify(formData)
+   });
+   
+   const { children } = await response.json();
+   ```
+
+**✅ Benefits:**
+- Fast and accurate data entry
+- Automatic age calculation
+- Birth certificate automatically saved
 
 ---
 
-### Extract Birth Certificate Data (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST   | /api/children/extract-birth-certificate | Extract data from Egyptian birth certificate using AI | Yes (parent) |
+### Workflow 2: Add Child with Parent Identity Validation
 
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-```
+**Use Case:** Parent needs to verify their identity before adding child (two-step validation).
 
-**Form Data:**
-- `birthCertificate` (required): Image file (JPEG, PNG, WebP)
+**Steps:**
+1. **Upload Parent National ID Card**
+   ```javascript
+   const parentFormData = new FormData();
+   parentFormData.append('birthCertificate', parentIdFile);
+   
+   const parentResponse = await fetch('/api/children/extract-birth-certificate', {
+     method: 'POST',
+     headers: { 'Authorization': `Bearer ${token}` },
+     body: parentFormData
+   });
+   
+   const { extractedData: parentData } = await parentResponse.json();
+   const parentNationalId = parentData.nationalId; // Store this
+   ```
 
-**Example Request:**
-```http
-POST /api/children/extract-birth-certificate
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
+2. **Upload Child Birth Certificate**
+   ```javascript
+   const childFormData = new FormData();
+   childFormData.append('birthCertificate', childCertificateFile);
+   
+   const childResponse = await fetch('/api/children/extract-birth-certificate', {
+     method: 'POST',
+     headers: { 'Authorization': `Bearer ${token}` },
+     body: childFormData
+   });
+   
+   const { extractedData: childData } = await childResponse.json();
+   ```
 
-birthCertificate: [binary image file]
-```
+3. **Validate Parent ID**
+   ```javascript
+   const fatherId = childData.fatherNationalId;
+   const motherId = childData.motherNationalId;
+   
+   const isValid = parentNationalId === fatherId || parentNationalId === motherId;
+   
+   if (!isValid) {
+     // Show error
+     alert(`Parent ID mismatch!\nYour ID: ${parentNationalId}\nFather ID: ${fatherId}\nMother ID: ${motherId}`);
+     return;
+   }
+   ```
 
-**Response Cases:**
-- **200 Success:**
+4. **Add Child (same as Workflow 1, Step 3)**
+
+**✅ Benefits:**
+- Ensures parent is authorized to add the child
+- Prevents unauthorized child registration
+- Shows clear error messages if IDs don't match
+
+---
+
+### Workflow 3: Manual Child Entry
+
+**Use Case:** Parent wants to enter data manually (no document upload).
+
+**Steps:**
+1. **Fill Form Manually**
+   ```javascript
+   const formData = {
+     arabicFullName: "أحمد محمد",
+     fullName: "Ahmed Mohamed",
+     gender: "male",
+     birthDate: "2015-05-15",
+     nationalId: "12345678901234",
+     nationality: "Egyptian",
+     religion: "Muslim"
+   };
+   ```
+
+2. **Add Child**
+   ```javascript
+   const response = await fetch('/api/children', {
+     method: 'POST',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify(formData)
+   });
+   ```
+
+**✅ Benefits:**
+- No document required
+- Full control over data entry
+- Works even if OCR fails
+
+---
+
+## ⚠️ Error Handling
+
+### Common Error Responses
+
+#### 400 Bad Request
 ```json
 {
-  "success": true,
-  "extractedData": {
-    "fullName": "Ahmed Mohamed Ali",
-    "arabicFullName": "أحمد محمد علي",
-    "firstName": "Ahmed",
-    "lastName": "Mohamed Ali",
-    "arabicFirstName": "أحمد",
-    "arabicLastName": "محمد علي",
-    "birthDate": "2015-05-15",
-    "gender": "male",
-    "nationalId": "12345678901234",
-    "nationality": "Egyptian",
-    "birthPlace": "Cairo",
-    "religion": "Muslim",
-    "birthCertificateImage": {
-      "data": "base64_encoded_image",
-      "mimeType": "image/jpeg",
-      "size": 123456,
-      "name": "birth_certificate.jpg"
-    }
+  "message": "Missing required fields in one or more children",
+  "error": "MISSING_REQUIRED_FIELDS",
+  "details": {
+    "arabicFullName": false,
+    "gender": true,
+    "birthDate": false
   }
 }
 ```
 
-- **400 Bad Request:** Missing file
-```json
-{
-  "message": "Birth certificate file is required"
-}
-```
-
-- **403 Forbidden:** Unauthorized
+#### 403 Forbidden
 ```json
 {
   "message": "Unauthorized"
 }
 ```
 
-- **409 Conflict:** National ID already exists
+#### 409 Conflict (National ID exists)
 ```json
 {
   "message": "Child with this national ID already exists",
   "existingChildId": "child_id"
 }
 ```
-or
-```json
-{
-  "message": "National ID already registered in system",
-  "existingUserId": "user_id"
-}
-```
 
-- **503 Service Unavailable:** AI service unavailable
+#### 503 Service Unavailable (AI Error)
 ```json
 {
-  "message": "AI_EXTRACTION_UNAVAILABLE",
-  "error": "API rate limit exceeded. Please wait a moment and try again.",
-  "errorCode": "RATE_LIMIT_EXCEEDED",
-  "suggestion": "MANUAL_ENTRY_AVAILABLE",
+  "message": "OCR extraction failed. Please enter data manually.",
+  "error": "Error details",
   "canContinue": true
 }
 ```
 
-- **500 Internal Server Error:**
-```json
-{
-  "message": "Internal server error",
-  "error": "Error message details"
+### Error Handling Best Practices
+
+```javascript
+try {
+  const response = await fetch('/api/children/extract-birth-certificate', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    
+    if (response.status === 409) {
+      // National ID already exists
+      alert(`Child with National ID ${error.existingChildId} already exists`);
+    } else if (response.status === 503 && error.canContinue) {
+      // OCR failed but can continue manually
+      alert('Automatic extraction failed. Please enter data manually.');
+      // Show manual form
+    } else {
+      // Other errors
+      alert(error.message || 'An error occurred');
+    }
+    return;
+  }
+  
+  const data = await response.json();
+  // Process extracted data
+  
+} catch (error) {
+  console.error('Network error:', error);
+  alert('Network error. Please check your connection.');
 }
 ```
 
-**Notes:**
-- Uses Google Gemini Vision API for data extraction
-- Validates that national ID is not already in use (as child or user)
-- Returns base64 encoded image for saving to child documents
-- If AI service fails, returns `canContinue: true` to allow manual entry
-- Extracts birth date and gender from 14-digit National ID if available
+---
+
+## 🔑 Key Features
+
+### Automatic Data Extraction
+- ✅ Detects document type (birth_certificate, national_id, passport)
+- ✅ Extracts child's National ID from top of document
+- ✅ Extracts both father's and mother's National IDs
+- ✅ Converts Arabic-Indic numerals to standard digits
+- ✅ Handles Arabic written years (e.g., "عام الفان و ثلاثه عشر" = 2013)
+- ✅ Combines child name + father name for full Arabic name
+- ✅ Extracts birth place, religion, gender automatically
+
+### Age Calculation
+- ✅ Automatically calculates `ageInOctober` (in months) from `birthDate`
+- ✅ Field is **read-only** - cannot be edited manually
+- ✅ Calculated as: age in months as of October 1st of current/next year
+
+### Parent ID Validation
+- ✅ Two-step flow: Upload parent ID → Upload child certificate
+- ✅ Validates parent ID matches father OR mother ID
+- ✅ Shows clear error messages if mismatch
+
+### Document Management
+- ✅ Birth certificate automatically saved to `documents` array
+- ✅ Supports profile image upload
+- ✅ Supports additional document uploads
+- ✅ Files stored in ImageKit
 
 ---
 
-## Admission Flow APIs
+## 📝 Field Reference
+
+### Child Model Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `arabicFullName` | String | Yes* | Full name in Arabic |
+| `fullName` | String | Yes* | Full name in English |
+| `gender` | String | Yes | "male", "female", or "other" |
+| `birthDate` | Date | Yes | Format: "YYYY-MM-DD" |
+| `nationalId` | String | No | 14-digit National ID |
+| `nationality` | String | No | Defaults to "Egyptian" |
+| `religion` | String | No | "Muslim", "Christian", or "Other" |
+| `birthPlace` | String | No | Place of birth |
+| `ageInOctober` | Number | Auto | Age in months (read-only, calculated) |
+| `desiredGrade` | String | No | Desired grade level |
+| `currentSchool` | String | No | Current school name |
+| `schoolId` | ObjectId | No | School ID if transferring |
+
+*At least one of `arabicFullName` or `fullName` is required.
  
-### Apply to Schools (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST   | /api/admission/apply | Apply to multiple schools with payment processing | Yes (parent) |
+---
 
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-Content-Type: application/json
-```
+## 🎯 Quick Reference
 
-**Request Body:**
-```json
-{
-  "childId": "child_id",
-  "selectedSchools": [
-    {
-      "_id": "school_id_1",
-      "name": "School Name 1",
-      "admissionFee": {
-        "amount": 500
-      }
-    },
-    {
-      "_id": "school_id_2",
-      "name": "School Name 2",
-      "admissionFee": {
-        "amount": 300
-      }
-    }
-  ]
-}
-```
+### Most Common Endpoints
 
-**Response Cases:**
-- **200 Success:** Applications created successfully
-```json
-{
-  "message": "✅ تم إنشاء الطلبات بنجاح",
-  "applications": [
-    {
-      "_id": "application_id",
-      "parent": "parent_id",
-      "child": "child_id",
-      "school": "school_id",
-      "status": "pending",
-      "payment": {
-        "isPaid": true,
-        "amount": 500
-      },
-      "preferredInterviewSlots": [
-        {
-          "date": "2024-01-15T00:00:00.000Z",
-          "timeRange": {
-            "from": "10:00",
-            "to": "12:00"
-          }
-        }
-      ],
-      "createdAt": "2024-01-15T10:00:00.000Z"
-    }
-  ]
-}
-```
-
-- **400 Bad Request:** Insufficient wallet balance or incomplete data
-```json
-{
-  "message": "رصيدك غير كافٍ. تحتاج إلى 500 جنيه على الأقل."
-}
-```
-or
-```json
-{
-  "message": "بيانات غير كاملة"
-}
-```
-
-- **404 Not Found:** School or user not found
-```json
-{
-  "message": "لم يتم العثور على المدرسة المحددة."
-}
-```
-or
-```json
-{
-  "message": "لم يتم العثور على المستخدم."
-}
-```
-
-- **401 Unauthorized:** User is not a parent
-```json
-{
-  "message": "غير مصرح"
-}
-```
-
-- **409 Conflict:** Duplicate application exists
-```json
-{
-  "message": "⚠️ لديك بالفعل طلب لهذه المدرسة."
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "حدث خطأ داخلي",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Schools are automatically sorted by highest admission fee
-- Payment is deducted from parent's wallet for the top school (highest fee)
-- **Wallet is automatically initialized** if it doesn't exist (balance: 0, currency: EGP)
-- First school gets status "pending" (paid), others get "draft" (unpaid)
-- Full school data is fetched from database to ensure accurate ownership information
-- Creates transaction records for:
-    - Parent: "withdraw" transaction (always created)
-    - School owner: "hold_income" transaction (only if owner exists)
-- Sends confirmation emails to:
-    - Parent: Payment confirmation and application summary (always sent)
-    - School owner: New application notification (only if owner exists)
-- Prevents duplicate applications to the same school (unless status is "accepted" or "rejected")
-- **Application submission will succeed even if school owner is not found** (non-blocking)
+| Endpoint | Method | Use Case |
+|----------|--------|----------|
+| `/api/children/extract-birth-certificate` | POST | Extract data from documents |
+| `/api/children` | POST | Add new child |
+| `/api/children/get-related` | GET | Get all children |
+| `/api/children/get-related/[id]` | GET | Get single child |
+| `/api/children/get-related/[id]` | PUT | Update child |
+| `/api/children/get-related/[id]/upload` | PUT | Upload documents |
 
 ---
 
-### Create Application (Parent - Simple)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST   | /api/application | Create a simple application | Yes (parent) |
+## 📞 Support
 
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "child": "child_id",
-  "school": "school_id",
-  "status": "pending",
-  "notes": "Optional notes"
-}
-```
-
-**Response Cases:**
-- **200 Success:** Application created
-```json
-{
-  "_id": "application_id",
-  "parent": "parent_id",
-  "child": "child_id",
-  "school": "school_id",
-  "status": "pending",
-  "createdAt": "2024-01-15T10:00:00.000Z"
-}
-```
-
-- **401 Unauthorized:** User is not a parent
+For API issues or questions:
+- Check error responses for detailed messages
+- Verify authentication token is valid
+- Ensure required fields are provided
+- Check network connectivity
 
 ---
 
-### Get User Applications (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/application | Get all applications for authenticated parent | Yes (parent) |
-
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-```
-
-**Example Request:**
-```http
-GET /api/application
-Authorization: Bearer <token>
-```
-
-**Response Cases:**
-- **200 Success:**
-```json
-[
-  {
-    "_id": "application_id",
-    "parent": "parent_id",
-    "child": {
-      "_id": "child_id",
-      "fullName": "Ahmed Mohamed",
-      "birthDate": "2015-05-15T00:00:00.000Z"
-    },
-    "school": {
-      "_id": "school_id",
-      "name": "School Name",
-      "address": "School Address"
-    },
-    "status": "pending",
-    "createdAt": "2024-01-15T10:00:00.000Z"
-  }
-]
-```
-
-- **401 Unauthorized:** User not authenticated
-
----
-
-### Get Single Application (Parent)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/application/[id] | Get single application by ID | Yes (parent) |
-
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-```
-
-**Example Request:**
-```http
-GET /api/application/1234567890abcdef12345678
-Authorization: Bearer <token>
-```
-
-**Response Cases:**
-- **200 Success:**
-```json
-{
-  "_id": "application_id",
-  "parent": "parent_id",
-  "child": {
-    "_id": "child_id",
-    "fullName": "Ahmed Mohamed",
-    "gender": "male",
-    "birthDate": "2015-05-15T00:00:00.000Z"
-  },
-  "school": {
-    "_id": "school_id",
-    "name": "School Name",
-    "nameAr": "اسم المدرسة",
-    "address": "School Address"
-  },
-  "status": "pending",
-  "payment": {
-    "isPaid": true,
-    "amount": 500
-  },
-  "preferredInterviewSlots": [],
-  "notes": "Application notes",
-  "createdAt": "2024-01-15T10:00:00.000Z",
-  "updatedAt": "2024-01-15T10:00:00.000Z"
-}
-```
-
-- **404 Not Found:** Application not found
-```json
-{
-  "message": "لم يتم العثور على الطلب"
-}
-```
-
-- **401 Unauthorized:** User is not a parent or doesn't own the application
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "خطأ في تحميل الطلب"
-}
-```
-
----
-
-### Get School Applications (School Owner)
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET    | /api/schools/my/[id]/admission-forms | Get all applications for a school | Yes (school_owner/moderator) |
-
-**Request Headers:**
-```http
-Authorization: Bearer <token>
-```
-
-**Example Request:**
-```http
-GET /api/schools/my/1234567890abcdef12345678/admission-forms
-Authorization: Bearer <token>
-```
-
-**Response Cases:**
-- **200 Success:**
-```json
-{
-  "applications": [
-    {
-      "_id": "application_id",
-      "parent": {
-        "_id": "parent_id",
-        "name": "Parent Name",
-        "email": "parent@example.com"
-      },
-      "child": {
-        "_id": "child_id",
-        "fullName": "Ahmed Mohamed"
-      },
-      "school": {
-        "_id": "school_id",
-        "name": "School Name"
-      },
-      "status": "pending",
-      "submittedAt": "2024-01-15T10:00:00.000Z"
-    }
-  ],
-  "school": {
-    "_id": "school_id",
-    "name": "School Name"
-  },
-  "totalApplications": 25,
-  "byStatus": {
-    "pending": 10,
-    "under_review": 5,
-    "accepted": 7,
-    "rejected": 3
-  }
-}
-```
-
-- **400 Bad Request:** Invalid school ID
-```json
-{
-  "message": "معرف المدرسة غير صالح"
-}
-```
-
-- **403 Forbidden:** Unauthorized
-```json
-{
-  "message": "غير مصرح"
-}
-```
-
-- **500 Internal Server Error:**
-```json
-{
-  "message": "خطأ في الخادم",
-  "error": "Error message details"
-}
-```
-
-**Notes:**
-- Returns all applications for the specified school
-- Includes statistics by status (pending, under_review, accepted, rejected)
-- Results are sorted by submission date (newest first)
-- Applications are populated with parent, child, and school data
-
----
-
-## [More endpoints and details can be added as needed.]
-
-_Last updated: December 21, 2025_
+_Last updated: January 2025_

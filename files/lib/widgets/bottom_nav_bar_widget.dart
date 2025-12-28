@@ -22,8 +22,8 @@ class BottomNavBarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
+          topLeft: Radius.circular(35.r),
+          topRight: Radius.circular(35.r),
         ),
         boxShadow: [
           BoxShadow(
@@ -35,8 +35,9 @@ class BottomNavBarWidget extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 10.h),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildNavItem(
                 icon: IconlyBroken.home,
@@ -98,7 +99,7 @@ class BottomNavBarWidget extends StatelessWidget {
           onTap: onTap ?? () => this.onTap(index),
           borderRadius: BorderRadius.circular(12.r),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 8.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -109,12 +110,17 @@ class BottomNavBarWidget extends StatelessWidget {
                   size: 22.sp,
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  label,
-                  style: AppFonts.labelSmall.copyWith(
-                    color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    fontSize: 11.sp,
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppFonts.labelSmall.copyWith(
+                      color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontSize: 10.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

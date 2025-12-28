@@ -46,6 +46,11 @@ class _AddProductPageState extends State<AddProductPage> {
     _loadData();
   }
 
+  String _getCategoryTitle(Category category) {
+    final isArabic = Get.locale?.languageCode == 'ar';
+    return isArabic ? category.titleAr : category.titleEn;
+  }
+
   @override
   void dispose() {
     _titleEnController.dispose();
@@ -402,7 +407,7 @@ class _AddProductPageState extends State<AddProductPage> {
         items: items.map((item) {
           String displayText;
           if (item is Category) {
-            displayText = item.titleAr;
+            displayText = _getCategoryTitle(item);
           } else {
             displayText = item.toString();
           }

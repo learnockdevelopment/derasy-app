@@ -39,6 +39,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     super.dispose();
   }
 
+  String _getCategoryTitle(Category category) {
+    final isArabic = Get.locale?.languageCode == 'ar';
+    return isArabic ? category.titleAr : category.titleEn;
+  }
+
   Future<void> _loadProduct(String id) async {
     setState(() {
       _isLoading = true;
@@ -249,7 +254,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
-                                  _product!.category!.titleAr,
+                                  _getCategoryTitle(_product!.category!),
                                   style: AppFonts.bodySmall.copyWith(
                                     color: AppColors.primaryBlue,
                                     fontSize: AppFonts.size12,

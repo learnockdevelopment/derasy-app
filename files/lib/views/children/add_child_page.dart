@@ -9,6 +9,7 @@ import '../../core/constants/app_fonts.dart';
 import '../../models/student_models.dart';
 import '../../services/students_service.dart';
 import 'package:iconly/iconly.dart';
+import 'certificate_scanner_page.dart';
 
 class AddChildPage extends StatefulWidget {
   const AddChildPage({Key? key}) : super(key: key);
@@ -112,7 +113,7 @@ class _AddChildPageState extends State<AddChildPage> {
           
           // Upload Area
           GestureDetector(
-            onTap: _isExtracting ? null : _pickBirthCertificate,
+            onTap: _isExtracting ? null : _showImageSourceDialog,
             child: Container(
               width: double.infinity,
               height: 300.h,
@@ -234,7 +235,6 @@ class _AddChildPageState extends State<AddChildPage> {
             ),
           ),
           SizedBox(height: 24.h),
-          
           // Info Card
           Container(
             padding: EdgeInsets.all(16.w),
@@ -540,10 +540,127 @@ class _AddChildPageState extends State<AddChildPage> {
     );
   }
 
-  Future<void> _pickBirthCertificate() async {
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: AppColors.grey300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                child: Text(
+                  'select_option'.tr,
+                  style: AppFonts.h3.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.sp,
+                  ),
+                ),
+              ),
+              // Scan Option
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    color: AppColors.primaryBlue,
+                    size: 24.sp,
+                  ),
+                ),
+                title: Text(
+                  'scan_certificate'.tr,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
+                  ),
+                ),
+                subtitle: Text(
+                  'scan_with_camera'.tr,
+                  style: AppFonts.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.sp,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // Navigate to document scanner
+                  final scannedFile = await Get.to(() => const CertificateScannerPage());
+                  if (scannedFile != null && scannedFile is File) {
+                    await _processScannedCertificate(scannedFile);
+                  }
+                },
+              ),
+              // Upload Option
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    IconlyBroken.upload,
+                    color: AppColors.primaryGreen,
+                    size: 24.sp,
+                  ),
+                ),
+                title: Text(
+                  'upload_from_gallery'.tr,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp,
+                  ),
+                ),
+                subtitle: Text(
+                  'select_from_gallery'.tr,
+                  style: AppFonts.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.sp,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickBirthCertificate(ImageSource.gallery);
+                },
+              ),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickBirthCertificate(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 2048,
         maxHeight: 2048,
         imageQuality: 90,
@@ -567,6 +684,15 @@ class _AddChildPageState extends State<AddChildPage> {
         colorText: Colors.white,
       );
     }
+  }
+
+  Future<void> _processScannedCertificate(File file) async {
+    setState(() {
+      _birthCertificateFile = file;
+    });
+    
+    // Automatically extract data
+    await _extractData(file);
   }
 
   Future<void> _extractData(File file) async {

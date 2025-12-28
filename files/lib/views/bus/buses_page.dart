@@ -327,36 +327,40 @@ class _BusesPageState extends State<BusesPage> {
   Widget _buildSearchBar() {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 4.h),
-      child: TextField(
-        controller: _searchCtrl,
-        textInputAction: TextInputAction.search,
-        onSubmitted: (_) => _load(),
-        decoration: InputDecoration(
-          hintText: 'search_buses'.tr,
-          hintStyle: AppFonts.bodySmall.copyWith(
-            color: const Color(0xFF9CA3AF),
-            
-          ),
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchCtrl.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    _load();
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14.r),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        child: TextField(
+          controller: _searchCtrl,
+          textInputAction: TextInputAction.search,
+          onSubmitted: (_) => _load(),
+          decoration: InputDecoration(
+            hintText: 'search_buses'.tr,
+            hintStyle: AppFonts.bodySmall.copyWith(
+              color: const Color(0xFF9CA3AF),
+              
+            ),
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _searchCtrl.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchCtrl.clear();
+                      _load();
+                    },
+                  )
+                : null,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14.r),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14.r),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
           ),
         ),
       ),

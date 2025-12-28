@@ -108,7 +108,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             'email': _email,
           });
           Get.snackbar(
-            'Success',
+            'success'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.primaryBlue,
@@ -116,7 +116,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           );
         } else {
           Get.snackbar(
-            'Error',
+            'error'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.error,
@@ -152,7 +152,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
           Get.offAllNamed<void>(AppRoutes.home);
           Get.snackbar(
-            'Success',
+            'success'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.primaryBlue,
@@ -160,7 +160,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           );
         } else {
           Get.snackbar(
-            'Error',
+            'error'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.error,
@@ -177,17 +177,17 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         _isLoading = false;
       });
 
-      String errorMessage = 'An unexpected error occurred. Please try again.';
+      String errorMessage = 'unexpected_error_try_again'.tr;
 
       if (e is AuthException) {
         errorMessage = e.message;
       } else if (e.toString().contains('SocketException') ||
           e.toString().contains('TimeoutException')) {
-        errorMessage = 'Network error. Please check your internet connection.';
+        errorMessage = 'network_error_check_connection'.tr;
       }
 
       Get.snackbar(
-        'Error',
+        'error'.tr,
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
@@ -232,15 +232,14 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         _isResending = false;
       });
 
-      String errorMessage =
-          'Failed to resend verification code. Please try again.';
+      String errorMessage = 'failed_to_resend_code'.tr;
 
       if (e is AuthException) {
         errorMessage = e.message;
       }
 
       Get.snackbar(
-        'Error',
+        'error'.tr,
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,

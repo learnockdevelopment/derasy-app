@@ -41,11 +41,11 @@ import '../../models/student_models.dart';
 import '../../views/bus/buses_page.dart';
 import '../../views/bus/bus_details_page.dart';
 import '../../views/children/add_child_page.dart';
+import '../../views/children/add_child_steps_page.dart';
 import '../../views/children/child_details_page.dart';
 import '../../views/admission/apply_to_schools_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
-import '../../views/school_follow/school_follow_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -148,11 +148,6 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const AttendancePage(),
-        );
-      case AppRoutes.schoolFollow:
-        return GetPageRoute(
-          settings: settings,
-          page: () => const SchoolFollowPage(),
         );
       case AppRoutes.userProfile:
         return GetPageRoute(
@@ -264,6 +259,11 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const AddChildPage(),
+        );
+      case AppRoutes.addChildSteps:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const AddChildStepsPage(),
         );
       case AppRoutes.childDetails:
         final args = settings.arguments as Map<String, dynamic>;

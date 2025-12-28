@@ -26,9 +26,6 @@ class AppRoutes {
   // Attendance Routes
   static const String attendance = '/attendance';
 
-  // School Follow Routes
-  static const String schoolFollow = '/school-follow';
-
   // Profile Routes
   static const String userProfile = '/user-profile';
 
@@ -51,6 +48,7 @@ class AppRoutes {
 
   // Children Routes
   static const String addChild = '/add-child';
+  static const String addChildSteps = '/add-child-steps';
   static const String childDetails = '/child-details';
   static const String myStudents = '/my-students';
 

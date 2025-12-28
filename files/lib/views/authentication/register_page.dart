@@ -5,6 +5,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/assets.dart';
+import '../../core/constants/countries.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_models.dart';
@@ -31,6 +32,7 @@ class _RegisterPageState extends State<RegisterPage>
   bool _isConfirmPasswordVisible = false;
   String _passwordStrength = '';
   String _selectedRole = 'parent'; // Default to parent
+  CountryCode _selectedCountryCode = CountryCode(name: 'Egypt', code: 'EG', dialCode: '+20');
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -135,6 +137,211 @@ class _RegisterPageState extends State<RegisterPage>
         .hasMatch(email);
   }
 
+  String _getTranslatedCountryName(String code, String fallback) {
+    final key = 'country_${code.toLowerCase()}';
+    final translated = key.tr;
+    // If translation key doesn't exist, Get.tr returns the key itself
+    return translated == key ? fallback : translated;
+  }
+
+  void _showModernCountryPicker(BuildContext context) {
+    final TextEditingController searchController = TextEditingController();
+    List<Country> filteredCountries = Countries.countries;
+    Country? selectedCountry = Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          void filterCountries(String query) {
+            setModalState(() {
+              if (query.isEmpty) {
+                filteredCountries = Countries.countries;
+              } else {
+                filteredCountries = Countries.searchCountries(query);
+              }
+            });
+          }
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.grey200, width: 1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'select_country'.tr,
+                        style: AppFonts.AlmaraiBold18.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.close, color: AppColors.textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+                // Search Bar
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: searchController,
+                    builder: (context, value, child) {
+                      return TextField(
+                        controller: searchController,
+                        onChanged: filterCountries,
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          hintText: 'search_countries'.tr,
+                          hintStyle: AppFonts.AlmaraiRegular14.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppColors.textSecondary,
+                            size: 22.sp,
+                          ),
+                          suffixIcon: value.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    filterCountries('');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: AppColors.grey50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 14.h,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Countries List
+                Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    itemCount: filteredCountries.length,
+                    itemBuilder: (context, index) {
+                      final country = filteredCountries[index];
+                      final isSelected = selectedCountry.code == country.code;
+                      final primary = AppConfigController.to.primaryColorAsColor;
+
+                      return InkWell(
+                        onTap: () {
+                          // Convert Country to CountryCode
+                          final countryCode = CountryCode(
+                            name: country.name,
+                            code: country.code,
+                            dialCode: country.dialCode,
+                          );
+                          setState(() {
+                            _selectedCountryCode = countryCode;
+                          });
+                          Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 4.h),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: isSelected
+                                ? Border.all(color: primary, width: 1.5)
+                                : Border.all(color: AppColors.grey200, width: 1),
+                          ),
+                          child: Row(
+                            children: [
+                              // Flag
+                              Container(
+                                width: 32.w,
+                                height: 32.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.grey200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    country.flag,
+                                    style: TextStyle(fontSize: 20.sp),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              // Country Name and Code
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(  
+                                      _getTranslatedCountryName(country.code, country.name),
+                                      style: AppFonts.AlmaraiMedium12.copyWith(
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      country.dialCode,
+                                      style: AppFonts.AlmaraiRegular12.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Selected Indicator
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: primary,
+                                  size: 20.sp,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _register() async {
     print('🔐 [REGISTER] Register button pressed');
     if (!_formKey.currentState!.validate()) {
@@ -173,7 +380,7 @@ class _RegisterPageState extends State<RegisterPage>
       });
 
       Get.snackbar(
-        'Success',
+        'success'.tr,
         response.message,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.primaryBlue,
@@ -188,17 +395,17 @@ class _RegisterPageState extends State<RegisterPage>
         _isLoading = false;
       });
 
-      String errorMessage = 'An unexpected error occurred. Please try again.';
+      String errorMessage = 'unexpected_error_try_again'.tr;
 
       if (e is AuthException) {
         errorMessage = e.message;
       } else if (e.toString().contains('SocketException') ||
           e.toString().contains('TimeoutException')) {
-        errorMessage = 'Network error. Please check your internet connection.';
+        errorMessage = 'network_error_check_connection'.tr;
       }
 
       Get.snackbar(
-        'Error',
+        'error'.tr,
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
@@ -218,7 +425,7 @@ class _RegisterPageState extends State<RegisterPage>
             child: Column(children: [
           // Top Bar with Back Button and Language Selector
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -227,31 +434,33 @@ class _RegisterPageState extends State<RegisterPage>
                   icon: Icon(
                     Icons.arrow_back,
                     color: AppColors.textPrimary,
-                    size: 24.sp,
+                    size: 20.sp,
                   ),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
                 ),
                   // Language Button (toggle)
                   InkWell(
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(6.r),
                     onTap: () {
                       final isAr = Get.locale?.languageCode == 'ar';
                       Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
                       setState(() {});
                     },
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.language,
                             color: primary,
-                            size: 22.sp,
+                            size: 18.sp,
                           ),
-                          SizedBox(width: 4.w),
+                          SizedBox(width: 3.w),
                           Text(
                             (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
-                            style: AppFonts.AlmaraiMedium14.copyWith(
+                            style: AppFonts.AlmaraiMedium12.copyWith(
                               color: primary,
                             ),
                           ),
@@ -273,13 +482,13 @@ class _RegisterPageState extends State<RegisterPage>
                     opacity: _fadeAnimation,
                     child: Image.asset(
                       AssetsManager.logo,
-                      width: 80.w,
-                      height: 80.w,
+                      width: 70.w,
+                      height: 70.w,
                       fit: BoxFit.contain,
                     ),
                   ),
 
-                  SizedBox(height: 30.h),
+                  SizedBox(height: 20.h),
 
                   // Title
                   FadeTransition(
@@ -288,15 +497,15 @@ class _RegisterPageState extends State<RegisterPage>
                       children: [
                         Text(
                           'create_account'.tr,
-                          style: AppFonts.AlmaraiBold24.copyWith(
+                          style: AppFonts.AlmaraiBold20.copyWith(
                             color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Text(
                           'register_intro'.tr,
-                          style: AppFonts.AlmaraiRegular14.copyWith(
+                          style: AppFonts.AlmaraiRegular12.copyWith(
                             color: AppColors.textSecondary,
                           ),
                           textAlign: TextAlign.center,
@@ -305,7 +514,7 @@ class _RegisterPageState extends State<RegisterPage>
                     ),
                   ),
 
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 24.h),
 
                   // Form Fields
                   FadeTransition(
@@ -362,147 +571,93 @@ class _RegisterPageState extends State<RegisterPage>
                           ),
                           SizedBox(height: 16.h),
 
-                          // Phone Field with Country Code
-                          Row(
-                            children: [
-                              // Country Code Picker Container
-                              Container(
-                                width: 60.w,
-                                height: 54.h,
-                                decoration: BoxDecoration(
-                                  color: AppColors.grey50,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: CountryCodePicker(
-                                    onChanged: (country) {
-                                      setState(() {});
-                                    },
-                                    initialSelection: 'EG',
-                                    favorite: const ['+20', 'EG'],
-                                    showCountryOnly: true,
-                                    showOnlyCountryWhenClosed: true,
-                                    hideMainText: true,
-                                    alignLeft: false,
-                                    padding: EdgeInsets.zero,
-                                    textStyle: AppFonts.AlmaraiRegular14
-                                        .copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    dialogTextStyle:
-                                        AppFonts.AlmaraiRegular14,
-                                    searchDecoration: InputDecoration(
-                                      hintText: 'search'.tr,
-                                      hintStyle: AppFonts
-                                          .AlmaraiRegular14.copyWith(
-                                        color: AppColors.grey400,
+                          // Phone Field with Flag and Country Code
+                          TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: AppFonts.AlmaraiRegular14,
+                            decoration: InputDecoration(
+                              labelText: 'phone_number'.tr,
+                              labelStyle: AppFonts.AlmaraiRegular14,
+                              hintText: 'enter_your_phone'.tr,
+                              hintStyle: AppFonts.AlmaraiRegular12.copyWith(
+                                color: AppColors.grey400,
+                              ),
+                              prefixIcon: GestureDetector(
+                                onTap: () {
+                                  _showModernCountryPicker(context);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Flag - using emoji from Countries
+                                      Container(
+                                        width: 28.w,
+                                        height: 28.w,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: AppColors.grey200,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG').flag,
+                                            style: TextStyle(fontSize: 20.sp),
+                                          ),
+                                        ),
                                       ),
-                                      prefixIcon: Icon(
-                                        Icons.search,
-                                        color: AppColors.grey400,
+                                      SizedBox(width: 8.w),
+                                      // Country Code
+                                      Text(
+                                        _selectedCountryCode.dialCode ?? '+20',
+                                        style: AppFonts.AlmaraiRegular14.copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
                                       ),
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.r),
-                                        borderSide: BorderSide(
-                                            color: AppColors.grey300),
+                                      SizedBox(width: 8.w),
+                                      // Separator
+                                      Container(
+                                        width: 1,
+                                        height: 20.h,
+                                        color: AppColors.grey300,
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.r),
-                                        borderSide: BorderSide(
-                                            color: AppColors.grey300),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.r),
-                                        borderSide: BorderSide(
-                                            color: primary, width: 2),
-                                      ),
-                                      filled: true,
-                                      fillColor: AppColors.grey50,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12.w,
-                                        vertical: 12.h,
-                                      ),
-                                    ),
-                                    dialogBackgroundColor: Colors.white,
-                                    barrierColor: Colors.black54,
-                                    dialogSize: Size(
-                                      MediaQuery.of(context).size.width * 0.85,
-                                      MediaQuery.of(context).size.height * 0.75,
-                                    ),
-                                    flagDecoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: AppColors.grey200,
-                                        width: 1.5,
-                                      ),
-                                    ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 12.w),
-                              // Phone Field
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  style: AppFonts.AlmaraiRegular14,
-                                  decoration: InputDecoration(
-                                    labelText: 'phone_number'.tr,
-                                    labelStyle:
-                                        AppFonts.AlmaraiRegular14,
-                                    hintText: 'enter_your_phone'.tr,
-                                    hintStyle: AppFonts.AlmaraiRegular12
-                                        .copyWith(
-                                      color: AppColors.grey400,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.phone_outlined,
-                                      color: AppColors.primaryBlue,
-                                      size: 20.sp,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      borderSide:
-                                          BorderSide(color: AppColors.grey300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      borderSide: BorderSide(
-                                        color: AppColors.primaryBlue,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    filled: true,
-                                    fillColor: AppColors.grey50,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 16.h,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'phone_required'.tr;
-                                    }
-                                    if (value
-                                            .replaceAll(RegExp(r'[\s-]'), '')
-                                            .length <
-                                        8) {
-                                      return 'enter_valid_phone'.tr;
-                                    }
-                                    return null;
-                                  },
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(color: AppColors.grey300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryBlue,
+                                  width: 2,
                                 ),
                               ),
-                            ],
+                              filled: true,
+                              fillColor: AppColors.grey50,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'phone_required'.tr;
+                              }
+                              if (value.replaceAll(RegExp(r'[\s-]'), '').length < 8) {
+                                return 'enter_valid_phone'.tr;
+                              }
+                              return null;
+                            },
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 12.h),
 
                           // Role Selection Dropdown
                           Container(
@@ -547,7 +702,7 @@ class _RegisterPageState extends State<RegisterPage>
                               },
                             ),
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 12.h),
 
                           // Email Field
                           TextFormField(
@@ -596,7 +751,7 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 12.h),
 
                           // Password Field
                           TextFormField(
@@ -687,7 +842,7 @@ class _RegisterPageState extends State<RegisterPage>
                                     ),
                                   ),
                                   Text(
-                                    _passwordStrength.toUpperCase(),
+                                    _passwordStrength.tr,
                                     style:
                                         AppFonts.AlmaraiBold12.copyWith(
                                       color: _getPasswordStrengthColor(),
@@ -697,7 +852,7 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                             ),
                           ],
-                          SizedBox(height: 20.h),
+                          SizedBox(height: 16.h),
 
                           // Confirm Password Field
                           TextFormField(
@@ -760,7 +915,7 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 30.h),
+                          SizedBox(height: 20.h),
 
                           // Register Button
                           SizedBox(

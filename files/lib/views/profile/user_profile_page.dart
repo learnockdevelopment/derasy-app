@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:iconly/iconly.dart';
 import 'dart:io';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../services/user_profile_service.dart';
 import '../../services/maintenance_service.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
+import '../../widgets/global_chatbot_widget.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({Key? key}) : super(key: key);
@@ -311,8 +313,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         currentIndex: 3,
         onTap: (index) {},
       ),
+      floatingActionButton: DraggableChatbotWidget(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
 
   Widget _buildProfileCard() {
     final userName = _userData?['name'] ?? 

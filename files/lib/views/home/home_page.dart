@@ -10,21 +10,25 @@ import '../../widgets/shimmer_loading.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
-import '../../services/admission_service.dart'; 
-
+import '../../widgets/global_chatbot_widget.dart';
+import '../../services/admission_service.dart';
+import '../../services/wallet_service.dart';
+import '../../models/wallet_models.dart';
+ 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
-}
+} 
 
 class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   int _totalStudents = 0;
   int _totalApplications = 0;
-
+  Wallet? _wallet;
+  
   @override 
   void initState() {
     super.initState();
@@ -46,6 +50,9 @@ class _HomePageState extends State<HomePage> {
 
       // Load statistics
       await _loadStatistics();
+      
+      // Load wallet data
+      await _loadWallet();
     } catch (e) {
       print('🏠 [HOME] Error loading data: $e');
     } finally {
@@ -59,29 +66,17 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadStatistics() async {
     if (!mounted) return;
     try {
-      // Load students count
+      // Load students count from backend API
       final studentsResponse = await StudentsService.getRelatedChildren();
       if (!mounted) return;
       if (studentsResponse.success) {
-        final currentUser = UserStorageService.getCurrentUser();
-        if (currentUser != null) {
-          final currentUserId = currentUser.id;
-          final userJson = currentUser.toJson();
-          final currentUserIdAlt = userJson['_id']?.toString() ?? currentUserId;
-
-          final filteredChildren = studentsResponse.students.where((child) {
-            final parentId = child.parent.id;
-            return parentId == currentUserId || parentId == currentUserIdAlt;
-          }).toList();
-
-          if (!mounted) return;
-          setState(() {
-            _totalStudents = filteredChildren.length;
-          });
-        }
+        // Use count directly from backend response - no client-side filtering
+        setState(() {
+          _totalStudents = studentsResponse.students.length;
+        });
       }
 
-      // Load applications count
+      // Load applications count from backend API
       final applicationsResponse = await AdmissionService.getApplications();
       if (!mounted) return;
       setState(() {
@@ -89,11 +84,35 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       print('🏠 [HOME] Error loading statistics: $e');
+      // Set to 0 on error to show no static data
+      if (mounted) {
+        setState(() {
+          _totalStudents = 0;
+          _totalApplications = 0;
+        });
+      }
     }
   }
 
   Future<void> _refreshData() async {
     await _loadStatistics();
+    await _loadWallet();
+  }
+
+  Future<void> _loadWallet() async {
+    if (!mounted) return;
+    try {
+      print('💰 [HOME] Loading wallet data...');
+      final walletResponse = await WalletService.getWallet();
+      if (!mounted) return;
+      setState(() {
+        _wallet = walletResponse.wallet;
+      });
+      print('💰 [HOME] ✅ Wallet loaded: ${_wallet?.balance} ${_wallet?.currency}');
+    } catch (e) {
+      print('💰 [HOME] ❌ Error loading wallet: $e');
+      // Silently fail - wallet is optional
+    }
   }
 
   int _getCurrentIndex() {
@@ -108,13 +127,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.grey200,
+      backgroundColor: Colors.white,
       body: _buildHomeContent(),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
       ),
-      floatingActionButton: _buildCustomerServiceButton(),
+      floatingActionButton: DraggableChatbotWidget(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
     );
   }
@@ -131,7 +150,7 @@ class _HomePageState extends State<HomePage> {
         slivers: [
           // Hero Section
           SliverAppBar(
-            expandedHeight: 100.h,
+            expandedHeight: 80.h,
             floating: false,
             pinned: true,
             snap: false,
@@ -139,27 +158,60 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             toolbarHeight: 0,
-            collapsedHeight: 100.h,
-            flexibleSpace: FlexibleSpaceBar(
-              background: HeroSectionWidget(
-                userData: _userData,
-                showSearchBar: false,
-              ),
+            collapsedHeight: 80.h,
+          flexibleSpace: FlexibleSpaceBar(
+            background: HeroSectionWidget(
+              userData: _userData,
+              pageTitle: 'home'.tr,
+              showGreeting: true,
             ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
           
-          // Promotional Banner
+          // Wallet Card
+          if (_wallet != null) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text(
+                  'wallet_balance'.tr,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: _buildWalletCard(),
+              ),
+            ),
+          ],
+          
+          if (_wallet != null) SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          
+          // Student Management Section
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: _buildPromotionalBanner(),
+              child: Text(
+                'student_management'.tr,
+                style: AppFonts.bodyMedium.copyWith(
+                  color: AppColors.textPrimary,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
+          SliverToBoxAdapter(child: SizedBox(height: 8.h)),
           
-          SliverToBoxAdapter(child: SizedBox(height: 20.h)),
-          
-          // Statistics Cards - Symmetric Grid
+          // Statistics Cards - First Row
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -169,17 +221,37 @@ class _HomePageState extends State<HomePage> {
                     child: _buildStatCard(
                       icon: IconlyBroken.profile,
                       title: 'total_students'.tr,
-                      value: _totalStudents.toString(),
+                      value: _formatNumber(_totalStudents.toString()),
                       color: AppColors.primaryBlue,
+                      showAddButton: true,
+                      onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: _buildStatCard(
                       icon: IconlyBroken.document,
                       title: 'total_applications'.tr,
-                      value: _totalApplications.toString(),
+                      value: _formatNumber(_totalApplications.toString()),
                       color: AppColors.primaryGreen,
+                      showAddButton: true,
+                      onAddTap: () {
+                        if (_totalStudents == 0) {
+                          Get.snackbar(
+                            'error'.tr,
+                            'no_students_for_application'.tr,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
+                          );
+                        } else {
+                          Get.toNamed(AppRoutes.applyToSchools);
+                        }
+                      },
+                      buttonText: 'add_application'.tr,
+                      isButtonDisabled: _totalStudents == 0,
+                      disabledMessage: 'add_student_first_to_apply'.tr,
+                      buttonColor: AppColors.primaryGreen,
                     ),
                   ),
                 ],
@@ -187,144 +259,44 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           
-          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
-          
-          // Quick Actions Section Title
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: _buildSectionTitle('quick_actions'.tr, AppColors.primaryBlue),
-            ),
-          ),
-          
-          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-          
-          // Quick Actions Grid - Symmetric 2x2
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                children: [
-                  // First Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: IconlyBroken.profile,
-                          title: 'my_students'.tr,
-                          subtitle: 'view_and_manage_students'.tr,
-                          color: AppColors.primaryBlue,
-                          onTap: () => Get.offNamed(AppRoutes.myStudents),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: IconlyBroken.document,
-                          title: 'applications'.tr,
-                          subtitle: 'view_applications'.tr,
-                          color: AppColors.primaryGreen,
-                          onTap: () => Get.offNamed(AppRoutes.applications),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12.h),
-                  // Second Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: IconlyBroken.bag,
-                          title: 'store'.tr,
-                          subtitle: 'browse_products'.tr,
-                          color: AppColors.secondary,
-                          onTap: () => Get.offNamed(AppRoutes.storeProducts),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: IconlyBroken.plus,
-                          title: 'add_student'.tr,
-                          subtitle: 'start_learning'.tr,
-                          color: AppColors.primaryPurple,
-                          onTap: () => Get.offNamed(AppRoutes.addChild),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
-          
-          // Special Offers Section Title
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: _buildSectionTitle('special_offers'.tr, AppColors.primaryPurple),
-            ),
-          ),
-          
-          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-          
-          // Special Offers - Symmetric Cards
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                children: [
-                  _buildOfferCard(
-                    title: 'customer_service'.tr,
-                    description: 'chat_with_support'.tr,
-                    icon: IconlyBroken.chat,
-                    color: AppColors.primaryBlue,
-                    onTap: () => Get.toNamed(AppRoutes.chatbot),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+          SliverToBoxAdapter(child: SizedBox(height: 32.h)),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 4.w,
-          height: 20.h,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                color,
-                color.withOpacity(0.6),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(2.r),
-          ),
-        ),
-        SizedBox(width: 10.w),
-        Text(
-          title,
-          style: AppFonts.h4.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
-            letterSpacing: 0.2,
-          ),
-        ),
-      ],
-    );
+
+  String _formatNumber(String number) {
+    if (Get.locale?.languageCode == 'ar') {
+      // Convert Western numerals to Arabic-Indic numerals
+      return number.replaceAllMapped(
+        RegExp(r'\d'),
+        (match) {
+          const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+          return arabicNumerals[int.parse(match.group(0)!)];
+        },
+      );
+    }
+    return number;
+  }
+
+  String _formatCurrency(double amount, String currency) {
+    final formattedAmount = amount.toStringAsFixed(2);
+    if (Get.locale?.languageCode == 'ar') {
+      // Convert numbers to Arabic-Indic numerals
+      final arabicAmount = _formatNumber(formattedAmount);
+      // Translate currency if needed
+      String translatedCurrency = currency;
+      if (currency.toUpperCase() == 'USD') {
+        translatedCurrency = 'دولار';
+      } else if (currency.toUpperCase() == 'EGP') {
+        translatedCurrency = 'جنيه';
+      } else if (currency.toUpperCase() == 'SAR') {
+        translatedCurrency = 'ريال';
+      }
+      return '$arabicAmount $translatedCurrency';
+    }
+    return '$formattedAmount $currency';
   }
 
   Widget _buildStatCard({
@@ -332,9 +304,15 @@ class _HomePageState extends State<HomePage> {
     required String title,
     required String value,
     required Color color,
+    bool showAddButton = false,
+    VoidCallback? onAddTap,
+    String? buttonText,
+    bool isButtonDisabled = false,
+    String? disabledMessage,
+    Color? buttonColor,
   }) {
     return Container(
-      height: 120.h,
+      height: 190.h,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -344,366 +322,222 @@ class _HomePageState extends State<HomePage> {
           end: Alignment.bottomRight,
           colors: [
             Colors.white,
-            color.withOpacity(0.03),
+            color.withOpacity(0.05),
           ],
         ),
         border: Border.all(
-          color: color.withOpacity(0.15),
+          color: color.withOpacity(0.2),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 15,
+            color: color.withOpacity(0.15),
+            blurRadius: 16,
             offset: const Offset(0, 6),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
             spreadRadius: 0,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color,
-                  color.withOpacity(0.75),
-                ],
+        mainAxisSize: MainAxisSize.min,
+        children: [ 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight, 
+                    colors: [
+                      color,
+                      color.withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 15.sp),
               ),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20.sp),
+            ],
           ),
+          SizedBox(height: 5),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                value,
-                style: AppFonts.h3.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.sp,
-                  height: 1,
-                ),
-              ),
-              SizedBox(height: 4.h),
               Text(
                 title,
                 style: AppFonts.bodySmall.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 12.sp,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              SizedBox(height: 6.h),
+              Text(
+                value,
+                style: AppFonts.h3.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24.sp,
+                  height: 1,
+                  letterSpacing: -0.5,
+                ),
+              ),
             ],
           ),
+          // Add Student Button at bottom
+          if (showAddButton && onAddTap != null) ...[
+            SizedBox(height: 12.h),
+            Opacity(
+              opacity: isButtonDisabled ? 0.4 : 1.0,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isButtonDisabled ? null : onAddTap,
+                  borderRadius: BorderRadius.circular(10.r),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: buttonColor ?? AppColors.primaryBlue,
+                    borderRadius: BorderRadius.circular(10.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (buttonColor ?? AppColors.primaryBlue).withOpacity(0.4),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        IconlyBroken.plus,
+                        color: Colors.white,
+                        size: 12.sp,
+                      ),
+                      SizedBox(width: 6.w),
+                      Flexible(
+                        child:                       Text(
+                        buttonText ?? 'add_student'.tr,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            ),
+            // Disabled message below button
+            if (isButtonDisabled && disabledMessage != null) ...[
+              SizedBox(height: 8.h),
+              Text(
+                disabledMessage,
+                style: AppFonts.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 9.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20.r),
-        child: Container(
-          height: 130.h,
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                color.withOpacity(0.04),
-              ],
-            ),
-            border: Border.all(
-              color: color.withOpacity(0.2),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.12),
-                blurRadius: 15,
-                offset: const Offset(0, 6),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      color,
-                      color.withOpacity(0.75),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Icon(icon, color: Colors.white, size: 24.sp),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.sp,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (subtitle != null) ...[
-                    SizedBox(height: 3.h),
-                    Text(
-                      subtitle,
-                      style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 11.sp,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPromotionalBanner() {
+  Widget _buildWalletCard() {
     return Container(
-      height: 160.h,
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryBlue,
-            AppColors.primaryBlue.withOpacity(0.85),
-            AppColors.primaryPurple.withOpacity(0.75),
+            AppColors.primaryGreen,
+            AppColors.primaryGreen.withOpacity(0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.25),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.primaryGreen.withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
             spreadRadius: 0,
           ),
         ],
       ),
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Row(
         children: [
-          // Decorative elements
-          Positioned(
-            top: -30.h,
-            right: -30.w,
-            child: Container(
-              width: 120.w,
-              height: 120.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-              ),
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(
+              Icons.account_balance_wallet_rounded,
+              color: Colors.white,
+              size: 24.sp,
             ),
           ),
-          Positioned(
-            bottom: -20.h,
-            left: -20.w,
-            child: Container(
-              width: 80.w,
-              height: 80.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
-              ),
-            ),
-          ),
-          // Content
-          Padding(
-            padding: EdgeInsets.all(20.w),
+          SizedBox(width: 16.w),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.35),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        IconlyBroken.star,
-                        color: Colors.white,
-                        size: 16.sp,
-                      ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'welcome_back'.tr,
-                        style: AppFonts.bodySmall.copyWith(
-                          color: Colors.white,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12.h),
                 Text(
-                  'education_management_platform'.tr,
-                  style: AppFonts.h3.copyWith(
+                  _formatCurrency(_wallet!.balance, _wallet!.currency),
+                  style: AppFonts.h2.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20.sp,
-                    letterSpacing: 0.3,
-                    height: 1.2,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  'app_tagline'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: Colors.white.withOpacity(0.95),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 24.sp,
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildOfferCard({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20.r),
-        child: Container(
-          padding: EdgeInsets.all(18.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                color.withOpacity(0.04),
-              ],
-            ),
-            border: Border.all(
-              color: color.withOpacity(0.2),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.12),
-                blurRadius: 15,
-                offset: const Offset(0, 6),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(14.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      color,
-                      color.withOpacity(0.75),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: Icon(icon, color: Colors.white, size: 22.sp),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      description,
-                      style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                IconlyBroken.arrow_left_2,
-                color: color.withOpacity(0.5),
-                size: 20.sp,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -712,17 +546,17 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          expandedHeight: 100.h,
+          expandedHeight: 80.h,
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: 100.h,
+          collapsedHeight: 80.h,
           flexibleSpace: HeroSectionWidget(
             userData: _userData,
-            showSearchBar: false,
+            pageTitle: 'home'.tr,
           ),
         ),
         SliverToBoxAdapter(child: SizedBox(height: 24.h)),
@@ -819,45 +653,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCustomerServiceButton() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              heroTag: "customer_service_fab",
-              onPressed: () {
-                Get.toNamed(AppRoutes.chatbot);
-              },
-              backgroundColor: AppColors.primaryBlue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Icon(IconlyBroken.chat, color: Colors.white, size: 20.sp),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 

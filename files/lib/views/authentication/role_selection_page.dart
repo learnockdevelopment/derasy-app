@@ -183,7 +183,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                   isPrimary: true,
                                   primary: AppColors.primaryBlue,
                                 ),
-                                SizedBox(height: 16.h),
+                                SizedBox(height: 25.h),
                                 
                                 // Register Button
                                 _buildButton(
@@ -341,8 +341,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
     required Color primary,
   }) {
     return SizedBox(
-      width: double.infinity,
-      height: 56.h,
+      width: 200.w,
+      height: 45.h,
       child: ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 22.sp),

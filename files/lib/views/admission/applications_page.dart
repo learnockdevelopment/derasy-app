@@ -7,10 +7,12 @@ import '../../core/constants/app_fonts.dart';
 import '../../models/admission_models.dart';
 import '../../models/student_models.dart';
 import '../../services/admission_service.dart';
+import '../../services/students_service.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
+import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
 
 class ApplicationsPage extends StatefulWidget {
@@ -29,6 +31,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   bool _isLoading = false;
   Map<String, dynamic>? _userData;
   final TextEditingController _searchController = TextEditingController();
+  int _totalStudents = 0;
   
   String? get _filterChildId => widget.childId ?? widget.child?.id;
 
@@ -37,6 +40,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     super.initState();
     _searchController.addListener(_filterApplications);
     _loadUserData();
+    _loadStudentsCount();
     _loadApplications();
   }
 
@@ -53,6 +57,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
       setState(() {
         _userData = userData;
       });
+    }
+  }
+
+  Future<void> _loadStudentsCount() async {
+    try {
+      final response = await StudentsService.getRelatedChildren();
+      if (mounted) {
+        setState(() {
+          _totalStudents = response.success ? response.students.length : 0;
+        });
+      }
+    } catch (e) {
+      print('📋 [APPLICATIONS] Error loading students count: $e');
+      if (mounted) {
+        setState(() {
+          _totalStudents = 0;
+        });
+      }
     }
   }
 
@@ -183,7 +205,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.grey200,
+      backgroundColor: Colors.white,
       body: RefreshIndicator(
         onRefresh: _loadApplications,
         color: AppColors.primaryBlue,
@@ -203,8 +225,25 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                 flexibleSpace: FlexibleSpaceBar(
                   background: HeroSectionWidget(
                     userData: _userData,
-                    searchController: _searchController,
-                    showSearchBar: true,
+                    pageTitle: 'applications'.tr,
+                    actionButtonText: 'add_application'.tr,
+                    actionButtonIcon: IconlyBroken.plus,
+                    onActionTap: () {
+                      if (_totalStudents == 0) {
+                        Get.snackbar(
+                          'error'.tr,
+                          'no_students_for_application'.tr,
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: AppColors.error,
+                          colorText: Colors.white,
+                        );
+                      } else {
+                        Get.toNamed(AppRoutes.applyToSchools);
+                      }
+                    },
+                    showGreeting: false,
+                    isButtonDisabled: _totalStudents == 0,
+                    disabledMessage: 'add_student_first_to_apply'.tr,
                   ),
                 ),
               )
@@ -233,7 +272,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   ),
                 ],
               ),
-            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
             
             // Applications List
             _isLoading
@@ -282,9 +321,9 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                                   fontSize: 20.sp,
                                 ),
                               ),
-                              SizedBox(height: 8.h),
+                              SizedBox(height: 12.h),
                               Text(
-                                'apply_to_schools_to_get_started'.tr,
+                                'applications_will_appear_here'.tr,
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 14.sp,
@@ -320,7 +359,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             )
           : null,
       floatingActionButton: _filterChildId == null
-          ? _buildCustomerServiceButton()
+          ? DraggableChatbotWidget()
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -589,46 +628,6 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     );
   }
 
-  Widget _buildCustomerServiceButton() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              heroTag: "customer_service_fab_applications",
-              onPressed: () {
-                Get.toNamed(AppRoutes.chatbot);
-              },
-              backgroundColor: AppColors.primaryBlue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Icon(IconlyBroken.chat, color: Colors.white, size: 20.sp),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   int _getCurrentIndex() {
     final route = Get.currentRoute;

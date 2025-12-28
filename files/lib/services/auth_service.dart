@@ -238,7 +238,8 @@ class AuthService {
             errorData['message'] ?? 'Email and password are required', 400);
       } else if (response.statusCode == 401) {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
-        throw AuthException(errorData['message'] ?? 'Invalid credentials', 401);
+        final message = errorData['message'] ?? 'Invalid credentials';
+        throw AuthException(message, 401);
       } else if (response.statusCode == 403) {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AuthException(

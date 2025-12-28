@@ -129,4 +129,16 @@ class Countries {
              country.dialCode.contains(query);
     }).toList();
   }
+
+  // Get translated country name
+  static String getTranslatedName(String code) {
+    final translationKey = 'country_${code.toLowerCase()}';
+    // Try to get translation, fallback to English name
+    try {
+      // This will be handled by Get.tr in the UI
+      return translationKey;
+    } catch (e) {
+      return getCountryByCode(code).name;
+    }
+  }
 }

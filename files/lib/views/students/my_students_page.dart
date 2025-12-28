@@ -15,11 +15,11 @@ import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/hero_section_widget.dart';
 
-class MyStudentsPage extends StatefulWidget {
+class MyStudentsPage extends StatefulWidget { 
   const MyStudentsPage({Key? key}) : super(key: key);
 
   @override
-  State<MyStudentsPage> createState() => _MyStudentsPageState();
+  State<MyStudentsPage> createState() => _MyStudentsPageState(); 
 }
 
 class _MyStudentsPageState extends State<MyStudentsPage> {
@@ -205,14 +205,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool showSearch = true;
-    final double heroHeight;
-    if (showSearch) {
-      heroHeight = 140.h;
-    }
+    final double heroHeight = 120.h;
 
     return Scaffold(
-      backgroundColor: AppColors.grey200,
+      backgroundColor: Colors.white,
       body: RefreshIndicator(
         onRefresh: () async {
           await _loadChildren();
@@ -233,8 +229,11 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               flexibleSpace: FlexibleSpaceBar(
                 background: HeroSectionWidget(
                   userData: _userData,
-                  searchController: _searchController,
-                  showSearchBar: showSearch,
+                  pageTitle: 'my_students'.tr,
+                  actionButtonText: 'add_student'.tr,
+                  actionButtonIcon: IconlyBroken.plus,
+                  onActionTap: _navigateToAddChild,
+                  showGreeting: false,
                 ),
               ),
             ),
@@ -278,20 +277,14 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
       ),
-      floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildCustomerServiceButton(),
-          SizedBox(width: 16.w),
-          _buildFloatingAddButton(),
-        ],
-      ),
+      floatingActionButton: _buildChatButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   void _navigateToAddChild() async {
-    final result = await Get.toNamed(AppRoutes.addChild);
+    // Navigate to multi-step add child page
+    final result = await Get.toNamed(AppRoutes.addChildSteps);
     if (result == true) {
       // Refresh children list after adding
       await _loadChildren();
@@ -409,7 +402,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     }
   }
 
-  Widget _buildCustomerServiceButton() {
+  Widget _buildChatButton() {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: const Duration(milliseconds: 600),
@@ -417,29 +410,17 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       builder: (context, value, child) {
         return Transform.scale(
           scale: value,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              heroTag: "customer_service_fab_my_students",
-              onPressed: () {
-                Get.toNamed(AppRoutes.chatbot);
-              },
-              backgroundColor: AppColors.primaryBlue,
-              child: Icon(IconlyBroken.chat, color: Colors.white, size: 20.sp),
+          child: FloatingActionButton(
+            heroTag: "customer_service_fab_my_students",
+            onPressed: () {
+              Get.toNamed(AppRoutes.chatbot);
+            },
+            backgroundColor: AppColors.primaryGreen,
+            elevation: 6,
+            child: Icon(
+              IconlyBold.chat,
+              color: Colors.white,
+              size: 24.sp,
             ),
           ),
         );
@@ -447,41 +428,6 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     );
   }
 
-  Widget _buildFloatingAddButton() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              heroTag: "add_student_fab_my_students",
-              onPressed: () => _navigateToAddChild(),
-              backgroundColor: AppColors.primaryBlue,
-              child: Icon(IconlyBroken.plus, color: Colors.white, size: 20.sp),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildEmptyState() {
     return Center(
@@ -1063,7 +1009,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                             return Column(
                               children: [
                                 SizedBox(height: 8.h),
-                                _buildApplyToSchoolButton(child),
+                                _buildApplyToSchoolButton(child), 
                               ],
                             );
                           }

@@ -14,6 +14,7 @@ import '../../../widgets/bottom_nav_bar_widget.dart';
 import '../../../widgets/safe_network_image.dart';
 import '../../../widgets/shimmer_loading.dart';
 import '../../../widgets/hero_section_widget.dart';
+import '../../../widgets/global_chatbot_widget.dart';
 
 class StoreProductsPage extends StatefulWidget {
   const StoreProductsPage({Key? key}) : super(key: key);
@@ -32,7 +33,6 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
   int _currentPage = 1;
   final TextEditingController _searchController = TextEditingController();
   Map<String, dynamic>? _userData;
-
 
   @override
   void initState() {
@@ -141,10 +141,6 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     }
   }
 
-  void _onSearchChanged(String query) {
-    _searchQuery = query;
-    _loadProducts(resetPage: true);
-  }
 
   int _getCurrentIndex() {
     final route = Get.currentRoute;
@@ -158,28 +154,28 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.grey200,
+      backgroundColor: Colors.white,
       body: CustomScrollView(
       slivers: [
         // Hero Section
         SliverAppBar(
-          expandedHeight: 140.h,
+          expandedHeight: 80.h,
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: 140.h,
+          collapsedHeight: 80.h,
           flexibleSpace: FlexibleSpaceBar(
             background: HeroSectionWidget(
               userData: _userData,
-              searchController: _searchController,
-              showSearchBar: true,
+              pageTitle: 'store'.tr,
+              showGreeting: false,
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         // Categories Filter
         SliverToBoxAdapter(
           child: Container(
@@ -231,7 +227,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                           return _buildCategoryChip(null, 'all_categories'.tr);
                         }
                         final category = _categories[index - 1];
-                        return _buildCategoryChip(category, category.titleAr);
+                        return _buildCategoryChip(category, _getCategoryTitle(category));
                       },
                     ),
                   ),
@@ -260,47 +256,15 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
       ),
-      floatingActionButton: _buildCustomerServiceButton(),
+      floatingActionButton: DraggableChatbotWidget(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  Widget _buildCustomerServiceButton() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              heroTag: "customer_service_fab_store",
-              onPressed: () {
-                Get.toNamed(AppRoutes.chatbot);
-              },
-              backgroundColor: AppColors.primaryBlue,
-              child: Icon(IconlyBroken.chat, color: Colors.white, size: 20.sp),
-            ),
-          ),
-        );
-      },
-    );
+
+  String _getCategoryTitle(Category category) {
+    final isArabic = Get.locale?.languageCode == 'ar';
+    return isArabic ? category.titleAr : category.titleEn;
   }
 
   Widget _buildCategoryChip(Category? category, String label) {
