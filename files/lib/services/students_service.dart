@@ -387,15 +387,20 @@ class StudentsService {
 
       final url = _baseUrl + ApiConstants.addChildrenEndpoint;
       final headers = ApiConstants.getAuthHeaders(token);
+      final requestBody = request.toJson();
 
       print('👶 [ADD_CHILD] URL: $url');
       print('👶 [ADD_CHILD] Headers: $headers');
-      print('👶 [ADD_CHILD] Body: ${jsonEncode(request.toJson())}');
+      print('👶 [ADD_CHILD] Body: ${jsonEncode(requestBody)}');
+      _logApiRequest('addChildren', {
+        'endpoint': url,
+        'body': requestBody,
+      });
 
       final response = await http.post(
         Uri.parse(url),
         headers: headers,
-        body: jsonEncode(request.toJson()),
+        body: jsonEncode(requestBody),
       );
 
       print('👶 [ADD_CHILD] Response status: ${response.statusCode}');
@@ -551,6 +556,12 @@ class StudentsService {
 
       print('📄 [EXTRACT] URL: $url');
       print('📄 [EXTRACT] File: $fileName (${fileBytes.length} bytes)');
+      _logApiRequest('extractBirthCertificate', {
+        'endpoint': url,
+        'fileName': fileName,
+        'fileSize': fileBytes.length,
+        'mimeType': mimeType,
+      });
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -605,6 +616,262 @@ class StudentsService {
     } catch (e) {
       print('📄 [EXTRACT] Error extracting birth certificate: $e');
       if (e is StudentsException || e is BirthCertificateExtractionException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Extract data from National ID card (front and/or back) using AI
+  static Future<NationalIdExtractionResponse> extractNationalId({
+    File? nationalIdFront,
+    File? nationalIdBack,
+  }) async {
+    try {
+      print('🆔 [EXTRACT_ID] Extracting data from National ID');
+
+      if (nationalIdFront == null && nationalIdBack == null) {
+        throw StudentsException('At least one National ID image (front or back) is required');
+      }
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.extractNationalIdEndpoint;
+      
+      // Create multipart request
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        ApiConstants.apiKeyHeader: ApiConstants.apiKey,
+      });
+
+      final Map<String, dynamic> requestParams = {
+        'endpoint': url,
+      };
+
+      // Add front image if provided
+      if (nationalIdFront != null) {
+        final frontBytes = await nationalIdFront.readAsBytes();
+        final frontFileName = nationalIdFront.path.split('/').last;
+        final frontMimeType = frontFileName.toLowerCase().endsWith('.png') 
+            ? 'image/png' 
+            : frontFileName.toLowerCase().endsWith('.webp')
+                ? 'image/webp'
+                : 'image/jpeg';
+        
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'nationalIdFront',
+            frontBytes,
+            filename: frontFileName,
+            contentType: MediaType.parse(frontMimeType),
+          ),
+        );
+
+        requestParams['frontFileName'] = frontFileName;
+        requestParams['frontFileSize'] = frontBytes.length;
+        requestParams['frontMimeType'] = frontMimeType;
+        print('🆔 [EXTRACT_ID] Front: $frontFileName (${frontBytes.length} bytes)');
+      }
+
+      // Add back image if provided
+      if (nationalIdBack != null) {
+        final backBytes = await nationalIdBack.readAsBytes();
+        final backFileName = nationalIdBack.path.split('/').last;
+        final backMimeType = backFileName.toLowerCase().endsWith('.png') 
+            ? 'image/png' 
+            : backFileName.toLowerCase().endsWith('.webp')
+                ? 'image/webp'
+                : 'image/jpeg';
+        
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'nationalIdBack',
+            backBytes,
+            filename: backFileName,
+            contentType: MediaType.parse(backMimeType),
+          ),
+        );
+
+        requestParams['backFileName'] = backFileName;
+        requestParams['backFileSize'] = backBytes.length;
+        requestParams['backMimeType'] = backMimeType;
+        print('🆔 [EXTRACT_ID] Back: $backFileName (${backBytes.length} bytes)');
+      }
+
+      print('🆔 [EXTRACT_ID] URL: $url');
+      _logApiRequest('extractNationalId', requestParams);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('🆔 [EXTRACT_ID] Response status: ${response.statusCode}');
+      print('🆔 [EXTRACT_ID] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        try {
+          final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+          return NationalIdExtractionResponse.fromJson(responseData);
+        } catch (e) {
+          print('🆔 [EXTRACT_ID] Error parsing JSON: $e');
+          throw StudentsException('Failed to parse National ID extraction response: $e');
+        }
+      } else if (response.statusCode == 503) {
+        // Service unavailable - AI error
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          final canContinue = errorData['canContinue'] == true;
+          throw NationalIdExtractionException(
+            errorData['message']?.toString() ?? 'OCR extraction failed. Please enter data manually.',
+            canContinue: canContinue,
+          );
+        } catch (e) {
+          if (e is NationalIdExtractionException) {
+            rethrow;
+          }
+          throw NationalIdExtractionException(
+            'OCR extraction failed. Please enter data manually.',
+            canContinue: true,
+          );
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Failed to extract National ID data');
+        } catch (e) {
+          throw StudentsException('Failed to extract National ID data: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('🆔 [EXTRACT_ID] Error extracting National ID: $e');
+      if (e is StudentsException || e is NationalIdExtractionException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Log API request parameters for debugging
+  static void _logApiRequest(String endpoint, Map<String, dynamic> params) {
+    print('🔍 [API REQUEST] Endpoint: $endpoint');
+    print('🔍 [API REQUEST] Parameters: ${jsonEncode(params)}');
+  }
+
+  /// Submit non-Egyptian child request
+  static Future<Map<String, dynamic>> submitNonEgyptianRequest({
+    required File parentPassport,
+    required File childPassport,
+    String? fullName,
+    String? arabicFullName,
+    String? firstName,
+    String? lastName,
+    required String birthDate,
+    required String gender,
+    String? nationality,
+    String? birthPlace,
+    String? religion,
+    String? desiredGrade,
+    String? schoolId,
+    String? currentSchool,
+  }) async {
+    try {
+      print('🌍 [NON_EGYPTIAN] Submitting non-Egyptian child request');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = '${_baseUrl}${ApiConstants.submitNonEgyptianRequestEndpoint}';
+      final headers = {
+        ...ApiConstants.getAuthHeaders(token),
+        'Content-Type': 'multipart/form-data',
+      };
+
+      print('🌍 [NON_EGYPTIAN] URL: $url');
+
+      // Create multipart request
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      request.headers.addAll({
+        'Authorization': headers['Authorization']!,
+        'x-api-key': headers['x-api-key']!,
+      });
+
+      // Add files
+      request.files.add(
+        await http.MultipartFile.fromPath('parentPassport', parentPassport.path),
+      );
+      request.files.add(
+        await http.MultipartFile.fromPath('childPassport', childPassport.path),
+      );
+
+      // Add form fields
+      if (fullName != null && fullName.isNotEmpty) {
+        request.fields['fullName'] = fullName;
+      }
+      if (arabicFullName != null && arabicFullName.isNotEmpty) {
+        request.fields['arabicFullName'] = arabicFullName;
+      }
+      if (firstName != null && firstName.isNotEmpty) {
+        request.fields['firstName'] = firstName;
+      }
+      if (lastName != null && lastName.isNotEmpty) {
+        request.fields['lastName'] = lastName;
+      }
+      request.fields['birthDate'] = birthDate;
+      request.fields['gender'] = gender;
+      if (nationality != null && nationality.isNotEmpty) {
+        request.fields['nationality'] = nationality;
+      }
+      if (birthPlace != null && birthPlace.isNotEmpty) {
+        request.fields['birthPlace'] = birthPlace;
+      }
+      if (religion != null && religion.isNotEmpty) {
+        request.fields['religion'] = religion;
+      }
+      if (desiredGrade != null && desiredGrade.isNotEmpty) {
+        request.fields['desiredGrade'] = desiredGrade;
+      }
+      if (schoolId != null && schoolId.isNotEmpty) {
+        request.fields['schoolId'] = schoolId;
+      }
+      if (currentSchool != null && currentSchool.isNotEmpty) {
+        request.fields['currentSchool'] = currentSchool;
+      }
+
+      print('🌍 [NON_EGYPTIAN] Sending request...');
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('🌍 [NON_EGYPTIAN] Response status: ${response.statusCode}');
+      print('🌍 [NON_EGYPTIAN] Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        try {
+          final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+          return responseData;
+        } catch (e) {
+          print('🌍 [NON_EGYPTIAN] Error parsing JSON: $e');
+          throw StudentsException('Failed to parse response: $e');
+        }
+      } else {
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw StudentsException(errorData['message']?.toString() ?? 'Failed to submit non-Egyptian request');
+        } catch (e) {
+          throw StudentsException('Failed to submit non-Egyptian request: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('🌍 [NON_EGYPTIAN] Error submitting request: $e');
+      if (e is StudentsException) {
         rethrow;
       } else {
         throw StudentsException('Network error: ${e.toString()}');

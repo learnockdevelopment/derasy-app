@@ -8,7 +8,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 
 class CertificateScannerPage extends StatefulWidget {
-  final String documentType; // 'certificate' or 'parent_id'
+  final String documentType; // 'certificate', 'parent_id', or 'child_id'
   
   const CertificateScannerPage({
     Key? key,
@@ -158,7 +158,9 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                       child: Text(
                         widget.documentType == 'parent_id'
                             ? 'scan_parent_national_id'.tr
-                            : 'scan_certificate'.tr,
+                            : widget.documentType == 'child_id'
+                                ? 'scan_child_national_id'.tr
+                                : 'scan_certificate'.tr,
                         style: AppFonts.h3.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -188,7 +190,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                 child: Column(
                   children: [
                     Icon(
-                      widget.documentType == 'parent_id'
+                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
                           ? Icons.badge
                           : Icons.document_scanner,
                       color: Colors.white,
@@ -196,7 +198,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      widget.documentType == 'parent_id'
+                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
                           ? 'position_national_id_in_frame'.tr
                           : 'position_certificate_in_frame'.tr,
                       style: AppFonts.bodyMedium.copyWith(
@@ -208,7 +210,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      widget.documentType == 'parent_id'
+                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
                           ? 'ensure_national_id_edges_visible'.tr
                           : 'ensure_all_edges_are_visible'.tr,
                       style: AppFonts.bodySmall.copyWith(
@@ -312,14 +314,17 @@ class ScannerOverlayPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // National ID is smaller than certificate
-    final scanAreaWidth = documentType == 'parent_id' 
+    final scanAreaWidth = (documentType == 'parent_id' || documentType == 'child_id')
         ? size.width * 0.9 
         : size.width * 0.85;
-    final scanAreaHeight = documentType == 'parent_id'
+    final scanAreaHeight = (documentType == 'parent_id' || documentType == 'child_id')
         ? size.height * 0.35
         : size.height * 0.5;
     final scanAreaLeft = (size.width - scanAreaWidth) / 2;
-    final scanAreaTop = (size.height - scanAreaHeight) / 2;
+    // Child ID is at the top of the image, parent ID and certificate are centered
+    final scanAreaTop = documentType == 'child_id'
+        ? size.height * 0.15  // Position at top for child ID
+        : (size.height - scanAreaHeight) / 2;  // Center for parent ID and certificate
 
     // Draw dark overlay
     final path = Path()

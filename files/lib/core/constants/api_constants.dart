@@ -1,6 +1,6 @@
 class ApiConstants {
   // API Configuration
-  static const String baseUrl = 'https://www.derasy.com/api';
+  static const String baseUrl = 'http://192.168.100.31:3000/api';
   static const String apiKey = 'external_key_123';
   static const String apiKeyHeader = 'x-api-key';
   static const String authorizationHeader = 'Authorization';
@@ -33,6 +33,8 @@ class ApiConstants {
   static const String addChildrenEndpoint = '/children';
   static const String getChildrenBySchoolEndpoint = '/children';
   static const String extractBirthCertificateEndpoint = '/children/extract-birth-certificate';
+  static const String extractNationalIdEndpoint = '/children/extract-national-id';
+  static const String submitNonEgyptianRequestEndpoint = '/children/non-egyptian-request';
   static const String updateChildEndpoint = '/children/get-related'; // PUT /api/children/get-related/[id]
   static const String deleteChildEndpoint = '/children/get-related'; // DELETE /api/children/get-related/[id]
 

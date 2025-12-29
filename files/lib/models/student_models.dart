@@ -550,8 +550,22 @@ class BirthCertificateExtractionResponse {
   });
 
   factory BirthCertificateExtractionResponse.fromJson(Map<String, dynamic> json) {
+    // Handle success field - it can be bool or string "true"/"false"
+    bool successValue = false;
+    if (json['success'] != null) {
+      if (json['success'] is bool) {
+        successValue = json['success'] as bool;
+      } else if (json['success'] is String) {
+        successValue = json['success'].toString().toLowerCase() == 'true';
+      } else {
+        successValue = json['success'] == true || json['success'] == 1;
+      }
+    }
+    
+    print('📄 [MODEL] Parsing success field: ${json['success']} (type: ${json['success'].runtimeType}) -> $successValue');
+    
     return BirthCertificateExtractionResponse(
-      success: json['success'] ?? false,
+      success: successValue,
       extractedData: ExtractedData.fromJson(json['extractedData'] as Map<String, dynamic>),
       extractedText: json['extractedText']?.toString(),
       documentType: json['documentType']?.toString(),
@@ -577,6 +591,8 @@ class ExtractedData {
   final String? motherNationalId;
   final List<String>? parentNationalIds;
   final BirthCertificateImage? birthCertificateImage;
+  final NationalIdImages? nationalIdImages;
+  final String? address;
 
   ExtractedData({
     this.arabicFullName,
@@ -596,6 +612,8 @@ class ExtractedData {
     this.motherNationalId,
     this.parentNationalIds,
     this.birthCertificateImage,
+    this.nationalIdImages,
+    this.address,
   });
 
   factory ExtractedData.fromJson(Map<String, dynamic> json) {
@@ -623,6 +641,10 @@ class ExtractedData {
       birthCertificateImage: json['birthCertificateImage'] != null
           ? BirthCertificateImage.fromJson(json['birthCertificateImage'] as Map<String, dynamic>)
           : null,
+      nationalIdImages: json['nationalIdImages'] != null
+          ? NationalIdImages.fromJson(json['nationalIdImages'] as Map<String, dynamic>)
+          : null,
+      address: json['address']?.toString(),
     );
   }
 }
@@ -684,6 +706,112 @@ class BirthCertificateExtractionException implements Exception {
 
   @override
   String toString() => 'BirthCertificateExtractionException: $message';
+}
+
+// National ID Extraction Models
+class NationalIdExtractionResponse {
+  final bool success;
+  final ExtractedData extractedData;
+  final String? extractedText;
+  final String documentType;
+
+  NationalIdExtractionResponse({
+    required this.success,
+    required this.extractedData,
+    this.extractedText,
+    required this.documentType,
+  });
+
+  factory NationalIdExtractionResponse.fromJson(Map<String, dynamic> json) {
+    // Handle success field - it can be bool or string "true"/"false"
+    bool successValue = false;
+    if (json['success'] != null) {
+      if (json['success'] is bool) {
+        successValue = json['success'] as bool;
+      } else if (json['success'] is String) {
+        successValue = json['success'].toString().toLowerCase() == 'true';
+      } else {
+        successValue = json['success'] == true || json['success'] == 1;
+      }
+    }
+    
+    print('🆔 [MODEL] Parsing National ID extraction response: ${json['success']} (type: ${json['success'].runtimeType}) -> $successValue');
+    
+    return NationalIdExtractionResponse(
+      success: successValue,
+      extractedData: ExtractedData.fromJson(json['extractedData'] as Map<String, dynamic>),
+      extractedText: json['extractedText']?.toString(),
+      documentType: json['documentType']?.toString() ?? 'national_id',
+    );
+  }
+}
+
+class NationalIdImages {
+  final NationalIdImage? front;
+  final NationalIdImage? back;
+
+  NationalIdImages({
+    this.front,
+    this.back,
+  });
+
+  factory NationalIdImages.fromJson(Map<String, dynamic> json) {
+    return NationalIdImages(
+      front: json['front'] != null
+          ? NationalIdImage.fromJson(json['front'] as Map<String, dynamic>)
+          : null,
+      back: json['back'] != null
+          ? NationalIdImage.fromJson(json['back'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (front != null) 'front': front!.toJson(),
+      if (back != null) 'back': back!.toJson(),
+    };
+  }
+}
+
+class NationalIdImage {
+  final String url;
+  final String publicId;
+  final DateTime uploadedAt;
+
+  NationalIdImage({
+    required this.url,
+    required this.publicId,
+    required this.uploadedAt,
+  });
+
+  factory NationalIdImage.fromJson(Map<String, dynamic> json) {
+    return NationalIdImage(
+      url: json['url']?.toString() ?? '',
+      publicId: json['publicId']?.toString() ?? '',
+      uploadedAt: json['uploadedAt'] != null
+          ? DateTime.parse(json['uploadedAt'].toString())
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'publicId': publicId,
+      'uploadedAt': uploadedAt.toIso8601String(),
+    };
+  }
+}
+
+class NationalIdExtractionException implements Exception {
+  final String message;
+  final bool canContinue;
+
+  NationalIdExtractionException(this.message, {this.canContinue = false});
+
+  @override
+  String toString() => 'NationalIdExtractionException: $message';
 }
 
 // Request Models
