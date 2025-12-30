@@ -11,15 +11,22 @@
 1. [Quick Start Guide](#quick-start-guide)
 2. [Authentication](#authentication)
 3. [Children Management APIs](#children-management-apis)
-  - [Add Child with Birth Certificate Extraction](#add-child-with-birth-certificate-extraction)
-  - [Two-Step Document Upload Flow](#two-step-document-upload-flow)
-  - [OTP Verification Flow for Existing Children](#otp-verification-flow-for-existing-children)
-  - [Non-Egyptian Child Requests Flow](#non-egyptian-child-requests-flow)
-  - [Admin: Non-Egyptian Child Requests Management](#admin-non-egyptian-child-requests-management)
-  - [Get Children](#get-children)
-  - [Update Child](#update-child)
-  - [Upload Documents](#upload-documents)
+   - [Add Child with Birth Certificate Extraction](#add-child-with-birth-certificate-extraction)
+   - [Two-Step Document Upload Flow](#two-step-document-upload-flow)
+   - [OTP Verification Flow for Existing Children](#otp-verification-flow-for-existing-children)
+   - [Non-Egyptian Child Requests Flow](#non-egyptian-child-requests-flow)
+   - [Admin: Non-Egyptian Child Requests Management](#admin-non-egyptian-child-requests-management)
+   - [Get Children](#get-children)
+   - [Update Child](#update-child)
+   - [Upload Documents](#upload-documents)
 4. [Admission Flow APIs](#admission-flow-apis)
+   - [Submit Admission Application](#submit-admission-application)
+   - [Get Parent's Applications](#get-parents-applications)
+   - [Get School Applications](#get-school-applications)
+   - [Get Single Application](#get-single-application)
+   - [Set Interview Date](#set-interview-date)
+   - [Application Events/Notes](#application-eventsnotes)
+   - [Update Application Status](#update-application-status)
 5. [Common Workflows](#common-workflows)
 6. [Error Handling](#error-handling)
 
@@ -156,6 +163,75 @@ Form Data:
 - ✅ Calculates age in coming October automatically
 - ✅ Combines child name + father name for full Arabic name
 - ✅ Validates National ID uniqueness before extraction completes
+
+---
+
+### Extract National ID Data
+
+**Endpoint:** `POST /api/children/extract-national-id`
+
+**Description:** Extracts data from Egyptian National ID card (Front and/or Back) using Google Gemini AI. Both front and back images can be provided for better accuracy.
+
+**Request:**
+```http
+POST /api/children/extract-national-id
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form Data:
+- nationalIdFront: [front_image_file] (optional)
+- nationalIdBack: [back_image_file] (optional)
+- nationalId: [image_file] (optional, backward compatibility, treated as front)
+```
+
+**Response (200 Success):**
+```json
+{
+  "success": true,
+  "extractedData": {
+    "nationalId": "29001011234567",
+    "fullName": "Name in English",
+    "arabicFullName": "الاسم بالعربي",
+    "birthDate": "1990-01-01",
+    "gender": "male",
+    "religion": "Muslim",
+    "address": "123 Street Name, City",
+    "birthPlace": "Cairo",
+    "nationalIdImages": {
+       "front": {
+         "url": "https://ik.imagekit.io/...",
+         "publicId": "...",
+         "uploadedAt": "2024-01-01T10:00:00.000Z"
+       },
+       "back": {
+         "url": "https://ik.imagekit.io/...",
+         "publicId": "...",
+         "uploadedAt": "2024-01-01T10:00:00.000Z"
+       }
+    },
+    "nationalIdImage": { 
+      "url": "https://ik.imagekit.io/..." 
+    }
+  },
+  "extractedText": "Raw extracted text...",
+  "documentType": "national_id"
+}
+```
+
+**Response (503 Service Unavailable):**
+```json
+{
+  "message": "OCR extraction failed. Please enter data manually.",
+  "error": "Error details",
+  "canContinue": true
+}
+```
+
+**Notes:**
+- ✅ Supports both front and back images
+- ✅ Combines text info from both images
+- ✅ Extracts names (Arabic/English), Address, ID number, Birth date, etc.
+- ✅ Handles rate limits gracefully
 
 ---
 
@@ -992,6 +1068,709 @@ Form Data:
 
 ---
 
+## 📚 Admission Flow APIs
+
+### Get AI School Suggestions
+
+**Endpoint:** `POST /api/schools/suggest-three`
+
+**Description:** Uses Google Gemini AI to analyze a child's profile against a list of schools and user preferences to suggest the top 3 most suitable schools.
+
+**Request:**
+```http
+POST /api/schools/suggest-three
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "child": {
+    "_id": "child_id",
+    "fullName": "Student Name",
+    "gender": "male",
+    "ageInOctober": 68
+    // ... complete child object
+  },
+  "schools": [
+    // Array of school objects to analyze
+    {
+      "_id": "school_id_1",
+      "name": "School A",
+      "admissionFee": { "amount": 50000 },
+      "type": "National"
+    },
+    {
+      "_id": "school_id_2",
+      "name": "School B",
+      "admissionFee": { "amount": 80000 },
+      "type": "International"
+    }
+  ],
+  "preferences": {
+    "minFee": 20000,
+    "maxFee": 60000,
+    "busFeeMax": 15000,
+    "zone": "Nasr City",
+    "type": "National",
+    "coed": "mixed",
+    "language": "English"
+  }
+}
+```
+
+**Preferences Object Details:**
+- `minFee` (Number, optional): Minimum tuition fee preference.
+- `maxFee` (Number, optional): Maximum tuition fee preference.
+- `busFeeMax` (Number, optional): Maximum bus subscription fee.
+- `zone` (String, optional): Filter by school zone/area.
+- `type` (String, optional): School type (e.g., "National", "International", "American").
+- `coed` (String, optional): "mixed" for Co-ed, "single" for Segregated.
+- `language` (String, optional): Primary language preference.
+
+**Response (200 Success):**
+```json
+{
+  "message": "تم إنشاء الترشيحات بنجاح",
+  "markdown": "## تحليل الذكاء الاصطناعي\n\nبناءً على ملف الطالب...\n* **مدرسة المستقبل**: لأنها تناسب الميزانية...",
+  "html": "<h2>تحليل الذكاء الاصطناعي</h2>...",
+  "suggestedIds": ["school_id_1", "school_id_5", "school_id_8"]
+}
+```
+
+**Response (429 Too Many Requests):**
+```json
+{
+  "message": "عذراً، المساعد الذكي مشغول جداً حالياً..."
+}
+```
+
+**Notes:**
+- ✅ Returns analysis in Egyptian Arabic (Markdown & HTML).
+- ✅ Prioritizes user hard constraints (Fees, Zone) in the AI prompt.
+- ✅ Returns raw list of suggested School IDs for UI highlighting.
+
+---
+
+### Submit Admission Application
+
+**Endpoint:** `POST /api/admission/apply`
+
+**Description:** Submit an admission application for a child to a school. Deducts admission fee from parent's wallet.
+
+**Request:**
+```http
+POST /api/admission/apply
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "childId": "child_id",
+  "schoolId": "school_id",
+  "applicationType": "new_student",
+  "desiredGrade": "Grade 5",
+  "preferredInterviewSlots": [
+    {
+      "date": "2025-02-15",
+      "timeRange": {
+        "from": "10:00 AM",
+        "to": "12:00 PM"
+      }
+    }
+  ],
+  "notes": "Additional notes for the school"
+}
+```
+
+**Required Fields:**
+- `childId` - The ID of the child applying
+- `schoolId` - The ID of the school
+- `applicationType` - Either `"new_student"` or `"transfer"`
+
+**Optional Fields:**
+- `desiredGrade` - Desired grade level
+- `preferredInterviewSlots` - Array of preferred interview dates/times
+- `notes` - Additional notes for the school
+
+**Response (201 Created):**
+```json
+{
+  "message": "Application submitted successfully",
+  "application": {
+    "_id": "application_id",
+    "parent": "parent_user_id",
+    "child": {
+      "_id": "child_id",
+      "fullName": "Child Name",
+      "arabicFullName": "اسم الطفل"
+    },
+    "school": {
+      "_id": "school_id",
+      "name": "School Name",
+      "nameAr": "اسم المدرسة"
+    },
+    "status": "pending",
+    "applicationType": "new_student",
+    "payment": {
+      "isPaid": true,
+      "amount": 500,
+      "paidAt": "2025-01-15T10:00:00.000Z",
+      "method": "wallet"
+    },
+    "submittedAt": "2025-01-15T10:00:00.000Z"
+  }
+}
+```
+
+**Response (400 Bad Request - Insufficient Balance):**
+```json
+{
+  "message": "Insufficient wallet balance",
+  "error": "INSUFFICIENT_BALANCE",
+  "required": 500,
+  "available": 200
+}
+```
+
+**Response (400 Bad Request - Validation Error):**
+```json
+{
+  "message": "Child must not have a school for new_student application",
+  "error": "VALIDATION_ERROR"
+}
+```
+
+**Notes:**
+- ✅ Automatically deducts admission fee from parent's wallet
+- ✅ Validates child's school status matches application type
+- ✅ Creates payment record
+- ✅ Sends email notification to school
+- ✅ Application status starts as "pending"
+
+---
+
+### Get Parent's Applications
+
+**Endpoint:** `GET /api/admission/applications`
+
+**Description:** Get all admission applications submitted by the authenticated parent.
+
+**Request:**
+```http
+GET /api/admission/applications
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "applications": [
+    {
+      "_id": "application_id",
+      "child": {
+        "_id": "child_id",
+        "fullName": "Child Name",
+        "arabicFullName": "اسم الطفل",
+        "birthDate": "2013-06-03T00:00:00.000Z"
+      },
+      "school": {
+        "_id": "school_id",
+        "name": "School Name",
+        "nameAr": "اسم المدرسة",
+        "logo": { "url": "logo_url" }
+      },
+      "status": "under_review",
+      "applicationType": "new_student",
+      "interview": {
+        "date": "2025-02-20T00:00:00.000Z",
+        "time": "11:30 AM",
+        "location": "Main Office",
+        "notes": "Bring required documents"
+      },
+      "payment": {
+        "isPaid": true,
+        "amount": 500
+      },
+      "submittedAt": "2025-01-15T10:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+**Application Statuses:**
+- `pending` - Waiting for school review
+- `under_review` - School is reviewing (interview may be scheduled)
+- `recommended` - Recommended for acceptance
+- `accepted` - Application accepted
+- `rejected` - Application rejected
+- `draft` - Draft (not yet submitted)
+
+---
+
+### Get School Applications
+
+**Endpoint:** `GET /api/schools/my/[id]/admission-forms`
+
+**Description:** Get all admission applications for a specific school (school owner/moderator/admin only).
+
+**Request:**
+```http
+GET /api/schools/my/school_id/admission-forms
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `status` (optional) - Filter by status: "pending", "under_review", "accepted", "rejected", etc.
+
+**Response (200 Success):**
+```json
+{
+  "applications": [
+    {
+      "_id": "application_id",
+      "parent": {
+        "_id": "parent_user_id",
+        "name": "Parent Name",
+        "email": "parent@example.com",
+        "phone": "01234567890"
+      },
+      "child": {
+        "_id": "child_id",
+        "fullName": "Child Name",
+        "arabicFullName": "اسم الطفل",
+        "birthDate": "2013-06-03T00:00:00.000Z",
+        "currentSchool": "Previous School",
+        "desiredGrade": "Grade 5"
+      },
+      "status": "pending",
+      "applicationType": "transfer",
+      "payment": {
+        "isPaid": true,
+        "amount": 500
+      },
+      "submittedAt": "2025-01-15T10:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "message": "Access denied: You do not have permission to view applications for this school"
+}
+```
+
+**Notes:**
+- ✅ Only school owners, moderators, and admins can access
+- ✅ Supports filtering by status
+- ✅ Returns parent and child information
+
+---
+
+### Get Single Application
+
+**Endpoint:** `GET /api/me/applications/school/my/[id]`
+
+**Description:** Get detailed information about a specific application (school admin or parent).
+
+**Request:**
+```http
+GET /api/me/applications/school/my/application_id
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "_id": "application_id",
+  "parent": {
+    "_id": "parent_user_id",
+    "name": "Parent Name",
+    "email": "parent@example.com",
+    "phone": "01234567890"
+  },
+  "child": {
+    "_id": "child_id",
+    "fullName": "Child Name",
+    "arabicFullName": "اسم الطفل",
+    "birthDate": "2013-06-03T00:00:00.000Z",
+    "gender": "male",
+    "nationalId": "31303170105673",
+    "currentSchool": "Previous School",
+    "desiredGrade": "Grade 5",
+    "documents": [
+      {
+        "url": "https://imagekit.io/...",
+        "label": "birth_certificate",
+        "source": "uploaded"
+      }
+    ]
+  },
+  "school": {
+    "_id": "school_id",
+    "name": "School Name",
+    "nameAr": "اسم المدرسة",
+    "type": "private",
+    "admissionFee": {
+      "amount": 500
+    }
+  },
+  "status": "under_review",
+  "applicationType": "new_student",
+  "interview": {
+    "date": "2025-02-20T00:00:00.000Z",
+    "time": "11:30 AM",
+    "location": "Main Office - First Floor",
+    "notes": "Please bring all required documents"
+  },
+  "preferredInterviewSlots": [
+    {
+      "date": "2025-02-15T00:00:00.000Z",
+      "timeRange": {
+        "from": "10:00 AM",
+        "to": "12:00 PM"
+      }
+    }
+  ],
+  "payment": {
+    "isPaid": true,
+    "amount": 500,
+    "paidAt": "2025-01-15T10:00:00.000Z",
+    "method": "wallet"
+  },
+  "events": [
+    {
+      "_id": "event_id",
+      "type": "interview_scheduled",
+      "title": "تم تحديد موعد المقابلة",
+      "description": "تم تحديد موعد المقابلة في 20 فبراير 2025 الساعة 11:30 AM",
+      "date": "2025-01-16T10:00:00.000Z",
+      "createdBy": {
+        "_id": "admin_user_id",
+        "name": "Admin Name"
+      }
+    }
+  ],
+  "submittedAt": "2025-01-15T10:00:00.000Z",
+  "updatedAt": "2025-01-16T10:00:00.000Z"
+}
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "message": "Access denied: You do not have permission to view this application"
+}
+```
+
+**Notes:**
+- ✅ School admins can view applications for their schools
+- ✅ Parents can view their own applications
+- ✅ Includes full child and parent information
+- ✅ Includes interview details if scheduled
+- ✅ Includes events/notes timeline
+
+---
+
+### Set Interview Date
+
+**Endpoint:** `PUT /api/me/applications/school/my/[id]`
+
+**Description:** Set interview date for an application (school admin only). Automatically creates an event and sends email notification to parent.
+
+**Request:**
+```http
+PUT /api/me/applications/school/my/application_id
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "date": "2025-02-20",
+  "time": "11:30 AM",
+  "location": "Main Office - First Floor",
+  "notes": "Please bring all required documents"
+}
+```
+
+**Alternative Field Names (also supported):**
+```json
+{
+  "interviewDate": "2025-02-20",
+  "interviewTime": "11:30 AM",
+  "location": "Main Office - First Floor",
+  "notes": "Please bring all required documents"
+}
+```
+
+**Required Fields:**
+- `date` or `interviewDate` - Interview date in YYYY-MM-DD format
+- `time` or `interviewTime` - Interview time (e.g., "11:30 AM")
+
+**Optional Fields:**
+- `location` - Interview location
+- `notes` - Additional notes for parent
+
+**Response (200 Success):**
+```json
+{
+  "message": "تم تحديد موعد المقابلة بنجاح",
+  "application": {
+    "_id": "application_id",
+    "interview": {
+      "date": "2025-02-20T00:00:00.000Z",
+      "time": "11:30 AM",
+      "location": "Main Office - First Floor",
+      "notes": "Please bring all required documents"
+    },
+    "status": "under_review",
+    "events": [
+      {
+        "type": "interview_scheduled",
+        "title": "تم تحديد موعد المقابلة",
+        "description": "تم تحديد موعد المقابلة في 20 فبراير 2025 الساعة 11:30 AM في Main Office - First Floor",
+        "date": "2025-01-16T10:00:00.000Z",
+        "createdBy": "admin_user_id"
+      }
+    ]
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "يرجى إدخال تاريخ ووقت المقابلة"
+}
+```
+
+**Notes:**
+- ✅ Automatically changes application status to `under_review`
+- ✅ Creates `interview_scheduled` event automatically
+- ✅ Sends email notification to parent with interview details
+- ✅ Email includes formatted date, time, location, and notes
+
+---
+
+### Application Events/Notes
+
+**Endpoint:** `POST /api/me/applications/school/my/[id]/events`
+
+**Description:** Add an event/note to an application's follow-up timeline (school admin only).
+
+**Request:**
+```http
+POST /api/me/applications/school/my/application_id/events
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "type": "note_added",
+  "title": "تم التواصل مع ولي الأمر",
+  "description": "تم التواصل مع ولي الأمر عبر الهاتف وتم التأكيد على الحضور",
+  "date": "2025-01-17",
+  "metadata": {
+    "contactMethod": "phone",
+    "phoneNumber": "01234567890"
+  }
+}
+```
+
+**Event Types:**
+- `note_added` - General note
+- `interview_scheduled` - Interview date set (usually auto-created)
+- `interview_attended` - Parent attended interview
+- `interview_missed` - Parent missed interview
+- `status_changed` - Application status changed (usually auto-created)
+- `parent_contacted` - Contacted parent
+- `document_requested` - Requested document from parent
+- `document_received` - Received document from parent
+- `other` - Other event type
+
+**Required Fields:**
+- `type` - Event type (must be one of the above)
+- `title` - Event title
+
+**Optional Fields:**
+- `description` - Detailed description
+- `date` - Event date (defaults to current date)
+- `metadata` - Additional metadata object
+
+**Response (200 Success):**
+```json
+{
+  "message": "تم إضافة الحدث بنجاح",
+  "event": {
+    "_id": "event_id",
+    "type": "note_added",
+    "title": "تم التواصل مع ولي الأمر",
+    "description": "تم التواصل مع ولي الأمر عبر الهاتف وتم التأكيد على الحضور",
+    "date": "2025-01-17T00:00:00.000Z",
+    "createdBy": {
+      "_id": "admin_user_id",
+      "name": "Admin Name"
+    },
+    "metadata": {
+      "contactMethod": "phone",
+      "phoneNumber": "01234567890"
+    }
+  },
+  "application": {
+    "_id": "application_id",
+    "events": [...]
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "يرجى إدخال نوع الحدث والعنوان"
+}
+```
+
+---
+
+**Endpoint:** `GET /api/me/applications/school/my/[id]/events`
+
+**Description:** Get all events/notes for an application (school admin or parent).
+
+**Request:**
+```http
+GET /api/me/applications/school/my/application_id/events
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "events": [
+    {
+      "_id": "event_id",
+      "type": "interview_scheduled",
+      "title": "تم تحديد موعد المقابلة",
+      "description": "تم تحديد موعد المقابلة في 20 فبراير 2025 الساعة 11:30 AM",
+      "date": "2025-01-16T10:00:00.000Z",
+      "createdBy": {
+        "_id": "admin_user_id",
+        "name": "Admin Name",
+        "email": "admin@example.com",
+        "role": "school_owner"
+      },
+      "metadata": {
+        "interviewDate": "2025-02-20T00:00:00.000Z",
+        "interviewTime": "11:30 AM",
+        "location": "Main Office"
+      }
+    },
+    {
+      "_id": "event_id_2",
+      "type": "interview_attended",
+      "title": "تم حضور المقابلة",
+      "description": "تم حضور ولي الأمر والطفل في الموعد المحدد للمقابلة",
+      "date": "2025-02-20T11:30:00.000Z",
+      "createdBy": {
+        "_id": "admin_user_id",
+        "name": "Admin Name"
+      }
+    }
+  ]
+}
+```
+
+**Notes:**
+- ✅ Events are sorted by date (newest first)
+- ✅ Each event includes creator information
+- ✅ Parents can view events for their applications
+- ✅ School admins can view and add events
+
+---
+
+### Update Application Status
+
+**Endpoint:** `PUT /api/me/applications/school/my/[id]/status`
+
+**Description:** Update application status (school admin only). Automatically creates a status change event.
+
+**Request:**
+```http
+PUT /api/me/applications/school/my/application_id/status
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "status": "accepted",
+  "note": "Application accepted after successful interview"
+}
+```
+
+**Required Fields:**
+- `status` - New status: "pending", "under_review", "recommended", "accepted", "rejected", or "draft"
+
+**Optional Fields:**
+- `note` - Additional note for the status change
+
+**Response (200 Success):**
+```json
+{
+  "message": "تم تحديث الحالة بنجاح",
+  "application": {
+    "_id": "application_id",
+    "status": "accepted",
+    "events": [
+      {
+        "type": "status_changed",
+        "title": "تغيير الحالة من قيد المراجعة إلى تم القبول",
+        "description": "Application accepted after successful interview",
+        "date": "2025-01-18T10:00:00.000Z",
+        "createdBy": "admin_user_id",
+        "metadata": {
+          "oldStatus": "under_review",
+          "newStatus": "accepted"
+        } 
+      }
+    ]
+  }
+}
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "message": "حالة غير صالحة"
+}
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "message": "Access denied: You do not have permission to modify this application"
+}
+```
+
+**Notes:**
+- ✅ Automatically creates `status_changed` event
+- ✅ Event includes old and new status in metadata
+- ✅ Only school owners, moderators, and admins can update status
+- ✅ Status change is logged in events timeline
+
+---
+
 ## 📋 Common Workflows
 
 ### Workflow 1: Add Child with Automatic Data Extraction (Recommended)
@@ -1103,6 +1882,125 @@ Form Data:
 - Ensures parent is authorized to add the child
 - Prevents unauthorized child registration
 - Shows clear error messages if IDs don't match
+
+---
+
+### Workflow 4: Submit Admission Application
+
+**Use Case:** Parent wants to apply for their child to a school.
+
+**Steps:**
+1. **Submit Application**
+   ```javascript
+   const response = await fetch('/api/admission/apply', {
+     method: 'POST',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify({
+       childId: 'child_id',
+       schoolId: 'school_id',
+       applicationType: 'new_student',
+       desiredGrade: 'Grade 5',
+       preferredInterviewSlots: [
+         {
+           date: '2025-02-15',
+           timeRange: {
+             from: '10:00 AM',
+             to: '12:00 PM'
+           }
+         }
+       ]
+     })
+   });
+   
+   const { application } = await response.json();
+   ```
+
+2. **Check Application Status**
+   ```javascript
+   const response = await fetch('/api/admission/applications', {
+     headers: { 'Authorization': `Bearer ${token}` }
+   });
+   
+   const { applications } = await response.json();
+   ```
+
+**✅ Benefits:**
+- Automatic wallet deduction
+- Email notification to school
+- Application tracking
+
+---
+
+### Workflow 5: School Admin - Review Application
+
+**Use Case:** School admin wants to review and manage an application.
+
+**Steps:**
+1. **Get Application Details**
+   ```javascript
+   const response = await fetch(`/api/me/applications/school/my/${applicationId}`, {
+     headers: { 'Authorization': `Bearer ${token}` }
+   });
+   
+   const application = await response.json();
+   ```
+
+2. **Set Interview Date**
+   ```javascript
+   const response = await fetch(`/api/me/applications/school/my/${applicationId}`, {
+     method: 'PUT',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify({
+       date: '2025-02-20',
+       time: '11:30 AM',
+       location: 'Main Office',
+       notes: 'Bring required documents'
+     })
+   });
+   ```
+
+3. **Add Event/Note**
+   ```javascript
+   const response = await fetch(`/api/me/applications/school/my/${applicationId}/events`, {
+     method: 'POST',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify({
+       type: 'interview_attended',
+       title: 'تم حضور المقابلة',
+       description: 'تم حضور ولي الأمر والطفل في الموعد المحدد'
+     })
+   });
+   ```
+
+4. **Update Status**
+   ```javascript
+   const response = await fetch(`/api/me/applications/school/my/${applicationId}/status`, {
+     method: 'PUT',
+     headers: {
+       'Authorization': `Bearer ${token}`,
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify({
+       status: 'accepted',
+       note: 'Application accepted after successful interview'
+     })
+   });
+   ```
+
+**✅ Benefits:**
+- Complete application management
+- Event tracking for follow-up
+- Automatic email notifications
+- Status change logging
 
 ---
 
@@ -1271,7 +2169,7 @@ try {
 | `schoolId` | ObjectId | No | School ID if transferring |
 
 *At least one of `arabicFullName` or `fullName` is required.
- 
+
 ---
 
 ## 🎯 Quick Reference
@@ -1286,6 +2184,14 @@ try {
 | `/api/children/get-related/[id]` | GET | Get single child |
 | `/api/children/get-related/[id]` | PUT | Update child |
 | `/api/children/get-related/[id]/upload` | PUT | Upload documents |
+| `/api/admission/apply` | POST | Submit admission application |
+| `/api/admission/applications` | GET | Get parent's applications |
+| `/api/schools/my/[id]/admission-forms` | GET | Get school applications |
+| `/api/me/applications/school/my/[id]` | GET | Get single application |
+| `/api/me/applications/school/my/[id]` | PUT | Set interview date |
+| `/api/me/applications/school/my/[id]/events` | POST | Add event/note |
+| `/api/me/applications/school/my/[id]/events` | GET | Get application events |
+| `/api/me/applications/school/my/[id]/status` | PUT | Update application status |
 
 ---
 
@@ -1296,6 +2202,68 @@ For API issues or questions:
 - Verify authentication token is valid
 - Ensure required fields are provided
 - Check network connectivity
+
+---
+
+---
+
+## 📊 Application Status Flow
+
+```
+pending → under_review → recommended → accepted
+   ↓           ↓              ↓
+rejected   rejected      rejected
+```
+
+**Status Descriptions:**
+- `pending` - Initial status when application is submitted
+- `under_review` - School is reviewing (usually after interview is scheduled)
+- `recommended` - Recommended for acceptance (optional intermediate status)
+- `accepted` - Application accepted
+- `rejected` - Application rejected
+- `draft` - Draft (not yet submitted)
+
+**Status Transitions:**
+- When interview is scheduled → status automatically changes to `under_review`
+- Status can be changed directly by school admin
+- Each status change creates an event in the timeline
+
+---
+
+## 🔔 Email Notifications
+
+### When Interview is Scheduled
+- **Recipient:** Parent
+- **Subject:** "📅 تم تحديد موعد المقابلة - [School Name]"
+- **Content:** Includes interview date, time, location, and notes
+
+### When Application Status Changes
+- Status changes are logged in events but don't trigger emails (can be added if needed)
+
+---
+
+## 📝 Application Events Timeline
+
+Events provide a complete audit trail of application processing:
+
+1. **Automatic Events:**
+   - `interview_scheduled` - Created when interview date is set
+   - `status_changed` - Created when status is updated
+
+2. **Manual Events:**
+   - `note_added` - General notes
+   - `interview_attended` - Mark interview as attended
+   - `interview_missed` - Mark interview as missed
+   - `parent_contacted` - Record parent contact
+   - `document_requested` - Request document from parent
+   - `document_received` - Confirm document received
+   - `other` - Other events
+
+**Event Display:**
+- Events are displayed chronologically (newest first)
+- Each event shows: type, title, description, date, and creator
+- Parents can view events for their applications
+- School admins can view and add events
 
 ---
 

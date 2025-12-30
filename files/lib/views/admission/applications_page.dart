@@ -14,6 +14,7 @@ import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
+import '../../widgets/student_selection_sheet.dart';
 
 class ApplicationsPage extends StatefulWidget {
   const ApplicationsPage({Key? key, this.childId, this.child}) : super(key: key);
@@ -238,7 +239,21 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           colorText: Colors.white,
                         );
                       } else {
-                        Get.toNamed(AppRoutes.applyToSchools);
+                        // Show bottom sheet to select student first
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const StudentSelectionSheet(),
+                        ).then((selectedStudent) {
+                          if (selectedStudent != null && selectedStudent is Student) {
+                            // Navigate with selected student
+                            Get.toNamed(
+                              AppRoutes.applyToSchools,
+                              arguments: {'child': selectedStudent},
+                            );
+                          }
+                        });
                       }
                     },
                     showGreeting: false,

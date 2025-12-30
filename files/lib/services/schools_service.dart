@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../models/school_models.dart';
+import '../models/school_suggestion_models.dart';
 import 'user_storage_service.dart';
 import 'schools_cache_service.dart';
 
@@ -235,6 +236,60 @@ class SchoolsService {
       }
     } catch (e) {
       print('🏫 [SCHOOLS] Error searching schools: $e');
+      if (e is SchoolsException) {
+        rethrow;
+      } else {
+        throw SchoolsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get school suggestions based on AI analysis
+  static Future<SchoolSuggestionResponse> suggestThree(
+      SchoolSuggestionRequest request) async {
+    try {
+      print('🏫 [SCHOOLS] Getting AI suggestions');
+
+      // Get stored token
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw SchoolsException('No authentication token found');
+      }
+
+      // Hardcoded endpoint for now per requirements, or we can use constant
+      // Assuming endpoint is /api/schools/suggest-three
+      final url = '$_baseUrl/schools/suggest-three';
+      print('🏫 [SCHOOLS] Suggest URL: $url');
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      final body = json.encode(request.toJson());
+      // print('🏫 [SCHOOLS] Suggest Body: $body'); // Debug only, might be large
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print('🏫 [SCHOOLS] Suggest response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return SchoolSuggestionResponse.fromJson(jsonData);
+      } else if (response.statusCode == 429) {
+        throw SchoolsException('AI Assistant is busy, please try again later.');
+      } else if (response.statusCode == 403) {
+        throw SchoolsException('Unauthorized access');
+      } else {
+        throw SchoolsException(
+            'Failed to get suggestions. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error getting suggestions: $e');
       if (e is SchoolsException) {
         rethrow;
       } else {

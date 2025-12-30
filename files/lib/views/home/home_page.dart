@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart'; 
+import '../../models/student_models.dart';
 import '../../services/students_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../widgets/shimmer_loading.dart';
@@ -14,6 +15,7 @@ import '../../widgets/global_chatbot_widget.dart';
 import '../../services/admission_service.dart';
 import '../../services/wallet_service.dart';
 import '../../models/wallet_models.dart';
+import '../../widgets/student_selection_sheet.dart';
  
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -218,47 +220,65 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
-                      icon: IconlyBroken.profile,
-                      title: 'total_students'.tr,
-                      value: _formatNumber(_totalStudents.toString()),
-                      color: AppColors.primaryBlue,
-                      showAddButton: true,
-                      onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
-                    ),
+                    child: _isLoading
+                        ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                        : _buildStatCard(
+                            icon: IconlyBroken.profile,
+                            title: 'total_students'.tr,
+                            value: _formatNumber(_totalStudents.toString()),
+                            color: AppColors.primaryBlue,
+                            showAddButton: true,
+                            onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
+                          ),
                   ),
                   SizedBox(width: 16.w),
                   Expanded(
-                    child: _buildStatCard(
-                      icon: IconlyBroken.document,
-                      title: 'total_applications'.tr,
-                      value: _formatNumber(_totalApplications.toString()),
-                      color: AppColors.primaryGreen,
-                      showAddButton: true,
-                      onAddTap: () {
-                        if (_totalStudents == 0) {
-                          Get.snackbar(
-                            'error'.tr,
-                            'no_students_for_application'.tr,
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: AppColors.error,
-                            colorText: Colors.white,
-                          );
-                        } else {
-                          Get.toNamed(AppRoutes.applyToSchools);
-                        }
-                      },
-                      buttonText: 'add_application'.tr,
-                      isButtonDisabled: _totalStudents == 0,
-                      disabledMessage: 'add_student_first_to_apply'.tr,
-                      buttonColor: AppColors.primaryGreen,
-                    ),
+                    child: _isLoading
+                        ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                        : _buildStatCard(
+                            icon: IconlyBroken.document,
+                            title: 'total_applications'.tr,
+                            value: _formatNumber(_totalApplications.toString()),
+                            color: AppColors.primaryGreen,
+                            showAddButton: true,
+                            onAddTap: () {
+                              if (_totalStudents == 0) {
+                                Get.snackbar(
+                                  'error'.tr,
+                                  'no_students_for_application'.tr,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: AppColors.error,
+                                  colorText: Colors.white,
+                                );
+                              } else {
+                                // Show bottom sheet to select student first
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => const StudentSelectionSheet(),
+                                ).then((selectedStudent) {
+                                  if (selectedStudent != null && selectedStudent is Student) {
+                                    // Navigate with selected student
+                                    Get.toNamed(
+                                      AppRoutes.applyToSchools,
+                                      arguments: {'child': selectedStudent},
+                                    );
+                                  }
+                                });
+                              }
+                            },
+                            buttonText: 'add_application'.tr,
+                            isButtonDisabled: _totalStudents == 0,
+                            disabledMessage: 'add_student_first_to_apply'.tr,
+                            buttonColor: AppColors.primaryGreen,
+                          ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           SliverToBoxAdapter(child: SizedBox(height: 32.h)),
         ],
       ),

@@ -1,6 +1,7 @@
 class Student {
   final String id;
   final String fullName;
+  final String? arabicFullName;
   final String studentCode;
   final String nationalId;
   final String gender;
@@ -27,6 +28,7 @@ class Student {
   Student({
     required this.id,
     required this.fullName,
+    this.arabicFullName,
     required this.studentCode,
     required this.nationalId,
     required this.gender,
@@ -55,6 +57,7 @@ class Student {
     return Student(
       id: _parseStringField(json['_id']) ?? '',
       fullName: _parseStringField(json['fullName']) ?? '',
+      arabicFullName: _parseStringField(json['arabicFullName']),
       studentCode: _parseStringField(json['studentCode']) ?? '',
       nationalId: _parseStringField(json['nationalId']) ?? '',
       gender: _parseStringField(json['gender']) ?? '',
@@ -109,6 +112,7 @@ class Student {
     return {
       '_id': id,
       'fullName': fullName,
+      'arabicFullName': arabicFullName,
       'studentCode': studentCode,
       'nationalId': nationalId,
       'gender': gender,

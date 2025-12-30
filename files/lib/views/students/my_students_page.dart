@@ -301,106 +301,106 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     );
   }
 
-  Future<void> _showDeleteConfirmation(Student child) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'delete_child'.tr,
-          style: AppFonts.h3.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
-          ),
-        ),
-        content: Text(
-          'delete_child_confirmation'.tr.replaceAll('{name}', child.fullName),
-          style: AppFonts.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: Text(
-              'cancel'.tr,
-              style: AppFonts.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'delete'.tr,
-              style: AppFonts.bodyMedium.copyWith(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      await _deleteChild(child);
-    }
-  }
-
-  Future<void> _deleteChild(Student child) async {
-    try {
-      // Show loading
-      Get.dialog(
-        Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primaryBlue,
-          ),
-        ),
-        barrierDismissible: false,
-      );
-
-      await StudentsService.deleteChild(child.id);
-
-      if (!mounted) return;
-      Get.back(); // Close loading dialog
-
-      // Show success message
-      Get.snackbar(
-        'success'.tr,
-        'child_deleted_successfully'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.success,
-        colorText: Colors.white,
-      );
-
-      // Reload children list
-      await _loadChildren();
-    } catch (e) {
-      if (!mounted) return;
-      Get.back(); // Close loading dialog
-
-      // Show error message
-      Get.snackbar(
-        'error'.tr,
-        e.toString().replaceAll('StudentsException: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
+  // Future<void> _showDeleteConfirmation(Student child) async {
+  //   final confirmed = await Get.dialog<bool>(
+  //     AlertDialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(20.r),
+  //       ),
+  //       title: Text(
+  //         'delete_child'.tr,
+  //         style: AppFonts.h3.copyWith(
+  //           color: AppColors.textPrimary,
+  //           fontWeight: FontWeight.bold,
+  //           fontSize: 18.sp,
+  //         ),
+  //       ),
+  //       content: Text(
+  //         'delete_child_confirmation'.tr.replaceAll('{name}', child.fullName),
+  //         style: AppFonts.bodyMedium.copyWith(
+  //           color: AppColors.textSecondary,
+  //           fontSize: 14.sp,
+  //         ),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Get.back(result: false),
+  //           child: Text(
+  //             'cancel'.tr,
+  //             style: AppFonts.bodyMedium.copyWith(
+  //               color: AppColors.textSecondary,
+  //               fontSize: 14.sp,
+  //             ),
+  //           ),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () => Get.back(result: true),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Colors.red,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(12.r),
+  //             ),
+  //           ),
+  //           child: Text(
+  //             'delete'.tr,
+  //             style: AppFonts.bodyMedium.copyWith(
+  //               color: Colors.white,
+  //               fontSize: 14.sp,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //
+  //   if (confirmed == true && mounted) {
+  //     await _deleteChild(child);
+  //   }
+  // }
+  //
+  // Future<void> _deleteChild(Student child) async {
+  //   try {
+  //     // Show loading
+  //     Get.dialog(
+  //       Center(
+  //         child: CircularProgressIndicator(
+  //           color: AppColors.primaryBlue,
+  //         ),
+  //       ),
+  //       barrierDismissible: false,
+  //     );
+  //
+  //     await StudentsService.deleteChild(child.id);
+  //
+  //     if (!mounted) return;
+  //     Get.back(); // Close loading dialog
+  //
+  //     // Show success message
+  //     Get.snackbar(
+  //       'success'.tr,
+  //       'child_deleted_successfully'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: AppColors.success,
+  //       colorText: Colors.white,
+  //     );
+  //
+  //     // Reload children list
+  //     await _loadChildren();
+  //   } catch (e) {
+  //     if (!mounted) return;
+  //     Get.back(); // Close loading dialog
+  //
+  //     // Show error message
+  //     Get.snackbar(
+  //       'error'.tr,
+  //       e.toString().replaceAll('StudentsException: ', ''),
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red,
+  //       colorText: Colors.white,
+  //     );
+  //   }
+  // }
 
   Widget _buildChatButton() {
     return TweenAnimationBuilder<double>(
@@ -550,30 +550,30 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               child: Stack(
                 children: [
                   // Delete icon - top left
-                  Positioned(
-                    top: 8.h,
-                    left: 8.w,
-                    child: GestureDetector(
-                      onTap: () => _showDeleteConfirmation(child),
-                      child: Container(
-                        width: 32.w,
-                        height: 32.w,
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Icon(
-                          IconlyBroken.delete,
-                          color: Colors.red,
-                          size: 18.sp,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Positioned(
+                  //   top: 8.h,
+                  //   left: 8.w,
+                  //   child: GestureDetector(
+                  //     onTap: () => _showDeleteConfirmation(child),
+                  //     child: Container(
+                  //       width: 32.w,
+                  //       height: 32.w,
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.red.withOpacity(0.1),
+                  //         borderRadius: BorderRadius.circular(8.r),
+                  //         border: Border.all(
+                  //           color: Colors.red.withOpacity(0.3),
+                  //           width: 1,
+                  //         ),
+                  //       ),
+                  //       child: Icon(
+                  //         IconlyBroken.delete,
+                  //         color: Colors.red,
+                  //         size: 18.sp,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   Padding(
                     padding: EdgeInsets.all(16.w),
                     child: Column(
@@ -606,9 +606,11 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           ),
                           child: Center(
                             child: Text(
-                              child.fullName.isNotEmpty
-                                  ? child.fullName[0].toUpperCase()
-                                  : 'S',
+                              (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
+                                  ? child.arabicFullName![0].toUpperCase()
+                                  : (child.fullName.isNotEmpty
+                                      ? child.fullName[0].toUpperCase()
+                                      : 'S'),
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -710,7 +712,9 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                     // Full name to end of card - no new line
                     Container(
                       child: Text(
-                        child.fullName,
+                        (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
+                            ? child.arabicFullName!
+                            : child.fullName,
                         style: AppFonts.h4.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,

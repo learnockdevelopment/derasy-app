@@ -22,43 +22,27 @@ class AddChildStepsPage extends StatefulWidget {
 class _AddChildStepsPageState extends State<AddChildStepsPage> {
   int _currentStep = 0;
   String? _selectedNationality;
-  String? _selectedForeignCountry; // Country code for foreign students
-  
-  // Egyptian flow - Child National ID
-  File? _childNationalIdFile;
-  bool _isExtractingChildId = false;
-  String? _childNationalId; // Extracted child National ID
-  
-  // Egyptian flow - Parent National ID (for verification only) - FRONT AND BACK
+  String? _selectedForeignCountry;
   File? _parentNationalIdFrontFile;
   File? _parentNationalIdBackFile;
   bool _isExtractingParentId = false;
-  String? _parentNationalId; // Extracted parent National ID
-  ExtractedData? _parentExtractedData; // Store extracted parent data
-
-  // Egyptian flow - Child Birth Certificate
+  ExtractedData? _parentExtractedData;
   File? _birthCertificateFile;
   bool _isExtracting = false;
   BirthCertificateExtractionResponse? _extractionResponse;
   ExtractedData? _extractedData;
-
-  // Non-Egyptian flow
   File? _parentPassportFile;
   File? _childPassportFile;
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _arabicFullNameController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   String? _selectedGender;
-
   bool _isSubmitting = false;
   final ImagePicker _picker = ImagePicker();
-  
-  // Get all countries except Egypt
   List<Country> get _foreignCountries {
     return Countries.countries.where((country) => country.code != 'EG').toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
-  
   String _getTranslatedCountryName(String code) {
     final translationKey = 'country_${code.toLowerCase()}';
     try {
@@ -1590,130 +1574,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     );
   }
 
-  void _showChildIdImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey300,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-                child: Text(
-                  'select_option'.tr,
-                  style: AppFonts.h3.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: AppColors.primaryBlue,
-                    size: 24.sp,
-                  ),
-                ),
-                title: Text(
-                  'scan_child_id'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'scan_with_camera'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final scannedFile = await Get.to(() => const CertificateScannerPage(documentType: 'child_id'));
-                  if (scannedFile != null && scannedFile is File) {
-                    setState(() {
-                      _childNationalIdFile = scannedFile;
-                    });
-                  }
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    IconlyBroken.upload,
-                    color: AppColors.primaryGreen,
-                    size: 24.sp,
-                  ),
-                ),
-                title: Text(
-                  'upload_from_gallery'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'select_from_gallery'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final image = await _picker.pickImage(
-                    source: ImageSource.gallery,
-                    maxWidth: 2048,
-                    maxHeight: 2048,
-                    imageQuality: 90,
-                  );
-                  if (image != null) {
-                    setState(() {
-                      _childNationalIdFile = File(image.path);
-                    });
-                  }
-                },
-              ),
-              SizedBox(height: 16.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Future<void> _extractBirthCertificateData(File file) async {
     setState(() {
@@ -1794,130 +1654,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     }
   }
 
-  void _showParentIdImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey300,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-                child: Text(
-                  'select_option'.tr,
-                  style: AppFonts.h3.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: AppColors.primaryBlue,
-                    size: 24.sp,
-                  ),
-                ),
-                title: Text(
-                  'scan_parent_id_verify'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'scan_with_camera'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final scannedFile = await Get.to(() => const CertificateScannerPage(documentType: 'parent_id'));
-                  if (scannedFile != null && scannedFile is File) {
-                    setState(() {
-                      _parentNationalIdFrontFile = scannedFile;
-                    });
-                  }
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    IconlyBroken.upload,
-                    color: AppColors.primaryGreen,
-                    size: 24.sp,
-                  ),
-                ),
-                title: Text(
-                  'upload_from_gallery'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'select_from_gallery'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final image = await _picker.pickImage(
-                    source: ImageSource.gallery,
-                    maxWidth: 2048,
-                    maxHeight: 2048,
-                    imageQuality: 90,
-                  );
-                  if (image != null) {
-                    setState(() {
-                      _parentNationalIdFrontFile = File(image.path);
-                    });
-                  }
-                },
-              ),
-              SizedBox(height: 16.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Future<void> _extractParentNationalId([File? dummy]) async {
     if (_parentNationalIdFrontFile == null || _parentNationalIdBackFile == null) return;
@@ -1957,7 +1693,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
       }
 
       setState(() {
-        _parentNationalId = extractedId;
         _parentExtractedData = response.extractedData;
         _isExtractingParentId = false;
       });
@@ -1975,7 +1710,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
           if (mounted) {
             setState(() {
               _parentNationalIdFrontFile = null;
-              _parentNationalId = null;
               _isExtractingParentId = false;
             });
           }
@@ -2576,7 +2310,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     onClear: () {
                       setState(() {
                         _parentNationalIdFrontFile = null;
-                        _parentNationalId = null;
                         _parentExtractedData = null;
                       });
                     },
@@ -2591,7 +2324,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     onClear: () {
                       setState(() {
                         _parentNationalIdBackFile = null;
-                        _parentNationalId = null;
                         _parentExtractedData = null;
                       });
                     },
