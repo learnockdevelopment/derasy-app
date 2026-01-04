@@ -5,6 +5,7 @@ import '../models/admission_models.dart';
 import '../models/school_models.dart';
 import '../models/student_models.dart';
 import 'user_storage_service.dart';
+import 'auth_error_handler.dart';
 
 class AdmissionService {
   static const String _baseUrl = ApiConstants.baseUrl;
@@ -205,6 +206,189 @@ class AdmissionService {
       }
     } catch (e) {
       print('🎓 [ADMISSION] Error getting application: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Set interview date for an application (school admin only)
+  static Future<Application> setInterviewDate({
+    required String applicationId,
+    required String date,
+    required String time,
+    String? location,
+    String? notes,
+  }) async {
+    try {
+      print('🎓 [ADMISSION] Setting interview date for: $applicationId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url =
+          '${_baseUrl}/api/me/applications/school/my/$applicationId';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      final body = {
+        'date': date,
+        'time': time,
+        if (location != null) 'location': location,
+        if (notes != null) 'notes': notes,
+      };
+
+      print('🎓 [ADMISSION] URL: $url');
+      print('🎓 [ADMISSION] Body: ${jsonEncode(body)}');
+
+      final response = await http.put(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        return Application.fromJson(
+            responseData['application'] as Map<String, dynamic>);
+      } else if (response.statusCode == 400) {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Bad request', 400);
+      } else if (response.statusCode == 403) {
+        throw AdmissionException('Access denied', 403);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to set interview date',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error setting interview date: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Add an event/note to an application (school admin only)
+  static Future<ApplicationEvent> addApplicationEvent({
+    required String applicationId,
+    required String type,
+    required String title,
+    String? description,
+    DateTime? date,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      print('🎓 [ADMISSION] Adding event to application: $applicationId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url =
+          '${_baseUrl}/api/me/applications/school/my/$applicationId/events';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      final body = {
+        'type': type,
+        'title': title,
+        if (description != null) 'description': description,
+        if (date != null) 'date': date.toIso8601String(),
+        if (metadata != null) 'metadata': metadata,
+      };
+
+      print('🎓 [ADMISSION] URL: $url');
+      print('🎓 [ADMISSION] Body: ${jsonEncode(body)}');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        return ApplicationEvent.fromJson(
+            responseData['event'] as Map<String, dynamic>);
+      } else if (response.statusCode == 400) {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Bad request', 400);
+      } else if (response.statusCode == 403) {
+        throw AdmissionException('Access denied', 403);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to add event',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error adding event: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get all events for an application
+  static Future<List<ApplicationEvent>> getApplicationEvents(
+      String applicationId) async {
+    try {
+      print('🎓 [ADMISSION] Getting events for application: $applicationId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url =
+          '${_baseUrl}/api/me/applications/school/my/$applicationId/events';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🎓 [ADMISSION] URL: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        final events = (responseData['events'] as List<dynamic>?)
+                ?.map((event) =>
+                    ApplicationEvent.fromJson(event as Map<String, dynamic>))
+                .toList() ??
+            [];
+        return events;
+      } else if (response.statusCode == 403) {
+        throw AdmissionException('Access denied', 403);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to get events',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error getting events: $e');
       if (e is AdmissionException) {
         rethrow;
       } else {

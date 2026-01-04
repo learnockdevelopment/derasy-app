@@ -29,7 +29,7 @@ class ApplicationsPage extends StatefulWidget {
 class _ApplicationsPageState extends State<ApplicationsPage> {
   List<Application> _allApplications = [];
   List<Application> _filteredApplications = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   Map<String, dynamic>? _userData;
   final TextEditingController _searchController = TextEditingController();
   int _totalStudents = 0;
@@ -82,8 +82,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reload when returning to this page
-    _loadApplications();
+    // Don't reload automatically - only reload on pull-to-refresh or explicit action
   }
 
   Future<void> _loadApplications() async {
@@ -115,7 +114,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
         });
       }
 
-      String errorMessage = 'Failed to load applications. Please try again.';
+      String errorMessage = 'failed_to_load_applications'.tr;
       if (e is AdmissionException) {
         errorMessage = e.message;
       }
@@ -227,9 +226,9 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   background: HeroSectionWidget(
                     userData: _userData,
                     pageTitle: 'applications'.tr,
-                    actionButtonText: 'add_application'.tr,
-                    actionButtonIcon: IconlyBroken.plus,
-                    onActionTap: () {
+                    actionButtonText: _isLoading ? null : 'add_application'.tr,
+                    actionButtonIcon: _isLoading ? null : IconlyBroken.plus,
+                    onActionTap: _isLoading ? null : () {
                       if (_totalStudents == 0) {
                         Get.snackbar(
                           'error'.tr,
@@ -257,8 +256,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       }
                     },
                     showGreeting: false,
-                    isButtonDisabled: _totalStudents == 0,
-                    disabledMessage: 'add_student_first_to_apply'.tr,
+                    isButtonDisabled: _isLoading ? false : _totalStudents == 0,
+                    disabledMessage: _isLoading ? null : 'add_student_first_to_apply'.tr,
                   ),
                 ),
               )

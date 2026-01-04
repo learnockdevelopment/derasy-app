@@ -2,6 +2,121 @@ import 'student_models.dart';
 import 'school_models.dart';
 
 // Application Models
+
+// Interview Information
+class Interview {
+  final DateTime? date;
+  final String? time;
+  final String? location;
+  final String? notes;
+
+  Interview({
+    this.date,
+    this.time,
+    this.location,
+    this.notes,
+  });
+
+  factory Interview.fromJson(Map<String, dynamic> json) {
+    return Interview(
+      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+      time: json['time']?.toString(),
+      location: json['location']?.toString(),
+      notes: json['notes']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (date != null) 'date': date!.toIso8601String(),
+      if (time != null) 'time': time,
+      if (location != null) 'location': location,
+      if (notes != null) 'notes': notes,
+    };
+  }
+}
+
+// Event Creator Information
+class EventCreator {
+  final String id;
+  final String name;
+  final String? email;
+  final String? role;
+
+  EventCreator({
+    required this.id,
+    required this.name,
+    this.email,
+    this.role,
+  });
+
+  factory EventCreator.fromJson(Map<String, dynamic> json) {
+    return EventCreator(
+      id: json['_id'] ?? json['id'] ?? '',
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString(),
+      role: json['role']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+      if (email != null) 'email': email,
+      if (role != null) 'role': role,
+    };
+  }
+}
+
+// Application Event/Note
+class ApplicationEvent {
+  final String id;
+  final String type;
+  final String title;
+  final String? description;
+  final DateTime date;
+  final EventCreator? createdBy;
+  final Map<String, dynamic>? metadata;
+
+  ApplicationEvent({
+    required this.id,
+    required this.type,
+    required this.title,
+    this.description,
+    required this.date,
+    this.createdBy,
+    this.metadata,
+  });
+
+  factory ApplicationEvent.fromJson(Map<String, dynamic> json) {
+    return ApplicationEvent(
+      id: json['_id'] ?? json['id'] ?? '',
+      type: json['type']?.toString() ?? 'other',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString(),
+      date: json['date'] != null
+          ? DateTime.parse(json['date'])
+          : DateTime.now(),
+      createdBy: json['createdBy'] != null && json['createdBy'] is Map
+          ? EventCreator.fromJson(json['createdBy'] as Map<String, dynamic>)
+          : null,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'type': type,
+      'title': title,
+      if (description != null) 'description': description,
+      'date': date.toIso8601String(),
+      if (createdBy != null) 'createdBy': createdBy!.toJson(),
+      if (metadata != null) 'metadata': metadata,
+    };
+  }
+}
 class Application {
   final String id;
   final String parent;
@@ -10,6 +125,10 @@ class Application {
   final String status;
   final PaymentInfo? payment;
   final List<InterviewSlot> preferredInterviewSlots;
+  final Interview? interview;
+  final List<ApplicationEvent> events;
+  final String? applicationType;
+  final DateTime? submittedAt;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -22,6 +141,10 @@ class Application {
     required this.status,
     this.payment,
     required this.preferredInterviewSlots,
+    this.interview,
+    this.events = const [],
+    this.applicationType,
+    this.submittedAt,
     this.notes,
     required this.createdAt,
     required this.updatedAt,
@@ -53,6 +176,17 @@ class Application {
               ?.map((slot) => InterviewSlot.fromJson(slot as Map<String, dynamic>))
               .toList() ??
           [],
+      interview: json['interview'] != null && json['interview'] is Map
+          ? Interview.fromJson(json['interview'] as Map<String, dynamic>)
+          : null,
+      events: (json['events'] as List<dynamic>?)
+              ?.map((event) => ApplicationEvent.fromJson(event as Map<String, dynamic>))
+              .toList() ??
+          [],
+      applicationType: json['applicationType']?.toString(),
+      submittedAt: json['submittedAt'] != null
+          ? DateTime.parse(json['submittedAt'])
+          : null,
       notes: json['notes']?.toString(),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
@@ -72,6 +206,10 @@ class Application {
       'status': status,
       'payment': payment?.toJson(),
       'preferredInterviewSlots': preferredInterviewSlots.map((s) => s.toJson()).toList(),
+      if (interview != null) 'interview': interview!.toJson(),
+      'events': events.map((e) => e.toJson()).toList(),
+      if (applicationType != null) 'applicationType': applicationType,
+      if (submittedAt != null) 'submittedAt': submittedAt!.toIso8601String(),
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

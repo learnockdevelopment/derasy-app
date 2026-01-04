@@ -1728,24 +1728,24 @@ Content-Type: application/json
 **Response (200 Success):**
 ```json
 {
-  "message": "تم تحديث الحالة بنجاح",
-  "application": {
-    "_id": "application_id",
-    "status": "accepted",
-    "events": [
-      {
-        "type": "status_changed",
-        "title": "تغيير الحالة من قيد المراجعة إلى تم القبول",
-        "description": "Application accepted after successful interview",
-        "date": "2025-01-18T10:00:00.000Z",
-        "createdBy": "admin_user_id",
-        "metadata": {
-          "oldStatus": "under_review",
-          "newStatus": "accepted"
-        } 
-      }
-    ]
-  }
+   "message": "تم تحديث الحالة بنجاح",
+   "application": {
+      "_id": "application_id",
+      "status": "accepted",
+      "events": [
+         {
+            "type": "status_changed",
+            "title": "تغيير الحالة من قيد المراجعة إلى تم القبول",
+            "description": "Application accepted after successful interview",
+            "date": "2025-01-18T10:00:00.000Z",
+            "createdBy": "admin_user_id",
+            "metadata": {
+               "oldStatus": "under_review",
+               "newStatus": "accepted"
+            }
+         }
+      ]
+   }
 }
 ```
 

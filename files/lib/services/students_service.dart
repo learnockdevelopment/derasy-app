@@ -6,6 +6,7 @@ import '../core/constants/api_constants.dart';
 import '../models/student_models.dart';
 import '../models/pagination_models.dart';
 import 'user_storage_service.dart';
+import 'auth_error_handler.dart';
 
 class StudentsService {
   static const String _baseUrl = ApiConstants.baseUrl;
@@ -351,6 +352,9 @@ class StudentsService {
           throw StudentsException('Failed to parse response: $e');
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
+        // Handle unauthorized - logout and navigate to login
+        await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
+        
         try {
           final errorData = jsonDecode(response.body) as Map<String, dynamic>;
           throw StudentsException('Unauthorized: ${errorData['message']}');

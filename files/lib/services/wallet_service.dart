@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../models/wallet_models.dart';
 import 'user_storage_service.dart';
+import 'auth_error_handler.dart';
 
 class WalletException implements Exception {
   final String message;
@@ -44,7 +45,9 @@ class WalletService {
         final data = jsonDecode(response.body);
         print('💰 [WALLET] ✅ Wallet retrieved successfully');
         return WalletResponse.fromJson(data);
-      } else if (response.statusCode == 403) {
+      } else if (response.statusCode == 403 || response.statusCode == 401) {
+        // Handle unauthorized - logout and navigate to login
+        await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
         throw WalletException('Unauthorized access');
       } else if (response.statusCode == 404) {
         throw WalletException('User not found');
@@ -94,7 +97,9 @@ class WalletService {
       } else if (response.statusCode == 400) {
         final errorData = jsonDecode(response.body);
         throw WalletException(errorData['message'] ?? 'Invalid amount');
-      } else if (response.statusCode == 403) {
+      } else if (response.statusCode == 403 || response.statusCode == 401) {
+        // Handle unauthorized - logout and navigate to login
+        await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
         throw WalletException('Unauthorized access');
       } else {
         final errorData = jsonDecode(response.body);
