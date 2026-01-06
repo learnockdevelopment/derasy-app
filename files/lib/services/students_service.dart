@@ -41,7 +41,7 @@ class StudentsService {
       final response = await http.get(
         uri,
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [STUDENTS] Response status: ${response.statusCode}');
       print('🎓 [STUDENTS] Response body: ${response.body}');
@@ -322,7 +322,7 @@ class StudentsService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('👶 [CHILDREN] Response status: ${response.statusCode}');
       print('👶 [CHILDREN] Response body: ${response.body}');

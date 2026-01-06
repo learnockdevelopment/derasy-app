@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:iconly/iconly.dart';
 import 'dart:io';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
-import '../../services/maintenance_service.dart';
 import '../../widgets/safe_network_image.dart';
-import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -40,7 +37,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
     print('👤 [USER PROFILE] ===========================================');
     // Load data immediately
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadUserData();
+      if (mounted) {
+        _loadUserData();
+      }
     });
   }
 
@@ -92,9 +91,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         print('👤 [USER PROFILE] Email Verified: ${userData['emailVerified']}');
         print('👤 [USER PROFILE] All API keys: ${userData.keys.toList()}');
 
-        setState(() {
-          _userData = userData;
-        });
+        if (mounted) {
+          setState(() {
+            _userData = userData;
+          });
+        }
 
         // Populate controllers for editing
         _nameController.text = userData['name'] ?? '';
@@ -107,9 +108,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         final localData = await UserStorageService.getUserData();
         print('👤 [USER PROFILE] Local storage data: $localData');
 
-        setState(() {
-          _userData = localData;
-        });
+        if (mounted) {
+          setState(() {
+            _userData = localData;
+          });
+        }
       }
     } catch (e) {
       print('👤 [USER PROFILE] ===========================================');
@@ -123,9 +126,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         final localData = await UserStorageService.getUserData();
         print('👤 [USER PROFILE] Local storage fallback data: $localData');
 
-        setState(() {
-          _userData = localData;
-        });
+        if (mounted) {
+          setState(() {
+            _userData = localData;
+          });
+        }
       } catch (localError) {
         print(
             '👤 [USER PROFILE] Error loading from local storage: $localError');
@@ -141,8 +146,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _updateProfile() async {
-    if (_nameController.text.trim().isEmpty ||
-        _phoneController.text.trim().isEmpty) {
+    if (_nameController.text
+        .trim()
+        .isEmpty ||
+        _phoneController.text
+            .trim()
+            .isEmpty) {
       Get.snackbar(
         'error'.tr,
         'name_and_phone_required'.tr,
@@ -153,15 +162,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       String? avatarUrl = _userData?['avatar'];
       if (_selectedImage != null) {
         print(
-            '👤 [USER PROFILE] Image selected but not uploaded yet: ${_selectedImage!.path}');
+            '👤 [USER PROFILE] Image selected but not uploaded yet: ${_selectedImage!
+                .path}');
       }
 
       final response = await UserProfileService.updateUserProfile(
@@ -174,10 +186,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       if (response.containsKey('user')) {
         final updatedUser = response['user'] as Map<String, dynamic>;
-        setState(() {
-          _userData = updatedUser;
-          _isEditing = false;
-        });
+        if (mounted) {
+          setState(() {
+            _userData = updatedUser;
+            _isEditing = false;
+          });
+        }
 
         Get.snackbar(
           'success'.tr,
@@ -197,9 +211,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
         colorText: Colors.white,
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -213,9 +229,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
       );
 
       if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
+        if (mounted) {
+          setState(() {
+            _selectedImage = File(image.path);
+          });
+        }
         print('👤 [USER PROFILE] Image selected: ${image.path}');
       }
     } catch (e) {
@@ -231,16 +249,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   void _toggleEdit() {
-    setState(() {
-      _isEditing = !_isEditing;
-      if (!_isEditing) {
-        // Reset controllers to original values
-        _nameController.text = _userData?['name'] ?? '';
-        _phoneController.text = _userData?['phone'] ?? '';
-        _avatarController.text = _userData?['avatar'] ?? '';
-        _selectedImage = null; // Reset selected image
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _isEditing = !_isEditing;
+        if (!_isEditing) {
+          // Reset controllers to original values
+          _nameController.text = _userData?['name'] ?? '';
+          _phoneController.text = _userData?['phone'] ?? '';
+          _avatarController.text = _userData?['avatar'] ?? '';
+          _selectedImage = null; // Reset selected image
+        }
+      });
+    }
   }
 
   Future<void> _logout() async {
@@ -296,11 +316,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
               _buildUserInfoSection(),
               SizedBox(height: 16.h),
 
-              // Maintenance Settings (Admin/Moderator only)
-              if (UserStorageService.isAdminOrModerator())
-                _buildMaintenanceSection(),
-              if (UserStorageService.isAdminOrModerator())
-                SizedBox(height: 16.h),
 
               // Logout Button
               _buildLogoutButton(),
@@ -309,10 +324,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBarWidget(
-        currentIndex: 3,
-        onTap: (index) {},
-      ),
       floatingActionButton: DraggableChatbotWidget(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -320,12 +331,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
 
   Widget _buildProfileCard() {
-    final userName = _userData?['name'] ?? 
-                    _userData?['fullName'] ?? 
-                    'user'.tr;
+    final userName = _userData?['name'] ??
+        _userData?['fullName'] ??
+        'user'.tr;
     final userEmail = _userData?['email'] ?? 'N/A';
-    final avatarUrl = _userData?['avatar']?.toString() ?? 
-                     _userData?['profileImage']?.toString();
+    final avatarUrl = _userData?['avatar']?.toString() ??
+        _userData?['profileImage']?.toString();
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -363,27 +374,27 @@ class _UserProfilePageState extends State<UserProfilePage> {
             child: ClipOval(
               child: avatarUrl != null && avatarUrl.isNotEmpty
                   ? SafeNetworkImage(
-                      imageUrl: avatarUrl,
-                      width: 100.w,
-                      height: 100.w,
-                      fit: BoxFit.cover,
-                      errorWidget: Container(
-                        color: AppColors.primaryBlue,
-                        child: Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 50.sp,
-                        ),
-                      ),
-                    )
+                imageUrl: avatarUrl,
+                width: 100.w,
+                height: 100.w,
+                fit: BoxFit.cover,
+                errorWidget: Container(
+                  color: AppColors.primaryBlue,
+                  child: Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 50.sp,
+                  ),
+                ),
+              )
                   : Container(
-                      color: AppColors.primaryBlue,
-                      child: Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 50.sp,
-                      ),
-                    ),
+                color: AppColors.primaryBlue,
+                child: Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 50.sp,
+                ),
+              ),
             ),
           ),
           SizedBox(height: 16.h),
@@ -478,22 +489,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
             _buildEditableField(
                 'full_name'.tr, _nameController, Icons.person_rounded),
             SizedBox(height: 16.h),
-            _buildEditableField('phone'.tr, _phoneController, Icons.phone_rounded),
+            _buildEditableField(
+                'phone'.tr, _phoneController, Icons.phone_rounded),
             SizedBox(height: 16.h),
             _buildAvatarField(),
             SizedBox(height: 20.h),
             _buildSaveCancelButtons(),
-          ] else ...[
-            // Display mode - show phone, role, and user ID only (name and email are in profile card)
-            _buildInfoRow(
-                'phone'.tr, _userData?['phone'] ?? 'N/A', Icons.phone_rounded),
-            SizedBox(height: 12.h),
-            _buildInfoRow('role'.tr, _userData?['role'] ?? 'N/A',
-                Icons.admin_panel_settings_rounded),
-            SizedBox(height: 12.h),
-            _buildInfoRow(
-                'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
-          ],
+          ] else
+            ...[
+              // Display mode - show phone, role, and user ID only (name and email are in profile card)
+              _buildInfoRow(
+                  'phone'.tr, _userData?['phone'] ?? 'N/A',
+                  Icons.phone_rounded),
+              SizedBox(height: 12.h),
+              _buildInfoRow('role'.tr, _userData?['role'] ?? 'N/A',
+                  Icons.admin_panel_settings_rounded),
+              SizedBox(height: 12.h),
+              _buildInfoRow(
+                  'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
+            ],
         ],
       ),
     );
@@ -603,43 +617,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
 
-  Widget _buildUserAvatar() {
-    // Get user image from user data
-    String? imageUrl = _userData?['avatar'] ??
-        _userData?['profileImage'] ??
-        _userData?['image'];
-
-    return Container(
-      width: 80.w,
-      height: 80.h,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(40.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 3,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(40.r),
-        child: SafeAvatarImage(
-          imageUrl: imageUrl,
-          size: 80,
-          backgroundColor: const Color(0xFF1E3A8A),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEditableField(
-      String label, TextEditingController controller, IconData icon) {
+  Widget _buildEditableField(String label, TextEditingController controller,
+      IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -687,7 +666,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
             ),
             contentPadding:
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           ),
         ),
       ],
@@ -730,21 +709,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             child: _isLoading
                 ? SizedBox(
-                    width: 20.w,
-                    height: 20.h,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+              width: 20.w,
+              height: 20.h,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
                 : Text(
-                    'save'.tr,
-                    style: AppFonts.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: AppFonts.size16,
-                    ),
-                  ),
+              'save'.tr,
+              style: AppFonts.bodyMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: AppFonts.size16,
+              ),
+            ),
           ),
         ),
       ],
@@ -790,23 +769,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             child: _selectedImage != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: Image.file(
-                      _selectedImage!,
-                      width: double.infinity,
-                      height: 120.h,
-                      fit: BoxFit.cover,
-                    ),
-                  )
+              borderRadius: BorderRadius.circular(10.r),
+              child: Image.file(
+                _selectedImage!,
+                width: double.infinity,
+                height: 120.h,
+                fit: BoxFit.cover,
+              ),
+            )
                 : SafeNetworkImage(
-                    imageUrl: _userData?['avatar']?.toString(),
-                    width: double.infinity,
-                    height: 120.h,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(10.r),
-                    errorWidget: _buildAvatarPlaceholder(),
-                    placeholder: _buildAvatarPlaceholder(),
-                  ),
+              imageUrl: _userData?['avatar']?.toString(),
+              width: double.infinity,
+              height: 120.h,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(10.r),
+              errorWidget: _buildAvatarPlaceholder(),
+              placeholder: _buildAvatarPlaceholder(),
+            ),
           ),
         ),
         SizedBox(height: 8.h),
@@ -860,149 +839,4 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildMaintenanceSection() {
-    return _MaintenanceSettingsWidget();
-  }
-}
-
-class _MaintenanceSettingsWidget extends StatefulWidget {
-  @override
-  State<_MaintenanceSettingsWidget> createState() => _MaintenanceSettingsWidgetState();
-}
-
-class _MaintenanceSettingsWidgetState extends State<_MaintenanceSettingsWidget> {
-  MaintenanceSettings? _maintenanceSettings;
-  bool _isLoading = false;
-  final _messageController = TextEditingController();
-  final _scheduledStartController = TextEditingController();
-  final _scheduledEndController = TextEditingController();
-  final _allowedIPsController = TextEditingController();
-  bool _enabled = false;
-
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMaintenanceStatus();
-  }
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scheduledStartController.dispose();
-    _scheduledEndController.dispose();
-    _allowedIPsController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadMaintenanceStatus() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await MaintenanceService.getMaintenanceStatus();
-      if (response.data != null) {
-        setState(() {
-          _maintenanceSettings = response.data;
-          _enabled = response.data!.enabled;
-          _messageController.text = response.data!.message;
-          _scheduledStartController.text = response.data!.scheduledStart ?? '';
-          _scheduledEndController.text = response.data!.scheduledEnd ?? '';
-          _allowedIPsController.text = response.data!.allowedIPs.join(', ');
-        });
-      }
-    } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.settings_rounded,
-                color: const Color(0xFFF59E0B),
-                size: AppFonts.size22,
-              ),
-              SizedBox(width: 12.w),
-              Text(
-                'maintenance_settings'.tr,
-                style: AppFonts.h3.copyWith(
-                  color: const Color(0xFF1F2937),
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppFonts.size20,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          if (_isLoading && _maintenanceSettings == null)
-            const Center(child: CircularProgressIndicator())
-          else ...[
-            // Status Toggle (Admin only)
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: _enabled ? const Color(0xFFFEE2E2) : const Color(0xFFD1FAE5),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: _enabled ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _enabled ? Icons.warning_rounded : Icons.check_circle_rounded,
-                    color: _enabled ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                    size: AppFonts.size24,
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Text(
-                      _enabled ? 'maintenance_mode_active'.tr : 'maintenance_mode_inactive'.tr,
-                      style: AppFonts.bodyMedium.copyWith(
-                        color: _enabled ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ],
-      ),
-    );
-  }
 }

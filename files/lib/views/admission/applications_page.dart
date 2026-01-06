@@ -6,8 +6,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../models/admission_models.dart';
 import '../../models/student_models.dart';
-import '../../services/admission_service.dart';
-import '../../services/students_service.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
@@ -15,6 +13,7 @@ import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
 import '../../widgets/student_selection_sheet.dart';
+import '../../core/controllers/dashboard_controller.dart';
 
 class ApplicationsPage extends StatefulWidget {
   const ApplicationsPage({Key? key, this.childId, this.child}) : super(key: key);
@@ -27,12 +26,9 @@ class ApplicationsPage extends StatefulWidget {
 }
 
 class _ApplicationsPageState extends State<ApplicationsPage> {
-  List<Application> _allApplications = [];
   List<Application> _filteredApplications = [];
-  bool _isLoading = true;
   Map<String, dynamic>? _userData;
   final TextEditingController _searchController = TextEditingController();
-  int _totalStudents = 0;
   
   String? get _filterChildId => widget.childId ?? widget.child?.id;
 
@@ -41,8 +37,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     super.initState();
     _searchController.addListener(_filterApplications);
     _loadUserData();
-    _loadStudentsCount();
-    _loadApplications();
+    
+    // Listen to changes in DashboardController to update local state
+    final controller = DashboardController.to;
+    ever(controller.allApplications, (_) => _filterApplications());
+    
+    _filterApplications();
   }
 
   @override
@@ -61,91 +61,40 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     }
   }
 
-  Future<void> _loadStudentsCount() async {
-    try {
-      final response = await StudentsService.getRelatedChildren();
-      if (mounted) {
-        setState(() {
-          _totalStudents = response.success ? response.students.length : 0;
-        });
-      }
-    } catch (e) {
-      print('📋 [APPLICATIONS] Error loading students count: $e');
-      if (mounted) {
-        setState(() {
-          _totalStudents = 0;
-        });
-      }
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Don't reload automatically - only reload on pull-to-refresh or explicit action
-  }
-
-  Future<void> _loadApplications() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await AdmissionService.getApplications();
-      if (mounted) {
-        // Filter by child ID if provided
-        List<Application> filtered = response.applications;
-        if (_filterChildId != null && _filterChildId!.isNotEmpty) {
-          filtered = response.applications.where((app) {
-            return app.child.id == _filterChildId;
-          }).toList();
-        }
-        
-        setState(() {
-          _allApplications = filtered;
-          _filterApplications();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-
-      String errorMessage = 'failed_to_load_applications'.tr;
-      if (e is AdmissionException) {
-        errorMessage = e.message;
-      }
-
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-    }
+  Future<void> _onRefresh() async {
+    await DashboardController.to.refreshAll();
+    _filterApplications();
   }
 
   void _filterApplications() {
     if (!mounted) return;
+    final controller = DashboardController.to;
     final query = _searchController.text.toLowerCase();
+    
+    // Filter applications from the controller
+    List<Application> filtered = controller.allApplications;
+    if (_filterChildId != null && _filterChildId!.isNotEmpty) {
+      filtered = filtered.where((app) => app.child.id == _filterChildId).toList();
+    }
+
     setState(() {
       if (query.isEmpty) {
-        _filteredApplications = _allApplications;
+        _filteredApplications = filtered;
       } else {
-        _filteredApplications = _allApplications.where((app) {
+        _filteredApplications = filtered.where((app) {
+          final isPaid = app.payment?.isPaid ?? false;
           return app.school.name.toLowerCase().contains(query) ||
               app.child.fullName.toLowerCase().contains(query) ||
-              _getStatusLabel(app.status).toLowerCase().contains(query);
+              _getStatusLabel(app.status, isPaid).toLowerCase().contains(query);
         }).toList();
       }
     });
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return AppColors.success;
+    }
     switch (status.toLowerCase()) {
       case 'pending':
         return AppColors.warning;
@@ -158,13 +107,16 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
       case 'waitlist':
         return AppColors.primaryPurple;
       case 'draft':
-        return AppColors.textSecondary;
+        return AppColors.warning;
       default:
         return AppColors.textSecondary;
     }
   }
 
-  String _getStatusLabel(String status) {
+  String _getStatusLabel(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return '${'paid'.tr} / ${'pending'.tr}';
+    }
     switch (status.toLowerCase()) {
       case 'pending':
         return 'pending'.tr;
@@ -177,13 +129,16 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
       case 'waitlist':
         return 'waitlist'.tr;
       case 'draft':
-        return 'draft'.tr;
+        return 'pending'.tr;
       default:
         return status;
     }
   }
 
-  IconData _getStatusIcon(String status) {
+  IconData _getStatusIcon(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return Icons.check_circle_outline_rounded;
+    }
     switch (status.toLowerCase()) {
       case 'pending':
         return Icons.hourglass_empty_rounded;
@@ -196,7 +151,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
       case 'waitlist':
         return Icons.queue_rounded;
       case 'draft':
-        return Icons.edit_note_rounded;
+        return Icons.hourglass_empty_rounded;
       default:
         return Icons.info_rounded;
     }
@@ -207,164 +162,225 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
-        onRefresh: _loadApplications,
+        onRefresh: _onRefresh,
         color: AppColors.primaryBlue,
-        child: CustomScrollView(
-          slivers: [
-            // Hero Section - only show when showing all applications (not filtered by child)
-            if (_filterChildId == null)
-              SliverAppBar(
-                expandedHeight: 140.h,
-                floating: false,
-                pinned: true,
-                automaticallyImplyLeading: false,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                toolbarHeight: 0,
-                collapsedHeight: 140.h,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: HeroSectionWidget(
-                    userData: _userData,
-                    pageTitle: 'applications'.tr,
-                    actionButtonText: _isLoading ? null : 'add_application'.tr,
-                    actionButtonIcon: _isLoading ? null : IconlyBroken.plus,
-                    onActionTap: _isLoading ? null : () {
-                      if (_totalStudents == 0) {
-                        Get.snackbar(
-                          'error'.tr,
-                          'no_students_for_application'.tr,
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: AppColors.error,
-                          colorText: Colors.white,
-                        );
-                      } else {
-                        // Show bottom sheet to select student first
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => const StudentSelectionSheet(),
-                        ).then((selectedStudent) {
-                          if (selectedStudent != null && selectedStudent is Student) {
-                            // Navigate with selected student
-                            Get.toNamed(
-                              AppRoutes.applyToSchools,
-                              arguments: {'child': selectedStudent},
-                            );
-                          }
-                        });
-                      }
-                    },
-                    showGreeting: false,
-                    isButtonDisabled: _isLoading ? false : _totalStudents == 0,
-                    disabledMessage: _isLoading ? null : 'add_student_first_to_apply'.tr,
-                  ),
-                ),
-              )
-            else
-              SliverAppBar(
-                backgroundColor: AppColors.primaryBlue,
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-                  onPressed: () => Get.back(),
-                ),
-                title: Text(
-                  widget.child != null
-                      ? 'child_applications'.tr.replaceAll('{name}', widget.child!.fullName)
-                      : 'applications'.tr,
-                  style: AppFonts.h3.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(Icons.refresh, color: Colors.white, size: 24.sp),
-                    onPressed: _loadApplications,
-                  ),
-                ],
-              ),
-            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
-            
-            // Applications List
-            _isLoading
-                ? SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 16.h),
-                            child: ShimmerCard(
-                              height: 180.h,
-                              borderRadius: 24.r,
-                            ),
+        child: Obx(() {
+          final controller = DashboardController.to;
+          final totalStudents = controller.relatedChildren.length;
+          final isLoading = controller.isLoading;
+          return CustomScrollView(
+            slivers: [
+              if (_filterChildId == null)
+                SliverAppBar(
+                  expandedHeight: 140.h,
+                  floating: false,
+                  pinned: true,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  toolbarHeight: 0,
+                  collapsedHeight: 140.h,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: HeroSectionWidget(
+                      userData: _userData,
+                      pageTitle: 'applications'.tr,
+                      actionButtonText: isLoading ? null : 'add_application'.tr,
+                      actionButtonIcon: isLoading ? null : IconlyBroken.plus,
+                      onActionTap: isLoading ? null : () {
+                        if (totalStudents == 0) {
+                          Get.snackbar(
+                            'error'.tr,
+                            'no_students_for_application'.tr,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
                           );
-                        },
-                        childCount: 6,
+                        } else {
+                          // Show bottom sheet to select student first
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const StudentSelectionSheet(),
+                          ).then((selectedStudent) {
+                            if (selectedStudent != null && selectedStudent is Student) {
+                              // Navigate with selected student
+                              Get.toNamed(
+                                AppRoutes.applyToSchools,
+                                arguments: {'child': selectedStudent},
+                              );
+                            }
+                          });
+                        }
+                      },
+                      showGreeting: false,
+                      isButtonDisabled: isLoading ? false : totalStudents == 0,
+                      disabledMessage: isLoading ? null : 'add_student_first_to_apply'.tr,
+                    ),
+                  ),
+                )
+              else
+                SliverAppBar(
+                  backgroundColor: AppColors.primaryBlue,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+                    onPressed: () => Get.back(),
+                  ),
+                  title: Text(
+                    widget.child != null
+                        ? 'child_applications'.tr.replaceAll('{name}', widget.child!.fullName)
+                        : 'applications'.tr,
+                    style: AppFonts.h3.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.refresh, color: Colors.white, size: 24.sp),
+                      onPressed: _onRefresh,
+                    ),
+                  ],
+                ),
+              
+              if (controller.isTakingLong && isLoading)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              'slow_connection_message'.tr,
+                              style: AppFonts.bodySmall.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                : _filteredApplications.isEmpty
-                    ? SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(24.w),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  IconlyBroken.document,
-                                  size: 64.sp,
-                                  color: AppColors.primaryBlue.withOpacity(0.6),
-                                ),
-                              ),
-                              SizedBox(height: 24.h),
-                              Text(
-                                'no_applications_found'.tr,
-                                style: AppFonts.h3.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20.sp,
-                                ),
-                              ),
-                              SizedBox(height: 12.h),
-                              Text(
-                                'applications_will_appear_here'.tr,
-                                style: AppFonts.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 14.sp,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+                  ),
+                ),
+
+              if (controller.isTimeout && !isLoading && _filteredApplications.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    child: InkWell(
+                      onTap: () => controller.refreshAll(),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: AppColors.error.withOpacity(0.3)),
                         ),
-                      )
-                    : SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: 16.h),
-                                child: _buildApplicationCard(_filteredApplications[index]),
-                              );
-                            },
-                            childCount: _filteredApplications.length,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.refresh_rounded, color: AppColors.error, size: 20.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'retry_loading'.tr,
+                              style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-            SliverToBoxAdapter(child: SizedBox(height: 100.h)),
-          ],
-        ),
+                    ),
+                  ),
+                ),
+
+              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+              
+              // Applications List
+              isLoading && _filteredApplications.isEmpty
+                  ? SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 16.h),
+                              child: ShimmerCard(
+                                height: 140.h,
+                                borderRadius: 16.r,
+                              ),
+                            );
+                          },
+                          childCount: 6,
+                        ),
+                      ),
+                    )
+                  : _filteredApplications.isEmpty
+                      ? SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(24.w),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryBlue.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    IconlyBroken.document,
+                                    size: 64.sp,
+                                    color: AppColors.primaryBlue.withOpacity(0.6),
+                                  ),
+                                ),
+                                SizedBox(height: 24.h),
+                                Text(
+                                  'no_applications_found'.tr,
+                                  style: AppFonts.h3.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.sp,
+                                  ),
+                                ),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  'applications_will_appear_here'.tr,
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 14.sp,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : SliverPadding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 16.h),
+                                  child: _buildApplicationCard(_filteredApplications[index]),
+                                );
+                              },
+                              childCount: _filteredApplications.length,
+                            ),
+                          ),
+                        ),
+              SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+            ],
+          );
+        }),
       ),
       bottomNavigationBar: _filterChildId == null
           ? BottomNavBarWidget(
@@ -380,7 +396,23 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   }
 
   Widget _buildApplicationCard(Application application) {
-    final statusColor = _getStatusColor(application.status);
+    final isPaid = application.payment?.isPaid ?? false;
+    final statusColor = _getStatusColor(application.status, isPaid);
+    final displayName = application.child.arabicFullName ?? application.child.fullName;
+    final hasConfirmedInterview = application.interview?.date != null;
+    final hasPreferredSlots = application.preferredInterviewSlots.isNotEmpty;
+    
+    DateTime? interviewDate;
+    String? interviewTime;
+    
+    if (hasConfirmedInterview) {
+      interviewDate = application.interview!.date;
+      interviewTime = _formatTimeDisplay(application.interview!.time);
+    } else if (hasPreferredSlots) {
+      final slot = application.preferredInterviewSlots.first;
+      interviewDate = slot.date;
+      interviewTime = "${'from_time'.tr} ${slot.timeRange.from} ${'to_time'.tr} ${slot.timeRange.to}";
+    }
 
     return Material(
       color: Colors.transparent,
@@ -389,72 +421,43 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           AppRoutes.applicationDetails,
           arguments: {'applicationId': application.id},
         ),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
-          padding: EdgeInsets.all(20.w),
+          padding: EdgeInsets.all(14.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24.r),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                statusColor.withOpacity(0.02),
-              ],
-            ),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: statusColor.withOpacity(0.2),
-              width: 2,
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: statusColor.withOpacity(0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
+                color: statusColor.withOpacity(0.1),
+                blurRadius: 12,
                 offset: const Offset(0, 4),
-                spreadRadius: 0,
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row - Status Icon and Badge
+              // Header Row - School Name and Status
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(14.w),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          statusColor,
-                          statusColor.withOpacity(0.75),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: statusColor.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
-                      _getStatusIcon(application.status),
+                      _getStatusIcon(application.status, isPaid),
                       color: Colors.white,
-                      size: 24.sp,
+                      size: 18.sp,
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,33 +466,28 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           application.school.name,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
-                            fontSize: 18.sp,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 3.h),
                         Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
+                            horizontal: 8.w,
+                            vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
                             color: statusColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: statusColor.withOpacity(0.3),
-                              width: 1,
-                            ),
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            _getStatusLabel(application.status),
+                            _getStatusLabel(application.status, isPaid),
                             style: AppFonts.bodySmall.copyWith(
                               color: statusColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12.sp,
+                              fontSize: 11.sp,
                             ),
                           ),
                         ),
@@ -497,141 +495,112 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     ),
                   ),
                   Icon(
-                    IconlyBroken.arrow_right_2,
+                    IconlyBroken.arrow_left_2,
                     color: statusColor.withOpacity(0.5),
-                    size: 24.sp,
+                    size: 20.sp,
                   ),
                 ],
               ),
-              SizedBox(height: 16.h),
-              // Divider
-              Container(
-                height: 1,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      statusColor.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              // Student Info
+              SizedBox(height: 12.h),
+              
+              // Student Info with Gender
               Row(
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      IconlyBroken.profile,
-                      size: 18.sp,
-                      color: AppColors.primaryBlue,
-                    ),
+                  Icon(
+                    IconlyBroken.profile,
+                    size: 14.sp,
+                    color: AppColors.primaryBlue,
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      application.child.fullName,
+                      displayName,
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              // Footer - Payment and Date
-              Row(
-                children: [
-                  if (application.payment != null) ...[
+                  if (application.child.gender != null) ...[
+                    SizedBox(width: 8.w),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: (application.payment!.isPaid
-                                ? AppColors.success
-                                : AppColors.warning)
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: (application.payment!.isPaid
-                                  ? AppColors.success
-                                  : AppColors.warning)
-                              .withOpacity(0.3),
-                          width: 1,
-                        ),
+                        color: application.child.gender?.toLowerCase() == 'male'
+                            ? Colors.blue.withOpacity(0.1)
+                            : Colors.pink.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            application.payment!.isPaid
-                                ? Icons.check_circle_rounded
-                                : Icons.payment_rounded,
-                            size: 16.sp,
-                            color: application.payment!.isPaid
-                                ? AppColors.success
-                                : AppColors.warning,
+                            application.child.gender?.toLowerCase() == 'male'
+                                ? Icons.male
+                                : Icons.female,
+                            size: 12.sp,
+                            color: application.child.gender?.toLowerCase() == 'male'
+                                ? Colors.blue
+                                : Colors.pink,
                           ),
-                          SizedBox(width: 6.w),
+                          SizedBox(width: 4.w),
                           Text(
-                            application.payment!.isPaid
-                                ? 'paid'.tr
-                                : 'unpaid'.tr,
+                            application.child.gender?.toLowerCase() == 'male'
+                                ? 'male'.tr
+                                : 'female'.tr,
                             style: AppFonts.bodySmall.copyWith(
-                              color: application.payment!.isPaid
-                                  ? AppColors.success
-                                  : AppColors.warning,
-                              fontSize: 12.sp,
+                              color: application.child.gender?.toLowerCase() == 'male'
+                                  ? Colors.blue
+                                  : Colors.pink,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(width: 12.w),
                   ],
+                ],
+              ),
+              SizedBox(height: 10.h),
+              
+              // Footer - Dates and Payment
+              Row(
+                children: [
+                  // Submitted Date
                   Expanded(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.grey100,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            IconlyBroken.calendar,
-                            size: 16.sp,
-                            color: AppColors.textSecondary,
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            _formatDate(application.createdAt),
-                            style: AppFonts.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: _buildInfoChip(
+                      icon: Icons.send,
+                      label: 'submitted_date'.tr,
+                      value: _formatDate(application.submittedAt ?? application.createdAt),
+                      color: AppColors.primaryBlue,
                     ),
+                  ),
+                  SizedBox(width: 8.w),
+                  // Interview Date and Time
+                  Expanded(
+                    child: interviewDate != null
+                        ? _buildInfoChip(
+                            icon: Icons.event,
+                            label: hasConfirmedInterview ? 'interview_scheduled'.tr : 'interview_date'.tr,
+                            value: '${_formatDate(interviewDate!)}\n${interviewTime ?? ""}',
+                            color: AppColors.warning,
+                          )
+                        : application.payment != null
+                            ? _buildInfoChip(
+                                icon: application.payment!.isPaid
+                                    ? Icons.check_circle
+                                    : Icons.hourglass_empty,
+                                label: application.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
+                                value: '${application.payment!.amount} ${'egp'.tr}',
+                                color: application.payment!.isPaid
+                                    ? AppColors.success
+                                    : AppColors.warning,
+                              )
+                            : SizedBox.shrink(),
                   ),
                 ],
               ),
@@ -642,6 +611,52 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     );
   }
 
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 10.sp, color: color),
+              SizedBox(width: 4.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppFonts.bodySmall.copyWith(
+                    color: color,
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            value,
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.textPrimary,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   int _getCurrentIndex() {
     final route = Get.currentRoute;
@@ -653,6 +668,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    final monthKeys = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    return '${date.day} ${monthKeys[date.month - 1].tr} ${date.year}';
+  }
+
+  String _formatTimeDisplay(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty) return '';
+    
+    // Check if it's a range like "HH:mm - HH:mm" or "HH:mm-HH:mm"
+    final rangeMatch = RegExp(r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})").firstMatch(timeStr);
+    if (rangeMatch != null) {
+      final from = rangeMatch.group(1);
+      final to = rangeMatch.group(2);
+      return "${'from_time'.tr} $from ${'to_time'.tr} $to";
+    }
+    
+    return timeStr;
   }
 }

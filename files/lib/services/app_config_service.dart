@@ -18,7 +18,7 @@ class AppConfigService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🔧 [APP CONFIG] Response status: ${response.statusCode}');
       print('🔧 [APP CONFIG] Response body: ${response.body}');

@@ -220,12 +220,14 @@ class Application {
 class ChildApplicationInfo {
   final String id;
   final String fullName;
+  final String? arabicFullName;
   final DateTime? birthDate;
   final String? gender;
 
   ChildApplicationInfo({
     required this.id,
     required this.fullName,
+    this.arabicFullName,
     this.birthDate,
     this.gender,
   });
@@ -234,6 +236,7 @@ class ChildApplicationInfo {
     return ChildApplicationInfo(
       id: json['_id'] ?? json['id'] ?? '',
       fullName: json['fullName']?.toString() ?? '',
+      arabicFullName: json['arabicFullName']?.toString(),
       birthDate: json['birthDate'] != null
           ? DateTime.parse(json['birthDate'])
           : null,
@@ -245,6 +248,7 @@ class ChildApplicationInfo {
     return {
       '_id': id,
       'fullName': fullName,
+      if (arabicFullName != null) 'arabicFullName': arabicFullName,
       'birthDate': birthDate?.toIso8601String(),
       'gender': gender,
     };

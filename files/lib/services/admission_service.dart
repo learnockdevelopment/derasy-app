@@ -31,7 +31,7 @@ class AdmissionService {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(request.toJson()),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -91,7 +91,7 @@ class AdmissionService {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(request.toJson()),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -139,7 +139,7 @@ class AdmissionService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -184,7 +184,7 @@ class AdmissionService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -248,7 +248,7 @@ class AdmissionService {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -315,7 +315,7 @@ class AdmissionService {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
@@ -366,7 +366,7 @@ class AdmissionService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');

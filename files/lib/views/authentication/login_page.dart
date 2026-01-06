@@ -12,6 +12,7 @@ import '../../core/controllers/app_config_controller.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
+import '../../core/controllers/dashboard_controller.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key); 
@@ -367,6 +368,13 @@ class _LoginPageState extends State<LoginPage>
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
+
+      // Trigger pre-fetching of all data
+      try {
+        DashboardController.to.refreshAll();
+      } catch (e) {
+        print('📊 [LOGIN] Error triggering pre-fetch: $e');
+      }
 
       // Navigate to home
       Get.offNamed<void>(AppRoutes.home);

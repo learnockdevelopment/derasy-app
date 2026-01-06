@@ -192,7 +192,7 @@ class AuthService {
         Uri.parse('$_baseUrl${ApiConstants.loginEndpoint}'),
         headers: ApiConstants.getHeaders(),
         body: jsonEncode(request.toJson()),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       print('🔐 [LOGIN] ========== RESPONSE ==========');
       print('🔐 [LOGIN] Status Code: ${response.statusCode}');
@@ -402,7 +402,7 @@ class AuthService {
       final response = await http.get(
         Uri.parse('$_baseUrl${ApiConstants.getUserProfileEndpoint}'),
         headers: ApiConstants.getHeaders(token: token),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       print('🔐 [GET_USER_PROFILE] ========== RESPONSE ==========');
       print('🔐 [GET_USER_PROFILE] Status Code: ${response.statusCode}');

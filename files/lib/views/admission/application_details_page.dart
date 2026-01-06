@@ -59,7 +59,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
       Get.snackbar(
         'error'.tr,
-        errorMessage,
+        errorMessage.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
@@ -69,7 +69,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return AppColors.success;
+    }
     switch (status.toLowerCase()) {
       case 'pending':
         return AppColors.warning;
@@ -80,24 +83,27 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       case 'rejected':
         return AppColors.error;
       case 'draft':
-        return AppColors.textSecondary;
+        return AppColors.warning;
       default:
         return AppColors.textSecondary;
     }
   }
 
-  String _getStatusLabel(String status) {
+  String _getStatusLabel(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return '${'paid'.tr} / ${'pending'.tr}';
+    }
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'Pending';
+        return 'pending'.tr;
       case 'under_review':
-        return 'Under Review';
+        return 'under_review'.tr;
       case 'accepted':
-        return 'Accepted';
+        return 'accepted'.tr;
       case 'rejected':
-        return 'Rejected';
+        return 'rejected'.tr;
       case 'draft':
-        return 'Draft';
+        return 'draft'.tr;
       default:
         return status;
     }
@@ -116,7 +122,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             onPressed: () => Get.back(),
           ),
           title: Text(
-            'Application Details',
+            'application_details_title'.tr,
             style: AppFonts.h3.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -150,7 +156,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         ),
         body: Center(
           child: Text(
-            'Application not found',
+            'application_not_found'.tr,
             style: AppFonts.h4.copyWith(
               color: AppColors.textSecondary,
               fontSize: 14.sp,
@@ -161,7 +167,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     }
 
     final app = _application!;
-    final statusColor = _getStatusColor(app.status);
+    final isPaid = app.payment?.isPaid ?? false;
+    final statusColor = _getStatusColor(app.status, isPaid);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -173,7 +180,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Application Details',
+          'application_details_title'.tr,
           style: AppFonts.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -210,7 +217,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(
-                      _getStatusIcon(app.status),
+                      _getStatusIcon(app.status, isPaid),
                       color: statusColor,
                       size: 20.sp,
                     ),
@@ -221,7 +228,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _getStatusLabel(app.status),
+                          _getStatusLabel(app.status, isPaid),
                           style: AppFonts.h4.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -230,7 +237,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          'ID: ${app.id.substring(0, 8).toUpperCase()}',
+                          '${'id'.tr}: ${app.id.substring(0, 8).toUpperCase()}',
                           style: AppFonts.bodySmall.copyWith(
                             color: Colors.white,
                             fontSize: 11.sp,
@@ -248,11 +255,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             _buildInfoCard(
               icon: Icons.school_rounded,
               iconColor: const Color(0xFF6366F1),
-              title: 'School Information',
+              title: 'school_information'.tr,
               children: [
                 _buildInfoRow(
                   icon: Icons.business,
-                  label: 'School Name',
+                  label: 'school_name'.tr,
                   value: app.school.name,
                   isHighlight: true,
                 ),
@@ -260,7 +267,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   SizedBox(height: 8.h),
                   _buildInfoRow(
                     icon: Icons.location_on,
-                    label: 'Address',
+                    label: 'address'.tr,
                     value: app.school.address!,
                   ),
                 ],
@@ -272,28 +279,28 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             _buildInfoCard(
               icon: Icons.child_care_rounded,
               iconColor: const Color(0xFF10B981),
-              title: 'Child Information',
+              title: 'student_information'.tr,
               children: [
                 _buildInfoRow(
                   icon: Icons.person,
-                  label: 'Name',
-                  value: app.child.fullName,
+                  label: 'full_name'.tr,
+                  value: app.child.arabicFullName ?? app.child.fullName,
                   isHighlight: true,
                 ),
                 if (app.child.birthDate != null) ...[
                   SizedBox(height: 8.h),
                   _buildInfoRow(
                     icon: Icons.cake,
-                    label: 'Birth Date',
-                    value: '${app.child.birthDate!.day}/${app.child.birthDate!.month}/${app.child.birthDate!.year}',
+                    label: 'birth_date'.tr,
+                    value: _formatDate(app.child.birthDate!),
                   ),
                 ],
                 if (app.child.gender != null) ...[
                   SizedBox(height: 8.h),
                   _buildInfoRow(
                     icon: Icons.wc,
-                    label: 'Gender',
-                    value: app.child.gender!.toUpperCase(),
+                    label: 'gender'.tr,
+                    value: app.child.gender!.toLowerCase() == 'male' ? 'male'.tr : 'female'.tr,
                   ),
                 ],
               ],
@@ -307,7 +314,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 iconColor: app.payment!.isPaid
                     ? AppColors.success
                     : AppColors.warning,
-                title: 'Payment Information',
+                title: 'payment_information'.tr,
                 children: [
                   Container(
                     padding: EdgeInsets.all(10.w),
@@ -349,7 +356,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                app.payment!.isPaid ? 'Paid' : 'Unpaid',
+                                app.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
                                 style: AppFonts.h4.copyWith(
                                   color: app.payment!.isPaid
                                       ? AppColors.success
@@ -360,7 +367,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                '${app.payment!.amount} EGP',
+                                '${app.payment!.amount} ${'egp'.tr}',
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: AppColors.textPrimary,
                                   fontSize: 13.sp,
@@ -381,25 +388,25 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             _buildInfoCard(
               icon: Icons.info_outline_rounded,
               iconColor: AppColors.primaryBlue,
-              title: 'Application Details',
+              title: 'application_details_title'.tr,
               children: [
                 _buildInfoRow(
                   icon: Icons.fingerprint,
-                  label: 'Application ID',
+                  label: 'application_id_label'.tr,
                   value: app.id,
                   copyable: true,
                 ),
                 SizedBox(height: 8.h),
                 _buildInfoRow(
                   icon: Icons.calendar_today,
-                  label: 'Submitted',
-                  value: '${app.createdAt.day}/${app.createdAt.month}/${app.createdAt.year}',
+                  label: 'submitted_date'.tr,
+                  value: _formatDate(app.submittedAt ?? app.createdAt),
                 ),
                 SizedBox(height: 8.h),
                 _buildInfoRow(
                   icon: Icons.update,
-                  label: 'Last Updated',
-                  value: '${app.updatedAt.day}/${app.updatedAt.month}/${app.updatedAt.year}',
+                  label: 'last_updated'.tr,
+                  value: _formatDate(app.updatedAt),
                 ),
                 if (app.notes != null && app.notes!.isNotEmpty) ...[
                   SizedBox(height: 8.h),
@@ -427,7 +434,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Notes',
+                                'notes'.tr,
                                 style: AppFonts.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 10.sp,
@@ -451,6 +458,84 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ],
               ],
             ),
+            
+            // Confirmed Interview (if exists)
+            if (app.interview?.date != null) ...[
+              SizedBox(height: 10.h),
+              _buildInfoCard(
+                icon: Icons.event_available_rounded,
+                iconColor: AppColors.success,
+                title: 'interview_scheduled'.tr,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: AppColors.success.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 14.sp, color: AppColors.success),
+                            SizedBox(width: 8.w),
+                            Text(
+                              _formatDate(app.interview!.date!),
+                              style: AppFonts.bodyMedium.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (app.interview!.time?.isNotEmpty ?? false) ...[
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Icon(Icons.access_time, size: 14.sp, color: AppColors.success),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  _formatTimeDisplay(app.interview!.time),
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (app.interview!.location != null) ...[
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, size: 14.sp, color: AppColors.success),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  app.interview!.location!,
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
 
             // Interview Slots
             if (app.preferredInterviewSlots.isNotEmpty) ...[
@@ -458,11 +543,17 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               _buildInfoCard(
                 icon: Icons.event_rounded,
                 iconColor: const Color(0xFFF59E0B),
-                title: 'Preferred Interview Slots',
+                title: 'preferred_interview_slots'.tr,
                 children: app.preferredInterviewSlots
                     .map((slot) => _buildInterviewSlot(slot))
                     .toList(),
               ),
+            ],
+
+            // Events Timeline
+            if (app.events.isNotEmpty) ...[
+              SizedBox(height: 10.h),
+              _buildEventsTimeline(app.events),
             ],
 
             SizedBox(height: 16.h),
@@ -596,8 +687,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: value));
                             Get.snackbar(
-                              'Copied',
-                              'Application ID copied to clipboard',
+                              'copied'.tr,
+                              'application_id_copied'.tr,
                               snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: AppColors.success,
                               colorText: Colors.white,
@@ -661,7 +752,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${slot.date.day}/${slot.date.month}/${slot.date.year}',
+                  _formatDate(slot.date),
                   style: AppFonts.bodyMedium.copyWith(
                     color: AppColors.textPrimary,
                     fontSize: 12.sp,
@@ -678,7 +769,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     ),
                     SizedBox(width: 5.w),
                     Text(
-                      '${slot.timeRange.from} - ${slot.timeRange.to}',
+                      '${_getWeekdayKey(slot.date.weekday).tr.toUpperCase()} - ${_formatTimeDisplay("${slot.timeRange.from} - ${slot.timeRange.to}")}',
                       style: AppFonts.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 10.sp,
@@ -694,20 +785,194 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     );
   }
 
-  IconData _getStatusIcon(String status) {
+  IconData _getStatusIcon(String status, bool isPaid) {
+    if (status.toLowerCase() == 'pending' && isPaid) {
+      return Icons.check_circle_outline_rounded;
+    }
     switch (status.toLowerCase()) {
       case 'pending':
         return Icons.hourglass_empty_rounded;
       case 'under_review':
-        return Icons.visibility_rounded;
+        return Icons.search_rounded;
       case 'accepted':
-        return Icons.check_circle_rounded;
+        return Icons.check_circle_outline_rounded;
       case 'rejected':
-        return Icons.cancel_rounded;
+        return Icons.cancel_outlined;
       case 'draft':
         return Icons.edit_note_rounded;
       default:
+        return Icons.info_outline_rounded;
+    }
+  }
+
+  Widget _buildEventsTimeline(List<ApplicationEvent> events) {
+    return _buildInfoCard(
+      icon: Icons.history_rounded,
+      iconColor: AppColors.primaryBlue,
+      title: 'events_timeline'.tr,
+      children: [
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: events.length,
+          separatorBuilder: (context, index) => SizedBox(height: 12.h),
+          itemBuilder: (context, index) {
+            final event = events[events.length - 1 - index]; // Show latest first
+            return _buildEventItem(event);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEventItem(ApplicationEvent event) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(6.w),
+              decoration: BoxDecoration(
+                color: _getEventColor(event.type).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getEventIcon(event.type),
+                size: 14.sp,
+                color: _getEventColor(event.type),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      event.title.tr,
+                      style: AppFonts.bodyMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _formatDate(event.date),
+                    style: AppFonts.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 10.sp,
+                    ),
+                  ),
+                ],
+              ),
+              if (event.description != null && event.description!.isNotEmpty) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  event.description!.tr,
+                  style: AppFonts.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+              if (event.createdBy != null) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  '${'created_by'.tr}: ${event.createdBy!.name}',
+                  style: AppFonts.bodySmall.copyWith(
+                    color: AppColors.textSecondary.withOpacity(0.7),
+                    fontSize: 9.sp,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getEventColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'status_change':
+        return AppColors.primaryBlue;
+      case 'note':
+        return const Color(0xFF6B7280);
+      case 'interview':
+        return const Color(0xFFF59E0B);
+      case 'document':
+        return const Color(0xFF10B981);
+      case 'payment':
+        return AppColors.success;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  IconData _getEventIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'status_change':
+        return Icons.swap_horiz_rounded;
+      case 'note':
+        return Icons.note_alt_rounded;
+      case 'interview':
+        return Icons.event_rounded;
+      case 'document':
+        return Icons.description_rounded;
+      case 'payment':
+        return Icons.payments_rounded;
+      default:
         return Icons.info_rounded;
     }
+  }
+
+  String _getWeekdayKey(int weekday) {
+    switch (weekday) {
+      case 1:
+        return 'monday';
+      case 2:
+        return 'tuesday';
+      case 3:
+        return 'wednesday';
+      case 4:
+        return 'thursday';
+      case 5:
+        return 'friday';
+      case 6:
+        return 'saturday';
+      case 7:
+        return 'sunday';
+      default:
+        return '';
+    }
+  }
+  String _formatDate(DateTime date) {
+    final monthKeys = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    return '${date.day} ${monthKeys[date.month - 1].tr} ${date.year}';
+  }
+
+  String _formatTimeDisplay(String? timeStr) {
+    if (timeStr == null || timeStr.isEmpty) return '';
+    
+    // Check if it's a range like "HH:mm - HH:mm" or "HH:mm-HH:mm"
+    final rangeMatch = RegExp(r"(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})").firstMatch(timeStr);
+    if (rangeMatch != null) {
+      final from = rangeMatch.group(1);
+      final to = rangeMatch.group(2);
+      return "${'from_time'.tr} $from ${'to_time'.tr} $to";
+    }
+    
+    return timeStr;
   }
 }

@@ -6,14 +6,13 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/routes/app_routes.dart';
 import '../../models/student_models.dart';
-import '../../services/students_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/schools_service.dart';
-import '../../services/admission_service.dart';
 import '../../models/admission_models.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/hero_section_widget.dart';
+import '../../core/controllers/dashboard_controller.dart';
 
 class MyStudentsPage extends StatefulWidget { 
   const MyStudentsPage({Key? key}) : super(key: key);
@@ -25,7 +24,6 @@ class MyStudentsPage extends StatefulWidget {
 class _MyStudentsPageState extends State<MyStudentsPage> {
   List<Student> _children = [];
   List<Student> _filteredChildren = [];
-  bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
   Map<String, dynamic>? _userData;
   Map<String, String> _schoolEducationSystems = {};
@@ -36,7 +34,20 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     super.initState();
     _searchController.addListener(_filterChildren);
     _loadUserData();
-    _loadChildren();
+    
+    // Listen to changes in DashboardController to update local state
+    final controller = DashboardController.to;
+    ever(controller.relatedChildren, (_) => _syncWithController());
+    ever(controller.allApplications, (_) => _syncWithController());
+    
+    _syncWithController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_filterChildren);
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -45,6 +56,59 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       setState(() {
         _userData = userData;
       });
+    }
+  }
+
+  void _syncWithController() {
+    final controller = DashboardController.to;
+    
+    // Initial sync
+    _updateLocalState(controller.relatedChildren, controller.allApplications);
+    
+    // We'll use Obx in the build method for reactivity, 
+    // but we still need to filter when data arrives.
+  }
+
+  void _updateLocalState(List<Student> students, List<Application> applications) {
+    if (!mounted) return;
+
+    final currentUser = UserStorageService.getCurrentUser();
+    if (currentUser == null) {
+      setState(() {
+        _children = [];
+        _filteredChildren = [];
+        _studentApplications = {};
+      });
+      return;
+    }
+
+    final currentUserId = currentUser.id;
+    final userJson = currentUser.toJson();
+    final currentUserIdAlt = userJson['_id']?.toString() ?? currentUserId;
+
+    // Filter children for current parent
+    final filteredChildren = students.where((child) {
+      final parentId = child.parent.id;
+      return parentId == currentUserId || parentId == currentUserIdAlt;
+    }).toList();
+
+    // Map applications to students
+    final Map<String, List<Application>> studentApps = {};
+    for (var app in applications) {
+      final childId = app.child.id;
+      if (childId.isNotEmpty) {
+        studentApps.putIfAbsent(childId, () => []).add(app);
+      }
+    }
+
+    setState(() {
+      _children = filteredChildren;
+      _studentApplications = studentApps;
+      _filterChildren();
+    });
+
+    if (filteredChildren.isNotEmpty) {
+      _loadSchoolsData();
     }
   }
 
@@ -82,33 +146,9 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     }
   }
 
-  Future<void> _loadApplications() async {
-    try {
-      final response = await AdmissionService.getApplications();
-      final Map<String, List<Application>> studentApps = {};
-
-      for (var app in response.applications) {
-        final childId = app.child.id;
-        if (childId.isNotEmpty) {
-          studentApps.putIfAbsent(childId, () => []).add(app);
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _studentApplications = studentApps;
-        });
-      }
-    } catch (e) {
-      print('📋 [MY STUDENTS] Error loading applications: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_filterChildren);
-    _searchController.dispose();
-    super.dispose();
+  Future<void> _onRefresh() async {
+    await DashboardController.to.refreshAll();
+    _syncWithController();
   }
 
   void _filterChildren() {
@@ -129,71 +169,6 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     });
   }
 
-  Future<void> _loadChildren() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await StudentsService.getRelatedChildren();
-      if (!mounted) return;
-
-      if (response.success) {
-        final currentUser = UserStorageService.getCurrentUser();
-        if (currentUser == null) {
-          if (!mounted) return;
-          setState(() {
-            _children = [];
-            _filteredChildren = [];
-            _isLoading = false;
-          });
-          return;
-        }
-
-        final currentUserId = currentUser.id;
-        final userJson = currentUser.toJson();
-        final currentUserIdAlt = userJson['_id']?.toString() ?? currentUserId;
-
-        final filteredChildren = response.students.where((child) {
-          final parentId = child.parent.id;
-          return parentId == currentUserId || parentId == currentUserIdAlt;
-        }).toList();
-
-        if (!mounted) return;
-        setState(() {
-          _children = filteredChildren;
-          _filteredChildren = filteredChildren;
-        });
-
-        // Load schools data and applications after children are loaded
-        await _loadSchoolsData();
-        await _loadApplications();
-
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
-      } else {
-        // Response was not successful
-        if (!mounted) return;
-        setState(() {
-          _children = [];
-          _filteredChildren = [];
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('👥 [MY STUDENTS] Error loading children: $e');
-      if (!mounted) return;
-      setState(() {
-        _children = [];
-        _filteredChildren = [];
-        _isLoading = false;
-      });
-    }
-  }
-
   int _getCurrentIndex() {
     final route = Get.currentRoute;
     if (route == AppRoutes.home) return 0;
@@ -210,75 +185,136 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadChildren();
-        },
+        onRefresh: _onRefresh,
         color: AppColors.primaryBlue,
-        child: CustomScrollView(
-          slivers: [
-            // Hero Section with dynamic height
-            SliverAppBar(
-              expandedHeight: heroHeight,
-              floating: false,
-              pinned: true,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              toolbarHeight: 0,
-              collapsedHeight: heroHeight,
-              flexibleSpace: FlexibleSpaceBar(
-                background: HeroSectionWidget(
-                  userData: _userData,
-                  pageTitle: 'my_students'.tr,
-                  actionButtonText: 'add_student'.tr,
-                  actionButtonIcon: IconlyBroken.plus,
-                  onActionTap: _navigateToAddChild,
-                  showGreeting: false,
+        child: Obx(() {
+          final controller = DashboardController.to;
+          final isLoading = controller.isLoading;
+          
+          // Local state is now synced via listeners in initState
+          // to avoid calling setState() during build.
+
+          return CustomScrollView(
+            slivers: [
+              // Hero Section with dynamic height
+              SliverAppBar(
+                expandedHeight: heroHeight,
+                floating: false,
+                pinned: true,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                toolbarHeight: 0,
+                collapsedHeight: heroHeight,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: HeroSectionWidget(
+                    userData: _userData,
+                    pageTitle: 'my_students'.tr,
+                    actionButtonText: 'add_student'.tr,
+                    actionButtonIcon: IconlyBroken.plus,
+                    onActionTap: _navigateToAddChild,
+                    showGreeting: false,
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
-            // Students List
-            _isLoading
-                ? SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: const ShimmerListTile(),
-                        );
-                      },
-                      childCount: 10,
-                    ),
-                  )
-                : _filteredChildren.isEmpty
-                    ? SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: _buildEmptyState(),
-                      )
-                    : SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return _buildStudentListItem(
-                                  _filteredChildren[index], index);
-                            },
-                            childCount: _filteredChildren.length,
+
+              if (controller.isTakingLong && isLoading)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              'slow_connection_message'.tr,
+                              style: AppFonts.bodySmall.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold),
+                            ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              if (controller.isTimeout && !isLoading && _filteredChildren.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    child: InkWell(
+                      onTap: () => controller.refreshAll(),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.refresh_rounded, color: AppColors.error, size: 20.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'retry_loading'.tr,
+                              style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-            SliverToBoxAdapter(
-                child: SizedBox(height: 100.h)), // Space for FABs
-          ],
-        ),
+                    ),
+                  ),
+                ),
+
+              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+              // Students List
+              isLoading && _filteredChildren.isEmpty
+                  ? SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            child: const ShimmerListTile(),
+                          );
+                        },
+                        childCount: 10,
+                      ),
+                    )
+                  : _filteredChildren.isEmpty
+                      ? SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: _buildEmptyState(),
+                        )
+                      : SliverPadding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return _buildStudentListItem(
+                                    _filteredChildren[index], index);
+                              },
+                              childCount: _filteredChildren.length,
+                            ),
+                          ),
+                        ),
+              SliverToBoxAdapter(
+                  child: SizedBox(height: 100.h)), // Space for FABs
+            ],
+          );
+        }),
       ),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
       ),
-      floatingActionButton: _buildChatButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -287,147 +323,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     final result = await Get.toNamed(AppRoutes.addChildSteps);
     if (result == true) {
       // Refresh children list after adding
-      await _loadChildren();
+      await DashboardController.to.refreshAll();
+      _syncWithController();
     }
   }
-
-  void _navigateToEditChild(Student child) async {
-    Get.snackbar(
-      'edit_child'.tr,
-      'edit_child_feature_coming_soon'.tr,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.primaryBlue,
-      colorText: Colors.white,
-    );
-  }
-
-  // Future<void> _showDeleteConfirmation(Student child) async {
-  //   final confirmed = await Get.dialog<bool>(
-  //     AlertDialog(
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(20.r),
-  //       ),
-  //       title: Text(
-  //         'delete_child'.tr,
-  //         style: AppFonts.h3.copyWith(
-  //           color: AppColors.textPrimary,
-  //           fontWeight: FontWeight.bold,
-  //           fontSize: 18.sp,
-  //         ),
-  //       ),
-  //       content: Text(
-  //         'delete_child_confirmation'.tr.replaceAll('{name}', child.fullName),
-  //         style: AppFonts.bodyMedium.copyWith(
-  //           color: AppColors.textSecondary,
-  //           fontSize: 14.sp,
-  //         ),
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Get.back(result: false),
-  //           child: Text(
-  //             'cancel'.tr,
-  //             style: AppFonts.bodyMedium.copyWith(
-  //               color: AppColors.textSecondary,
-  //               fontSize: 14.sp,
-  //             ),
-  //           ),
-  //         ),
-  //         ElevatedButton(
-  //           onPressed: () => Get.back(result: true),
-  //           style: ElevatedButton.styleFrom(
-  //             backgroundColor: Colors.red,
-  //             shape: RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.circular(12.r),
-  //             ),
-  //           ),
-  //           child: Text(
-  //             'delete'.tr,
-  //             style: AppFonts.bodyMedium.copyWith(
-  //               color: Colors.white,
-  //               fontSize: 14.sp,
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   if (confirmed == true && mounted) {
-  //     await _deleteChild(child);
-  //   }
-  // }
-  //
-  // Future<void> _deleteChild(Student child) async {
-  //   try {
-  //     // Show loading
-  //     Get.dialog(
-  //       Center(
-  //         child: CircularProgressIndicator(
-  //           color: AppColors.primaryBlue,
-  //         ),
-  //       ),
-  //       barrierDismissible: false,
-  //     );
-  //
-  //     await StudentsService.deleteChild(child.id);
-  //
-  //     if (!mounted) return;
-  //     Get.back(); // Close loading dialog
-  //
-  //     // Show success message
-  //     Get.snackbar(
-  //       'success'.tr,
-  //       'child_deleted_successfully'.tr,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: AppColors.success,
-  //       colorText: Colors.white,
-  //     );
-  //
-  //     // Reload children list
-  //     await _loadChildren();
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     Get.back(); // Close loading dialog
-  //
-  //     // Show error message
-  //     Get.snackbar(
-  //       'error'.tr,
-  //       e.toString().replaceAll('StudentsException: ', ''),
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: Colors.red,
-  //       colorText: Colors.white,
-  //     );
-  //   }
-  // }
-
-  Widget _buildChatButton() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: FloatingActionButton(
-            heroTag: "customer_service_fab_my_students",
-            onPressed: () {
-              Get.toNamed(AppRoutes.chatbot);
-            },
-            backgroundColor: AppColors.primaryGreen,
-            elevation: 6,
-            child: Icon(
-              IconlyBold.chat,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
 
   Widget _buildEmptyState() {
     return Center(
@@ -992,10 +891,6 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         Expanded(
                           child: _buildAdmissionButton(child),
                         ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _buildEditChildButton(child),
-                        ),
                       ], 
                     ),
                     // Show "Apply to School" button if student has school and no pending applications
@@ -1026,9 +921,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               ), 
             ]),
           ),
-        )
-    ));
-  }
+        ),
+      ),
+    );
+}
 
   Widget _buildApplyToSchoolButton(Student child) {
     return SizedBox(
@@ -1082,33 +978,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     );
   }
 
-  Widget _buildEditChildButton(Student child) {
-    return SizedBox(
-      height: 42.h,
-      child: OutlinedButton.icon(
-        onPressed: () => _navigateToEditChild(child),
-        icon: Icon(
-          IconlyBroken.edit_square,
-          color: AppColors.primaryBlue,
-          size: 14.sp,
-        ),
-        label: Text(
-          'edit_child_data'.tr,
-          style: AppFonts.h4.copyWith(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.bold,
-            fontSize: 12.sp,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.primaryBlue, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildAdmissionButton(Student child) {
     final hasSchool = child.schoolId.id.isNotEmpty;
@@ -1127,21 +997,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     if (hasPendingApplications) {
       buttonText = 'show_application'.tr;
       onTap = () {
-        // Get pending applications for this child
-        final pendingApps = applications.where((app) => 
-          pendingStatuses.contains(app.status.toLowerCase())
-        ).toList();
-        
-        // If only one pending application, open details directly
-        if (pendingApps.length == 1) {
-          Get.toNamed(
-            AppRoutes.applicationDetails,
-            arguments: {'applicationId': pendingApps.first.id},
-          );
-        } else {
-          // Multiple applications, go to list page
-          Get.toNamed(AppRoutes.applications, arguments: {'childId': child.id});
-        }
+        // Always go to list page as requested to "redirect to Applications page"
+        Get.toNamed(AppRoutes.applications, arguments: {'childId': child.id});
       };
     } 
     // If no pending applications and has school → show "apply to other school"

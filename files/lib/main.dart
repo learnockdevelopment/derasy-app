@@ -11,6 +11,7 @@ import 'core/constants/app_fonts.dart';
 import 'core/controllers/app_translations.dart';
 import 'core/controllers/language_controller.dart';
 import 'core/controllers/app_config_controller.dart';
+import 'core/controllers/dashboard_controller.dart';
 
 void main() async {
   try {
@@ -36,7 +37,7 @@ void main() async {
     await AppTranslations.loadTranslations();
     Get.put(LanguageController());
     Get.put(AppConfigController());
-    await AppConfigController.to.loadAppConfig();
+    Get.put(DashboardController());
     runApp(const DerasyApp());
   } catch (e) {
     print('❌ Error initializing app: $e');

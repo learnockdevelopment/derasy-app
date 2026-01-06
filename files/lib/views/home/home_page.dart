@@ -5,15 +5,13 @@ import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart'; 
 import '../../models/student_models.dart';
-import '../../services/students_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
-import '../../services/admission_service.dart';
-import '../../services/wallet_service.dart';
+import '../../core/controllers/dashboard_controller.dart';
 import '../../models/wallet_models.dart';
 import '../../widgets/student_selection_sheet.dart';
  
@@ -26,95 +24,24 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? _userData;
-  bool _isLoading = true;
-  int _totalStudents = 0;
-  int _totalApplications = 0;
-  Wallet? _wallet;
-  
+
   @override 
   void initState() {
     super.initState();
-    _loadData();
+    _loadUserData();
   }
 
-  Future<void> _loadData() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final userData = await UserStorageService.getUserData();
-      if (!mounted) return;
+  Future<void> _loadUserData() async {
+    final userData = await UserStorageService.getUserData();
+    if (mounted) {
       setState(() {
         _userData = userData;
       });
-
-      // Load statistics
-      await _loadStatistics();
-      
-      // Load wallet data
-      await _loadWallet();
-    } catch (e) {
-      print('🏠 [HOME] Error loading data: $e');
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadStatistics() async {
-    if (!mounted) return;
-    try {
-      // Load students count from backend API
-      final studentsResponse = await StudentsService.getRelatedChildren();
-      if (!mounted) return;
-      if (studentsResponse.success) {
-        // Use count directly from backend response - no client-side filtering
-        setState(() {
-          _totalStudents = studentsResponse.students.length;
-        });
-      }
-
-      // Load applications count from backend API
-      final applicationsResponse = await AdmissionService.getApplications();
-      if (!mounted) return;
-      setState(() {
-        _totalApplications = applicationsResponse.applications.length;
-      });
-    } catch (e) {
-      print('🏠 [HOME] Error loading statistics: $e');
-      // Set to 0 on error to show no static data
-      if (mounted) {
-        setState(() {
-          _totalStudents = 0;
-          _totalApplications = 0;
-        });
-      }
     }
   }
 
   Future<void> _refreshData() async {
-    await _loadStatistics();
-    await _loadWallet();
-  }
-
-  Future<void> _loadWallet() async {
-    if (!mounted) return;
-    try {
-      print('💰 [HOME] Loading wallet data...');
-      final walletResponse = await WalletService.getWallet();
-      if (!mounted) return;
-      setState(() {
-        _wallet = walletResponse.wallet;
-      });
-      print('💰 [HOME] ✅ Wallet loaded: ${_wallet?.balance} ${_wallet?.currency}');
-    } catch (e) {
-      print('💰 [HOME] ❌ Error loading wallet: $e');
-      // Silently fail - wallet is optional
-    }
+    await DashboardController.to.refreshAll();
   }
 
   int _getCurrentIndex() {
@@ -130,7 +57,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _buildHomeContent(),
+      body: Obx(() => _buildHomeContent()),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
@@ -141,7 +68,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHomeContent() {
-    if (_isLoading) {
+    final controller = DashboardController.to;
+    final wallet = controller.wallet.value;
+    final isLoading = controller.isLoading && controller.allApplications.isEmpty && controller.relatedChildren.isEmpty;
+
+    if (isLoading) {
       return _buildShimmerLoading();  
     }
 
@@ -172,7 +103,7 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(child: SizedBox(height: 24.h)),
           
           // Wallet Card
-          if (_wallet != null) ...[
+          if (wallet != null) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -190,12 +121,12 @@ class _HomePageState extends State<HomePage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: _buildWalletCard(),
+                child: _buildWalletCard(wallet),
               ),
             ),
           ],
           
-          if (_wallet != null) SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          if (wallet != null) SliverToBoxAdapter(child: SizedBox(height: 16.h)),
           
           // Student Management Section
           SliverToBoxAdapter(
@@ -217,65 +148,101 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _isLoading
-                        ? ShimmerCard(height: 120.h, borderRadius: 16.r)
-                        : _buildStatCard(
-                            icon: IconlyBroken.profile,
-                            title: 'total_students'.tr,
-                            value: _formatNumber(_totalStudents.toString()),
-                            color: AppColors.primaryBlue,
-                            showAddButton: true,
-                            onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
+              child: Obx(() {
+                final controller = DashboardController.to;
+                final totalStudents = controller.relatedChildren.length;
+                final totalApplications = controller.allApplications.length;
+                final isLoading = controller.isLoading;
+                final isTakingLong = controller.isTakingLong;
+
+                return Column(
+                  children: [
+                    if (isTakingLong && isLoading)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 12.h),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                           ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _isLoading
-                        ? ShimmerCard(height: 120.h, borderRadius: 16.r)
-                        : _buildStatCard(
-                            icon: IconlyBroken.document,
-                            title: 'total_applications'.tr,
-                            value: _formatNumber(_totalApplications.toString()),
-                            color: AppColors.primaryGreen,
-                            showAddButton: true,
-                            onAddTap: () {
-                              if (_totalStudents == 0) {
-                                Get.snackbar(
-                                  'error'.tr,
-                                  'no_students_for_application'.tr,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: AppColors.error,
-                                  colorText: Colors.white,
-                                );
-                              } else {
-                                // Show bottom sheet to select student first
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => const StudentSelectionSheet(),
-                                ).then((selectedStudent) {
-                                  if (selectedStudent != null && selectedStudent is Student) {
-                                    // Navigate with selected student
-                                    Get.toNamed(
-                                      AppRoutes.applyToSchools,
-                                      arguments: {'child': selectedStudent},
-                                    );
-                                  }
-                                });
-                              }
-                            },
-                            buttonText: 'add_application'.tr,
-                            isButtonDisabled: _totalStudents == 0,
-                            disabledMessage: 'add_student_first_to_apply'.tr,
-                            buttonColor: AppColors.primaryGreen,
+                          child: Row(
+                            children: [
+                              Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Text(
+                                  'slow_connection_message'.tr,
+                                  style: AppFonts.bodySmall.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           ),
-                  ),
-                ],
-              ),
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: isLoading && totalStudents == 0
+                              ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                              : _buildStatCard(
+                                  icon: IconlyBroken.profile,
+                                  title: 'total_students'.tr,
+                                  value: _formatNumber(totalStudents.toString()),
+                                  color: AppColors.primaryBlue,
+                                  showAddButton: true,
+                                  onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
+                                ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: isLoading && totalApplications == 0
+                              ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                              : _buildStatCard(
+                                  icon: IconlyBroken.document,
+                                  title: 'total_applications'.tr,
+                                  value: _formatNumber(totalApplications.toString()),
+                                  color: AppColors.primaryGreen,
+                                  showAddButton: true,
+                                  onAddTap: () {
+                                    if (totalStudents == 0) {
+                                      Get.snackbar(
+                                        'error'.tr,
+                                        'no_students_for_application'.tr,
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        backgroundColor: AppColors.error,
+                                        colorText: Colors.white,
+                                      );
+                                    } else {
+                                      // Show bottom sheet to select student first
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) => const StudentSelectionSheet(),
+                                      ).then((selectedStudent) {
+                                        if (selectedStudent != null && selectedStudent is Student) {
+                                          // Navigate with selected student
+                                          Get.toNamed(
+                                            AppRoutes.applyToSchools,
+                                            arguments: {'child': selectedStudent},
+                                          );
+                                        }
+                                      });
+                                    }
+                                  },
+                                  buttonText: 'add_application'.tr,
+                                  isButtonDisabled: totalStudents == 0,
+                                  disabledMessage: 'add_student_first_to_apply'.tr,
+                                  buttonColor: AppColors.primaryGreen,
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
             ),
           ),
 
@@ -284,7 +251,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   String _formatNumber(String number) {
     if (Get.locale?.languageCode == 'ar') {
@@ -498,7 +464,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildWalletCard() {
+  Widget _buildWalletCard(Wallet wallet) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -547,7 +513,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _formatCurrency(_wallet!.balance, _wallet!.currency),
+                  _formatCurrency(wallet.balance, wallet.currency),
                   style: AppFonts.h2.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

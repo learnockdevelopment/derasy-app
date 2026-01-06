@@ -45,7 +45,7 @@ class SchoolsService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🏫 [SCHOOLS] Response status: ${response.statusCode}');
       print('🏫 [SCHOOLS] Response body: ${response.body}');
@@ -152,7 +152,7 @@ class SchoolsService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🏫 [SCHOOLS] Get school response status: ${response.statusCode}');
       print('🏫 [SCHOOLS] Get school response body: ${response.body}');
@@ -213,7 +213,7 @@ class SchoolsService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🏫 [SCHOOLS] Search response status: ${response.statusCode}');
       print('🏫 [SCHOOLS] Search response body: ${response.body}');
@@ -273,7 +273,7 @@ class SchoolsService {
         Uri.parse(url),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 30));
 
       print('🏫 [SCHOOLS] Suggest response status: ${response.statusCode}');
 
