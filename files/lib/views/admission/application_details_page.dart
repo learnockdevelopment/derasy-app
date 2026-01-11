@@ -126,17 +126,17 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             style: AppFonts.h3.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 16.sp,
+              fontSize: Responsive.sp(16),
             ),
           ),
         ),
         body: ListView.builder(
-          padding: EdgeInsets.all(12.w),
+          padding: Responsive.all(12),
           itemCount: 6,
           itemBuilder: (context, index) {
             return ShimmerCard(
-              height: 70.h,
-              margin: EdgeInsets.only(bottom: 12.h),
+              height: Responsive.h(70),
+              margin: Responsive.only(bottom: 12),
             );
           },
         ),
@@ -159,7 +159,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             'application_not_found'.tr,
             style: AppFonts.h4.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 14.sp,
+              fontSize: Responsive.sp(14),
             ),
           ),
         ),
@@ -176,7 +176,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         backgroundColor: statusColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(20)),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -184,45 +184,45 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           style: AppFonts.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 16.sp,
+            fontSize: Responsive.sp(16),
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(12.w),
+        padding: Responsive.all(12),
         child: Column(
           children: [
             // Compact Status Header
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(12.w),
-              margin: EdgeInsets.only(bottom: 12.h),
+              padding: Responsive.all(12),
+              margin: Responsive.only(bottom: 12),
               decoration: BoxDecoration(
                 color: statusColor,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
                 boxShadow: [
                   BoxShadow(
                     color: statusColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    blurRadius: Responsive.r(8),
+                    offset: Offset(0, Responsive.h(4)),
                   ),
                 ],
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8.w),
+                    padding: Responsive.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                     ),
                     child: Icon(
                       _getStatusIcon(app.status, isPaid),
                       color: statusColor,
-                      size: 20.sp,
+                      size: Responsive.sp(20),
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: Responsive.w(12)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,15 +232,15 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           style: AppFonts.h4.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16.sp,
+                            fontSize: Responsive.sp(16),
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: Responsive.h(4)),
                         Text(
                           '${'id'.tr}: ${app.id.substring(0, 8).toUpperCase()}',
                           style: AppFonts.bodySmall.copyWith(
                             color: Colors.white,
-                            fontSize: 11.sp,
+                            fontSize: Responsive.sp(11),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -273,7 +273,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ],
               ],
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: Responsive.h(10)),
 
             // Child Information
             _buildInfoCard(
@@ -305,7 +305,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ],
               ],
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: Responsive.h(10)),
 
             // Payment Information
             if (app.payment != null)
@@ -317,13 +317,13 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 title: 'payment_information'.tr,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: Responsive.all(10),
                     decoration: BoxDecoration(
                       color: (app.payment!.isPaid
                               ? AppColors.success
                               : AppColors.warning)
                           .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                       border: Border.all(
                         color: (app.payment!.isPaid
                                 ? AppColors.success
@@ -335,22 +335,22 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     child: Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(6.w),
+                          padding: Responsive.all(6),
                           decoration: BoxDecoration(
                             color: app.payment!.isPaid
                                 ? AppColors.success
                                 : AppColors.warning,
-                            borderRadius: BorderRadius.circular(8.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(8)),
                           ),
                           child: Icon(
                             app.payment!.isPaid
                                 ? Icons.check_circle
                                 : Icons.pending,
                             color: Colors.white,
-                            size: 16.sp,
+                            size: Responsive.sp(16),
                           ),
                         ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: Responsive.w(10)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,7 +362,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                       ? AppColors.success
                                       : AppColors.warning,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13.sp,
+                                  fontSize: Responsive.sp(13),
                                 ),
                               ),
                               SizedBox(height: 2.h),
@@ -370,7 +370,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                 '${app.payment!.amount} ${'egp'.tr}',
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: AppColors.textPrimary,
-                                  fontSize: 13.sp,
+                                  fontSize: Responsive.sp(13),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -382,7 +382,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   ),
                 ],
               ),
-            if (app.payment != null) SizedBox(height: 10.h),
+            if (app.payment != null) SizedBox(height: Responsive.h(10)),
 
             // Application Details
             _buildInfoCard(
@@ -411,10 +411,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 if (app.notes != null && app.notes!.isNotEmpty) ...[
                   SizedBox(height: 8.h),
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: Responsive.all(10),
                     decoration: BoxDecoration(
                       color: AppColors.grey100,
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                       border: Border.all(
                         color: AppColors.borderLight,
                         width: 1,
@@ -425,10 +425,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       children: [
                         Icon(
                           Icons.note,
-                          size: 14.sp,
+                          size: Responsive.sp(14),
                           color: AppColors.textSecondary,
                         ),
-                        SizedBox(width: 10.w),
+                        SizedBox(width: Responsive.w(10)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,7 +437,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                 'notes'.tr,
                                 style: AppFonts.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
-                                  fontSize: 10.sp,
+                                  fontSize: Responsive.sp(10),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -446,7 +446,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                 app.notes!,
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: AppColors.textPrimary,
-                                  fontSize: 12.sp,
+                                  fontSize: Responsive.sp(12),
                                 ),
                               ),
                             ],
@@ -461,17 +461,17 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             
             // Confirmed Interview (if exists)
             if (app.interview?.date != null) ...[
-              SizedBox(height: 10.h),
+              SizedBox(height: Responsive.h(10)),
               _buildInfoCard(
                 icon: Icons.event_available_rounded,
                 iconColor: AppColors.success,
                 title: 'interview_scheduled'.tr,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: Responsive.all(10),
                     decoration: BoxDecoration(
                       color: AppColors.success.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                       border: Border.all(
                         color: AppColors.success.withOpacity(0.2),
                         width: 1,
@@ -482,14 +482,14 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 14.sp, color: AppColors.success),
-                            SizedBox(width: 8.w),
+                            Icon(Icons.calendar_today, size: Responsive.sp(14), color: AppColors.success),
+                            SizedBox(width: Responsive.w(8)),
                             Text(
                               _formatDate(app.interview!.date!),
                               style: AppFonts.bodyMedium.copyWith(
                                 color: AppColors.textPrimary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13.sp,
+                                fontSize: Responsive.sp(13),
                               ),
                             ),
                           ],
@@ -498,8 +498,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           SizedBox(height: 8.h),
                           Row(
                             children: [
-                              Icon(Icons.access_time, size: 14.sp, color: AppColors.success),
-                              SizedBox(width: 8.w),
+                              Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
+                              SizedBox(width: Responsive.w(8)),
                               Expanded(
                                 child: Text(
                                   _formatTimeDisplay(app.interview!.time),
@@ -516,8 +516,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           SizedBox(height: 8.h),
                           Row(
                             children: [
-                              Icon(Icons.location_on, size: 14.sp, color: AppColors.success),
-                              SizedBox(width: 8.w),
+                              Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
+                              SizedBox(width: Responsive.w(8)),
                               Expanded(
                                 child: Text(
                                   app.interview!.location!,
@@ -539,7 +539,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
             // Interview Slots
             if (app.preferredInterviewSlots.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              SizedBox(height: Responsive.h(10)),
               _buildInfoCard(
                 icon: Icons.event_rounded,
                 iconColor: const Color(0xFFF59E0B),
@@ -552,11 +552,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
             // Events Timeline
             if (app.events.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              SizedBox(height: Responsive.h(10)),
               _buildEventsTimeline(app.events),
             ],
 
-            SizedBox(height: 16.h),
+            SizedBox(height: Responsive.h(16)),
           ],
         ),
       ),
@@ -570,10 +570,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: Responsive.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         border: Border.all(
           color: AppColors.borderLight,
           width: 1,
@@ -581,8 +581,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: Responsive.r(8),
+            offset: Offset(0, Responsive.h(2)),
           ),
         ],
       ),
@@ -592,12 +592,12 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(6.w),
+                padding: Responsive.all(6),
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
                 ),
-                child: Icon(icon, color: iconColor, size: 16.sp),
+                child: Icon(icon, color: iconColor, size: Responsive.sp(16)),
               ),
               SizedBox(width: 10.w),
               Expanded(
@@ -606,13 +606,13 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   style: AppFonts.h4.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14.sp,
+                    fontSize: Responsive.sp(14),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: Responsive.h(12)),
           ...children,
         ],
       ),
@@ -628,10 +628,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     bool isHighlight = false,
   }) {
     return Container(
-      padding: EdgeInsets.all(8.w),
+      padding: Responsive.all(8),
       decoration: BoxDecoration(
         color: isHighlight ? AppColors.grey100 : AppColors.white,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(Responsive.r(8)),
         border: isHighlight
             ? Border.all(
                 color: AppColors.primaryBlue.withOpacity(0.3),
@@ -645,12 +645,12 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(5.w),
+            padding: Responsive.all(5),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6.r),
+              borderRadius: BorderRadius.circular(Responsive.r(6)),
             ),
-            child: Icon(icon, size: 14.sp, color: AppColors.primaryBlue),
+            child: Icon(icon, size: Responsive.sp(14), color: AppColors.primaryBlue),
           ),
           SizedBox(width: 10.w),
           Expanded(
@@ -661,7 +661,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   label,
                   style: AppFonts.bodySmall.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 10.sp,
+                    fontSize: Responsive.sp(10),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -676,7 +676,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           fontWeight: isHighlight
                               ? FontWeight.bold
                               : FontWeight.w600,
-                          fontSize: isHighlight ? 13.sp : 12.sp,
+                          fontSize: isHighlight ? Responsive.sp(13) : Responsive.sp(12),
                         ),
                       ),
                     ),
@@ -695,16 +695,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                               snackStyle: SnackStyle.FLOATING,
                             );
                           },
-                          borderRadius: BorderRadius.circular(6.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(6)),
                           child: Container(
-                            padding: EdgeInsets.all(4.w),
+                            padding: Responsive.all(4),
                             decoration: BoxDecoration(
                               color: AppColors.primaryBlue.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(6)),
                             ),
                             child: Icon(
                               Icons.copy,
-                              size: 12.sp,
+                              size: Responsive.sp(12),
                               color: AppColors.primaryBlue,
                             ),
                           ),
@@ -722,11 +722,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
   Widget _buildInterviewSlot(InterviewSlot slot) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8.h),
-      padding: EdgeInsets.all(10.w),
+      margin: Responsive.only(bottom: 8),
+      padding: Responsive.all(10),
       decoration: BoxDecoration(
         color: AppColors.grey100,
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(Responsive.r(10)),
         border: Border.all(
           color: AppColors.borderLight,
           width: 1,
@@ -735,14 +735,14 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(6.w),
+            padding: Responsive.all(6),
             decoration: BoxDecoration(
               color: const Color(0xFFF59E0B).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(Responsive.r(8)),
             ),
             child: Icon(
               Icons.calendar_today,
-              size: 14.sp,
+              size: Responsive.sp(14),
               color: const Color(0xFFF59E0B),
             ),
           ),
@@ -755,7 +755,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   _formatDate(slot.date),
                   style: AppFonts.bodyMedium.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 12.sp,
+                    fontSize: Responsive.sp(12),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -764,15 +764,15 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   children: [
                     Icon(
                       Icons.access_time,
-                      size: 11.sp,
+                      size: Responsive.sp(11),
                       color: AppColors.textSecondary,
                     ),
-                    SizedBox(width: 5.w),
+                    SizedBox(width: Responsive.w(5)),
                     Text(
                       '${_getWeekdayKey(slot.date.weekday).tr.toUpperCase()} - ${_formatTimeDisplay("${slot.timeRange.from} - ${slot.timeRange.to}")}',
                       style: AppFonts.bodySmall.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 10.sp,
+                        fontSize: Responsive.sp(10),
                       ),
                     ),
                   ],
@@ -815,7 +815,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: events.length,
-          separatorBuilder: (context, index) => SizedBox(height: 12.h),
+          separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
           itemBuilder: (context, index) {
             final event = events[events.length - 1 - index]; // Show latest first
             return _buildEventItem(event);
@@ -832,20 +832,20 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         Column(
           children: [
             Container(
-              padding: EdgeInsets.all(6.w),
+              padding: Responsive.all(6),
               decoration: BoxDecoration(
                 color: _getEventColor(event.type).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getEventIcon(event.type),
-                size: 14.sp,
+                size: Responsive.sp(14),
                 color: _getEventColor(event.type),
               ),
             ),
           ],
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: Responsive.w(12)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -859,7 +859,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12.sp,
+                        fontSize: Responsive.sp(12),
                       ),
                     ),
                   ),
@@ -867,7 +867,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     _formatDate(event.date),
                     style: AppFonts.bodySmall.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 10.sp,
+                      fontSize: Responsive.sp(10),
                     ),
                   ),
                 ],
@@ -878,7 +878,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   event.description!.tr,
                   style: AppFonts.bodySmall.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 11.sp,
+                    fontSize: Responsive.sp(11),
                   ),
                 ),
               ],
@@ -888,7 +888,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   '${'created_by'.tr}: ${event.createdBy!.name}',
                   style: AppFonts.bodySmall.copyWith(
                     color: AppColors.textSecondary.withOpacity(0.7),
-                    fontSize: 9.sp,
+                    fontSize: Responsive.sp(9),
                     fontStyle: FontStyle.italic,
                   ),
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShimmerLoading extends StatelessWidget {
@@ -42,17 +42,17 @@ class ShimmerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      height: height ?? 100.h,
+      height: height ?? Responsive.h(100),
       margin: margin,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
+        borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(12)),
       ),
       child: ShimmerLoading(
         child: Container(
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
+            borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(12)),
           ),
         ),
       ),
@@ -75,21 +75,21 @@ class ShimmerListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? EdgeInsets.all(16.w),
+      padding: padding ?? Responsive.all(16),
       child: Row(
         children: [
           if (hasAvatar) ...[
             ShimmerLoading(
               child: Container(
-                width: 50.w,
-                height: 50.h,
+                width: Responsive.w(50),
+                height: Responsive.h(50),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(25.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(25)),
                 ),
               ),
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: Responsive.w(12)),
           ],
           Expanded(
             child: Column(
@@ -97,23 +97,23 @@ class ShimmerListTile extends StatelessWidget {
               children: [
                 ShimmerLoading(
                   child: Container(
-                    height: 16.h,
+                    height: Responsive.h(16),
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
                     ),
                   ),
                 ),
                 if (hasSubtitle) ...[
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   ShimmerLoading(
                     child: Container(
-                      height: 12.h,
-                      width: 200.w,
+                      height: Responsive.h(12),
+                      width: Responsive.w(200),
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(6.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(6)),
                       ),
                     ),
                   ),
@@ -151,13 +151,13 @@ class ShimmerGrid extends StatelessWidget {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: childAspectRatio ?? 1.2,
-        crossAxisSpacing: crossAxisSpacing ?? 12.w,
-        mainAxisSpacing: mainAxisSpacing ?? 12.h,
+        crossAxisSpacing: crossAxisSpacing ?? Responsive.w(12),
+        mainAxisSpacing: mainAxisSpacing ?? Responsive.h(12),
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         return ShimmerCard(
-          borderRadius: 16.r,
+          borderRadius: Responsive.r(16),
         );
       },
     );
@@ -180,45 +180,45 @@ class ShimmerActionGrid extends StatelessWidget {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 1.1,
-        crossAxisSpacing: 12.w,
-        mainAxisSpacing: 12.h,
+        crossAxisSpacing: Responsive.w(12),
+        mainAxisSpacing: Responsive.h(12),
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         return ShimmerLoading(
           child: Container(
-            padding: EdgeInsets.all(16.w),
+            padding: Responsive.all(16),
             decoration: BoxDecoration(
               color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 48.w,
-                  height: 48.h,
+                  width: Responsive.w(48),
+                  height: Responsive.h(48),
                   decoration: BoxDecoration(
                     color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                   ),
                 ),
-                SizedBox(height: 12.h),
+                SizedBox(height: Responsive.h(12)),
                 Container(
-                  height: 14.h,
-                  width: 80.w,
+                  height: Responsive.h(14),
+                  width: Responsive.w(80),
                   decoration: BoxDecoration(
                     color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(7.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(7)),
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Container(
-                  height: 11.h,
-                  width: 60.w,
+                  height: Responsive.h(11),
+                  width: Responsive.w(60),
                   decoration: BoxDecoration(
                     color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(5.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(5)),
                   ),
                 ),
               ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
@@ -144,11 +144,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           children: [
             // Order Status Card
             Container(
-              margin: EdgeInsets.all(16.w),
-              padding: EdgeInsets.all(20.w),
+              margin: Responsive.all(16),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(Responsive.r(16)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -172,10 +172,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                        padding: Responsive.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: _getStatusColor(_order!.status).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(8)),
                         ),
                         child: Text(
                           _getStatusText(_order!.status),
@@ -188,7 +188,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 12.h),
+                  SizedBox(height: Responsive.h(12)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -210,7 +210,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     ],
                   ),
                   if (_order!.createdAt != null) ...[
-                    SizedBox(height: 8.h),
+                    SizedBox(height: Responsive.h(8)),
                     Text(
                       '${'order_date'.tr}: ${_formatDate(_order!.createdAt!)}',
                       style: AppFonts.bodySmall.copyWith(
@@ -225,11 +225,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
             // Order Items
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w),
-              padding: EdgeInsets.all(20.w),
+              margin: Responsive.symmetric(horizontal: 16),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(Responsive.r(16)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -259,11 +259,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
             // Order Summary
             Container(
-              margin: EdgeInsets.all(16.w),
-              padding: EdgeInsets.all(20.w),
+              margin: Responsive.all(16),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(Responsive.r(16)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -289,7 +289,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     _buildSummaryRow('discount'.tr, '-${_order!.discount.toStringAsFixed(0)} ${'egp'.tr}'),
                   if (_order!.deliveryFee > 0)
                     _buildSummaryRow('delivery_fee'.tr, '${_order!.deliveryFee.toStringAsFixed(0)} ${'egp'.tr}'),
-                  Divider(height: 24.h),
+                  Divider(height: Responsive.h(24)),
                   _buildSummaryRow('total'.tr, '${_order!.total.toStringAsFixed(0)} ${'egp'.tr}',
                       isTotal: true),
                 ],
@@ -299,11 +299,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             // Shipping Address
             if (_order!.shippingAddress != null) ...[
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 16.w),
-                padding: EdgeInsets.all(20.w),
+                margin: Responsive.symmetric(horizontal: 16),
+                padding: Responsive.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
@@ -323,7 +323,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         fontSize: AppFonts.size18,
                       ),
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     Text(
                       '${_order!.shippingAddress!.name}\n${_order!.shippingAddress!.phone}\n${_order!.shippingAddress!.address}\n${_order!.shippingAddress!.city}, ${_order!.shippingAddress!.governorate}',
                       style: AppFonts.bodyMedium.copyWith(
@@ -346,22 +346,22 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Widget _buildOrderItem(OrderItem item) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: Responsive.only(bottom: 12),
       child: Row(
         children: [
           SafeNetworkImage(
             imageUrl: item.product?.images.isNotEmpty == true ? item.product!.images.first : '',
-            width: 60.w,
-            height: 60.h,
+            width: Responsive.w(60),
+            height: Responsive.h(60),
             fit: BoxFit.cover,
             errorWidget: Container(
-              width: 60.w,
-              height: 60.h,
+              width: Responsive.w(60),
+              height: Responsive.h(60),
               color: const Color(0xFFF3F4F6),
-              child: Icon(Icons.image_rounded, size: 24.sp, color: const Color(0xFF9CA3AF)),
+              child: Icon(Icons.image_rounded, size: Responsive.sp(24), color: const Color(0xFF9CA3AF)),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: Responsive.w(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +376,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   '${'quantity'.tr}: ${item.quantity} x ${item.price.toStringAsFixed(0)} ${'egp'.tr}',
                   style: AppFonts.bodySmall.copyWith(
@@ -402,7 +402,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+      padding: Responsive.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

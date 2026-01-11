@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -654,7 +654,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: Responsive.w(10)),
                   // Interview or Payment info
                   Expanded(
                     child: interviewDate != null

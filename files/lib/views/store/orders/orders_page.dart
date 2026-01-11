@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
@@ -128,13 +128,13 @@ class _OrdersPageState extends State<OrdersPage> {
           // Status Filter
           Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+            padding: Responsive.symmetric(vertical: 12, horizontal: 16),
             child: SizedBox(
-              height: 40.h,
+              height: Responsive.h(40),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: 6,
-                separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                separatorBuilder: (_, __) => SizedBox(width: Responsive.w(8)),
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _buildStatusChip(null, 'all'.tr);
@@ -155,7 +155,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     : RefreshIndicator(
                         onRefresh: () => _loadOrders(resetPage: true),
                         child: ListView.builder(
-                          padding: EdgeInsets.all(16.w),
+                          padding: Responsive.all(16),
                           itemCount: _orders.length,
                           itemBuilder: (context, index) {
                             return _buildOrderCard(_orders[index]);
@@ -184,16 +184,16 @@ class _OrdersPageState extends State<OrdersPage> {
         color: isSelected ? Colors.white : const Color(0xFF1F2937),
         fontSize: AppFonts.size12,
       ),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: Responsive.symmetric(horizontal: 12, vertical: 8),
     );
   }
 
   Widget _buildOrderCard(Order order) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: Responsive.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -203,12 +203,12 @@ class _OrdersPageState extends State<OrdersPage> {
         ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         onTap: () {
           Get.toNamed(AppRoutes.storeOrderDetails, arguments: {'orderId': order.id});
         },
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: Responsive.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -223,10 +223,10 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding: Responsive.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: _getStatusColor(order.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
                     ),
                     child: Text(
                       _getStatusText(order.status),
@@ -239,7 +239,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               Text(
                 '${order.items.length} ${'items'.tr}',
                 style: AppFonts.bodyMedium.copyWith(
@@ -247,7 +247,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   fontSize: AppFonts.size14,
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: Responsive.h(8)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -269,7 +269,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 ],
               ),
               if (order.createdAt != null) ...[
-                SizedBox(height: 8.h),
+                SizedBox(height: Responsive.h(8)),
                 Text(
                   _formatDate(order.createdAt!),
                   style: AppFonts.bodySmall.copyWith(
@@ -290,8 +290,8 @@ class _OrdersPageState extends State<OrdersPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 80.sp, color: const Color(0xFF9CA3AF)),
-          SizedBox(height: 16.h),
+          Icon(Icons.receipt_long_outlined, size: Responsive.sp(80), color: const Color(0xFF9CA3AF)),
+          SizedBox(height: Responsive.h(16)),
           Text(
             'no_orders'.tr,
             style: AppFonts.bodyLarge.copyWith(

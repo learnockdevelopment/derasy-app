@@ -692,10 +692,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: EdgeInsets.only(bottom: Responsive.h(16)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(Responsive.r(20)),
           border: Border.all(
             color: isSelected 
                 ? AppColors.primaryBlue 
@@ -719,10 +719,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             Stack(
               children: [
                 Container(
-                  height: 140.h,
+                  height: Responsive.h(140),
                   decoration: BoxDecoration(
                     color: AppColors.grey100,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(18))),
                   ),
                   child: school.bannerImage != null || (school.media?.schoolImages?.isNotEmpty ?? false)
                       ? ClipRRect(
@@ -770,10 +770,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 // AI Suggestion Badge
                 if (isAISuggested)
                   Positioned(
-                    top: 12.h,
-                    right: 12.w,
+                    top: Responsive.h(12),
+                    right: Responsive.w(12),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: Responsive.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -785,8 +785,8 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primaryBlue.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            blurRadius: Responsive.r(8),
+                            offset: Offset(0, Responsive.h(2)),
                           ),
                         ],
                       ),
@@ -795,7 +795,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         children: [
                           Icon(
                             Icons.auto_awesome,
-                            size: 14.sp,
+                            size: Responsive.sp(14),
                             color: Colors.white,
                           ),
                           SizedBox(width: 4.w),
@@ -804,7 +804,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                             style: AppFonts.bodySmall.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 11.sp,
+                              fontSize: Responsive.sp(11),
                             ),
                           ),
                         ],
@@ -814,25 +814,25 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 // Selection indicator
                 if (isSelected)
                   Positioned(
-                    top: 12.h,
-                    right: 12.w,
+                    top: Responsive.h(12),
+                    right: Responsive.w(12),
                     child: Container(
-                      padding: EdgeInsets.all(8.w),
+                      padding: Responsive.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primaryBlue.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            blurRadius: Responsive.r(8),
+                            offset: Offset(0, Responsive.h(2)),
                           ),
                         ],
                       ),
                       child: Icon(
                         Icons.check_rounded,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: Responsive.sp(20),
                       ),
                     ),
                   ),
@@ -841,7 +841,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             
             // Content
             Padding(
-              padding: EdgeInsets.all(18.w),
+              padding: Responsive.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -351,8 +351,9 @@ class AppFonts {
   static TextStyle get overline => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        
+        fontSize: Responsive.sp(10),
         height: 1.2,
         letterSpacing: 0.5,
       );
+}
 }
