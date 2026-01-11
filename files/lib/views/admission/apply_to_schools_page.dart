@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/controllers/dashboard_controller.dart';
 import '../../models/student_models.dart';
 import '../../models/school_models.dart';
 import '../../models/admission_models.dart';
@@ -32,6 +33,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   bool _isLoadingSchools = false;
   bool _isAnalyzing = false;
   bool _isSubmitting = false;
+  String _schoolSearchQuery = '';
   bool _showResults = false;
   
   // Selection for final submission (must select exactly 3)
@@ -46,10 +48,23 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
 
   void _loadArguments() {
     final args = Get.arguments as Map<String, dynamic>?;
-    if (args != null && args['child'] != null) {
+    if (args == null) return;
+
+    if (args['child'] != null) {
       setState(() {
         _selectedChild = args['child'] as Student;
       });
+    } else if (args['childId'] != null) {
+      final childId = args['childId'] as String;
+      // Find child in DashboardController
+      final child = DashboardController.to.relatedChildren.firstWhereOrNull(
+        (c) => c.id == childId,
+      );
+      if (child != null) {
+        setState(() {
+          _selectedChild = child;
+        });
+      }
     }
   }
 
@@ -84,7 +99,38 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   }
 
   Future<void> _getSuggestions(SchoolPreferences prefs) async {
-    if (_selectedChild == null || _allSchools.isEmpty) return;
+    if (_selectedChild == null) {
+      Get.snackbar(
+        'error'.tr,
+        'please_select_student_first'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (_allSchools.isEmpty) {
+      if (_isLoadingSchools) {
+        Get.snackbar(
+          'info'.tr,
+          'loading_schools_please_wait'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.primaryBlue,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'error'.tr,
+          'failed_to_load_schools'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+        );
+        _loadAllSchools(); // Try reloading
+      }
+      return;
+    }
 
     setState(() {
       _isAnalyzing = true;
@@ -127,7 +173,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   }
 
   Future<void> _submitApplication() async {
-    if (_selectedChild == null || _selectedSchools.length != 3) return;
+    if (_selectedChild == null || _selectedSchools.isEmpty) return;
 
     setState(() {
       _isSubmitting = true;
@@ -159,13 +205,17 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       // Wait for snackbar to start showing before navigating
       await Future.delayed(const Duration(milliseconds: 500));
 
+      // Trigger refresh in background
+      DashboardController.to.refreshAll().catchError((_) => null);
+      
+      // Go to applications page and clear stack
       Get.offNamed(AppRoutes.applications);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
       });
-      
+
       String msg = 'failed_to_apply'.tr;
       if (e is AdmissionException) {
         msg = e.message;
@@ -207,6 +257,64 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 ),
               ],
             ),
+      bottomNavigationBar: (_showResults && _selectedSchools.isNotEmpty)
+          ? Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitApplication,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      disabledBackgroundColor: AppColors.grey300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      elevation: 4,
+                    ),
+                    child: _isSubmitting
+                        ? SizedBox(
+                            height: 24.h,
+                            width: 24.h,
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.send_rounded, size: 20.sp, color: Colors.white),
+                              SizedBox(width: 12.w),
+                              Text(
+                                _selectedSchools.length == 3 
+                                  ? 'submit_applications'.tr 
+                                  : 'submit_application'.tr,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -251,7 +359,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   Widget _buildResultsView() {
     // Separate schools into suggested and others
     final suggestedIds = _aiResponse?.suggestedIds.toSet() ?? {};
-    final otherSchools = _allSchools.where((s) => !suggestedIds.contains(s.id)).toList();
+    final query = _schoolSearchQuery.toLowerCase();
+    
+    final filteredOtherSchools = _allSchools
+        .where((s) => !suggestedIds.contains(s.id))
+        .where((s) => query.isEmpty || s.name.toLowerCase().contains(query))
+        .toList();
     
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
@@ -301,138 +414,93 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             SizedBox(height: 24.h),
           ],
 
-          // Selection Progress Hint
+          // Selection Progress Hint (Submit button moved to bottomNavigationBar)
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _selectedSchools.length == 3
+                  _selectedSchools.isNotEmpty
                       ? AppColors.success.withOpacity(0.15)
                       : AppColors.warning.withOpacity(0.15),
-                  _selectedSchools.length == 3
+                  _selectedSchools.isNotEmpty
                       ? AppColors.success.withOpacity(0.05)
                       : AppColors.warning.withOpacity(0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: _selectedSchools.length == 3
+                color: _selectedSchools.isNotEmpty
                     ? AppColors.success.withOpacity(0.4)
                     : AppColors.warning.withOpacity(0.4),
                 width: 2,
               ),
             ),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: _selectedSchools.length == 3
-                            ? AppColors.success
-                            : AppColors.warning,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _selectedSchools.length == 3
-                            ? Icons.check_circle_rounded
-                            : Icons.info_rounded,
-                        color: Colors.white,
-                        size: 24.sp,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'select_3_schools_required'.tr,
-                            style: AppFonts.h4.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.sp,
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'schools_selected_count'.tr.replaceAll('{count}', '${_selectedSchools.length}').replaceAll('{total}', '3'),
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: _selectedSchools.length == 3
-                                  ? AppColors.success
-                                  : AppColors.warning,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Progress indicator
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: _selectedSchools.length == 3
-                            ? AppColors.success
-                            : AppColors.warning,
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Text(
-                        '${_selectedSchools.length}/3',
-                        style: AppFonts.h4.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.sp,
-                        ),
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: _selectedSchools.isNotEmpty
+                        ? AppColors.success
+                        : AppColors.warning,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _selectedSchools.isNotEmpty
+                        ? Icons.check_circle_rounded
+                        : Icons.info_rounded,
+                    color: Colors.white,
+                    size: 24.sp,
+                  ),
                 ),
-                // Submit button when 3 schools are selected
-                if (_selectedSchools.length == 3) ...[
-                  SizedBox(height: 16.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52.h,
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submitApplication,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.success,
-                        disabledBackgroundColor: AppColors.grey300,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _selectedSchools.length == 3
+                            ? 'all_schools_selected'.tr
+                            : 'select_at_least_one_school'.tr,
+                        style: AppFonts.h4.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp,
                         ),
-                        elevation: 4,
                       ),
-                      child: _isSubmitting
-                          ? SizedBox(
-                              height: 24.h,
-                              width: 24.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.send_rounded, size: 20.sp, color: Colors.white),
-                                SizedBox(width: 12.w),
-                                Text(
-                                  'submit_applications'.tr,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'schools_selected_count'.tr.replaceAll('{count}', '${_selectedSchools.length}').replaceAll('{total}', '3'),
+                        style: AppFonts.bodyMedium.copyWith(
+                          color: _selectedSchools.isNotEmpty
+                              ? AppColors.success
+                              : AppColors.warning,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Progress indicator
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: _selectedSchools.isNotEmpty
+                        ? AppColors.success
+                        : AppColors.warning,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    '${_selectedSchools.length}/3',
+                    style: AppFonts.h4.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
                     ),
                   ),
-                ],
+                ),
               ],
             ),
           ),
@@ -471,11 +539,55 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             ),
             SizedBox(height: 12.h),
             ..._suggestedSchools.map((school) => _buildSchoolCard(school, isAISuggested: true)).toList(),
-            SizedBox(height: 32.h),
+            SizedBox(height: 24.h),
           ],
 
+          // Search Bar for Schools
+          Container(
+            margin: EdgeInsets.only(bottom: 24.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  _schoolSearchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'search_schools_hint'.tr,
+                prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue),
+                suffixIcon: _schoolSearchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _schoolSearchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+          ),
+
           // Other Schools Section
-          if (otherSchools.isNotEmpty) ...[
+          if (filteredOtherSchools.isNotEmpty) ...[
             Row(
               children: [
                 Icon(Icons.school, color: AppColors.textSecondary, size: 22.sp),
@@ -495,7 +607,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
-                    '${otherSchools.length}',
+                    '${filteredOtherSchools.length}',
                     style: AppFonts.bodySmall.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -505,10 +617,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
               ],
             ),
             SizedBox(height: 12.h),
-            ...otherSchools.map((school) => _buildSchoolCard(school, isAISuggested: false)).toList(),
+            ...filteredOtherSchools.map((school) => _buildSchoolCard(school, isAISuggested: false)).toList(),
           ],
           
-          if (_suggestedSchools.isEmpty && otherSchools.isEmpty)
+          if (_suggestedSchools.isEmpty && filteredOtherSchools.isEmpty)
             Center(
               child: Padding(
                 padding: EdgeInsets.all(40.w),

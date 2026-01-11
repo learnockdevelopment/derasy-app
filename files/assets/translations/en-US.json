@@ -1593,5 +1593,13 @@
   "november": "November",
   "december": "December",
   "from_time": "From",
-  "to_time": "To"
+  "to_time": "To",
+  "search_schools_hint": "Search for schools...",
+  "application_id_short": "ID",
+  "application_type": "App Type",
+  "please_select_student_first": "Please select a student first",
+  "loading_schools_please_wait": "Loading schools data, please wait...",
+  "all_schools_selected": "All Schools Selected",
+  "select_at_least_one_school": "Select at least 1 school",
+  "submit_application": "Submit Application"
 }

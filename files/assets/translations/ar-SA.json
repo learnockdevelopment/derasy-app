@@ -1572,5 +1572,13 @@
   "november": "نوفمبر",
   "december": "ديسمبر",
   "from_time": "من",
-  "to_time": "إلى"
+  "to_time": "إلى",
+  "search_schools_hint": "ابحث عن المدارس...",
+  "application_id_short": "رقم الطلب",
+  "application_type": "نوع الطلب",
+  "please_select_student_first": "يرجى اختيار الطالب أولاً",
+  "loading_schools_please_wait": "جاري تحميل بيانات المدارس، يرجى الانتظار...",
+  "all_schools_selected": "تم اختيار جميع المدارس",
+  "select_at_least_one_school": "اختر مدرسة واحدة على الأقل",
+  "submit_application": "تقديم الطلب"
 }

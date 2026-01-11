@@ -401,6 +401,9 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     final displayName = application.child.arabicFullName ?? application.child.fullName;
     final hasConfirmedInterview = application.interview?.date != null;
     final hasPreferredSlots = application.preferredInterviewSlots.isNotEmpty;
+    final shortId = application.id.length > 8 
+        ? application.id.substring(application.id.length - 8).toUpperCase()
+        : application.id.toUpperCase();
     
     DateTime? interviewDate;
     String? interviewTime;
@@ -421,43 +424,103 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           AppRoutes.applicationDetails,
           arguments: {'applicationId': application.id},
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
         child: Container(
-          padding: EdgeInsets.all(14.w),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: statusColor.withOpacity(0.2),
+              color: statusColor.withOpacity(0.15),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: statusColor.withOpacity(0.1),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row - School Name and Status
+              // Header Row - Icon and ID / Type
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(
+                          _getStatusIcon(application.status, isPaid),
+                          color: statusColor,
+                          size: 18.sp,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${'application_id_short'.tr}: #$shortId',
+                            style: AppFonts.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.sp,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          if (application.applicationType != null)
+                            Container(
+                              margin: EdgeInsets.only(top: 4.h),
+                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                              child: Text(
+                                application.applicationType!.tr.toUpperCase(),
+                                style: AppFonts.bodySmall.copyWith(
+                                  color: AppColors.primaryBlue,
+                                  fontSize: 8.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.circular(12.r),
+                      color: statusColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(
-                      _getStatusIcon(application.status, isPaid),
-                      color: Colors.white,
-                      size: 18.sp,
+                    child: Text(
+                      _getStatusLabel(application.status, isPaid),
+                      style: AppFonts.bodySmall.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.sp,
+                      ),
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                ],
+              ),
+              
+              SizedBox(height: 16.h),
+              
+              // School and Child Info Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,66 +529,77 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           application.school.name,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
-                            fontSize: 15.sp,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 3.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
+                        if (application.school.address != null) ...[
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on_outlined, size: 12.sp, color: AppColors.textSecondary),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  application.school.address!,
+                                  style: AppFonts.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11.sp,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                          decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Text(
-                            _getStatusLabel(application.status, isPaid),
-                            style: AppFonts.bodySmall.copyWith(
-                              color: statusColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11.sp,
-                            ),
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
                   Icon(
-                    IconlyBroken.arrow_left_2,
-                    color: statusColor.withOpacity(0.5),
-                    size: 20.sp,
+                    IconlyBroken.arrow_right_2,
+                    color: AppColors.grey400,
+                    size: 18.sp,
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
               
-              // Student Info with Gender
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Divider(color: AppColors.grey200, height: 1),
+              ),
+
+              // Student details
               Row(
                 children: [
-                  Icon(
-                    IconlyBroken.profile,
-                    size: 14.sp,
-                    color: AppColors.primaryBlue,
+                  Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.grey100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      IconlyBroken.profile,
+                      size: 14.sp,
+                      color: AppColors.primaryBlue,
+                    ),
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       displayName,
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 13.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (application.child.gender != null) ...[
-                    SizedBox(width: 8.w),
+                  if (application.child.gender != null)
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
@@ -562,10 +636,10 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                         ],
                       ),
                     ),
-                  ],
                 ],
               ),
-              SizedBox(height: 10.h),
+              
+              SizedBox(height: 16.h),
               
               // Footer - Dates and Payment
               Row(
@@ -573,27 +647,27 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   // Submitted Date
                   Expanded(
                     child: _buildInfoChip(
-                      icon: Icons.send,
+                      icon: Icons.send_rounded,
                       label: 'submitted_date'.tr,
                       value: _formatDate(application.submittedAt ?? application.createdAt),
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 8.w),
-                  // Interview Date and Time
+                  SizedBox(width: 10.w),
+                  // Interview or Payment info
                   Expanded(
                     child: interviewDate != null
                         ? _buildInfoChip(
-                            icon: Icons.event,
+                            icon: Icons.event_available_rounded,
                             label: hasConfirmedInterview ? 'interview_scheduled'.tr : 'interview_date'.tr,
-                            value: '${_formatDate(interviewDate!)}\n${interviewTime ?? ""}',
+                            value: '${_formatDate(interviewDate)}\n${interviewTime ?? ""}',
                             color: AppColors.warning,
                           )
                         : application.payment != null
                             ? _buildInfoChip(
                                 icon: application.payment!.isPaid
-                                    ? Icons.check_circle
-                                    : Icons.hourglass_empty,
+                                    ? Icons.check_circle_rounded
+                                    : Icons.hourglass_empty_rounded,
                                 label: application.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
                                 value: '${application.payment!.amount} ${'egp'.tr}',
                                 color: application.payment!.isPaid

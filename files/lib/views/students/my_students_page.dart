@@ -893,29 +893,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         ),
                       ], 
                     ),
-                    // Show "Apply to School" button if student has school and no pending applications
-                    if (child.schoolId.id.isNotEmpty) ...[
-                      Builder(
-                        builder: (context) {
-                          final applications = _studentApplications[child.id] ?? [];
-                          final pendingStatuses = ['pending', 'under_review', 'waitlist', 'draft'];
-                          final hasPendingApplications = applications.any((app) => 
-                            pendingStatuses.contains(app.status.toLowerCase())
-                          );
-                          
-                          // Only show "Apply to School" if no pending applications
-                          if (!hasPendingApplications) {
-                            return Column(
-                              children: [
-                                SizedBox(height: 8.h),
-                                _buildApplyToSchoolButton(child), 
-                              ],
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ],
+
                   ],
                 ), 
               ), 
@@ -926,57 +904,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     );
 }
 
-  Widget _buildApplyToSchoolButton(Student child) {
-    return SizedBox(
-      height: 42.h,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Get.toNamed(AppRoutes.applyToSchools, arguments: {'childId': child.id});
-          },
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: AppColors.primaryBlue,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  IconlyBroken.plus,
-                  color: AppColors.primaryBlue,
-                  size: 16.sp,
-                ),
-                Expanded(
-                  child: Text(
-                    'apply_to_school'.tr,
-                    style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.primaryBlue,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+
 
 
 
