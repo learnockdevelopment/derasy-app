@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../core/constants/app_colors.dart';
@@ -22,8 +23,8 @@ class BottomNavBarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(35.r),
-          topRight: Radius.circular(35.r),
+          topLeft: Radius.circular(Responsive.r(35)),
+          topRight: Radius.circular(Responsive.r(35)),
         ),
         boxShadow: [
           BoxShadow(
@@ -35,7 +36,7 @@ class BottomNavBarWidget extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 10.h),
+          padding: Responsive.symmetric(horizontal: 4, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -97,9 +98,9 @@ class BottomNavBarWidget extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap ?? () => this.onTap(index),
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(Responsive.r(12)),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 8.h),
+            padding: Responsive.symmetric(horizontal: 2, vertical: 8),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -107,16 +108,16 @@ class BottomNavBarWidget extends StatelessWidget {
                 Icon(
                   icon,
                   color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
-                  size: 22.sp,
+                  size: Responsive.sp(22),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Flexible(
                   child: Text(
                     label,
                     style: AppFonts.labelSmall.copyWith(
                       color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      fontSize: 10.sp,
+                      fontSize: Responsive.sp(10),
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,

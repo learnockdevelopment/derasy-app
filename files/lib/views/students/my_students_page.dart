@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -127,9 +128,9 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       for (var schoolId in uniqueSchoolIds) {
         try {
           final school = await SchoolsService.getSchoolById(schoolId);
-          if (school.educationSystem != null &&
-              school.educationSystem!.isNotEmpty) {
-            educationSystems[schoolId] = school.educationSystem!;
+          final system = school.educationSystem;
+          if (system != null && system.isNotEmpty) {
+            educationSystems[schoolId] = system;
           }
         } catch (e) {
           // Continue with other schools
@@ -180,7 +181,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double heroHeight = 120.h;
+    final double heroHeight = Responsive.h(120);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -221,18 +222,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               if (controller.isTakingLong && isLoading)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                         border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
-                          SizedBox(width: 12.w),
+                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: Responsive.sp(20)),
+                          SizedBox(width: Responsive.w(12)),
                           Expanded(
                             child: Text(
                               'slow_connection_message'.tr,
@@ -248,21 +249,21 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               if (controller.isTimeout && !isLoading && _filteredChildren.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                     child: InkWell(
                       onTap: () => controller.refreshAll(),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: AppColors.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
                           border: Border.all(color: AppColors.error.withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.refresh_rounded, color: AppColors.error, size: 20.sp),
-                            SizedBox(width: 8.w),
+                            Icon(Icons.refresh_rounded, color: AppColors.error, size: Responsive.sp(20)),
+                            SizedBox(width: Responsive.w(8)),
                             Text(
                               'retry_loading'.tr,
                               style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
@@ -274,14 +275,14 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                   ),
                 ),
 
-              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
               // Students List
               isLoading && _filteredChildren.isEmpty
                   ? SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            padding: Responsive.symmetric(horizontal: 16),
                             child: const ShimmerListTile(),
                           );
                         },
@@ -294,7 +295,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           child: _buildEmptyState(),
                         )
                       : SliverPadding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: Responsive.symmetric(horizontal: 16),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
@@ -306,7 +307,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           ),
                         ),
               SliverToBoxAdapter(
-                  child: SizedBox(height: 100.h)), // Space for FABs
+                  child: SizedBox(height: Responsive.h(100))), // Space for FABs
             ],
           );
         }),
@@ -335,17 +336,17 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
         children: [
           Icon(
             IconlyBroken.profile,
-            size: 80.sp,
+            size: Responsive.sp(80),
             color: AppColors.grey400,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: Responsive.h(24)),
           Text(
             'no_children_found'.tr,
             style: AppFonts.h3.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: Responsive.h(8)),
           Text(
             'no_children_found_message'.tr,
             style: AppFonts.bodyMedium.copyWith(
@@ -412,10 +413,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
         _schoolEducationSystems[schoolId] ?? child.schoolId.educationSystem;
 
     return Container(
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: Responsive.only(bottom: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(Responsive.r(20)),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryBlue.withOpacity(0.08),
@@ -437,10 +438,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
             onTap: () {
               Get.toNamed(AppRoutes.childDetails, arguments: {'child': child});
             },
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(Responsive.r(20)),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(Responsive.r(20)),
                 border: Border.all(
                   color: AppColors.primaryBlue.withOpacity(0.1),
                   width: 1,
@@ -474,7 +475,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                   //   ),
                   // ),
                   Padding(
-                    padding: EdgeInsets.all(16.w),
+                    padding: Responsive.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -483,8 +484,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                        children: [
                         // Student Avatar/Initial Circle
                         Container(
-                          width: 44.w,
-                          height: 44.w,
+                          width: Responsive.w(44),
+                          height: Responsive.w(44),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -494,7 +495,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.primaryBlue.withOpacity(0.3),
@@ -506,23 +507,23 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           child: Center(
                             child: Text(
                               (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
-                                  ? child.arabicFullName![0].toUpperCase()
+                                  ? (child.arabicFullName?[0].toUpperCase() ?? '')
                                   : (child.fullName.isNotEmpty
                                       ? child.fullName[0].toUpperCase()
                                       : 'S'),
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18.sp,
+                                fontSize: Responsive.sp(18),
                               ),
                             ),
                           ),
                         ),
-                         SizedBox(width: 12.w),
-                         // Badges beside avatar - centered vertically with avatar (not centered in card)
+                         SizedBox(width: Responsive.w(12)),
+                          // Badges beside avatar - centered vertically with avatar (not centered in card)
                          Wrap(
-                           spacing: 6.w,
-                           runSpacing: 6.h,
+                           spacing: Responsive.w(6),
+                           runSpacing: Responsive.h(6),
                            alignment: WrapAlignment.start,
                            crossAxisAlignment: WrapCrossAlignment.center,
                            children: [
@@ -533,12 +534,12 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 schoolName != 'no_school'.tr &&
                                 child.schoolId.id.isNotEmpty)
                               Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 5.h),
+                                padding: Responsive.symmetric(
+                                    horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
                                   color:
                                       AppColors.primaryPurple.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(7.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   border: Border.all(
                                     color: AppColors.primaryPurple
                                         .withOpacity(0.2),
@@ -551,15 +552,15 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                     Icon(
                                       IconlyBroken.star,
                                       color: AppColors.primaryPurple,
-                                      size: 11.sp,
+                                      size: Responsive.sp(11),
                                     ),
-                                    SizedBox(width: 5.w),
+                                    SizedBox(width: Responsive.w(5)),
                                     Text(
                                       _translateEducationSystem(
                                           educationSystem.toString().trim()),
                                       style: AppFonts.bodySmall.copyWith(
                                         color: AppColors.primaryPurple,
-                                        fontSize: 10.sp,
+                                        fontSize: Responsive.sp(10),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -571,11 +572,11 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 schoolName != 'no_school'.tr &&
                                 child.schoolId.id.isNotEmpty)
                               Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 5.h),
+                                padding: Responsive.symmetric(
+                                    horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: AppColors.primaryBlue.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(7.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   border: Border.all(
                                     color:
                                         AppColors.primaryBlue.withOpacity(0.2),
@@ -588,14 +589,14 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                     Icon(
                                       IconlyBroken.document,
                                       color: AppColors.primaryBlue,
-                                      size: 11.sp,
+                                      size: Responsive.sp(11),
                                     ),
-                                    SizedBox(width: 5.w),
+                                    SizedBox(width: Responsive.w(5)),
                                     Text(
                                       child.grade.name,
                                       style: AppFonts.bodySmall.copyWith(
                                         color: AppColors.primaryBlue,
-                                        fontSize: 10.sp,
+                                        fontSize: Responsive.sp(10),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -607,17 +608,17 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
                       ],
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     // Full name to end of card - no new line
                     Container(
                       child: Text(
                         (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
-                            ? child.arabicFullName!
+                            ? (child.arabicFullName ?? '')
                             : child.fullName,
                         style: AppFonts.h4.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
+                          fontSize: Responsive.sp(16),
                           letterSpacing: 0.1,
                           height: 1.2,
                         ),
@@ -626,32 +627,32 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         textAlign: TextAlign.end,
                       ),
                     ),                    Container(
-                      padding: EdgeInsets.all(10.w),
+                      padding: Responsive.all(10),
                       decoration: BoxDecoration(
                         color: AppColors.grey200.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(10.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(10)),
                       ),
                       child: Column(
                         children: [
                           if (child.nationality != null &&
-                              child.nationality!.isNotEmpty)
+                              (child.nationality?.isNotEmpty ?? false))
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(5.w),
+                                  padding: Responsive.all(5),
                                   decoration: BoxDecoration(
                                     color:
                                         AppColors.primaryBlue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(7.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   ),
                                   child: Icon(
                                     Icons.flag_rounded,
                                     color: AppColors.primaryBlue,
-                                    size: 13.sp,
+                                    size: Responsive.sp(13),
                                   ),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: Responsive.w(8)),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -671,7 +672,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                             child.nationality),
                                         style: AppFonts.bodyMedium.copyWith(
                                           color: AppColors.textPrimary,
-                                          fontSize: 12.sp,
+                                          fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -681,27 +682,27 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                               ],
                             ),
                           if (child.nationality != null &&
-                              child.nationality!.isNotEmpty)
-                            SizedBox(height: 8.h),
+                              (child.nationality?.isNotEmpty ?? false))
+                            SizedBox(height: Responsive.h(8)),
                           if (schoolName != 'no_school'.tr &&
                               child.schoolId.id.isNotEmpty)
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(5.w),
+                                  padding: Responsive.all(5),
                                   decoration: BoxDecoration(
                                     color:
                                         AppColors.primaryGreen.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(7.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   ),
                                   child: Icon(
                                     IconlyBroken.document,
                                     color: AppColors.primaryGreen,
-                                    size: 13.sp,
+                                    size: Responsive.sp(13),
                                   ),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: Responsive.w(8)),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -711,18 +712,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         'status'.tr,
                                         style: AppFonts.bodySmall.copyWith(
                                           color: AppColors.textSecondary,
-                                          fontSize: 10.sp,
+                                          fontSize: Responsive.sp(10),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      SizedBox(height: 1.h),
+                                      SizedBox(height: Responsive.h(1)),
                                       Text(
                                         'enrolled_in_school'
                                             .tr
                                             .replaceAll('{school}', schoolName),
                                         style: AppFonts.bodyMedium.copyWith(
                                           color: AppColors.primaryGreen,
-                                          fontSize: 12.sp,
+                                          fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),
                                         maxLines: 1,
@@ -738,18 +739,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(5.w),
+                                  padding: Responsive.all(5),
                                   decoration: BoxDecoration(
                                     color: Colors.orange.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(7.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   ),
                                   child: Icon(
                                     IconlyBroken.document,
                                     color: Colors.orange,
-                                    size: 13.sp,
+                                    size: Responsive.sp(13),
                                   ),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: Responsive.w(8)),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -759,16 +760,16 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         'status'.tr,
                                         style: AppFonts.bodySmall.copyWith(
                                           color: AppColors.textSecondary,
-                                          fontSize: 10.sp,
+                                          fontSize: Responsive.sp(10),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      SizedBox(height: 1.h),
+                                      SizedBox(height: Responsive.h(1)),
                                       Text(
                                         'not_enrolled_in_school'.tr,
                                         style: AppFonts.bodyMedium.copyWith(
                                           color: Colors.orange.shade700,
-                                          fontSize: 12.sp,
+                                          fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -779,24 +780,24 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                             ),
                           // Age in October - displayed below school info
                           if (child.ageInOctober > 0) ...[
-                            SizedBox(height: 8.h),
+                            SizedBox(height: Responsive.h(8)),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(5.w),
+                                  padding: Responsive.all(5),
                                   decoration: BoxDecoration(
                                     color: AppColors.primaryPurple
                                         .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(7.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
                                   ),
                                   child: Icon(
                                     IconlyBroken.time_circle,
                                     color: AppColors.primaryPurple,
-                                    size: 13.sp,
+                                    size: Responsive.sp(13),
                                   ),
                                 ),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: Responsive.w(8)),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -830,18 +831,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                       ),
                     ),
                     if (child.specialNeeds != null &&
-                        child.specialNeeds!['hasNeeds'] == true) ...[
-                      SizedBox(height: 6.h),
+                        child.specialNeeds?['hasNeeds'] == true) ...[
+                      SizedBox(height: Responsive.h(6)),
                       Builder(
                         builder: (context) {
-                          final specialNeeds = child.specialNeeds!;
+                          final specialNeeds = child.specialNeeds ?? {};
                           final description = specialNeeds['description'];
                           return Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.w, vertical: 5.h),
+                            padding: Responsive.symmetric(
+                                horizontal: 8, vertical: 5),
                             decoration: BoxDecoration(
                               color: Colors.orange.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(7.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(7)),
                               border: Border.all(
                                 color: Colors.orange.withOpacity(0.3),
                                 width: 1,
@@ -853,26 +854,26 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 Icon(
                                   IconlyBroken.profile,
                                   color: Colors.orange,
-                                  size: 12.sp,
+                                  size: Responsive.sp(12),
                                 ),
-                                SizedBox(width: 5.w),
+                                SizedBox(width: Responsive.w(5)),
                                 Text(
                                   'special_needs'.tr,
                                   style: AppFonts.bodySmall.copyWith(
                                     color: Colors.orange.shade700,
-                                    fontSize: 11.sp,
+                                    fontSize: Responsive.sp(11),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 if (description != null &&
                                     description.toString().isNotEmpty) ...[
-                                  SizedBox(width: 5.w),
+                                  SizedBox(width: Responsive.w(5)),
                                   Expanded(
                                     child: Text(
                                       ': ${description}',
                                       style: AppFonts.bodySmall.copyWith(
                                         color: Colors.orange.shade700,
-                                        fontSize: 10.sp,
+                                        fontSize: Responsive.sp(10),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -885,7 +886,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         },
                       ),
                     ],
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     Row(
                       children: [
                         Expanded(
@@ -945,15 +946,15 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     }
 
     return SizedBox(
-      height: 42.h,
+      height: Responsive.h(42),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(Responsive.r(12)),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+            padding: Responsive.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -963,7 +964,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primaryBlue.withOpacity(0.3),
@@ -982,14 +983,14 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                       ? IconlyBroken.document
                       : IconlyBroken.plus,
                   color: Colors.white,
-                  size: 16.sp,
+                  size: Responsive.sp(16),
                 ),
                 Expanded(
                   child: Text(
                     buttonText,
                     style: AppFonts.bodySmall.copyWith(
                       color: Colors.white,
-                      fontSize: 12.sp,
+                      fontSize: Responsive.sp(12),
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                     ),
@@ -1033,7 +1034,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     };
 
     if (nationalityMap.containsKey(lowerNationality)) {
-      return nationalityMap[lowerNationality]!;
+      return nationalityMap[lowerNationality] ?? nationality;
     }
 
     for (var entry in nationalityMap.entries) {
@@ -1072,7 +1073,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     };
 
     if (educationSystemMap.containsKey(lowerSystem)) {
-      return educationSystemMap[lowerSystem]!;
+      return educationSystemMap[lowerSystem] ?? educationSystem;
     }
 
     for (var entry in educationSystemMap.entries) {

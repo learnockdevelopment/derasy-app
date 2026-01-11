@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../utils/responsive_utils.dart';
 
 class AppFonts {
   // Font Family - Noto Sans Arabic Only
@@ -14,22 +15,22 @@ class AppFonts {
   static const FontWeight black = FontWeight.w900;
 
   // Font Sizes
-  static double get size10 => 10.sp; 
-  static double get size12 => 12.sp;
-  static double get size14 => 14.sp;
-  static double get size16 => 16.sp;
-  static double get size18 => 18.sp;
-  static double get size20 => 20.sp;
-  static double get size22 => 22.sp;
-  static double get size24 => 24.sp;
-  static double get size28 => 28.sp;
-  static double get size32 => 32.sp;
-  static double get size36 => 36.sp;
-  static double get size40 => 40.sp;
-  static double get size48 => 48.sp;
-  static double get size56 => 56.sp;
-  static double get size64 => 64.sp;
-  static double get size72 => 72.sp;
+  static double get size10 => Responsive.sp(10); 
+  static double get size12 => Responsive.sp(12);
+  static double get size14 => Responsive.sp(14);
+  static double get size16 => Responsive.sp(16);
+  static double get size18 => Responsive.sp(18);
+  static double get size20 => Responsive.sp(20);
+  static double get size22 => Responsive.sp(22);
+  static double get size24 => Responsive.sp(24);
+  static double get size28 => Responsive.sp(28);
+  static double get size32 => Responsive.sp(32);
+  static double get size36 => Responsive.sp(36);
+  static double get size40 => Responsive.sp(40);
+  static double get size48 => Responsive.sp(48);
+  static double get size56 => Responsive.sp(56);
+  static double get size64 => Responsive.sp(64);
+  static double get size72 => Responsive.sp(72);
 
   // ===== Almarai FONT SYSTEM =====
 
@@ -238,112 +239,112 @@ class AppFonts {
   static TextStyle get h1 => TextStyle(
         fontFamily: Almarai,
         fontWeight: bold,
-        fontSize: 24.sp,
+        fontSize: Responsive.sp(24),
         height: 1.2,
       );
 
   static TextStyle get h2 => TextStyle(
         fontFamily: Almarai,
         fontWeight: bold,
-        fontSize: 20.sp,
+        fontSize: Responsive.sp(20),
         height: 1.3,
       );
 
   static TextStyle get h3 => TextStyle(
         fontFamily: Almarai,
         fontWeight: bold,
-        fontSize: 18.sp,
+        fontSize: Responsive.sp(18),
         height: 1.4,
       );
 
   static TextStyle get h4 => TextStyle(
         fontFamily: Almarai,
         fontWeight: bold,
-        fontSize: 16.sp,
+        fontSize: Responsive.sp(16),
         height: 1.4,
       );
 
   static TextStyle get h5 => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 14.sp,
+        fontSize: Responsive.sp(14),
         height: 1.5,
       );
 
   static TextStyle get h6 => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 12.sp,
+        fontSize: Responsive.sp(12),
         height: 1.5,
       );
 
   static TextStyle get bodyLarge => TextStyle(
         fontFamily: Almarai,
         fontWeight: regular,
-        fontSize: 16.sp,
+        fontSize: Responsive.sp(16),
         height: 1.5,
       );
 
   static TextStyle get bodyMedium => TextStyle(
         fontFamily: Almarai,
         fontWeight: regular,
-        fontSize: 14.sp,
+        fontSize: Responsive.sp(14),
         height: 1.5,
       );
 
   static TextStyle get bodySmall => TextStyle(
         fontFamily: Almarai,
         fontWeight: regular,
-        fontSize: 12.sp,
+        fontSize: Responsive.sp(12),
         height: 1.4,
       );
 
   static TextStyle get caption => TextStyle(
         fontFamily: Almarai,
         fontWeight: regular,
-        fontSize: 10.sp,
+        fontSize: Responsive.sp(10),
         height: 1.3,
       );
 
   static TextStyle get buttonLarge => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 16.sp,
+        fontSize: Responsive.sp(16),
         height: 1.2,
       );
 
   static TextStyle get buttonMedium => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 14.sp,
+        fontSize: Responsive.sp(14),
         height: 1.2,
       );
 
   static TextStyle get buttonSmall => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 12.sp,
+        fontSize: Responsive.sp(12),
         height: 1.2,
       );
 
   static TextStyle get labelLarge => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 14.sp,
+        fontSize: Responsive.sp(14),
         height: 1.3,
       );
 
   static TextStyle get labelMedium => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 12.sp,
+        fontSize: Responsive.sp(12),
         height: 1.3,
       );
 
   static TextStyle get labelSmall => TextStyle(
         fontFamily: Almarai,
         fontWeight: medium,
-        fontSize: 10.sp,
+        fontSize: Responsive.sp(10),
         height: 1.2,
       );
 

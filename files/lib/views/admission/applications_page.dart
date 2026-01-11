@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -172,14 +173,14 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             slivers: [
               if (_filterChildId == null)
                 SliverAppBar(
-                  expandedHeight: 140.h,
+                  expandedHeight: Responsive.h(140),
                   floating: false,
                   pinned: true,
                   automaticallyImplyLeading: false,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   toolbarHeight: 0,
-                  collapsedHeight: 140.h,
+                  collapsedHeight: Responsive.h(140),
                   flexibleSpace: FlexibleSpaceBar(
                     background: HeroSectionWidget(
                       userData: _userData,
@@ -224,7 +225,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   backgroundColor: AppColors.primaryBlue,
                   elevation: 0,
                   leading: IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
                     onPressed: () => Get.back(),
                   ),
                   title: Text(
@@ -234,12 +235,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     style: AppFonts.h3.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18.sp,
+                      fontSize: Responsive.sp(18),
                     ),
                   ),
                   actions: [
                     IconButton(
-                      icon: Icon(Icons.refresh, color: Colors.white, size: 24.sp),
+                      icon: Icon(Icons.refresh, color: Colors.white, size: Responsive.sp(24)),
                       onPressed: _onRefresh,
                     ),
                   ],
@@ -248,18 +249,18 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               if (controller.isTakingLong && isLoading)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding: Responsive.symmetric(horizontal: 20, vertical: 12),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                         border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
-                          SizedBox(width: 12.w),
+                          Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: Responsive.sp(20)),
+                          SizedBox(width: Responsive.w(12)),
                           Expanded(
                             child: Text(
                               'slow_connection_message'.tr,
@@ -275,21 +276,21 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               if (controller.isTimeout && !isLoading && _filteredApplications.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding: Responsive.symmetric(horizontal: 20, vertical: 12),
                     child: InkWell(
                       onTap: () => controller.refreshAll(),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: AppColors.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
                           border: Border.all(color: AppColors.error.withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.refresh_rounded, color: AppColors.error, size: 20.sp),
-                            SizedBox(width: 8.w),
+                            Icon(Icons.refresh_rounded, color: AppColors.error, size: Responsive.sp(20)),
+                            SizedBox(width: Responsive.w(8)),
                             Text(
                               'retry_loading'.tr,
                               style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
@@ -301,20 +302,20 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   ),
                 ),
 
-              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
               
               // Applications List
               isLoading && _filteredApplications.isEmpty
                   ? SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      padding: Responsive.symmetric(horizontal: 20),
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             return Padding(
-                              padding: EdgeInsets.only(bottom: 16.h),
+                              padding: Responsive.only(bottom: 16),
                               child: ShimmerCard(
-                                height: 140.h,
-                                borderRadius: 16.r,
+                                height: Responsive.h(140),
+                                borderRadius: Responsive.r(16),
                               ),
                             );
                           },
@@ -330,32 +331,32 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.all(24.w),
+                                  padding: Responsive.all(24),
                                   decoration: BoxDecoration(
                                     color: AppColors.primaryBlue.withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     IconlyBroken.document,
-                                    size: 64.sp,
+                                    size: Responsive.sp(64),
                                     color: AppColors.primaryBlue.withOpacity(0.6),
                                   ),
                                 ),
-                                SizedBox(height: 24.h),
+                                SizedBox(height: Responsive.h(24)),
                                 Text(
                                   'no_applications_found'.tr,
                                   style: AppFonts.h3.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 20.sp,
+                                    fontSize: Responsive.sp(20),
                                   ),
                                 ),
-                                SizedBox(height: 12.h),
+                                SizedBox(height: Responsive.h(12)),
                                 Text(
                                   'applications_will_appear_here'.tr,
                                   style: AppFonts.bodyMedium.copyWith(
                                     color: AppColors.textSecondary,
-                                    fontSize: 14.sp,
+                                    fontSize: Responsive.sp(14),
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -364,12 +365,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           ),
                         )
                       : SliverPadding(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          padding: Responsive.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
                                 return Padding(
-                                  padding: EdgeInsets.only(bottom: 16.h),
+                                  padding: Responsive.only(bottom: 16),
                                   child: _buildApplicationCard(_filteredApplications[index]),
                                 );
                               },
@@ -377,7 +378,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                             ),
                           ),
                         ),
-              SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(100))),
             ],
           );
         }),
@@ -424,12 +425,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           AppRoutes.applicationDetails,
           arguments: {'applicationId': application.id},
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(Responsive.r(20)),
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          padding: Responsive.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(Responsive.r(20)),
             border: Border.all(
               color: statusColor.withOpacity(0.15),
               width: 1.5,
@@ -452,18 +453,18 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10.w),
+                        padding: Responsive.all(10),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
                         ),
                         child: Icon(
                           _getStatusIcon(application.status, isPaid),
                           color: statusColor,
-                          size: 18.sp,
+                          size: Responsive.sp(18),
                         ),
                       ),
-                      SizedBox(width: 12.w),
+                      SizedBox(width: Responsive.w(12)),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -472,23 +473,23 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                             style: AppFonts.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.bold,
-                              fontSize: 10.sp,
+                              fontSize: Responsive.sp(10),
                               letterSpacing: 0.5,
                             ),
                           ),
                           if (application.applicationType != null)
                             Container(
-                              margin: EdgeInsets.only(top: 4.h),
-                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                              margin: Responsive.only(top: 4),
+                              padding: Responsive.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryBlue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(4)),
                               ),
                               child: Text(
                                 application.applicationType!.tr.toUpperCase(),
                                 style: AppFonts.bodySmall.copyWith(
                                   color: AppColors.primaryBlue,
-                                  fontSize: 8.sp,
+                                  fontSize: Responsive.sp(8),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -498,24 +499,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    padding: Responsive.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                     ),
                     child: Text(
                       _getStatusLabel(application.status, isPaid),
                       style: AppFonts.bodySmall.copyWith(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 11.sp,
+                        fontSize: Responsive.sp(11),
                       ),
                     ),
                   ),
                 ],
               ),
               
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               
               // School and Child Info Section
               Row(
@@ -529,24 +530,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           application.school.name,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
-                            fontSize: 16.sp,
+                            fontSize: Responsive.sp(16),
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (application.school.address != null) ...[
-                          SizedBox(height: 4.h),
+                          SizedBox(height: Responsive.h(4)),
                           Row(
                             children: [
-                              Icon(Icons.location_on_outlined, size: 12.sp, color: AppColors.textSecondary),
-                              SizedBox(width: 4.w),
+                              Icon(Icons.location_on_outlined, size: Responsive.sp(12), color: AppColors.textSecondary),
+                              SizedBox(width: Responsive.w(4)),
                               Expanded(
                                 child: Text(
                                   application.school.address!,
                                   style: AppFonts.bodySmall.copyWith(
                                     color: AppColors.textSecondary,
-                                    fontSize: 11.sp,
+                                    fontSize: Responsive.sp(11),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -561,13 +562,13 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Icon(
                     IconlyBroken.arrow_right_2,
                     color: AppColors.grey400,
-                    size: 18.sp,
+                    size: Responsive.sp(18),
                   ),
                 ],
               ),
               
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: Responsive.symmetric(vertical: 12),
                 child: Divider(color: AppColors.grey200, height: 1),
               ),
 
@@ -575,24 +576,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(6.w),
+                    padding: Responsive.all(6),
                     decoration: BoxDecoration(
                       color: AppColors.grey100,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       IconlyBroken.profile,
-                      size: 14.sp,
+                      size: Responsive.sp(14),
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: Responsive.w(10)),
                   Expanded(
                     child: Text(
                       displayName,
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14.sp,
+                        fontSize: Responsive.sp(14),
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -601,12 +602,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   ),
                   if (application.child.gender != null)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: Responsive.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: application.child.gender?.toLowerCase() == 'male'
                             ? Colors.blue.withOpacity(0.1)
                             : Colors.pink.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(8)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -615,12 +616,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                             application.child.gender?.toLowerCase() == 'male'
                                 ? Icons.male
                                 : Icons.female,
-                            size: 12.sp,
+                            size: Responsive.sp(12),
                             color: application.child.gender?.toLowerCase() == 'male'
                                 ? Colors.blue
                                 : Colors.pink,
                           ),
-                          SizedBox(width: 4.w),
+                          SizedBox(width: Responsive.w(4)),
                           Text(
                             application.child.gender?.toLowerCase() == 'male'
                                 ? 'male'.tr
@@ -629,7 +630,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                               color: application.child.gender?.toLowerCase() == 'male'
                                   ? Colors.blue
                                   : Colors.pink,
-                              fontSize: 10.sp,
+                              fontSize: Responsive.sp(10),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -639,7 +640,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                 ],
               ),
               
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               
               // Footer - Dates and Payment
               Row(
@@ -692,24 +693,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+      padding: Responsive.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(Responsive.r(8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 10.sp, color: color),
-              SizedBox(width: 4.w),
+              Icon(icon, size: Responsive.sp(10), color: color),
+              SizedBox(width: Responsive.w(4)),
               Expanded(
                 child: Text(
                   label,
                   style: AppFonts.bodySmall.copyWith(
                     color: color,
-                    fontSize: 9.sp,
+                    fontSize: Responsive.sp(9),
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -718,12 +719,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               ),
             ],
           ),
-          SizedBox(height: 2.h),
+          SizedBox(height: Responsive.h(2)),
           Text(
             value,
             style: AppFonts.bodySmall.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 11.sp,
+              fontSize: Responsive.sp(11),
               fontWeight: FontWeight.bold,
             ),
           ),
