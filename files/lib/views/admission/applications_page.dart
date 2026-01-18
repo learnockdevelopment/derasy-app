@@ -424,12 +424,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           AppRoutes.applicationDetails,
           arguments: {'applicationId': application.id},
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: statusColor.withOpacity(0.15),
               width: 1.5,
@@ -437,8 +437,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -452,18 +452,18 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10.w),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
                           _getStatusIcon(application.status, isPaid),
                           color: statusColor,
-                          size: 18.sp,
+                          size: 16.sp,
                         ),
                       ),
-                      SizedBox(width: 12.w),
+                      SizedBox(width: 8.w),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -478,8 +478,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           ),
                           if (application.applicationType != null)
                             Container(
-                              margin: EdgeInsets.only(top: 4.h),
-                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                              margin: EdgeInsets.only(top: 2.h),
+                              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryBlue.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4.r),
@@ -498,24 +498,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       _getStatusLabel(application.status, isPaid),
                       style: AppFonts.bodySmall.copyWith(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 11.sp,
+                        fontSize: 10.sp,
                       ),
                     ),
                   ),
                 ],
               ),
               
-              SizedBox(height: 16.h),
+              SizedBox(height: 10.h),
               
               // School and Child Info Section
               Row(
@@ -529,24 +529,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           application.school.name,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
-                            fontSize: 16.sp,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (application.school.address != null) ...[
-                          SizedBox(height: 4.h),
+                          SizedBox(height: 2.h),
                           Row(
                             children: [
                               Icon(Icons.location_on_outlined, size: 12.sp, color: AppColors.textSecondary),
-                              SizedBox(width: 4.w),
+                              SizedBox(width: 2.w),
                               Expanded(
                                 child: Text(
                                   application.school.address!,
                                   style: AppFonts.bodySmall.copyWith(
                                     color: AppColors.textSecondary,
-                                    fontSize: 11.sp,
+                                    fontSize: 10.sp,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -561,13 +561,13 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Icon(
                     IconlyBroken.arrow_right_2,
                     color: AppColors.grey400,
-                    size: 18.sp,
+                    size: 16.sp,
                   ),
                 ],
               ),
               
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: EdgeInsets.symmetric(vertical: 8.h),
                 child: Divider(color: AppColors.grey200, height: 1),
               ),
 
@@ -575,24 +575,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(6.w),
+                    padding: EdgeInsets.all(5.w),
                     decoration: BoxDecoration(
                       color: AppColors.grey100,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       IconlyBroken.profile,
-                      size: 14.sp,
+                      size: 12.sp,
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       displayName,
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -601,12 +601,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   ),
                   if (application.child.gender != null)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: application.child.gender?.toLowerCase() == 'male'
                             ? Colors.blue.withOpacity(0.1)
                             : Colors.pink.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -615,12 +615,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                             application.child.gender?.toLowerCase() == 'male'
                                 ? Icons.male
                                 : Icons.female,
-                            size: 12.sp,
+                            size: 10.sp,
                             color: application.child.gender?.toLowerCase() == 'male'
                                 ? Colors.blue
                                 : Colors.pink,
                           ),
-                          SizedBox(width: 4.w),
+                          SizedBox(width: 2.w),
                           Text(
                             application.child.gender?.toLowerCase() == 'male'
                                 ? 'male'.tr
@@ -629,7 +629,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                               color: application.child.gender?.toLowerCase() == 'male'
                                   ? Colors.blue
                                   : Colors.pink,
-                              fontSize: 10.sp,
+                              fontSize: 9.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -639,7 +639,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                 ],
               ),
               
-              SizedBox(height: 16.h),
+              SizedBox(height: 10.h),
               
               // Footer - Dates and Payment
               Row(
@@ -653,7 +653,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: 8.w),
                   // Interview or Payment info
                   Expanded(
                     child: interviewDate != null

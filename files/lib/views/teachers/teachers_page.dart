@@ -486,11 +486,11 @@ class _TeachersPageState extends State<TeachersPage> {
   Widget _buildTeacherCard(Teacher teacher) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(12.r),
       elevation: 2,
       shadowColor: Colors.black.withOpacity(0.06),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(12.r),
         onTap: () {
           Get.toNamed(AppRoutes.teacherDetails, arguments: {
             'teacher': teacher,
@@ -498,35 +498,35 @@ class _TeachersPageState extends State<TeachersPage> {
           });
         },
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(12.r),
             color: const Color(0xFF10B981).withOpacity(0.1),
           ),
           child: Row(
             children: [
               // AVATAR
               Container(
-                width: 56.w,
-                height: 56.w,
+                width: 48.w,
+                height: 48.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF10B981),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF10B981).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
-                  size: 28.sp,
+                  size: 24.sp,
                 ),
               ),
-              SizedBox(width: 14.w),
+              SizedBox(width: 12.w),
               // INFO
               Expanded(
                 child: Column(
@@ -538,24 +538,24 @@ class _TeachersPageState extends State<TeachersPage> {
                       style: AppFonts.bodyLarge.copyWith(
                         color: const Color(0xFF1F2937),
                         fontWeight: FontWeight.bold,
-                        fontSize: AppFonts.size16,
+                        fontSize: 15.sp,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 6.h),
+                    SizedBox(height: 4.h),
                     if (teacher.subject != null && teacher.subject!.isNotEmpty)
                       Container(
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                         child: Text(
                           teacher.subject!,
                           style: AppFonts.labelSmall.copyWith(
                             color: Colors.white,
-                            fontSize: AppFonts.size12,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -568,7 +568,7 @@ class _TeachersPageState extends State<TeachersPage> {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: const Color(0xFF9CA3AF),
-                size: 16.sp,
+                size: 14.sp,
               ),
             ],
           ),

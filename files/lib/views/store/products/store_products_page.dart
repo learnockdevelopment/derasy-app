@@ -278,12 +278,12 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           });
           _loadProducts(resetPage: true);
         },
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryBlue : Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
               width: 1.5,
@@ -308,7 +308,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             label,
             style: AppFonts.bodyMedium.copyWith(
               color: isSelected ? Colors.white : AppColors.textPrimary,
-              fontSize: 13.sp,
+              fontSize: 12.sp,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
@@ -326,19 +326,19 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(12.r),
         onTap: () {
           Get.toNamed(AppRoutes.storeProductDetails, arguments: {'productId': product.id});
         },
         child: Container(
           margin: EdgeInsets.only(bottom: 12.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(12.r),
             color: Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
+                blurRadius: 10,
                 offset: const Offset(0, 4),
                 spreadRadius: 0,
               ),
@@ -358,45 +358,45 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16.r),
-                      topRight: Radius.circular(16.r),
+                      topLeft: Radius.circular(12.r),
+                      topRight: Radius.circular(12.r),
                     ),
                     child: Container(
                       width: double.infinity,
-                      height: 160.h,
+                      height: 140.h,
                       color: AppColors.primaryBlue.withOpacity(0.05),
                       child: product.images.isNotEmpty
                           ? SafeNetworkImage(
                               imageUrl: product.images.first,
                               width: double.infinity,
-                              height: 160.h,
+                              height: 140.h,
                               fit: BoxFit.cover,
                               errorWidget: Container(
                                 color: AppColors.primaryBlue.withOpacity(0.1),
                                 child: Icon(
                                   Icons.shopping_bag_rounded,
                                   color: AppColors.primaryBlue,
-                                  size: 48.sp,
+                                  size: 40.sp,
                                 ),
                               ),
                             )
                           : Icon(
                               Icons.shopping_bag_rounded,
                               color: AppColors.primaryBlue,
-                              size: 48.sp,
+                              size: 40.sp,
                             ),
                     ),
                   ),
                   // Featured Badge
                   if (product.isFeatured)
                     Positioned(
-                      top: 12.h,
-                      right: 12.w,
+                      top: 10.h,
+                      right: 10.w,
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.circular(20.r),
+                          borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primaryBlue.withOpacity(0.4),
@@ -411,14 +411,14 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                             Icon(
                               Icons.star_rounded,
                               color: Colors.white,
-                              size: 14.sp,
+                              size: 12.sp,
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               'featured'.tr,
                               style: AppFonts.bodySmall.copyWith(
                                 color: Colors.white,
-                                fontSize: 11.sp,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -429,13 +429,13 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   // Discount Badge
                   if (hasDiscount)
                     Positioned(
-                      top: 12.h,
-                      left: 12.w,
+                      top: 10.h,
+                      left: 10.w,
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: AppColors.error,
-                          borderRadius: BorderRadius.circular(20.r),
+                          borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.error.withOpacity(0.4),
@@ -450,14 +450,14 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                             Icon(
                               Icons.local_offer_rounded,
                               color: Colors.white,
-                              size: 14.sp,
+                              size: 12.sp,
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               '${product.discount!.global?.toStringAsFixed(0) ?? ''}%',
                               style: AppFonts.bodySmall.copyWith(
                                 color: Colors.white,
-                                fontSize: 11.sp,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -469,7 +469,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
               ),
               // Product Info Section
               Padding(
-                padding: EdgeInsets.all(14.w),
+                padding: EdgeInsets.all(12.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -479,13 +479,13 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                       style: AppFonts.h4.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
+                        fontSize: 15.sp,
                         height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 10.h),
                     // Price and Stock Row
                     Row(
                       children: [
@@ -499,17 +499,17 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                                   '${product.price.toStringAsFixed(0)} ${'egp'.tr}',
                                   style: AppFonts.bodySmall.copyWith(
                                     color: AppColors.textSecondary,
-                                    fontSize: 12.sp,
+                                    fontSize: 11.sp,
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
-                              SizedBox(height: hasDiscount ? 4.h : 0),
+                              SizedBox(height: hasDiscount ? 2.h : 0),
                               Text(
                                 '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
                                 style: AppFonts.h3.copyWith(
                                   color: AppColors.primaryBlue,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18.sp,
+                                  fontSize: 16.sp,
                                 ),
                               ),
                             ],
@@ -517,12 +517,12 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                         ),
                         // Stock Status
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                           decoration: BoxDecoration(
                             color: product.stock > 0
                                 ? AppColors.success.withOpacity(0.1)
                                 : AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10.r),
+                            borderRadius: BorderRadius.circular(8.r),
                             border: Border.all(
                               color: product.stock > 0
                                   ? AppColors.success.withOpacity(0.3)
@@ -535,15 +535,15 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                             children: [
                               Icon(
                                 product.stock > 0 ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                size: 16.sp,
+                                size: 14.sp,
                                 color: product.stock > 0 ? AppColors.success : AppColors.error,
                               ),
-                              SizedBox(width: 6.w),
+                              SizedBox(width: 4.w),
                               Text(
                                 product.stock > 0 ? 'in_stock'.tr : 'out_of_stock'.tr,
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: product.stock > 0 ? AppColors.success : AppColors.error,
-                                  fontSize: 12.sp,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -569,8 +569,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         children: [
           SvgPicture.asset(
             AssetsManager.storeSvg,
-            width: 120.w,
-            height: 120.h,
+            width: 100.w,
+            height: 100.h,
             colorFilter: const ColorFilter.mode(
               Color(0xFF9CA3AF),
               BlendMode.srcIn,
@@ -581,7 +581,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             'no_products_found'.tr,
             style: AppFonts.bodyLarge.copyWith(
               color: const Color(0xFF6B7280),
-              fontSize: AppFonts.size16,
+              fontSize: 15.sp,
             ),
           ),
         ],
@@ -597,63 +597,63 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
           child: ShimmerLoading(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(12.r),
                 color: Colors.white,
               ),
               child: Row(
                 children: [
                   // Product Icon/Image Shimmer
                   Container(
-                    width: 70.w,
-                    height: 70.w,
+                    width: 60.w,
+                    height: 60.w,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(10.r),
                       color: Colors.grey[300],
                     ),
                   ),
-                  SizedBox(width: 16.w),
+                  SizedBox(width: 12.w),
                   // Product Info Shimmer
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          height: 16.h,
+                          height: 14.h,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8.r),
+                            borderRadius: BorderRadius.circular(6.r),
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Container(
-                          height: 14.h,
-                          width: 100.w,
+                          height: 12.h,
+                          width: 80.w,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(7.r),
+                            borderRadius: BorderRadius.circular(6.r),
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 6.h),
                         Row(
                           children: [
                             Container(
-                              height: 12.h,
-                              width: 60.w,
+                              height: 10.h,
+                              width: 50.w,
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(6.r),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                             ),
                             SizedBox(width: 8.w),
                             Container(
-                              height: 12.h,
-                              width: 40.w,
+                              height: 10.h,
+                              width: 30.w,
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(6.r),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                             ),
                           ],
@@ -664,11 +664,11 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   SizedBox(width: 12.w),
                   // Arrow Icon Shimmer
                   Container(
-                    width: 24.w,
-                    height: 24.w,
+                    width: 20.w,
+                    height: 20.w,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
                 ],

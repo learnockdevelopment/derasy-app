@@ -435,15 +435,15 @@ class _BusesPageState extends State<BusesPage> {
           );
         },
         child: Container(
-          padding: EdgeInsets.all(14.w),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14.r),
+            borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -453,14 +453,14 @@ class _BusesPageState extends State<BusesPage> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.w),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue.withOpacity(0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(IconlyBold.discovery, color: AppColors.primaryBlue, size: 22.sp),
+                    child: Icon(IconlyBold.discovery, color: AppColors.primaryBlue, size: 20.sp),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,36 +470,37 @@ class _BusesPageState extends State<BusesPage> {
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
+                            fontSize: 15.sp,
                           ),
                         ),
                         if (bus.plateNumber != null && bus.plateNumber!.isNotEmpty)
                           Text(
                             bus.plateNumber!,
-                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
+                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11.sp),
                           ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       (bus.status ?? 'active').tr,
-                      style: AppFonts.labelSmall.copyWith(color: statusColor),
+                      style: AppFonts.labelSmall.copyWith(color: statusColor, fontSize: 10.sp),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 8.h),
               Row(
                 children: [
                   _infoChip(Icons.event_seat_rounded, occupancy),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
                   _infoChip(Icons.route, _localizedBusType(bus.busType)),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 6.w),
                   _infoChip(Icons.person, bus.driver?.name ?? '—'),
                 ],
               ),
@@ -523,19 +524,19 @@ class _BusesPageState extends State<BusesPage> {
 
   Widget _infoChip(IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16.sp, color: AppColors.textSecondary),
-          SizedBox(width: 6.w),
+          Icon(icon, size: 14.sp, color: AppColors.textSecondary),
+          SizedBox(width: 4.w),
           Text(
             text,
-            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
+            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11.sp),
           ),
         ],
       ),

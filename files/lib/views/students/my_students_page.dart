@@ -412,10 +412,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
         _schoolEducationSystems[schoolId] ?? child.schoolId.educationSystem;
 
     return Container(
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryBlue.withOpacity(0.08),
@@ -474,7 +474,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                   //   ),
                   // ),
                   Padding(
-                    padding: EdgeInsets.all(16.w),
+                    padding: EdgeInsets.all(12.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -483,8 +483,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                        children: [
                         // Student Avatar/Initial Circle
                         Container(
-                          width: 44.w,
-                          height: 44.w,
+                          width: 40.w,
+                          height: 40.w,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -513,7 +513,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18.sp,
+                                fontSize: 16.sp,
                               ),
                             ),
                           ),
@@ -617,7 +617,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         style: AppFonts.h4.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
+                          fontSize: 15.sp,
                           letterSpacing: 0.1,
                           height: 1.2,
                         ),

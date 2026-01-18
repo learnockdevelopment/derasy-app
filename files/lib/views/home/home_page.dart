@@ -298,11 +298,11 @@ class _HomePageState extends State<HomePage> {
     Color? buttonColor,
   }) {
     return Container(
-      height: 190.h,
-      padding: EdgeInsets.all(16.w),
+      height: 160.h,
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -339,7 +339,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(10.w),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -349,7 +349,7 @@ class _HomePageState extends State<HomePage> {
                       color.withOpacity(0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   boxShadow: [
                     BoxShadow(
                       color: color.withOpacity(0.3),
@@ -358,55 +358,58 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 15.sp),
+                child: Icon(icon, color: Colors.white, size: 14.sp),
               ),
             ],
           ),
-          SizedBox(height: 5),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                style: AppFonts.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+          SizedBox(height: 6.h),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: AppFonts.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                value,
-                style: AppFonts.h3.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24.sp,
-                  height: 1,
-                  letterSpacing: -0.5,
+                SizedBox(height: 4.h),
+                Text(
+                  value,
+                  style: AppFonts.h3.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22.sp,
+                    height: 1,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           // Add Student Button at bottom
           if (showAddButton && onAddTap != null) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
             Opacity(
               opacity: isButtonDisabled ? 0.4 : 1.0,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: isButtonDisabled ? null : onAddTap,
-                  borderRadius: BorderRadius.circular(10.r),
+                  borderRadius: BorderRadius.circular(8.r),
                 child: Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: buttonColor ?? AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(8.r),
                     boxShadow: [
                       BoxShadow(
                         color: (buttonColor ?? AppColors.primaryBlue).withOpacity(0.4),
@@ -423,9 +426,9 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.white,
                         size: 12.sp,
                       ),
-                      SizedBox(width: 6.w),
+                      SizedBox(width: 4.w),
                       Flexible(
-                        child:                       Text(
+                        child: Text(
                         buttonText ?? 'add_student'.tr,
                         style: AppFonts.bodySmall.copyWith(
                           color: Colors.white,
@@ -445,7 +448,7 @@ class _HomePageState extends State<HomePage> {
             ),
             // Disabled message below button
             if (isButtonDisabled && disabledMessage != null) ...[
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
               Text(
                 disabledMessage,
                 style: AppFonts.bodySmall.copyWith(
@@ -466,10 +469,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildWalletCard(Wallet wallet) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -481,13 +484,13 @@ class _HomePageState extends State<HomePage> {
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryGreen.withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
             spreadRadius: 0,
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            blurRadius: 6,
             offset: const Offset(0, 2),
             spreadRadius: 0,
           ),
@@ -496,18 +499,18 @@ class _HomePageState extends State<HomePage> {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               Icons.account_balance_wallet_rounded,
               color: Colors.white,
-              size: 24.sp,
+              size: 20.sp,
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +520,7 @@ class _HomePageState extends State<HomePage> {
                   style: AppFonts.h2.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 24.sp,
+                    fontSize: 22.sp,
                   ),
                 ),
               ],
@@ -545,37 +548,37 @@ class _HomePageState extends State<HomePage> {
             pageTitle: 'home'.tr,
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
         // Banner Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: ShimmerCard(height: 200.h, borderRadius: 28.r),
+            child: ShimmerCard(height: 120.h, borderRadius: 16.r),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
         // Stats Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               children: [
-                Expanded(child: ShimmerCard(height: 140.h, borderRadius: 24.r)),
+                Expanded(child: ShimmerCard(height: 120.h, borderRadius: 16.r)),
                 SizedBox(width: 16.w),
-                Expanded(child: ShimmerCard(height: 140.h, borderRadius: 24.r)),
+                Expanded(child: ShimmerCard(height: 120.h, borderRadius: 16.r)),
               ],
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: ShimmerLoading(
               child: Container(
-                height: 28.h,
-                width: 140.w,
+                height: 20.h,
+                width: 120.w,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(4.r),
@@ -584,7 +587,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
         // Actions Grid Shimmer
         SliverToBoxAdapter(
           child: Padding(
@@ -593,32 +596,32 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: ShimmerCard(height: 160.h, borderRadius: 24.r)),
+                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
                     SizedBox(width: 16.w),
-                    Expanded(child: ShimmerCard(height: 160.h, borderRadius: 24.r)),
+                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
                   ],
                 ),
                 SizedBox(height: 16.h),
                 Row(
                   children: [
-                    Expanded(child: ShimmerCard(height: 160.h, borderRadius: 24.r)),
+                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
                     SizedBox(width: 16.w),
-                    Expanded(child: ShimmerCard(height: 160.h, borderRadius: 24.r)),
+                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
                   ],
                 ),
               ],
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: ShimmerLoading(
               child: Container(
-                height: 28.h,
-                width: 140.w,
+                height: 20.h,
+                width: 120.w,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(4.r),
@@ -627,12 +630,12 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
         // Offer Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: ShimmerCard(height: 100.h, borderRadius: 24.r),
+            child: ShimmerCard(height: 90.h, borderRadius: 16.r),
           ),
         ),
       ],
