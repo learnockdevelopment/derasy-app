@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -83,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         slivers: [
           // Hero Section
           SliverAppBar(
-            expandedHeight: 80.h,
+            expandedHeight: Responsive.h(80),
             floating: false,
             pinned: true,
             snap: false,
@@ -91,7 +92,7 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             toolbarHeight: 0,
-            collapsedHeight: 80.h,
+            collapsedHeight: Responsive.h(80),
           flexibleSpace: FlexibleSpaceBar(
             background: HeroSectionWidget(
               userData: _userData,
@@ -100,54 +101,54 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+          SliverToBoxAdapter(child: SizedBox(height: Responsive.h(24))),
           
           // Wallet Card
           if (wallet != null) ...[
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: Responsive.symmetric(horizontal: 20),
                 child: Text(
                   'wallet_balance'.tr,
                   style: AppFonts.bodyMedium.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 16.sp,
+                    fontSize: Responsive.sp(16),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+            SliverToBoxAdapter(child: SizedBox(height: Responsive.h(8))),
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: Responsive.symmetric(horizontal: 20),
                 child: _buildWalletCard(wallet),
               ),
             ),
           ],
           
-          if (wallet != null) SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          if (wallet != null) SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
           
           // Student Management Section
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: Responsive.symmetric(horizontal: 20),
               child: Text(
                 'student_management'.tr,
                 style: AppFonts.bodyMedium.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 16.sp,
+                  fontSize: Responsive.sp(16),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+          SliverToBoxAdapter(child: SizedBox(height: Responsive.h(8))),
           
           // Statistics Cards - First Row
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: Responsive.symmetric(horizontal: 20),
               child: Obx(() {
                 final controller = DashboardController.to;
                 final totalStudents = controller.relatedChildren.length;
@@ -159,18 +160,18 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     if (isTakingLong && isLoading)
                       Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
+                        padding: Responsive.only(bottom: 12),
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: AppColors.warning.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: 20.sp),
-                              SizedBox(width: 12.w),
+                              Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: Responsive.sp(20)),
+                              SizedBox(width: Responsive.w(12)),
                               Expanded(
                                 child: Text(
                                   'slow_connection_message'.tr,
@@ -185,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Expanded(
                           child: isLoading && totalStudents == 0
-                              ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                              ? ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))
                               : _buildStatCard(
                                   icon: IconlyBroken.profile,
                                   title: 'total_students'.tr,
@@ -195,10 +196,10 @@ class _HomePageState extends State<HomePage> {
                                   onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
                                 ),
                         ),
-                        SizedBox(width: 16.w),
+                        SizedBox(width: Responsive.w(16)),
                         Expanded(
                           child: isLoading && totalApplications == 0
-                              ? ShimmerCard(height: 120.h, borderRadius: 16.r)
+                              ? ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))
                               : _buildStatCard(
                                   icon: IconlyBroken.document,
                                   title: 'total_applications'.tr,
@@ -246,7 +247,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          SliverToBoxAdapter(child: SizedBox(height: 32.h)),
+          SliverToBoxAdapter(child: SizedBox(height: Responsive.h(32))),
         ],
       ),
     );
@@ -259,7 +260,9 @@ class _HomePageState extends State<HomePage> {
         RegExp(r'\d'),
         (match) {
           const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-          return arabicNumerals[int.parse(match.group(0)!)];
+          final group = match.group(0);
+          if (group == null) return '';
+          return arabicNumerals[int.parse(group)];
         },
       );
     }
@@ -313,7 +316,7 @@ class _HomePageState extends State<HomePage> {
         ),
         border: Border.all(
           color: color.withOpacity(0.2),
-          width: 1.5,
+          width: Responsive.w(1.5),
         ),
         boxShadow: [
           BoxShadow(
@@ -353,8 +356,8 @@ class _HomePageState extends State<HomePage> {
                   boxShadow: [
                     BoxShadow(
                       color: color.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      blurRadius: Responsive.r(8),
+                      offset: Offset(0, Responsive.h(4)),
                     ),
                   ],
                 ),
@@ -413,8 +416,8 @@ class _HomePageState extends State<HomePage> {
                     boxShadow: [
                       BoxShadow(
                         color: (buttonColor ?? AppColors.primaryBlue).withOpacity(0.4),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
+                        blurRadius: Responsive.r(6),
+                        offset: Offset(0, Responsive.h(3)),
                       ),
                     ],
                   ),
@@ -424,7 +427,7 @@ class _HomePageState extends State<HomePage> {
                       Icon(
                         IconlyBroken.plus,
                         color: Colors.white,
-                        size: 12.sp,
+                        size: Responsive.sp(12),
                       ),
                       SizedBox(width: 4.w),
                       Flexible(
@@ -432,7 +435,7 @@ class _HomePageState extends State<HomePage> {
                         buttonText ?? 'add_student'.tr,
                         style: AppFonts.bodySmall.copyWith(
                           color: Colors.white,
-                          fontSize: 10.sp,
+                          fontSize: Responsive.sp(10),
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -453,7 +456,7 @@ class _HomePageState extends State<HomePage> {
                 disabledMessage,
                 style: AppFonts.bodySmall.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 9.sp,
+                  fontSize: Responsive.sp(9),
                   fontWeight: FontWeight.w400,
                 ),
                 textAlign: TextAlign.right,
@@ -535,14 +538,14 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          expandedHeight: 80.h,
+          expandedHeight: Responsive.h(80),
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: 80.h,
+          collapsedHeight: Responsive.h(80),
           flexibleSpace: HeroSectionWidget(
             userData: _userData,
             pageTitle: 'home'.tr,
@@ -560,7 +563,7 @@ class _HomePageState extends State<HomePage> {
         // Stats Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: Responsive.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Expanded(child: ShimmerCard(height: 120.h, borderRadius: 16.r)),
@@ -574,14 +577,14 @@ class _HomePageState extends State<HomePage> {
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: Responsive.symmetric(horizontal: 20),
             child: ShimmerLoading(
               child: Container(
                 height: 20.h,
                 width: 120.w,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(4)),
                 ),
               ),
             ),
@@ -591,7 +594,7 @@ class _HomePageState extends State<HomePage> {
         // Actions Grid Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: Responsive.symmetric(horizontal: 20),
             child: Column(
               children: [
                 Row(
@@ -601,7 +604,7 @@ class _HomePageState extends State<HomePage> {
                     Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
                   ],
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: Responsive.h(16)),
                 Row(
                   children: [
                     Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
@@ -617,14 +620,14 @@ class _HomePageState extends State<HomePage> {
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: Responsive.symmetric(horizontal: 20),
             child: ShimmerLoading(
               child: Container(
                 height: 20.h,
                 width: 120.w,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(4)),
                 ),
               ),
             ),

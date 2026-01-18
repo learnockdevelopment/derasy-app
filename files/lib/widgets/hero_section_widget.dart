@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../core/constants/app_colors.dart';
@@ -63,15 +64,15 @@ class HeroSectionWidget extends StatelessWidget {
           stops: const [0.0, 0.3, 0.7, 1.0],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24.r),
-          bottomRight: Radius.circular(24.r),
+          bottomLeft: Radius.circular(Responsive.r(24)),
+          bottomRight: Radius.circular(Responsive.r(24)),
         ),
       ),
       child: Stack(
         children: [
           // Content
           Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 20.h),
+            padding: Responsive.only(left: 20, top: 40, right: 20, bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,9 +84,9 @@ class HeroSectionWidget extends StatelessWidget {
                       Icon(
                         greetingIcon,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: Responsive.sp(20),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: Responsive.w(8)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +95,7 @@ class HeroSectionWidget extends StatelessWidget {
                               greeting,
                               style: AppFonts.bodyMedium.copyWith(
                                 color: Colors.white.withOpacity(0.95),
-                                fontSize: 14.sp,
+                                fontSize: Responsive.sp(14),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -103,7 +104,7 @@ class HeroSectionWidget extends StatelessWidget {
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14.sp, 
+                                fontSize: Responsive.sp(14), 
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -120,7 +121,7 @@ class HeroSectionWidget extends StatelessWidget {
                             style: AppFonts.bodyMedium.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
-                              fontSize: 16.sp,
+                              fontSize: Responsive.sp(16),
                             ),
                           ),
                         ),
@@ -136,23 +137,23 @@ class HeroSectionWidget extends StatelessWidget {
                             onTap: () {
                               Get.toNamed(AppRoutes.userProfile);
                             },
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             child: Container(
-                              width: 40.w,
-                              height: 40.w,
+                              width: Responsive.w(40),
+                              height: Responsive.w(40),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                               ),
                               child: Icon(
                                 IconlyBroken.setting,
                                 color: Colors.white,
-                                size: 22.sp,
+                                size: Responsive.sp(22),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 8.w),
+                        SizedBox(width: Responsive.w(8)),
                         // Notification Icon from Iconly
                         Material(
                           color: Colors.transparent,
@@ -160,13 +161,13 @@ class HeroSectionWidget extends StatelessWidget {
                             onTap: () {
                               Get.toNamed(AppRoutes.notifications);
                             },
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             child: Container(
-                              width: 40.w,
-                              height: 40.w,
+                              width: Responsive.w(40),
+                              height: Responsive.w(40),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                               ),
                               child: Stack(
                                 alignment: Alignment.center,  
@@ -174,18 +175,18 @@ class HeroSectionWidget extends StatelessWidget {
                                   Icon(
                                     IconlyBroken.notification,
                                     color: Colors.white,
-                                    size: 22.sp,
+                                    size: Responsive.sp(22),
                                   ),
                                   // Notification badge 
                                   Positioned(
-                                    right: 8.w,
-                                    top: 8.w,
+                                    right: Responsive.w(8),
+                                    top: Responsive.w(8),
                                     child: Container(
-                                      width: 8.w,
-                                      height: 8.w,
+                                      width: Responsive.w(8),
+                                      height: Responsive.w(8),
                                       decoration: BoxDecoration(
                                         color: Colors.red,
-                                        borderRadius: BorderRadius.circular(4.r),
+                                        borderRadius: BorderRadius.circular(Responsive.r(4)),
                                         border: Border.all(
                                           color: Colors.white,
                                           width: 1.5,
@@ -205,22 +206,22 @@ class HeroSectionWidget extends StatelessWidget {
                 // Action Button (page title removed from home page)
                 // Action Button
                 if (actionButtonText != null && onActionTap != null) ...[
-                  SizedBox(height: 16.h),
+                  SizedBox(height: Responsive.h(16)),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Opacity(
                       opacity: isButtonDisabled ? 0.4 : 1.0,
                       child: Material(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(14)),
                         child: InkWell(
                           onTap: isButtonDisabled ? null : onActionTap,
-                          borderRadius: BorderRadius.circular(14.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(14)),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                            padding: Responsive.symmetric(horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(14.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(14)),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.2),
@@ -236,16 +237,16 @@ class HeroSectionWidget extends StatelessWidget {
                                   Icon(
                                     actionButtonIcon,
                                     color: AppColors.primaryBlue,
-                                    size: 18.sp,
+                                    size: Responsive.sp(18),
                                   ),
-                                  SizedBox(width: 6.w),
+                                  SizedBox(width: Responsive.w(6)),
                                 ],
                                 Text(
                                   actionButtonText!,
                                   style: AppFonts.bodyMedium.copyWith(
                                     color: AppColors.primaryBlue,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 13.sp,
+                                    fontSize: Responsive.sp(13),
                                   ),
                                 ),
                               ],
@@ -257,14 +258,14 @@ class HeroSectionWidget extends StatelessWidget {
                   ),
                   // Disabled message below button
                   if (isButtonDisabled && disabledMessage != null) ...[
-                    SizedBox(height: 8.h),
+                    SizedBox(height: Responsive.h(8)),
                     Align(
                       alignment: Alignment.centerLeft, 
                       child: Text(
                         disabledMessage!,
                         style: AppFonts.bodySmall.copyWith(
                           color: Colors.white.withOpacity(0.9),
-                          fontSize: 10.sp,
+                          fontSize: Responsive.sp(10),
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 2,

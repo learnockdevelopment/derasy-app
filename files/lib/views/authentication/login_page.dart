@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -69,7 +70,7 @@ class _LoginPageState extends State<LoginPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final size = MediaQuery.of(context).size;
       setState(() {
-        _chatButtonPosition = Offset(size.width - 80.w, size.height - 110.h);
+        _chatButtonPosition = Offset(size.width - Responsive.w(80), size.height - Responsive.h(110));
       });
     });
   }
@@ -128,18 +129,18 @@ class _LoginPageState extends State<LoginPage>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24.r),
-                topRight: Radius.circular(24.r),
+                topLeft: Radius.circular(Responsive.r(24)),
+                topRight: Radius.circular(Responsive.r(24)),
               ),
             ),
             child: Column(
               children: [
                 // Header
                 Container(
-                  padding: EdgeInsets.all(16.w),
+                  padding: Responsive.all(16),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: AppColors.grey200, width: 1),
+                      bottom: BorderSide(color: AppColors.grey200, width: Responsive.w(1)),
                     ),
                   ),
                   child: Row(
@@ -160,7 +161,7 @@ class _LoginPageState extends State<LoginPage>
                 ),
                 // Search Bar
                 Padding(
-                  padding: EdgeInsets.all(16.w),
+                  padding: Responsive.all(16),
                   child: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: searchController,
                     builder: (context, value, child) {
@@ -176,7 +177,7 @@ class _LoginPageState extends State<LoginPage>
                           prefixIcon: Icon(
                             Icons.search,
                             color: AppColors.textSecondary,
-                            size: 22.sp,
+                            size: Responsive.sp(22),
                           ),
                           suffixIcon: value.text.isNotEmpty
                               ? IconButton(
@@ -190,12 +191,12 @@ class _LoginPageState extends State<LoginPage>
                           filled: true,
                           fillColor: AppColors.grey50,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 14.h,
+                          contentPadding: Responsive.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
                           ),
                         ),
                       );
@@ -205,7 +206,7 @@ class _LoginPageState extends State<LoginPage>
                 // Countries List
                 Expanded(
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    padding: Responsive.symmetric(horizontal: 16),
                     itemCount: filteredCountries.length,
                     itemBuilder: (context, index) {
                       final country = filteredCountries[index];
@@ -225,38 +226,38 @@ class _LoginPageState extends State<LoginPage>
                           });
                           Navigator.pop(context);
                         },
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                         child: Container(
-                          margin: EdgeInsets.only(bottom: 4.h),
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          margin: EdgeInsets.only(bottom: Responsive.h(4)),
+                          padding: Responsive.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(10)),
                             border: isSelected
-                                ? Border.all(color: primary, width: 1.5)
-                                : Border.all(color: AppColors.grey200, width: 1),
+                                ? Border.all(color: primary, width: Responsive.w(1.5))
+                                : Border.all(color: AppColors.grey200, width: Responsive.w(1)),
                           ),
                           child: Row(
                             children: [
                               // Flag
                               Container(
-                                width: 32.w,
-                                height: 32.w,
+                                width: Responsive.w(32),
+                                height: Responsive.w(32),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: AppColors.grey200,
-                                    width: 1,
+                                    width: Responsive.w(1),
                                   ),
                                 ),
                                 child: Center(
                                   child: Text(
                                     country.flag,
-                                    style: TextStyle(fontSize: 20.sp),
+                                    style: TextStyle(fontSize: Responsive.sp(20)),
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 12.w),
+                              SizedBox(width: Responsive.w(12)),
                               // Country Name and Code
                               Expanded(
                                 child: Column(
@@ -485,25 +486,25 @@ class _LoginPageState extends State<LoginPage>
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      padding: Responsive.symmetric(horizontal: 24),
                       child: Form(
                         key: _formKey,
                         child: Column(
                           children: [
-                            SizedBox(height: 20.h),
+                            SizedBox(height: Responsive.h(20)),
 
                             // Logo
                             FadeTransition(
                               opacity: _fadeAnimation,
                               child: Image.asset(
                                 AssetsManager.logo,
-                                width: 90.w,
-                                height: 90.w,
+                                width: Responsive.w(90),
+                                height: Responsive.w(90),
                                 fit: BoxFit.contain,
                               ),
                             ),
 
-                            SizedBox(height: 20.h),
+                            SizedBox(height: Responsive.h(20)),
 
                             // Title
                             FadeTransition(
@@ -517,7 +518,7 @@ class _LoginPageState extends State<LoginPage>
                                     ),  
                                     textAlign: TextAlign.center,
                                   ),
-                                  SizedBox(height: 6.h),
+                                  SizedBox(height: Responsive.h(6)),
                                   Text(
                                     'sign_in_to_continue'.tr,
                                     style: AppFonts.AlmaraiRegular12.copyWith(
@@ -529,7 +530,7 @@ class _LoginPageState extends State<LoginPage>
                               ),
                             ),
 
-                            SizedBox(height: 24.h),
+                            SizedBox(height: Responsive.h(24)),
                             SlideTransition(
                               position: _slideAnimation,
                               child: FadeTransition(
@@ -556,29 +557,29 @@ class _LoginPageState extends State<LoginPage>
                                               _showModernCountryPicker(context);
                                             },
                                             child: Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                                              padding: Responsive.symmetric(horizontal: 12),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   // Flag - using emoji from Countries
                                                   Container(
-                                                    width: 28.w,
-                                                    height: 28.w,
+                                                    width: Responsive.w(28),
+                                                    height: Responsive.w(28),
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
                                                         color: AppColors.grey200,
-                                                        width: 1,
+                                                        width: Responsive.w(1),
                                                       ),
                                                     ),
                                                     child: Center(
                                                       child: Text(
                                                         Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG').flag,
-                                                        style: TextStyle(fontSize: 20.sp),
+                                                        style: TextStyle(fontSize: Responsive.sp(20)),
                                                       ),
                                                     ),
                                                   ),
-                                                  SizedBox(width: 8.w),
+                                                  SizedBox(width: Responsive.w(8)),
                                                   // Country Code
                                                   Text(
                                                     _selectedCountryCode.dialCode ?? '+20',
@@ -586,11 +587,11 @@ class _LoginPageState extends State<LoginPage>
                                                       color: AppColors.textPrimary,
                                                     ),
                                                   ),
-                                                  SizedBox(width: 8.w),
+                                                  SizedBox(width: Responsive.w(8)),
                                                   // Separator
                                                   Container(
-                                                    width: 1,
-                                                    height: 20.h,
+                                                    width: Responsive.w(1),
+                                                    height: Responsive.h(20),
                                                     color: AppColors.grey300,
                                                   ),
                                                 ],
@@ -598,36 +599,36 @@ class _LoginPageState extends State<LoginPage>
                                             ),
                                           ),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.grey300),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.grey300),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: primary,
-                                              width: 2,
+                                              width: Responsive.w(2),
                                             ),
                                           ),
                                           errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.error),
                                           ),
                                           focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: AppColors.error,
-                                              width: 2,
+                                              width: Responsive.w(2),
                                             ),
                                           ),
                                           filled: true,
                                           fillColor: AppColors.grey50,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 16.w,
-                                            vertical: 16.h,
+                                          contentPadding: Responsive.symmetric(
+                                            horizontal: 16,
+                                            vertical: 16,
                                           ),
                                         ),
                                         validator: (value) {
@@ -641,7 +642,7 @@ class _LoginPageState extends State<LoginPage>
                                         },
                                       )
                                     else
-                                      // Email Field
+                                       // Email Field
                                       TextFormField(
                                         controller: _emailController,
                                         keyboardType: TextInputType.emailAddress,
@@ -658,39 +659,39 @@ class _LoginPageState extends State<LoginPage>
                                           prefixIcon: Icon(
                                             Icons.email_outlined,
                                             color: primary,
-                                            size: 20.sp,
+                                            size: Responsive.sp(20),
                                           ),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.grey300),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.grey300),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: primary,
-                                              width: 2,
+                                              width: Responsive.w(2),
                                             ),
                                           ),
                                           errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(color: AppColors.error),
                                           ),
                                           focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: AppColors.error,
-                                              width: 2,
+                                              width: Responsive.w(2),
                                             ),
                                           ),
                                           filled: true,
                                           fillColor: AppColors.grey50,
-                                          contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 16.w,
-                                            vertical: 16.h,
+                                          contentPadding: Responsive.symmetric(
+                                            horizontal: 16,
+                                            vertical: 16,
                                           ),
                                         ),
                                         validator: (value) {
@@ -722,7 +723,7 @@ class _LoginPageState extends State<LoginPage>
                                     prefixIcon: Icon(
                                       Icons.lock_outlined,
                                       color: primary,
-                                      size: 20.sp,
+                                      size: Responsive.sp(20),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
@@ -738,36 +739,36 @@ class _LoginPageState extends State<LoginPage>
                                       },
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       borderSide: BorderSide(color: AppColors.grey300),
                                     ),
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       borderSide: BorderSide(color: AppColors.grey300),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       borderSide: BorderSide(
                                         color: primary,
-                                        width: 2,
+                                        width: Responsive.w(2),
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       borderSide: BorderSide(color: AppColors.error),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       borderSide: BorderSide(
                                         color: AppColors.error,
-                                        width: 2,
+                                        width: Responsive.w(2),
                                       ),
                                     ),
                                     filled: true,
                                     fillColor: AppColors.grey50,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 16.h,
+                                    contentPadding: Responsive.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
                                     ),
                                   ),
                                   validator: (value) {
@@ -784,7 +785,7 @@ class _LoginPageState extends State<LoginPage>
                                 // Login Button
                                 SizedBox(
                                   width: double.infinity,
-                                  height: 56.h,
+                                  height: Responsive.h(56),
                                   child: ElevatedButton(
                                     onPressed: _isLoading ? null : _handleLogin,
                                     style: ElevatedButton.styleFrom(
@@ -794,16 +795,16 @@ class _LoginPageState extends State<LoginPage>
                                       disabledBackgroundColor: AppColors.grey300,
                                       side: BorderSide(
                                         color: AppColors.primaryBlue,
-                                        width: 2,
+                                        width: Responsive.w(2),
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14.r),
+                                        borderRadius: BorderRadius.circular(Responsive.r(14)),
                                       ),
                                     ),
                                     child: _isLoading
                                         ? SizedBox(
-                                            height: 20.h,
-                                            width: 20.w,
+                                            height: Responsive.h(20),
+                                            width: Responsive.w(20),
                                             child: CircularProgressIndicator(
                                               color: Colors.white,
                                               strokeWidth: 2,
@@ -814,9 +815,9 @@ class _LoginPageState extends State<LoginPage>
                                             children: [
                                               Icon(
                                                 IconlyBold.login,
-                                                size: 22.sp,
+                                                size: Responsive.sp(22),
                                               ),
-                                              SizedBox(width: 8.w),
+                                              SizedBox(width: Responsive.w(8)),
                                               Text(
                                                 'login'.tr,
                                                 style: AppFonts.AlmaraiBold16.copyWith(
@@ -827,7 +828,7 @@ class _LoginPageState extends State<LoginPage>
                                           ),
                                   ),
                                 ),
-                                SizedBox(height: 12.h),
+                                SizedBox(height: Responsive.h(12)),
 
                                 // Login with Email/Phone Toggle
                                 TextButton(
@@ -850,7 +851,7 @@ class _LoginPageState extends State<LoginPage>
                           ),
                         ),
 
-                        SizedBox(height: 20.h),
+                        SizedBox(height: Responsive.h(20)),
 
                         // Register Button
                         Row(
@@ -876,7 +877,7 @@ class _LoginPageState extends State<LoginPage>
                           ],
                         ),
 
-                        SizedBox(height: 40.h),
+                        SizedBox(height: Responsive.h(40)),
                       ],
                     ),
                   ),
@@ -895,8 +896,8 @@ class _LoginPageState extends State<LoginPage>
           feedback: Material(
             color: Colors.transparent,
             child: Container(
-              width: 56.w,
-              height: 56.h,
+              width: Responsive.w(56),
+              height: Responsive.h(56),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryGreen,
@@ -911,7 +912,7 @@ class _LoginPageState extends State<LoginPage>
               child: Icon(
                 IconlyBold.chat,
                 color: Colors.white,
-                size: 24.sp,
+                size: Responsive.sp(24),
               ),
             ),
           ),
@@ -935,8 +936,8 @@ class _LoginPageState extends State<LoginPage>
               double newY = details.offset.dy;
 
               // Keep button within screen bounds
-              newX = newX.clamp(0.0, size.width - 56.w);
-              newY = newY.clamp(0.0, size.height - 56.h);
+              newX = newX.clamp(0.0, size.width - Responsive.w(56));
+              newY = newY.clamp(0.0, size.height - Responsive.h(56));
 
               _chatButtonPosition = Offset(newX, newY);
             });
@@ -950,7 +951,7 @@ class _LoginPageState extends State<LoginPage>
             child: Icon(
               IconlyBold.chat,
               color: Colors.white,
-              size: 24.sp,
+              size: Responsive.sp(24),
             ),
           ),
         ),

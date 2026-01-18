@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -30,7 +31,7 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> {
       final size = MediaQuery.of(context).size;
       setState(() {
         _chatButtonPosition = widget.initialPosition ?? 
-            Offset(size.width - 80.w, size.height - 110.h);
+            Offset(size.width - Responsive.w(80), size.height - Responsive.h(110));
       });
       _isInitialized = true;
     }
@@ -55,7 +56,7 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> {
             child: Icon(
               IconlyBold.chat,
               color: Colors.white,
-              size: 24.sp,
+              size: Responsive.sp(24),
             ),
           ),
         );

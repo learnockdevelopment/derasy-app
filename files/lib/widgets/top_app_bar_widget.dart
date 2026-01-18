@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
@@ -24,7 +24,7 @@ class TopAppBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 80.h,
+      expandedHeight: Responsive.h(80),
       floating: false,
       pinned: true,
       automaticallyImplyLeading: false,
@@ -45,7 +45,7 @@ class TopAppBarWidget extends StatelessWidget {
           ),
           child: SafeArea(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 10.h),
+              padding: Responsive.fromLTRB(20, 10, 20, 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -53,7 +53,7 @@ class TopAppBarWidget extends StatelessWidget {
                     children: [
                       // User Avatar with Badge
                       _buildUserAvatar(),
-                      SizedBox(width: 14.w),
+                      SizedBox(width: Responsive.w(14)),
                       // User Details with Greeting
                       Expanded(
                         child: Column(
@@ -63,25 +63,25 @@ class TopAppBarWidget extends StatelessWidget {
                             if (showLoading)
                               ShimmerLoading(
                                 child: Container(
-                                  height: 20.h,
-                                  width: 120.w,
+                                  height: Responsive.h(20),
+                                  width: Responsive.w(120),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(4.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(4)),
                                   ),
                                 ),
                               )
                             else
                               _buildGreeting(),
-                            SizedBox(height: 4.h),
+                             SizedBox(height: Responsive.h(4)),
                             if (showLoading)
                               ShimmerLoading(
                                 child: Container(
-                                  height: 16.h,
-                                  width: 150.w,
+                                  height: Responsive.h(16),
+                                  width: Responsive.w(150),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(4.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(4)),
                                   ),
                                 ),
                               )
@@ -115,7 +115,7 @@ class TopAppBarWidget extends StatelessWidget {
                             padding: EdgeInsets.all(8.w),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
                             ),
                             child: Stack(
                               children: [
@@ -162,14 +162,14 @@ class TopAppBarWidget extends StatelessWidget {
         Icon(
           greetingIcon,
           color: Colors.white.withOpacity(0.9),
-          size: 18.sp,
+          size: Responsive.sp(18),
         ),
-        SizedBox(width: 6.w),
+        SizedBox(width: Responsive.w(6)),
         Text(
           greeting,
           style: AppFonts.bodyMedium.copyWith(
             color: Colors.white.withOpacity(0.95),
-            fontSize: 14.sp,
+            fontSize: Responsive.sp(14),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -181,8 +181,8 @@ class TopAppBarWidget extends StatelessWidget {
     if (showLoading) {
       return ShimmerLoading(
         child: Container(
-          width: 44.w,
-          height: 44.h,
+          width: Responsive.w(44),
+          height: Responsive.h(44),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12.r),
             color: Colors.white.withOpacity(0.3),
@@ -240,8 +240,8 @@ class TopAppBarWidget extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            width: 44.w,
-            height: 44.h,
+            width: Responsive.w(44),
+            height: Responsive.h(44),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.r),
               color: Colors.white,
@@ -270,11 +270,11 @@ class TopAppBarWidget extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              width: 14.w,
-              height: 14.h,
+              width: Responsive.w(14),
+              height: Responsive.h(14),
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981),
-                borderRadius: BorderRadius.circular(4.r),
+                borderRadius: BorderRadius.circular(Responsive.r(4)),
                 border: Border.all(
                   color: Colors.white,
                   width: 2,

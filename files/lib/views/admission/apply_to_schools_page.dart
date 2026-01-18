@@ -259,7 +259,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             ),
       bottomNavigationBar: (_showResults && _selectedSchools.isNotEmpty)
           ? Container(
-              padding: EdgeInsets.all(16.w),
+              padding: Responsive.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -273,21 +273,21 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
               child: SafeArea(
                 child: SizedBox(
                   width: double.infinity,
-                  height: 52.h,
+                  height: Responsive.h(52),
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submitApplication,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
                       disabledBackgroundColor: AppColors.grey300,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(16)),
                       ),
                       elevation: 4,
                     ),
                     child: _isSubmitting
                         ? SizedBox(
-                            height: 24.h,
-                            width: 24.h,
+                            height: Responsive.h(24),
+                            width: Responsive.h(24),
                             child: const CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2.5,
@@ -297,14 +297,14 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.send_rounded, size: 20.sp, color: Colors.white),
-                              SizedBox(width: 12.w),
+                              SizedBox(width: Responsive.w(12)),
                               Text(
                                 _selectedSchools.length == 3 
                                   ? 'submit_applications'.tr 
                                   : 'submit_application'.tr,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 16.sp,
+                                  fontSize: Responsive.sp(16),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -326,8 +326,8 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       color: AppColors.primaryBlue.withOpacity(0.1),
       child: Row(
         children: [
-          Icon(Icons.person, color: AppColors.primaryBlue, size: 24.sp),
-          SizedBox(width: 12.w),
+          Icon(Icons.person, color: AppColors.primaryBlue, size: Responsive.sp(24)),
+          SizedBox(width: Responsive.w(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +374,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           // AI Analysis Section
           if (_aiResponse != null) ...[ 
             Container(
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -391,7 +391,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                   Row(
                     children: [
                       Icon(Icons.auto_awesome, color: AppColors.primaryBlue, size: 24.sp),
-                      SizedBox(width: 12.w),
+                      SizedBox(width: Responsive.w(12)),
                       Text(
                         'ai_analysis_result'.tr,
                         style: AppFonts.h4.copyWith(
@@ -411,12 +411,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 ],
               ),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: Responsive.h(24)),
           ],
 
           // Selection Progress Hint (Submit button moved to bottomNavigationBar)
           Container(
-            padding: EdgeInsets.all(20.w),
+            padding: Responsive.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -428,7 +428,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                       : AppColors.warning.withOpacity(0.05),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
               border: Border.all(
                 color: _selectedSchools.isNotEmpty
                     ? AppColors.success.withOpacity(0.4)
@@ -439,7 +439,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(12.w),
+                  padding: Responsive.all(12),
                   decoration: BoxDecoration(
                     color: _selectedSchools.isNotEmpty
                         ? AppColors.success
@@ -451,10 +451,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         ? Icons.check_circle_rounded
                         : Icons.info_rounded,
                     color: Colors.white,
-                    size: 24.sp,
+                    size: Responsive.sp(24),
                   ),
                 ),
-                SizedBox(width: 16.w),
+                SizedBox(width: Responsive.w(16)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,10 +466,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         style: AppFonts.h4.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
+                          fontSize: Responsive.sp(16),
                         ),
                       ),
-                      SizedBox(height: 4.h),
+                      SizedBox(height: Responsive.h(4)),
                       Text(
                         'schools_selected_count'.tr.replaceAll('{count}', '${_selectedSchools.length}').replaceAll('{total}', '3'),
                         style: AppFonts.bodyMedium.copyWith(
@@ -477,7 +477,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                               ? AppColors.success
                               : AppColors.warning,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
+                          fontSize: Responsive.sp(14),
                         ),
                       ),
                     ],
@@ -485,19 +485,19 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 ),
                 // Progress indicator
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: _selectedSchools.isNotEmpty
                         ? AppColors.success
                         : AppColors.warning,
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(20)),
                   ),
                   child: Text(
                     '${_selectedSchools.length}/3',
                     style: AppFonts.h4.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18.sp,
+                      fontSize: Responsive.sp(18),
                     ),
                   ),
                 ),
@@ -510,22 +510,22 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           if (_suggestedSchools.isNotEmpty) ...[ 
             Row(
               children: [
-                Icon(Icons.stars, color: AppColors.primaryBlue, size: 22.sp),
-                SizedBox(width: 8.w),
+                Icon(Icons.stars, color: AppColors.primaryBlue, size: Responsive.sp(22)),
+                SizedBox(width: Responsive.w(8)),
                 Text(
                   'ai_suggested_schools'.tr,
                   style: AppFonts.h4.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13.sp,
+                    fontSize: Responsive.sp(13),
                   ),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: Responsive.w(8)),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: Responsive.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                   ),
                   child: Text(
                     '${_suggestedSchools.length}',
@@ -537,17 +537,17 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: Responsive.h(12)),
             ..._suggestedSchools.map((school) => _buildSchoolCard(school, isAISuggested: true)).toList(),
-            SizedBox(height: 24.h),
+            SizedBox(height: Responsive.h(24)),
           ],
 
           // Search Bar for Schools
           Container(
-            margin: EdgeInsets.only(bottom: 24.h),
+            margin: EdgeInsets.only(bottom: Responsive.h(24)),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -576,12 +576,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                       )
                     : null,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding: Responsive.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ),
@@ -590,8 +590,8 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           if (filteredOtherSchools.isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.school, color: AppColors.textSecondary, size: 22.sp),
-                SizedBox(width: 8.w),
+                Icon(Icons.school, color: AppColors.textSecondary, size: Responsive.sp(22)),
+                SizedBox(width: Responsive.w(8)),
                 Text(
                   'other_schools'.tr,
                   style: AppFonts.h4.copyWith(
@@ -599,12 +599,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: Responsive.w(8)),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: Responsive.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.grey300,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                   ),
                   child: Text(
                     '${filteredOtherSchools.length}',
@@ -616,18 +616,18 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: Responsive.h(12)),
             ...filteredOtherSchools.map((school) => _buildSchoolCard(school, isAISuggested: false)).toList(),
           ],
           
           if (_suggestedSchools.isEmpty && filteredOtherSchools.isEmpty)
             Center(
               child: Padding(
-                padding: EdgeInsets.all(40.w),
+                padding: Responsive.all(40),
                 child: Column(
                   children: [
-                    Icon(Icons.search_off, size: 64.sp, color: AppColors.grey400),
-                    SizedBox(height: 16.h),
+                    Icon(Icons.search_off, size: Responsive.sp(64), color: AppColors.grey400),
+                    SizedBox(height: Responsive.h(16)),
                     Text(
                       'no_schools_match_preferences'.tr,
                       style: AppFonts.h4.copyWith(color: AppColors.textSecondary),
@@ -652,12 +652,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
               icon: const Icon(Icons.refresh),
               label: Text('try_different_preferences'.tr),
               style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                padding: Responsive.symmetric(horizontal: 24, vertical: 14),
                 side: BorderSide(color: AppColors.primaryBlue, width: 2),
               ),
             ),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: Responsive.h(24)),
         ],
       ),
     );
@@ -692,10 +692,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: EdgeInsets.only(bottom: Responsive.h(16)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(Responsive.r(20)),
           border: Border.all(
             color: isSelected 
                 ? AppColors.primaryBlue 
@@ -719,20 +719,20 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             Stack(
               children: [
                 Container(
-                  height: 140.h,
+                  height: Responsive.h(140),
                   decoration: BoxDecoration(
                     color: AppColors.grey100,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(18))),
                   ),
                   child: school.bannerImage != null || (school.media?.schoolImages?.isNotEmpty ?? false)
                       ? ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(18))),
                           child: Stack(
                             children: [
                               SafeNetworkImage(
                                 imageUrl: school.bannerImage ?? school.media!.schoolImages!.first.url,
                                 width: double.infinity,
-                                height: 140.h,
+                                height: Responsive.h(140),
                                 fit: BoxFit.cover,
                               ),
                               // Gradient overlay
@@ -752,13 +752,13 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                           ),
                         )
                       : ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(18))),
                           child: Container(
                             width: double.infinity,
-                            height: 140.h,
+                            height: Responsive.h(140),
                             color: Colors.white,
                             child: Padding(
-                              padding: EdgeInsets.all(20.w),
+                              padding: Responsive.all(20),
                               child: Image.asset(
                                 'assets/png/logo.png',
                                 fit: BoxFit.contain,
@@ -770,10 +770,10 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 // AI Suggestion Badge
                 if (isAISuggested)
                   Positioned(
-                    top: 12.h,
-                    right: 12.w,
+                    top: Responsive.h(12),
+                    right: Responsive.w(12),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: Responsive.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -781,12 +781,12 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                             AppColors.primaryBlue.withOpacity(0.8),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(20)),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primaryBlue.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            blurRadius: Responsive.r(8),
+                            offset: Offset(0, Responsive.h(2)),
                           ),
                         ],
                       ),
@@ -795,7 +795,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         children: [
                           Icon(
                             Icons.auto_awesome,
-                            size: 14.sp,
+                            size: Responsive.sp(14),
                             color: Colors.white,
                           ),
                           SizedBox(width: 4.w),
@@ -804,7 +804,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                             style: AppFonts.bodySmall.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 11.sp,
+                              fontSize: Responsive.sp(11),
                             ),
                           ),
                         ],
@@ -814,25 +814,25 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 // Selection indicator
                 if (isSelected)
                   Positioned(
-                    top: 12.h,
-                    right: 12.w,
+                    top: Responsive.h(12),
+                    right: Responsive.w(12),
                     child: Container(
-                      padding: EdgeInsets.all(8.w),
+                      padding: Responsive.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primaryBlue.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            blurRadius: Responsive.r(8),
+                            offset: Offset(0, Responsive.h(2)),
                           ),
                         ],
                       ),
                       child: Icon(
                         Icons.check_rounded,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: Responsive.sp(20),
                       ),
                     ),
                   ),
@@ -841,7 +841,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             
             // Content
             Padding(
-              padding: EdgeInsets.all(18.w),
+              padding: Responsive.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -878,7 +878,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                   ),
                   
                   if (school.admissionFee != null) ...[
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
@@ -899,7 +899,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                             style: AppFonts.bodyMedium.copyWith(
                               color: AppColors.success,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14.sp,
+                              fontSize: Responsive.sp(14),
                             ),
                           ),
                         ],

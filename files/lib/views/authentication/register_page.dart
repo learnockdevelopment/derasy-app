@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -170,18 +171,18 @@ class _RegisterPageState extends State<RegisterPage>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24.r),
-                topRight: Radius.circular(24.r),
+                topLeft: Radius.circular(Responsive.r(24)),
+                topRight: Radius.circular(Responsive.r(24)),
               ),
             ),
             child: Column(
               children: [
                 // Header
                 Container(
-                  padding: EdgeInsets.all(16.w),
+                  padding: Responsive.all(16),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: AppColors.grey200, width: 1),
+                      bottom: BorderSide(color: AppColors.grey200, width: Responsive.w(1)),
                     ),
                   ),
                   child: Row(
@@ -202,7 +203,7 @@ class _RegisterPageState extends State<RegisterPage>
                 ),
                 // Search Bar
                 Padding(
-                  padding: EdgeInsets.all(16.w),
+                  padding: Responsive.all(16),
                   child: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: searchController,
                     builder: (context, value, child) {
@@ -218,7 +219,7 @@ class _RegisterPageState extends State<RegisterPage>
                           prefixIcon: Icon(
                             Icons.search,
                             color: AppColors.textSecondary,
-                            size: 22.sp,
+                            size: Responsive.sp(22),
                           ),
                           suffixIcon: value.text.isNotEmpty
                               ? IconButton(
@@ -232,12 +233,12 @@ class _RegisterPageState extends State<RegisterPage>
                           filled: true,
                           fillColor: AppColors.grey50,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 14.h,
+                          contentPadding: Responsive.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
                           ),
                         ),
                       );
@@ -247,7 +248,7 @@ class _RegisterPageState extends State<RegisterPage>
                 // Countries List
                 Expanded(
                   child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    padding: Responsive.symmetric(horizontal: 16),
                     itemCount: filteredCountries.length,
                     itemBuilder: (context, index) {
                       final country = filteredCountries[index];
@@ -267,38 +268,38 @@ class _RegisterPageState extends State<RegisterPage>
                           });
                           Navigator.pop(context);
                         },
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                         child: Container(
-                          margin: EdgeInsets.only(bottom: 4.h),
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          margin: EdgeInsets.only(bottom: Responsive.h(4)),
+                          padding: Responsive.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(10)),
                             border: isSelected
-                                ? Border.all(color: primary, width: 1.5)
-                                : Border.all(color: AppColors.grey200, width: 1),
+                                ? Border.all(color: primary, width: Responsive.w(1.5))
+                                : Border.all(color: AppColors.grey200, width: Responsive.w(1)),
                           ),
                           child: Row(
                             children: [
                               // Flag
                               Container(
-                                width: 32.w,
-                                height: 32.w,
+                                width: Responsive.w(32),
+                                height: Responsive.w(32),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: AppColors.grey200,
-                                    width: 1,
+                                    width: Responsive.w(1),
                                   ),
                                 ),
                                 child: Center(
                                   child: Text(
                                     country.flag,
-                                    style: TextStyle(fontSize: 20.sp),
+                                    style: TextStyle(fontSize: Responsive.sp(20)),
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 12.w),
+                              SizedBox(width: Responsive.w(12)),
                               // Country Name and Code
                               Expanded(
                                 child: Column(
@@ -310,7 +311,7 @@ class _RegisterPageState extends State<RegisterPage>
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    SizedBox(height: 2.h),
+                                    SizedBox(height: Responsive.h(2)),
                                     Text(
                                       country.dialCode,
                                       style: AppFonts.AlmaraiRegular12.copyWith(
@@ -425,7 +426,7 @@ class _RegisterPageState extends State<RegisterPage>
             child: Column(children: [
           // Top Bar with Back Button and Language Selector
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+            padding: Responsive.symmetric(horizontal: 16, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -434,30 +435,30 @@ class _RegisterPageState extends State<RegisterPage>
                   icon: Icon(
                     Icons.arrow_back,
                     color: AppColors.textPrimary,
-                    size: 20.sp,
+                    size: Responsive.sp(20),
                   ),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(),
                 ),
                   // Language Button (toggle)
                   InkWell(
-                    borderRadius: BorderRadius.circular(6.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(6)),
                     onTap: () {
                       final isAr = Get.locale?.languageCode == 'ar';
                       Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
                       setState(() {});
                     },
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                      padding: Responsive.symmetric(horizontal: 6, vertical: 4),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.language,
                             color: primary,
-                            size: 18.sp,
+                            size: Responsive.sp(18),
                           ),
-                          SizedBox(width: 3.w),
+                          SizedBox(width: Responsive.w(3)),
                           Text(
                             (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
                             style: AppFonts.AlmaraiMedium12.copyWith(
@@ -482,8 +483,8 @@ class _RegisterPageState extends State<RegisterPage>
                     opacity: _fadeAnimation,
                     child: Image.asset(
                       AssetsManager.logo,
-                      width: 70.w,
-                      height: 70.w,
+                      width: Responsive.w(70),
+                      height: Responsive.w(70),
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -502,7 +503,7 @@ class _RegisterPageState extends State<RegisterPage>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 6.h),
+                        SizedBox(height: Responsive.h(6)),
                         Text(
                           'register_intro'.tr,
                           style: AppFonts.AlmaraiRegular12.copyWith(
@@ -514,7 +515,7 @@ class _RegisterPageState extends State<RegisterPage>
                     ),
                   ),
 
-                  SizedBox(height: 24.h),
+                  SizedBox(height: Responsive.h(24)),
 
                   // Form Fields
                   FadeTransition(
@@ -524,41 +525,41 @@ class _RegisterPageState extends State<RegisterPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          TextFormField(
-                            controller: _nameController,
-                            style: AppFonts.AlmaraiRegular14,
-                            decoration: InputDecoration(
-                              labelText: 'full_name'.tr,
-                              labelStyle: AppFonts.AlmaraiRegular14,
-                              hintText: 'enter_full_name'.tr,
-                              hintStyle:
-                                  AppFonts.AlmaraiRegular12.copyWith(
-                                color: AppColors.grey400,
-                              ),
-                              prefixIcon: Icon(
-                                Icons.person_outlined,
-                                color: AppColors.primaryBlue,
-                                size: 20.sp,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                borderSide:
-                                    BorderSide(color: AppColors.grey300),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                borderSide: BorderSide(
-                                  color: AppColors.primaryBlue,
-                                  width: 2,
+                              TextFormField(
+                                controller: _nameController,
+                                style: AppFonts.AlmaraiRegular14,
+                                decoration: InputDecoration(
+                                  labelText: 'full_name'.tr,
+                                  labelStyle: AppFonts.AlmaraiRegular14,
+                                  hintText: 'enter_full_name'.tr,
+                                  hintStyle:
+                                      AppFonts.AlmaraiRegular12.copyWith(
+                                    color: AppColors.grey400,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.person_outlined,
+                                    color: AppColors.primaryBlue,
+                                    size: Responsive.sp(20),
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                    borderSide:
+                                        BorderSide(color: AppColors.grey300),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                    borderSide: BorderSide(
+                                      color: AppColors.primaryBlue,
+                                      width: Responsive.w(2),
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.grey50,
+                                  contentPadding: Responsive.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                 ),
-                              ),
-                              filled: true,
-                              fillColor: AppColors.grey50,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
-                              ),
-                            ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'name_required'.tr;
@@ -569,84 +570,84 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: Responsive.h(16)),
 
                           // Phone Field with Flag and Country Code
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             style: AppFonts.AlmaraiRegular14,
-                            decoration: InputDecoration(
-                              labelText: 'phone_number'.tr,
-                              labelStyle: AppFonts.AlmaraiRegular14,
-                              hintText: 'enter_your_phone'.tr,
-                              hintStyle: AppFonts.AlmaraiRegular12.copyWith(
-                                color: AppColors.grey400,
-                              ),
-                              prefixIcon: GestureDetector(
-                                onTap: () {
-                                  _showModernCountryPicker(context);
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Flag - using emoji from Countries
-                                      Container(
-                                        width: 28.w,
-                                        height: 28.w,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppColors.grey200,
-                                            width: 1,
+                              decoration: InputDecoration(
+                                labelText: 'phone_number'.tr,
+                                labelStyle: AppFonts.AlmaraiRegular14,
+                                hintText: 'enter_your_phone'.tr,
+                                hintStyle: AppFonts.AlmaraiRegular12.copyWith(
+                                  color: AppColors.grey400,
+                                ),
+                                prefixIcon: GestureDetector(
+                                  onTap: () {
+                                    _showModernCountryPicker(context);
+                                  },
+                                  child: Container(
+                                    padding: Responsive.symmetric(horizontal: 12),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Flag - using emoji from Countries
+                                        Container(
+                                          width: Responsive.w(28),
+                                          height: Responsive.w(28),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppColors.grey200,
+                                              width: Responsive.w(1),
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG').flag,
+                                              style: TextStyle(fontSize: Responsive.sp(20)),
+                                            ),
                                           ),
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG').flag,
-                                            style: TextStyle(fontSize: 20.sp),
+                                        SizedBox(width: Responsive.w(8)),
+                                        // Country Code
+                                        Text(
+                                          _selectedCountryCode.dialCode ?? '+20',
+                                          style: AppFonts.AlmaraiRegular14.copyWith(
+                                            color: AppColors.textPrimary,
                                           ),
                                         ),
-                                      ),
-                                      SizedBox(width: 8.w),
-                                      // Country Code
-                                      Text(
-                                        _selectedCountryCode.dialCode ?? '+20',
-                                        style: AppFonts.AlmaraiRegular14.copyWith(
-                                          color: AppColors.textPrimary,
+                                        SizedBox(width: Responsive.w(8)),
+                                        // Separator
+                                        Container(
+                                          width: Responsive.w(1),
+                                          height: Responsive.h(20),
+                                          color: AppColors.grey300,
                                         ),
-                                      ),
-                                      SizedBox(width: 8.w),
-                                      // Separator
-                                      Container(
-                                        width: 1,
-                                        height: 20.h,
-                                        color: AppColors.grey300,
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                borderSide: BorderSide(color: AppColors.grey300),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                borderSide: BorderSide(
-                                  color: AppColors.primaryBlue,
-                                  width: 2,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                  borderSide: BorderSide(color: AppColors.grey300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                  borderSide: BorderSide(
+                                    color: AppColors.primaryBlue,
+                                    width: Responsive.w(2),
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: AppColors.grey50,
+                                contentPadding: Responsive.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
                                 ),
                               ),
-                              filled: true,
-                              fillColor: AppColors.grey50,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
-                              ),
-                            ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'phone_required'.tr;
@@ -661,10 +662,10 @@ class _RegisterPageState extends State<RegisterPage>
 
                           // Role Selection Dropdown
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            padding: Responsive.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               color: AppColors.grey50,
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
                               border: Border.all(
                                 color: AppColors.grey300,
                               ),
@@ -680,7 +681,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 prefixIcon: Icon(
                                   Icons.person_outline,
                                   color: AppColors.primaryBlue,
-                                  size: 20.sp,
+                                  size: Responsive.sp(20),
                                 ),
                               ),
                               items: [
@@ -720,25 +721,25 @@ class _RegisterPageState extends State<RegisterPage>
                               prefixIcon: Icon(
                                 Icons.email_outlined,
                                 color: AppColors.primaryBlue,
-                                size: 20.sp,
+                                size: Responsive.sp(20),
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
                                     BorderSide(color: AppColors.grey300),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
                                   color: AppColors.primaryBlue,
-                                  width: 2,
+                                  width: Responsive.w(2),
                                 ),
                               ),
                               filled: true,
                               fillColor: AppColors.grey50,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
+                              contentPadding: Responsive.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
                               ),
                             ),
                             validator: (value) {
@@ -751,7 +752,7 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: Responsive.h(12)),
 
                           // Password Field
                           TextFormField(
@@ -769,7 +770,7 @@ class _RegisterPageState extends State<RegisterPage>
                               prefixIcon: Icon(
                                 Icons.lock_outlined,
                                 color: AppColors.primaryBlue,
-                                size: 20.sp,
+                                size: Responsive.sp(20),
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -785,22 +786,22 @@ class _RegisterPageState extends State<RegisterPage>
                                 },
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
                                     BorderSide(color: AppColors.grey300),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
                                   color: AppColors.primaryBlue,
-                                  width: 2,
+                                  width: Responsive.w(2),
                                 ),
                               ),
                               filled: true,
                               fillColor: AppColors.grey50,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
+                              contentPadding: Responsive.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
                               ),
                             ),
                             validator: (value) {
@@ -814,45 +815,45 @@ class _RegisterPageState extends State<RegisterPage>
                             },
                           ),
                           if (_passwordStrength.isNotEmpty) ...[
-                            SizedBox(height: 12.h),
-                            Container(
-                              padding: EdgeInsets.all(12.w),
-                              decoration: BoxDecoration(
-                                color: _getPasswordStrengthColor()
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8.r),
-                                border: Border.all(
-                                  color: _getPasswordStrengthColor()
-                                      .withOpacity(0.3),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.security,
-                                    color: _getPasswordStrengthColor(),
-                                    size: 16.sp,
-                                  ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    'password_strength_label'.tr,
-                                    style: AppFonts.AlmaraiRegular12
-                                        .copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    _passwordStrength.tr,
-                                    style:
-                                        AppFonts.AlmaraiBold12.copyWith(
-                                      color: _getPasswordStrengthColor(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            SizedBox(height: Responsive.h(12)),
+                             Container(
+                               padding: Responsive.all(12),
+                               decoration: BoxDecoration(
+                                 color: _getPasswordStrengthColor()
+                                     .withOpacity(0.1),
+                                 borderRadius: BorderRadius.circular(Responsive.r(8)),
+                                 border: Border.all(
+                                   color: _getPasswordStrengthColor()
+                                       .withOpacity(0.3),
+                                 ),
+                               ),
+                               child: Row(
+                                 children: [
+                                   Icon(
+                                     Icons.security,
+                                     color: _getPasswordStrengthColor(),
+                                     size: Responsive.sp(16),
+                                   ),
+                                   SizedBox(width: Responsive.w(8)),
+                                   Text(
+                                     'password_strength_label'.tr,
+                                     style: AppFonts.AlmaraiRegular12
+                                         .copyWith(
+                                       color: AppColors.textSecondary,
+                                     ),
+                                   ),
+                                   Text(
+                                     _passwordStrength.tr,
+                                     style:
+                                         AppFonts.AlmaraiBold12.copyWith(
+                                       color: _getPasswordStrengthColor(),
+                                     ),
+                                   ),
+                                 ],
+                               ),
+                             ),
                           ],
-                          SizedBox(height: 16.h),
+                          SizedBox(height: Responsive.h(16)),
 
                           // Confirm Password Field
                           TextFormField(
@@ -870,7 +871,7 @@ class _RegisterPageState extends State<RegisterPage>
                               prefixIcon: Icon(
                                 Icons.lock_outlined,
                                 color: AppColors.primaryBlue,
-                                size: 20.sp,
+                                size: Responsive.sp(20),
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -887,22 +888,22 @@ class _RegisterPageState extends State<RegisterPage>
                                 },
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
                                     BorderSide(color: AppColors.grey300),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
                                   color: AppColors.primaryBlue,
-                                  width: 2,
+                                  width: Responsive.w(2),
                                 ),
                               ),
                               filled: true,
                               fillColor: AppColors.grey50,
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
+                              contentPadding: Responsive.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
                               ),
                             ),
                             validator: (value) {
@@ -919,7 +920,7 @@ class _RegisterPageState extends State<RegisterPage>
 
                           // Register Button
                           SizedBox(
-                            height: 50.h,
+                            height: Responsive.h(50),
                             child: ElevatedButton(
                               onPressed: _isFormValid() && !_isLoading
                                   ? () {
@@ -930,14 +931,14 @@ class _RegisterPageState extends State<RegisterPage>
                                 backgroundColor: AppColors.primaryBlue,
                                 disabledBackgroundColor: AppColors.grey300,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 ),
                                 elevation: 0,
                               ),
                               child: _isLoading
                                   ? SizedBox(
-                                      height: 20.h,
-                                      width: 20.w,
+                                      height: Responsive.h(20),
+                                      width: Responsive.w(20),
                                       child: const CircularProgressIndicator(
                                         color: Colors.white,
                                         strokeWidth: 2,
@@ -950,9 +951,9 @@ class _RegisterPageState extends State<RegisterPage>
                                         Icon(
                                           Icons.person_add,
                                           color: Colors.white,
-                                          size: 18.sp,
+                                          size: Responsive.sp(18),
                                         ),
-                                        SizedBox(width: 8.w),
+                                        SizedBox(width: Responsive.w(8)),
                                         Text(
                                           'create_account'.tr,
                                           style: AppFonts.AlmaraiBold16

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
@@ -206,8 +206,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     print('💰 [CART PAGE] _buildWalletCard: Building wallet card with balance: ${_wallet!.balance}');
 
     return Container(
-      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
-      padding: EdgeInsets.all(16.w),
+      margin: Responsive.fromLTRB(16, 0, 16, 12),
+      padding: Responsive.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -217,7 +217,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryBlue.withOpacity(0.3),
@@ -229,18 +229,18 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12.w),
+            padding: Responsive.all(12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
             ),
             child: Icon(
               Icons.account_balance_wallet_rounded,
               color: Colors.white,
-              size: 28.sp,
+              size: Responsive.sp(28),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: Responsive.w(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +252,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                     fontSize: AppFonts.size12,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   '${_wallet!.balance.toStringAsFixed(2)} ${_wallet!.currency}',
                   style: AppFonts.h2.copyWith(
@@ -302,7 +302,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: Responsive.sp(18)),
           onPressed: () => Get.back(),
         ),
       ),
@@ -314,7 +314,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                   children: [
                     Expanded(
                       child: ListView.builder(
-                        padding: EdgeInsets.all(16.w),
+                        padding: Responsive.all(16),
                         itemCount: _cart!.items.length,
                         itemBuilder: (context, index) {
                           print('🛒 [CART PAGE] Building cart item $index: ${_cart!.items[index].product?.titleAr ?? "NO TITLE"}');
@@ -334,7 +334,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                     // Checkout Section 
                     Container(
                       color: Colors.white,
-                      padding: EdgeInsets.all(20.w),
+                      padding: Responsive.all(20),
                       child: Column(
                         children: [
                           Row(
@@ -357,7 +357,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: Responsive.h(12)),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -380,17 +380,17 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                             ],
                           ),
                           if (_wallet != null) ...[
-                            SizedBox(height: 12.h),
+                            SizedBox(height: Responsive.h(12)),
                             Divider(),
-                            SizedBox(height: 12.h),
+                            SizedBox(height: Responsive.h(12)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
                                     Icon(Icons.account_balance_wallet_rounded, 
-                                        color: AppColors.primaryBlue, size: 20.sp),
-                                    SizedBox(width: 8.w),
+                                        color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                                    SizedBox(width: Responsive.w(8)),
                                     Text(
                                       'wallet_balance'.tr,
                                       style: AppFonts.bodyMedium.copyWith(
@@ -413,7 +413,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                               ],
                             ),
                             if (_wallet!.balance < _cart!.total) ...[
-                              SizedBox(height: 8.h),
+                              SizedBox(height: Responsive.h(8)),
                               Text(
                                 'insufficient_balance'.tr,
                                 style: AppFonts.bodySmall.copyWith(
@@ -423,7 +423,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                               ),
                             ],
                           ],
-                          SizedBox(height: 20.h),
+                          SizedBox(height: Responsive.h(20)),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
@@ -432,9 +432,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                                   : _checkout,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primaryBlue,
-                                padding: EdgeInsets.symmetric(vertical: 16.h),
+                                padding: Responsive.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 ),
                               ),
                               child: Text(
@@ -459,10 +459,10 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
 
   Widget _buildCartItem(CartItem item) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: Responsive.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -475,24 +475,24 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         children: [
           // Product Image
           ClipRRect(
-            borderRadius: BorderRadius.horizontal(left: Radius.circular(16.r)),
+            borderRadius: BorderRadius.horizontal(left: Radius.circular(Responsive.r(16))),
             child: SafeNetworkImage(
               imageUrl: item.product?.images.isNotEmpty == true ? item.product!.images.first : '',
-              width: 100.w,
-              height: 100.h,
+              width: Responsive.w(100),
+              height: Responsive.h(100),
               fit: BoxFit.cover,
               errorWidget: Container(
-                width: 100.w,
-                height: 100.h,
+                width: Responsive.w(100),
+                height: Responsive.h(100),
                 color: const Color(0xFFF3F4F6),
-                child: Icon(Icons.image_rounded, size: 30.sp, color: const Color(0xFF9CA3AF)),
+                child: Icon(Icons.image_rounded, size: Responsive.sp(30), color: const Color(0xFF9CA3AF)),
               ),
             ),
           ),
           // Product Info
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(12.w),
+              padding: Responsive.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -506,7 +506,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: Responsive.h(4)),
                   Text(
                     '${item.price.toStringAsFixed(0)} ${'egp'.tr}',
                     style: AppFonts.bodySmall.copyWith(
@@ -515,7 +515,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                       fontSize: AppFonts.size12,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   Row(
                     children: [
                       IconButton(
@@ -525,7 +525,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: Responsive.w(8)),
                       Text(
                         item.quantity.toString(),
                         style: AppFonts.bodyMedium.copyWith(
@@ -533,7 +533,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: Responsive.w(8)),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
                         onPressed: () => _updateQuantity(item, item.quantity + 1),
@@ -565,8 +565,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.shopping_cart_outlined, size: 80.sp, color: const Color(0xFF9CA3AF)),
-          SizedBox(height: 16.h),
+          Icon(Icons.shopping_cart_outlined, size: Responsive.sp(80), color: const Color(0xFF9CA3AF)),
+          SizedBox(height: Responsive.h(16)),
           Text(
             'cart_empty'.tr,
             style: AppFonts.bodyLarge.copyWith(
@@ -574,12 +574,12 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
               fontSize: AppFonts.size16,
             ),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: Responsive.h(24)),
           ElevatedButton(
             onPressed: () => Get.toNamed(AppRoutes.storeProducts),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
-              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+              padding: Responsive.symmetric(horizontal: 32, vertical: 12),
             ),
             child: Text(
               'continue_shopping'.tr,

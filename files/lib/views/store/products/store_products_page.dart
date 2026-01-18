@@ -159,14 +159,14 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       slivers: [
         // Hero Section
         SliverAppBar(
-          expandedHeight: 80.h,
+          expandedHeight: Responsive.h(80),
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: 80.h,
+          collapsedHeight: Responsive.h(80),
           flexibleSpace: FlexibleSpaceBar(
             background: HeroSectionWidget(
               userData: _userData,
@@ -175,12 +175,12 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
         // Categories Filter
         SliverToBoxAdapter(
           child: Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            padding: Responsive.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -188,27 +188,27 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   'categories'.tr,
                   style: AppFonts.h4.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 16.sp,
+                    fontSize: Responsive.sp(16),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12.h),
+                SizedBox(height: Responsive.h(12)),
                 // Categories Filter
                 if (_isLoadingCategories)
                   SizedBox(
-                    height: 40.h,
+                    height: Responsive.h(40),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: 5,
-                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      separatorBuilder: (_, __) => SizedBox(width: Responsive.w(8)),
                       itemBuilder: (context, index) {
                         return ShimmerLoading(
                           child: Container(
                             width: 100.w,
-                            height: 40.h,
+                            height: Responsive.h(40),
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(20.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(20)),
                             ),
                           ),
                         );
@@ -217,11 +217,11 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   )
                 else
                   SizedBox(
-                    height: 40.h,
+                    height: Responsive.h(40),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length + 1,
-                      separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                      separatorBuilder: (_, __) => SizedBox(width: Responsive.w(8)),
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return _buildCategoryChip(null, 'all_categories'.tr);
@@ -242,7 +242,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           SliverFillRemaining(child: _buildEmptyState())
         else
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: Responsive.symmetric(horizontal: 16, vertical: 8),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _buildProductCard(_products[index]),
@@ -286,21 +286,21 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
-              width: 1.5,
+              width: Responsive.w(1.5),
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: AppColors.primaryBlue.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      blurRadius: Responsive.r(8),
+                      offset: Offset(0, Responsive.h(4)),
                     ),
                   ]
                 : [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      blurRadius: Responsive.r(4),
+                      offset: Offset(0, Responsive.h(2)),
                     ),
                   ],
           ),
@@ -321,7 +321,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     // schoolId is optional for pricing, can be null
     final finalPrice = product.getFinalPrice(null);
     final hasDiscount = product.discount != null &&
-        (product.discount!.global != null && product.discount!.global! > 0);
+        (product.discount?.global != null && (product.discount?.global ?? 0) > 0);
 
     return Material(
       color: Colors.transparent,
@@ -331,7 +331,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           Get.toNamed(AppRoutes.storeProductDetails, arguments: {'productId': product.id});
         },
         child: Container(
-          margin: EdgeInsets.only(bottom: 12.h),
+          margin: EdgeInsets.only(bottom: Responsive.h(12)),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12.r),
             color: Colors.white,
@@ -344,8 +344,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
               ),
               BoxShadow(
                 color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                blurRadius: Responsive.r(4),
+                offset: Offset(0, Responsive.h(2)),
                 spreadRadius: 0,
               ),
             ],
@@ -400,8 +400,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primaryBlue.withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              blurRadius: Responsive.r(8),
+                              offset: Offset(0, Responsive.h(4)),
                             ),
                           ],
                         ),
@@ -413,7 +413,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                               color: Colors.white,
                               size: 12.sp,
                             ),
-                            SizedBox(width: 4.w),
+                            SizedBox(width: Responsive.w(4)),
                             Text(
                               'featured'.tr,
                               style: AppFonts.bodySmall.copyWith(
@@ -439,8 +439,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.error.withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              blurRadius: Responsive.r(8),
+                              offset: Offset(0, Responsive.h(4)),
                             ),
                           ],
                         ),
@@ -452,7 +452,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                               color: Colors.white,
                               size: 12.sp,
                             ),
-                            SizedBox(width: 4.w),
+                            SizedBox(width: Responsive.w(4)),
                             Text(
                               '${product.discount!.global?.toStringAsFixed(0) ?? ''}%',
                               style: AppFonts.bodySmall.copyWith(
@@ -527,7 +527,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                               color: product.stock > 0
                                   ? AppColors.success.withOpacity(0.3)
                                   : AppColors.error.withOpacity(0.3),
-                              width: 1.5,
+                              width: Responsive.w(1.5),
                             ),
                           ),
                           child: Row(
@@ -576,7 +576,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
               BlendMode.srcIn,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: Responsive.h(16)),
           Text(
             'no_products_found'.tr,
             style: AppFonts.bodyLarge.copyWith(
@@ -594,7 +594,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       children: List.generate(
         5,
         (index) => Padding(
-          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+          padding: EdgeInsets.fromLTRB(Responsive.w(16), 0, Responsive.w(16), Responsive.h(12)),
           child: ShimmerLoading(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
@@ -647,7 +647,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                             ),
-                            SizedBox(width: 8.w),
+                            SizedBox(width: Responsive.w(8)),
                             Container(
                               height: 10.h,
                               width: 30.w,
@@ -661,7 +661,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: Responsive.w(12)),
                   // Arrow Icon Shimmer
                   Container(
                     width: 20.w,
