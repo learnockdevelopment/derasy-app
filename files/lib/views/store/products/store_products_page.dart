@@ -197,7 +197,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                 // Categories Filter
                 if (_isLoadingCategories)
                   SizedBox(
-                    height: Responsive.h(36),
+                    height: Responsive.h(50),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: 5,
@@ -206,10 +206,10 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                         return ShimmerLoading(
                           child: Container(
                             width: Responsive.w(90),
-                            height: Responsive.h(36),
+                            height: Responsive.h(40),
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(Responsive.r(18)),
+                              borderRadius: BorderRadius.circular(Responsive.r(8)),
                             ),
                           ),
                         );
@@ -218,17 +218,17 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   )
                 else
                   SizedBox(
-                    height: Responsive.h(36),
+                    height: Responsive.h(50),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length + 1,
                       separatorBuilder: (_, __) => SizedBox(width: Responsive.w(8)),
                       itemBuilder: (context, index) {
                         if (index == 0) {
-                          return _buildCategoryChip(null, 'all_categories'.tr);
+                          return Center(child: _buildCategoryChip(null, 'all_categories'.tr));
                         }
                         final category = _categories[index - 1];
-                        return _buildCategoryChip(category, _getCategoryTitle(category));
+                        return Center(child: _buildCategoryChip(category, _getCategoryTitle(category)));
                       },
                     ),
                   ),
@@ -287,12 +287,12 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           });
           _loadProducts(resetPage: true);
         },
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        borderRadius: BorderRadius.circular(Responsive.r(8)),
         child: Container(
           padding: Responsive.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryBlue : Colors.white,
-            borderRadius: BorderRadius.circular(Responsive.r(16)),
+            borderRadius: BorderRadius.circular(Responsive.r(8)),
             border: Border.all(
               color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
               width: Responsive.w(1.5),
@@ -318,7 +318,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             style: AppFonts.bodyMedium.copyWith(
               color: isSelected ? Colors.white : AppColors.textPrimary,
               fontSize: Responsive.sp(12),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             ),
           ),
         ),

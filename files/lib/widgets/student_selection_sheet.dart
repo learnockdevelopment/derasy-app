@@ -177,21 +177,19 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
         ),
         child: Row(
           children: [
-            // Avatar
+            // Avatar (now pill-shaped with full name)
             Container(
-              width: Responsive.w(50),
-              height: Responsive.w(50),
+              padding: Responsive.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withOpacity(0.1),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(Responsive.r(20)), // Pill shape
               ),
-              child: Center(
-                child: Text(
-                  displayName.isNotEmpty ? displayName[0].toUpperCase() : 'S',
-                  style: AppFonts.h3.copyWith(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.bold,
-                  ),
+              child: Text(
+                displayName.isNotEmpty ? displayName : 'Student',
+                style: AppFonts.bodyMedium.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(12),
                 ),
               ),
             ),

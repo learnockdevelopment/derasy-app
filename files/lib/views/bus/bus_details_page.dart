@@ -4065,20 +4065,25 @@ class _StationAttendancePageState extends State<_StationAttendancePage> {
                           children: [
                             Row(
                               children: [
-                                CircleAvatar(
-                                  radius: 24.r,
-                                  backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
-                                  backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
-                                  child: avatar.isEmpty
-                                      ? Text(
-                                          displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                                          style: AppFonts.bodyLarge.copyWith(
+                                avatar.isNotEmpty
+                                    ? CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundImage: NetworkImage(avatar),
+                                      )
+                                    : Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primaryBlue.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(20.r),
+                                        ),
+                                        child: Text(
+                                          displayName.isNotEmpty ? displayName : '?',
+                                          style: AppFonts.bodyMedium.copyWith(
                                             color: AppColors.primaryBlue,
                                             fontWeight: FontWeight.bold,
                                           ),
-                                        )
-                                      : null,
-                                ),
+                                        ),
+                                      ),
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Column(
