@@ -34,7 +34,7 @@ class ApiConstants {
   static const String getChildrenBySchoolEndpoint = '/children';
   static const String extractBirthCertificateEndpoint = '/children/extract-birth-certificate';
   static const String extractNationalIdEndpoint = '/children/extract-national-id';
-  static const String extractNationalIdEndpoint = '/children/extract-national-id';
+
   static const String submitNonEgyptianRequestEndpoint = '/children/non-egyptian-request';
   static const String getNonEgyptianRequestsEndpoint = '/children/non-egyptian-requests';
   static const String sendOtpEndpoint = '/children/send-otp';
