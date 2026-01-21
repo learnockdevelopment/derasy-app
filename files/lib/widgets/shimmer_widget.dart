@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/constants/app_colors.dart';
 
 class ShimmerWidget extends StatefulWidget {
@@ -99,11 +99,11 @@ class ShimmerCard extends StatelessWidget {
       highlightColor: AppColors.grey100,
       child: Container(
         width: width,
-        height: height ?? 200.h,
+        height: height ?? Responsive.h(200),
         margin: margin,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
+          borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(12)),
         ),
       ),
     );
@@ -126,21 +126,21 @@ class ShimmerListTile extends StatelessWidget {
       baseColor: AppColors.grey200,
       highlightColor: AppColors.grey100,
       child: Container(
-        height: height ?? 60.h,
+        height: height ?? Responsive.h(60),
         padding:
-            padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding ?? Responsive.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
             // Avatar placeholder
             Container(
-              width: 40.w,
-              height: 40.h,
+              width: Responsive.w(40),
+              height: Responsive.h(40),
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: Responsive.w(12)),
             // Text content
             Expanded(
               child: Column(
@@ -148,20 +148,20 @@ class ShimmerListTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    height: 14.h,
-                    width: 120.w,
+                    height: Responsive.h(14),
+                    width: Responsive.w(120),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(4)),
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: Responsive.h(4)),
                   Container(
-                    height: 12.h,
-                    width: 80.w,
+                    height: Responsive.h(12),
+                    width: Responsive.w(80),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(4)),
                     ),
                   ),
                 ],
@@ -190,11 +190,11 @@ class ShimmerBanner extends StatelessWidget {
       baseColor: AppColors.grey200,
       highlightColor: AppColors.grey100,
       child: Container(
-        height: height ?? 140.h,
-        margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        height: height ?? Responsive.h(140),
+        margin: Responsive.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(borderRadius ?? 16.r),
+          borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(16)),
         ),
       ),
     );
@@ -217,11 +217,11 @@ class ShimmerChip extends StatelessWidget {
       baseColor: AppColors.grey200,
       highlightColor: AppColors.grey100,
       child: Container(
-        width: width ?? 80.w,
-        height: height ?? 32.h,
+        width: width ?? Responsive.w(80),
+        height: height ?? Responsive.h(32),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(Responsive.r(20)),
         ),
       ),
     );
@@ -245,7 +245,7 @@ class ShimmerGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: EdgeInsets.all(20.w),
+      padding: Responsive.all(20),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: childAspectRatio,

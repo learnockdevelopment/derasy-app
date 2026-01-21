@@ -68,4 +68,13 @@ class Responsive {
       bottom: h(bottom),
     );
   }
+
+  static EdgeInsets fromLTRB(double left, double top, double right, double bottom) {
+    return EdgeInsets.fromLTRB(
+      w(left),
+      h(top),
+      w(right),
+      h(bottom),
+    );
+  }
 }

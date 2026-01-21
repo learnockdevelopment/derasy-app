@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
@@ -154,29 +154,29 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
+          padding: Responsive.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Basic Information
               _buildSectionTitle('basic_information'.tr),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               _buildTextField(_nameController, 'name'.tr, Icons.person_rounded, required: true),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_emailController, 'email'.tr, Icons.email_rounded, keyboardType: TextInputType.emailAddress, required: true),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_phoneController, 'phone'.tr, Icons.phone_rounded, keyboardType: TextInputType.phone),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_usernameController, 'username'.tr, Icons.person_outline_rounded, required: true),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_passwordController, 'password'.tr, Icons.lock_rounded, obscureText: true, required: true),
               
-              SizedBox(height: 24.h),
+              SizedBox(height: Responsive.h(24)),
               // Employment Information
               _buildSectionTitle('employment_information'.tr),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               _buildTextField(_employeeIdController, 'employee_id'.tr, Icons.badge_rounded),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildDropdown(
                 'employment_type'.tr,
                 _selectedEmploymentType,
@@ -184,27 +184,27 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                 (value) => setState(() => _selectedEmploymentType = value),
                 Icons.work_rounded,
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildDatePicker('hire_date'.tr, _selectedHireDate, (date) => setState(() => _selectedHireDate = date)),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_salaryController, 'salary'.tr, Icons.attach_money_rounded, keyboardType: TextInputType.number),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
               _buildTextField(_experienceYearsController, 'experience_years'.tr, Icons.trending_up_rounded, keyboardType: TextInputType.number),
               
-              SizedBox(height: 24.h),
+              SizedBox(height: Responsive.h(24)),
               // Qualifications
               _buildSectionTitle('qualifications'.tr),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               Row(
                 children: [
                   Expanded(
                     child: _buildTextField(_qualificationController, 'add_qualification'.tr, Icons.school_rounded),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: Responsive.w(12)),
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue,
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.primaryBlue.withOpacity(0.3),
@@ -233,22 +233,22 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                       ),
                     ),
                   ),
                 ],
               ),
               if (_qualifications.isNotEmpty) ...[
-                SizedBox(height: 12.h),
+                SizedBox(height: Responsive.h(12)),
                 Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.h,
+                  spacing: Responsive.w(8),
+                  runSpacing: Responsive.h(8),
                   children: _qualifications.map((q) {
                     return Container(
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(20)),
                         border: Border.all(
                           color: AppColors.primaryBlue.withOpacity(0.3),
                           width: 1,
@@ -259,7 +259,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                           q,
                           style: AppFonts.bodySmall.copyWith(
                             color: AppColors.primaryBlue,
-                            fontSize: AppFonts.size12,
+                            fontSize: Responsive.sp(12),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -270,21 +270,21 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                         },
                         deleteIcon: Icon(
                           Icons.close_rounded,
-                          size: 18.sp,
+                          size: Responsive.sp(18),
                           color: AppColors.primaryBlue,
                         ),
                         backgroundColor: Colors.transparent,
-                        padding: EdgeInsets.symmetric(horizontal: 8.w),
+                        padding: Responsive.symmetric(horizontal: 8),
                       ),
                     );
                   }).toList(),
                 ),
               ],
               
-              SizedBox(height: 24.h),
+              SizedBox(height: Responsive.h(24)),
               // Grade Levels
               _buildSectionTitle('grade_levels'.tr),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               _buildMultiSelectChips(
                 _grades.map((g) => g.name).toList(),
                 _selectedGradeLevels,
@@ -293,15 +293,15 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                 }),
               ),
               
-              SizedBox(height: 24.h),
+              SizedBox(height: Responsive.h(24)),
               // Status
               _buildSectionTitle('status'.tr),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               Container(
-                padding: EdgeInsets.all(16.w),
+                padding: Responsive.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
@@ -315,7 +315,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                     'active'.tr,
                     style: AppFonts.bodyMedium.copyWith(
                       color: const Color(0xFF1F2937),
-                      fontSize: AppFonts.size14,
+                      fontSize: Responsive.sp(14),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -325,12 +325,12 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                 ),
               ),
               
-              SizedBox(height: 32.h),
+              SizedBox(height: Responsive.h(32)),
               // Submit Button
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primaryBlue.withOpacity(0.3),
@@ -343,16 +343,16 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                   onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
-                    padding: EdgeInsets.symmetric(vertical: 18.h),
+                    padding: Responsive.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(16)),
                     ),
                     elevation: 0,
                   ),
                   child: _isLoading
                       ? SizedBox(
-                          height: 20.h,
-                          width: 20.w,
+                          height: Responsive.h(20),
+                          width: Responsive.w(20),
                           child: const CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
@@ -361,14 +361,14 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.person_add_rounded, color: Colors.white, size: 20.sp),
-                            SizedBox(width: 8.w),
+                            Icon(Icons.person_add_rounded, color: Colors.white, size: Responsive.sp(20)),
+                            SizedBox(width: Responsive.w(8)),
                             Text(
                               'add_teacher'.tr,
                               style: AppFonts.bodyLarge.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: AppFonts.size16,
+                                fontSize: Responsive.sp(16),
                               ),
                             ),
                           ],
@@ -384,24 +384,24 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
 
   Widget _buildSectionTitle(String title) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
+      padding: Responsive.symmetric(vertical: 12),
       child: Row(
         children: [
           Container(
-            width: 4.w,
-            height: 24.h,
+            width: Responsive.w(4),
+            height: Responsive.h(24),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(2.r),
+              borderRadius: BorderRadius.circular(Responsive.r(2)),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: Responsive.w(12)),
           Text(
             title,
             style: AppFonts.h3.copyWith(
               color: const Color(0xFF1F2937),
               fontWeight: FontWeight.bold,
-              fontSize: AppFonts.size18,
+              fontSize: Responsive.sp(18),
             ),
           ),
         ],
@@ -420,7 +420,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -435,7 +435,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
         keyboardType: keyboardType,
         style: AppFonts.bodyMedium.copyWith(
           color: const Color(0xFF1F2937),
-          fontSize: AppFonts.size14,
+          fontSize: Responsive.sp(14),
         ),
         decoration: InputDecoration(
           labelText: label,
@@ -444,29 +444,29 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
             fontSize: AppFonts.size12,
           ),
           prefixIcon: Container(
-            margin: EdgeInsets.all(12.w),
-            padding: EdgeInsets.all(8.w),
+            margin: Responsive.all(12),
+            padding: Responsive.all(8),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(Responsive.r(10)),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+            child: Icon(icon, color: AppColors.primaryBlue, size: Responsive.sp(20)),
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          contentPadding: Responsive.symmetric(horizontal: 16, vertical: 16),
         ),
         validator: required
             ? (value) {
@@ -490,7 +490,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -503,7 +503,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
         value: value,
         style: AppFonts.bodyMedium.copyWith(
           color: const Color(0xFF1F2937),
-          fontSize: AppFonts.size14,
+          fontSize: Responsive.sp(14),
         ),
         decoration: InputDecoration(
           labelText: label,
@@ -512,29 +512,29 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
             fontSize: AppFonts.size12,
           ),
           prefixIcon: Container(
-            margin: EdgeInsets.all(12.w),
-            padding: EdgeInsets.all(8.w),
+            margin: Responsive.all(12),
+            padding: Responsive.all(8),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(Responsive.r(10)),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+            child: Icon(icon, color: AppColors.primaryBlue, size: Responsive.sp(20)),
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          contentPadding: Responsive.symmetric(horizontal: 16, vertical: 16),
         ),
         items: items.map((item) {
           final displayText = item == 'full_time' 
@@ -558,7 +558,7 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -579,38 +579,38 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
             onDateSelected(date);
           }
         },
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: label,
             labelStyle: AppFonts.bodySmall.copyWith(
               color: const Color(0xFF6B7280),
-              fontSize: AppFonts.size12,
+              fontSize: Responsive.sp(12),
             ),
             prefixIcon: Container(
-              margin: EdgeInsets.all(12.w),
-              padding: EdgeInsets.all(8.w),
+              margin: Responsive.all(12),
+              padding: Responsive.all(8),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(Responsive.r(10)),
               ),
-              child: Icon(Icons.calendar_today_rounded, color: AppColors.primaryBlue, size: 20.sp),
+              child: Icon(Icons.calendar_today_rounded, color: AppColors.primaryBlue, size: Responsive.sp(20)),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(Responsive.r(16)),
               borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
             ),
             filled: true,
             fillColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            contentPadding: Responsive.symmetric(horizontal: 16, vertical: 16),
           ),
           child: Text(
             selectedDate != null
@@ -628,8 +628,8 @@ class _AddTeacherPageState extends State<AddTeacherPage> {
 
   Widget _buildMultiSelectChips(List<String> options, List<String> selected, Function(List<String>) onChanged) {
     return Wrap(
-      spacing: 8.w,
-      runSpacing: 8.h,
+      spacing: Responsive.w(8),
+      runSpacing: Responsive.h(8),
       children: options.map((option) {
         final isSelected = selected.contains(option);
         return FilterChip(

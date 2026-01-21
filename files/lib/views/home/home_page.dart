@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -13,9 +12,10 @@ import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../core/controllers/dashboard_controller.dart';
-import '../../models/wallet_models.dart';
+import '../../models/wallet_models.dart'; 
 import '../../widgets/student_selection_sheet.dart';
- 
+import '../../core/utils/format_utils.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -83,16 +83,16 @@ class _HomePageState extends State<HomePage> {
       child: CustomScrollView(
         slivers: [
           // Hero Section
-          SliverAppBar(
-            expandedHeight: Responsive.h(80),
-            floating: false,
-            pinned: true,
-            snap: false,
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            toolbarHeight: 0,
-            collapsedHeight: Responsive.h(80),
+        SliverAppBar(
+          expandedHeight: Responsive.h(80),
+          floating: false,
+          pinned: true,
+          snap: false,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          toolbarHeight: 0,
+          collapsedHeight: Responsive.h(45),
           flexibleSpace: FlexibleSpaceBar(
             background: HeroSectionWidget(
               userData: _userData,
@@ -135,16 +135,16 @@ class _HomePageState extends State<HomePage> {
               padding: Responsive.symmetric(horizontal: 20),
               child: Text(
                 'student_management'.tr,
-                style: AppFonts.bodyMedium.copyWith(
+                style: AppFonts.h3.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: Responsive.sp(16),
+                  fontSize: Responsive.sp(15),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(child: SizedBox(height: Responsive.h(8))),
-          
+
           // Statistics Cards - First Row
           SliverToBoxAdapter(
             child: Padding(
@@ -186,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Expanded(
                           child: isLoading && totalStudents == 0
-                              ? ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))
+                              ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
                                   icon: IconlyBroken.profile,
                                   title: 'total_students'.tr,
@@ -199,7 +199,7 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(width: Responsive.w(16)),
                         Expanded(
                           child: isLoading && totalApplications == 0
-                              ? ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))
+                              ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
                                   icon: IconlyBroken.document,
                                   title: 'total_applications'.tr,
@@ -229,9 +229,9 @@ class _HomePageState extends State<HomePage> {
                                             AppRoutes.applyToSchools,
                                             arguments: {'child': selectedStudent},
                                           );
-                                        }
+                                        } 
                                       });
-                                    }
+                                    } 
                                   },
                                   buttonText: 'add_application'.tr,
                                   isButtonDisabled: totalStudents == 0,
@@ -246,7 +246,6 @@ class _HomePageState extends State<HomePage> {
               }),
             ),
           ),
-
           SliverToBoxAdapter(child: SizedBox(height: Responsive.h(32))),
         ],
       ),
@@ -270,29 +269,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _formatCurrency(double amount, String currency) {
-    final formattedAmount = amount.toStringAsFixed(2);
-    if (Get.locale?.languageCode == 'ar') {
-      // Convert numbers to Arabic-Indic numerals
-      final arabicAmount = _formatNumber(formattedAmount);
-      // Translate currency if needed
-      String translatedCurrency = currency;
-      if (currency.toUpperCase() == 'USD') {
-        translatedCurrency = 'دولار';
-      } else if (currency.toUpperCase() == 'EGP') {
-        translatedCurrency = 'جنيه';
-      } else if (currency.toUpperCase() == 'SAR') {
-        translatedCurrency = 'ريال';
-      }
-      return '$arabicAmount $translatedCurrency';
-    }
-    return '$formattedAmount $currency';
+    return FormatUtils.formatPrice(amount, currency);
   }
 
   Widget _buildStatCard({
-    required IconData icon,
     required String title,
     required String value,
-    required Color color,
+    required IconData icon,
+    required Color color, 
     bool showAddButton = false,
     VoidCallback? onAddTap,
     String? buttonText,
@@ -301,170 +285,123 @@ class _HomePageState extends State<HomePage> {
     Color? buttonColor,
   }) {
     return Container(
-      height: 160.h,
-      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            color.withOpacity(0.05),
-          ],
-        ),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: Responsive.w(1.5),
-        ),
+        borderRadius: BorderRadius.circular(Responsive.r(24)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: AppColors.grey100),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [ 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight, 
-                    colors: [
-                      color,
-                      color.withOpacity(0.8),
-                    ],
+      child: Stack(
+        children: [
+          // Background Accent
+          Positioned(
+            right: -Responsive.w(15),
+            top: -Responsive.h(15),
+            child: Container(
+              width: Responsive.w(70),
+              height: Responsive.h(70),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Padding(
+            padding: Responsive.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon Header
+                Container(
+                  padding: Responsive.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(Responsive.r(14)),
                   ),
-                  borderRadius: BorderRadius.circular(10.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withOpacity(0.3),
-                      blurRadius: Responsive.r(8),
-                      offset: Offset(0, Responsive.h(4)),
+                  child: Icon(icon, color: color, size: Responsive.sp(18)),
+                ),
+                SizedBox(height: Responsive.h(12)),
+                // Title
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: Responsive.sp(12),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(8)),
+                    Text(
+                      value,
+                      style: AppFonts.h3.copyWith(
+                        color: const Color(0xFF0F172A),
+                        fontWeight: FontWeight.bold,
+                        fontSize: Responsive.sp(24),
+                      ),
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 14.sp),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  value,
-                  style: AppFonts.h3.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22.sp,
-                    height: 1,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Add Student Button at bottom
-          if (showAddButton && onAddTap != null) ...[
-            SizedBox(height: 8.h),
-            Opacity(
-              opacity: isButtonDisabled ? 0.4 : 1.0,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: isButtonDisabled ? null : onAddTap,
-                  borderRadius: BorderRadius.circular(8.r),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: buttonColor ?? AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(8.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (buttonColor ?? AppColors.primaryBlue).withOpacity(0.4),
-                        blurRadius: Responsive.r(6),
-                        offset: Offset(0, Responsive.h(3)),
+                // Action Button (if any)
+                if (showAddButton && onAddTap != null) ...[
+                  SizedBox(height: Responsive.h(12)),
+                  InkWell(
+                    onTap: isButtonDisabled ? null : onAddTap,
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                    child: Container(
+                      width: double.infinity,
+                      padding: Responsive.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isButtonDisabled 
+                            ? AppColors.grey50 
+                            : (buttonColor ?? color).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(Responsive.r(10)),
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        IconlyBroken.plus,
-                        color: Colors.white,
-                        size: Responsive.sp(12),
-                      ),
-                      SizedBox(width: 4.w),
-                      Flexible(
+                      child: Center(
                         child: Text(
-                        buttonText ?? 'add_student'.tr,
+                          buttonText ?? 'add_student'.tr,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: isButtonDisabled 
+                                ? AppColors.textSecondary 
+                                : (buttonColor ?? color),
+                            fontSize: Responsive.sp(9),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isButtonDisabled && disabledMessage != null)
+                    Padding(
+                      padding: Responsive.only(top: 4),
+                      child: Text(
+                        disabledMessage,
                         style: AppFonts.bodySmall.copyWith(
-                          color: Colors.white,
-                          fontSize: Responsive.sp(10),
-                          fontWeight: FontWeight.bold,
+                          color: AppColors.textSecondary,
+                          fontSize: Responsive.sp(8),
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
+                ],
+              ],
             ),
-            ),
-            // Disabled message below button
-            if (isButtonDisabled && disabledMessage != null) ...[
-              SizedBox(height: 6.h),
-              Text(
-                disabledMessage,
-                style: AppFonts.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: Responsive.sp(9),
-                  fontWeight: FontWeight.w400,
-                ),
-                textAlign: TextAlign.right,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ],
+          ),
         ],
       ),
     );
@@ -472,64 +409,146 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildWalletCard(Wallet wallet) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      width: double.infinity,
+      padding: Responsive.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        color: const Color(0xFF0F172A), // Midnight Dark Blue
+        borderRadius: BorderRadius.circular(Responsive.r(24)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primaryGreen,
-            AppColors.primaryGreen.withOpacity(0.8),
+            const Color(0xFF0F172A), // Dark Slate
+            const Color(0xFF1E293B), // Slate 800
+            const Color(0xFF334155), // Slate 700
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryGreen.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+            color: const Color(0xFF0F172A).withOpacity(0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(
-              Icons.account_balance_wallet_rounded,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _formatCurrency(wallet.balance, wallet.currency),
-                  style: AppFonts.h2.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22.sp,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Balance Section (Right in RTL)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'current_balance'.tr,
+                    style: AppFonts.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: Responsive.sp(11),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: Responsive.h(4)),
+                  Text(
+                    _formatCurrency(wallet.balance, wallet.currency),
+                    style: AppFonts.h1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(24),
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              // Transactions Button (Left in RTL)
+              Material(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                child: InkWell(
+                  onTap: () => Get.toNamed(AppRoutes.wallet),
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  child: Padding(
+                    padding: Responsive.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(IconlyBroken.document, color: Colors.white, size: Responsive.sp(14)),
+                        SizedBox(width: Responsive.w(6)),
+                        Text(
+                          'transactions'.tr,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: Colors.white,
+                            fontSize: Responsive.sp(11),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(20)),
+          Row(
+            children: [
+              Expanded(
+                child: _buildWalletActionButton(
+                  label: 'deposit'.tr,
+                  icon: IconlyBroken.plus,
+                  onTap: () => Get.toNamed(AppRoutes.walletDeposit),
+                ),
+              ),
+              SizedBox(width: Responsive.w(12)),
+              Expanded(
+                child: _buildWalletActionButton(
+                  label: 'withdraw'.tr,
+                  icon: IconlyBroken.arrow_up_2,
+                  onTap: () => Get.toNamed(AppRoutes.walletWithdraw),
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWalletActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(Responsive.r(14)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Responsive.r(14)),
+        child: Container(
+          padding: Responsive.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Responsive.r(14)),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: Responsive.sp(16)),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                label,
+                style: AppFonts.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(12),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -545,43 +564,43 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: Responsive.h(80),
+          collapsedHeight: Responsive.h(45),
           flexibleSpace: HeroSectionWidget(
             userData: _userData,
             pageTitle: 'home'.tr,
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
         // Banner Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: ShimmerCard(height: 120.h, borderRadius: 16.r),
+            padding: Responsive.symmetric(horizontal: 20),
+            child: ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16)),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
         // Stats Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: Responsive.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Expanded(child: ShimmerCard(height: 120.h, borderRadius: 16.r)),
-                SizedBox(width: 16.w),
-                Expanded(child: ShimmerCard(height: 120.h, borderRadius: 16.r)),
+                Expanded(child: ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))),
+                SizedBox(width: Responsive.w(16)),
+                Expanded(child: ShimmerCard(height: Responsive.h(120), borderRadius: Responsive.r(16))),
               ],
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(24))),
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: Responsive.symmetric(horizontal: 20),
             child: ShimmerLoading(
               child: Container(
-                height: 20.h,
-                width: 120.w,
+                height: Responsive.h(20),
+                width: Responsive.w(120),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(Responsive.r(4)),
@@ -590,7 +609,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
         // Actions Grid Shimmer
         SliverToBoxAdapter(
           child: Padding(
@@ -599,32 +618,32 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
-                    SizedBox(width: 16.w),
-                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
+                    Expanded(child: ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))),
+                    SizedBox(width: Responsive.w(16)),
+                    Expanded(child: ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))),
                   ],
                 ),
                 SizedBox(height: Responsive.h(16)),
                 Row(
                   children: [
-                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
-                    SizedBox(width: 16.w),
-                    Expanded(child: ShimmerCard(height: 130.h, borderRadius: 16.r)),
+                    Expanded(child: ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))),
+                    SizedBox(width: Responsive.w(16)),
+                    Expanded(child: ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))),
                   ],
                 ),
               ],
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(24))),
         // Section Title Shimmer
         SliverToBoxAdapter(
           child: Padding(
             padding: Responsive.symmetric(horizontal: 20),
             child: ShimmerLoading(
               child: Container(
-                height: 20.h,
-                width: 120.w,
+                height: Responsive.h(20),
+                width: Responsive.w(120),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(Responsive.r(4)),
@@ -633,17 +652,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
         // Offer Shimmer
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: ShimmerCard(height: 90.h, borderRadius: 16.r),
+            padding: Responsive.symmetric(horizontal: 20),
+            child: ShimmerCard(height: Responsive.h(90), borderRadius: Responsive.r(16)),
           ),
         ),
       ],
     );
   }
-
 }
 

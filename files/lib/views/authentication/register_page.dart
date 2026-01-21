@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:get/get.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:country_code_picker/country_code_picker.dart';
@@ -326,7 +326,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 Icon(
                                   Icons.check_circle,
                                   color: primary,
-                                  size: 20.sp,
+                                  size: Responsive.sp(20),
                                 ),
                             ],
                           ),
@@ -475,7 +475,7 @@ class _RegisterPageState extends State<RegisterPage>
           Expanded(
               child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: Responsive.symmetric(horizontal: 20),
               child: Column(
                 children: [
                   // Logo
@@ -489,7 +489,7 @@ class _RegisterPageState extends State<RegisterPage>
                     ),
                   ),
 
-                  SizedBox(height: 20.h),
+                  SizedBox(height: Responsive.h(20)),
 
                   // Title
                   FadeTransition(
@@ -658,7 +658,7 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: Responsive.h(12)),
 
                           // Role Selection Dropdown
                           Container(
@@ -703,7 +703,7 @@ class _RegisterPageState extends State<RegisterPage>
                               },
                             ),
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: Responsive.h(12)),
 
                           // Email Field
                           TextFormField(
@@ -916,7 +916,7 @@ class _RegisterPageState extends State<RegisterPage>
                               return null;
                             },
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: Responsive.h(20)),
 
                           // Register Button
                           SizedBox(
@@ -965,7 +965,7 @@ class _RegisterPageState extends State<RegisterPage>
                                     ),
                             ),
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: Responsive.h(20)),
                         ],
                       ),
                     ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/constants/app_fonts.dart';
 
 class SimpleLocationPicker extends StatefulWidget {
@@ -114,14 +114,14 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
+        padding: Responsive.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -131,7 +131,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(Responsive.r(16)),
                 border: Border.all(
                   color: const Color(0xFF3B82F6).withOpacity(0.15),
                   width: 1,
@@ -140,18 +140,18 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12.w),
+                    padding: Responsive.all(12),
                     decoration: BoxDecoration(
                       color: const Color(0xFF3B82F6).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                     ),
                     child: Icon(
                       Icons.location_on_rounded,
                       color: const Color(0xFF3B82F6),
-                      size: 24.sp,
+                      size: Responsive.sp(24),
                     ),
                   ),
-                  SizedBox(width: 16.w),
+                  SizedBox(width: Responsive.w(16)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +164,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                             
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: Responsive.h(4)),
                         Text(
                           'enter_address_manually'.tr,
                           style: AppFonts.bodySmall.copyWith(
@@ -179,7 +179,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
               ),
             ),
 
-            SizedBox(height: 24.h),
+            SizedBox(height: Responsive.h(24)),
 
             // Address Field
             _buildTextField(
@@ -190,7 +190,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
               maxLines: 3,
             ),
 
-            SizedBox(height: 20.h),
+            SizedBox(height: Responsive.h(20)),
 
             // Coordinates Section
             Text(
@@ -201,7 +201,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                 
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: Responsive.h(12)),
 
             Row(
               children: [
@@ -214,7 +214,7 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                SizedBox(width: 16.w),
+                SizedBox(width: Responsive.w(16)),
                 Expanded(
                   child: _buildTextField(
                     controller: _longitudeController,
@@ -227,14 +227,14 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
               ],
             ),
 
-            SizedBox(height: 24.h),
+            SizedBox(height: Responsive.h(24)),
 
             // Instructions
             Container(
-              padding: EdgeInsets.all(16.w),
+              padding: Responsive.all(16),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
                 border: Border.all(
                   color: const Color(0xFFE5E7EB),
                   width: 1,
@@ -245,9 +245,9 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                   Icon(
                     Icons.info_outline_rounded,
                     color: const Color(0xFF3B82F6),
-                    size: 20.sp,
+                    size: Responsive.sp(20),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: Responsive.w(12)),
                   Expanded(
                     child: Text(
                       'You can find coordinates using online maps or leave them empty for address-only location.',
@@ -285,11 +285,11 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
             
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: Responsive.h(8)),
         Container(
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
             border: Border.all(
               color: const Color(0xFFE5E7EB),
               width: 1,
@@ -310,22 +310,22 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
                 
               ),
               prefixIcon: Container(
-                margin: EdgeInsets.all(8.w),
-                padding: EdgeInsets.all(8.w),
+                margin: Responsive.all(8),
+                padding: Responsive.all(8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF3B82F6).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
                 ),
                 child: Icon(
                   icon,
                   color: const Color(0xFF3B82F6),
-                  size: 20.sp,
+                  size: Responsive.sp(20),
                 ),
               ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 16.h,
+              contentPadding: Responsive.symmetric(
+                horizontal: 16,
+                vertical: 16,
               ),
             ),
           ),

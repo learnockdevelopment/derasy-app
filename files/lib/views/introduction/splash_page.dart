@@ -1,6 +1,6 @@
 import 'package:derasy/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/assets.dart';
@@ -159,16 +159,16 @@ class _SplashPageState extends State<SplashPage>
           children: [
             // Animated background circles with multiple layers
             Positioned(
-              top: -100.h,
-              right: -100.w,
+              top: Responsive.h(-100),
+              right: Responsive.w(-100),
               child: AnimatedBuilder(
                 animation: _pulseAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: _pulseAnimation.value,
                     child: Container(
-                      width: 300.w,
-                      height: 300.h,
+                      width: Responsive.w(300),
+                      height: Responsive.h(300),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
@@ -185,16 +185,16 @@ class _SplashPageState extends State<SplashPage>
               ),
             ),
             Positioned(
-              bottom: -150.h,
-              left: -150.w,
+              bottom: Responsive.h(-150),
+              left: Responsive.w(-150),
               child: AnimatedBuilder(
                 animation: _pulseAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: 1.0 / _pulseAnimation.value,
                     child: Container(
-                      width: 400.w,
-                      height: 400.h,
+                      width: Responsive.w(400),
+                      height: Responsive.h(400),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
@@ -212,16 +212,16 @@ class _SplashPageState extends State<SplashPage>
             ),
             // Additional decorative circles
             Positioned(
-              top: 100.h,
-              left: -50.w,
+              top: Responsive.h(100),
+              left: Responsive.w(-50),
               child: AnimatedBuilder(
                 animation: _pulseAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: 0.8 + (_pulseAnimation.value - 1.0) * 0.2,
                     child: Container(
-                      width: 200.w,
-                      height: 200.h,
+                      width: Responsive.w(200),
+                      height: Responsive.h(200),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primaryPurple.withOpacity(0.15),
@@ -232,16 +232,16 @@ class _SplashPageState extends State<SplashPage>
               ),
             ),
             Positioned(
-              bottom: 150.h,
-              right: -80.w,
+              bottom: Responsive.h(150),
+              right: Responsive.w(-80),
               child: AnimatedBuilder(
                 animation: _pulseAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: 0.7 + (1.0 / _pulseAnimation.value - 1.0) * 0.3,
                     child: Container(
-                      width: 250.w,
-                      height: 250.h,
+                      width: Responsive.w(250),
+                      height: Responsive.h(250),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primaryGreen.withOpacity(0.15),
@@ -269,8 +269,8 @@ class _SplashPageState extends State<SplashPage>
                               scale: 1.0 + (_pulseAnimation.value - 1.0) * 0.1,
                               child: Image.asset(
                                 AssetsManager.logo,
-                                width: 120.w,
-                                height: 120.w,
+                                width: Responsive.w(120),
+                                height: Responsive.w(120),
                                 fit: BoxFit.contain,
                               ),
                             );
@@ -279,7 +279,7 @@ class _SplashPageState extends State<SplashPage>
                       ),
                     ),
 
-                    SizedBox(height: 50.h),
+                    SizedBox(height: Responsive.h(50)),
 
                     // App name with animation
                     FadeTransition(
@@ -290,7 +290,7 @@ class _SplashPageState extends State<SplashPage>
                             _appName,
                                 style: AppFonts.AlmaraiBold32.copyWith(
                                   color: Colors.white,
-                                  fontSize: 42.sp.clamp(32.sp, 48.sp),
+                                  fontSize: Responsive.sp(42).clamp(Responsive.sp(32), Responsive.sp(48)),
                                   letterSpacing: 1.5,
                                   shadows: [
                                     Shadow(
@@ -307,9 +307,9 @@ class _SplashPageState extends State<SplashPage>
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: Responsive.h(12)),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                            padding: Responsive.symmetric(horizontal: 20, vertical: 8),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -317,7 +317,7 @@ class _SplashPageState extends State<SplashPage>
                                   AppColors.primaryBlue.withOpacity(0.2),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(20.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(20)),
                               border: Border.all(
                                 color: Colors.white.withOpacity(0.3),
                                 width: 1,
@@ -327,7 +327,7 @@ class _SplashPageState extends State<SplashPage>
                               'splash_subtitle'.tr,
                               style: AppFonts.bodyLarge.copyWith(
                                 color: Colors.white,
-                                fontSize: 16.sp.clamp(14.sp, 18.sp),
+                                fontSize: Responsive.sp(16).clamp(Responsive.sp(14), Responsive.sp(18)),
                                 letterSpacing: 0.8,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -337,7 +337,7 @@ class _SplashPageState extends State<SplashPage>
                       ),
                     ),
 
-                    SizedBox(height: 80.h),
+                    SizedBox(height: Responsive.h(80)),
 
                     // Loading indicator with modern design
                     FadeTransition(
@@ -345,8 +345,8 @@ class _SplashPageState extends State<SplashPage>
                       child: Column(
                         children: [
                           Container(
-                            width: 56.w,
-                            height: 56.h,
+                            width: Responsive.w(56),
+                            height: Responsive.h(56),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -366,7 +366,7 @@ class _SplashPageState extends State<SplashPage>
                               ],
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(10.w),
+                              padding: Responsive.all(10),
                               child: CircularProgressIndicator(
                                 strokeWidth: 3.5,
                                 valueColor: AlwaysStoppedAnimation<Color>(
@@ -376,7 +376,7 @@ class _SplashPageState extends State<SplashPage>
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.h),
+                          SizedBox(height: Responsive.h(16)),
                           Text(
                             'splash_loading'.tr,
                             style: AppFonts.bodyMedium.copyWith(

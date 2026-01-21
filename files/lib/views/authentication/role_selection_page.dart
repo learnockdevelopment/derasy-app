@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -55,7 +55,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final size = MediaQuery.of(context).size;
       setState(() {
-        _chatButtonPosition = Offset(size.width - 80.w, size.height - 110.h);
+        _chatButtonPosition = Offset(size.width - Responsive.w(80), size.height - Responsive.h(110));
       });
     });
   }
@@ -96,7 +96,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
               // Top App Bar with Language Button
               SafeArea(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -107,11 +107,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: _toggleLanguage,
-                                borderRadius: BorderRadius.circular(10.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(10)),
                                 child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w,
-                                    vertical: 8.h,
+                                  padding: Responsive.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -119,9 +119,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                       Icon(
                                         Icons.language,
                                         color: primary,
-                                        size: 20.sp,
+                                        size: Responsive.sp(20),
                                       ),
-                                      SizedBox(width: 6.w),
+                                      SizedBox(width: Responsive.w(6)),
                                       Text(
                                         controller.isEnglish ? 'العربية' : 'English',
                                         style: AppFonts.AlmaraiBold14.copyWith(
@@ -145,10 +145,10 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    padding: Responsive.symmetric(horizontal: 24),
                     child: Column(
                       children: [
-                        SizedBox(height: 100.h),
+                        SizedBox(height: Responsive.h(100)),
                         
                         // Logo Section with enhanced design
                         FadeTransition(
@@ -158,15 +158,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                               // Logo
                               Image.asset(
                                 AssetsManager.logo,
-                                width: 140.w,
-                                height: 140.w,
+                                width: Responsive.w(140),
+                                height: Responsive.w(140),
                                 fit: BoxFit.contain,
                               ),
                             ],
                           ),
                         ),
                         
-                        SizedBox(height: 60.h),
+                        SizedBox(height: Responsive.h(60)),
                         
                         // Buttons Section
                         SlideTransition(
@@ -183,7 +183,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                   isPrimary: true,
                                   primary: AppColors.primaryBlue,
                                 ),
-                                SizedBox(height: 25.h),
+                                SizedBox(height: Responsive.h(25)),
                                 
                                 // Register Button
                                 _buildButton(
@@ -198,7 +198,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                           ),
                         ),
                         
-                        SizedBox(height: 100.h),
+                        SizedBox(height: Responsive.h(100)),
                       ],
                     ),
                   ),
@@ -207,7 +207,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
               
               // Footer Links - Stick to Bottom
               Container(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
+                padding: Responsive.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -269,8 +269,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
               feedback: Material(
                 color: Colors.transparent,
                 child: Container(
-                  width: 56.w,
-                  height: 56.h,
+                  width: Responsive.w(56),
+                  height: Responsive.h(56),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: primary,
@@ -297,7 +297,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                   child: Icon(
                     IconlyBold.chat,
                     color: AppColors.primaryGreen,
-                    size: 24.sp,
+                    size: Responsive.sp(24),
                   ),
                 ),
               ),
@@ -308,8 +308,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                   double newY = details.offset.dy;
                   
                   // Keep button within screen bounds
-                  newX = newX.clamp(0.0, size.width - 56.w);
-                  newY = newY.clamp(0.0, size.height - 56.h);
+                  newX = newX.clamp(0.0, size.width - Responsive.w(56));
+                  newY = newY.clamp(0.0, size.height - Responsive.h(56));
                   
                   _chatButtonPosition = Offset(newX, newY);
                 });
@@ -323,7 +323,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                 child: Icon(
                   IconlyBold.chat,
                   color: Colors.white,
-                  size: 24.sp,
+                  size: Responsive.sp(24),
                 ),
               ),
             ),
@@ -341,11 +341,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
     required Color primary,
   }) {
     return SizedBox(
-      width: 200.w,
-      height: 45.h,
+      width: Responsive.w(200),
+      height: Responsive.h(45),
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 22.sp),
+        icon: Icon(icon, size: Responsive.sp(22)),
         label: Text(
           label,
           style: AppFonts.AlmaraiBold16.copyWith(
@@ -361,7 +361,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
             width: 2,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r),
+            borderRadius: BorderRadius.circular(Responsive.r(14)),
           ),
         ),
       ),

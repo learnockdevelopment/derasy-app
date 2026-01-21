@@ -249,7 +249,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       fontSize: AppFonts.size18,
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: Responsive.h(16)),
                   ..._order!.items.map((item) {
                     return _buildOrderItem(item);
                   }),
@@ -283,7 +283,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       fontSize: AppFonts.size18,
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: Responsive.h(16)),
                   _buildSummaryRow('subtotal'.tr, '${_order!.subtotal.toStringAsFixed(0)} ${'egp'.tr}'),
                   if (_order!.discount > 0)
                     _buildSummaryRow('discount'.tr, '-${_order!.discount.toStringAsFixed(0)} ${'egp'.tr}'),
@@ -337,7 +337,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               ),
             ],
 
-            SizedBox(height: 20.h),
+            SizedBox(height: Responsive.h(20)),
           ],
         ),
       ),

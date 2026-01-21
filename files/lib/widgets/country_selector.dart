@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -47,22 +47,22 @@ class _CountrySelectorState extends State<CountrySelector> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        height: 600.h,
-        margin: EdgeInsets.all(20.w),
+        height: Responsive.h(600),
+        margin: Responsive.all(20),
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(Responsive.r(20)),
         ),
         child: Column(
           children: [
             // Header
             Container(
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.r),
-                  topRight: Radius.circular(20.r),
+                  topLeft: Radius.circular(Responsive.r(20)),
+                  topRight: Radius.circular(Responsive.r(20)),
                 ),
               ),
               child: Row(
@@ -79,7 +79,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                     child: Icon(
                       Icons.close,
                       color: Colors.white,
-                      size: 24.w,
+                      size: Responsive.w(24),
                     ),
                   ),
                 ],
@@ -88,7 +88,7 @@ class _CountrySelectorState extends State<CountrySelector> {
 
             // Search Bar
             Padding(
-              padding: EdgeInsets.all(16.w),
+              padding: Responsive.all(16),
               child: TextField(
                 controller: _searchController,
                 onChanged: _filterCountries,
@@ -100,17 +100,17 @@ class _CountrySelectorState extends State<CountrySelector> {
                   prefixIcon: Icon(
                     Icons.search,
                     color: AppColors.textSecondary,
-                    size: 20.w,
+                    size: Responsive.w(20),
                   ),
                   filled: true,
                   fillColor: AppColors.grey100,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
+                  contentPadding: Responsive.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
                 ),
               ),
@@ -133,9 +133,9 @@ class _CountrySelectorState extends State<CountrySelector> {
                       Navigator.pop(context);
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
+                      padding: Responsive.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -152,9 +152,9 @@ class _CountrySelectorState extends State<CountrySelector> {
                         children: [
                           Text(
                             country.flag,
-                            style: TextStyle(fontSize: 24.sp),
+                            style: TextStyle(fontSize: Responsive.sp(24)),
                           ),
-                          SizedBox(width: 12.w),
+                          SizedBox(width: Responsive.w(12)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +178,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                             Icon(
                               Icons.check,
                               color: AppColors.primaryBlue,
-                              size: 20.w,
+                              size: Responsive.w(20),
                             ),
                         ],
                       ),

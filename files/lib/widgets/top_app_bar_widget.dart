@@ -45,7 +45,7 @@ class TopAppBarWidget extends StatelessWidget {
           ),
           child: SafeArea(
             child: Padding(
-              padding: Responsive.fromLTRB(20, 10, 20, 10),
+              padding: Responsive.only(left: 20, top: 10, right: 20, bottom: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -91,7 +91,7 @@ class TopAppBarWidget extends StatelessWidget {
                                 style: AppFonts.h3.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18.sp,
+                                  fontSize: Responsive.sp(18),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -110,9 +110,9 @@ class TopAppBarWidget extends StatelessWidget {
                                 Get.toNamed(AppRoutes.storeCart);
                               }
                             },
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
                           child: Container(
-                            padding: EdgeInsets.all(8.w),
+                            padding: Responsive.all(8),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -122,7 +122,7 @@ class TopAppBarWidget extends StatelessWidget {
                                 Icon(
                                   Icons.shopping_cart_rounded,
                                   color: Colors.white,
-                                  size: 24.sp,
+                                  size: Responsive.sp(24),
                                 ),
                                 // Badge for cart items count (optional - can be added later)
                               ],
@@ -184,7 +184,7 @@ class TopAppBarWidget extends StatelessWidget {
           width: Responsive.w(44),
           height: Responsive.h(44),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
             color: Colors.white.withOpacity(0.3),
             border: Border.all(
               color: Colors.white.withOpacity(0.3),
@@ -231,7 +231,7 @@ class TopAppBarWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         border: Border.all(
           color: Colors.white.withOpacity(0.3),
           width: 2.5,
@@ -243,7 +243,7 @@ class TopAppBarWidget extends StatelessWidget {
             width: Responsive.w(44),
             height: Responsive.h(44),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               color: Colors.white,
               border: Border.all(
                 color: Colors.white.withOpacity(0.3),
@@ -258,7 +258,7 @@ class TopAppBarWidget extends StatelessWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               child: SafeAvatarImage(
                 imageUrl: imageUrl?.isNotEmpty == true ? imageUrl : null,
                 size: 44,

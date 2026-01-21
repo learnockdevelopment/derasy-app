@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/utils/responsive_utils.dart';
@@ -269,7 +269,7 @@ class _LoginPageState extends State<LoginPage>
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    SizedBox(height: 2.h),
+                                    SizedBox(height: Responsive.h(2)),
                                     Text(
                                       country.dialCode,
                                       style: AppFonts.AlmaraiRegular10.copyWith(
@@ -284,7 +284,7 @@ class _LoginPageState extends State<LoginPage>
                                 Icon(
                                   Icons.check_circle,
                                   color: primary,
-                                  size: 20.sp,
+                                  size: Responsive.sp(20),
                                 ),
                             ],
                           ),
@@ -435,7 +435,7 @@ class _LoginPageState extends State<LoginPage>
               children: [
                 // Top Bar with Back Button and Language Selector
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                  padding: Responsive.symmetric(horizontal: 16, vertical: 6),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -444,30 +444,30 @@ class _LoginPageState extends State<LoginPage>
                         icon: Icon(
                           Icons.arrow_back,
                           color: AppColors.textPrimary,
-                          size: 20.sp,
+                          size: Responsive.sp(20),
                         ),
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(),
                       ),
                       // Language Button (toggle)
                       InkWell(
-                        borderRadius: BorderRadius.circular(6.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(6)),
                         onTap: () {
                           final isAr = Get.locale?.languageCode == 'ar';
                           Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
                           setState(() {});
                         },
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                          padding: Responsive.symmetric(horizontal: 6, vertical: 4),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.language,
                                 color: primary,
-                                size: 18.sp,
+                                size: Responsive.sp(18),
                               ),
-                              SizedBox(width: 3.w),
+                              SizedBox(width: Responsive.w(3)),
                               Text(
                                 (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
                                 style: AppFonts.AlmaraiMedium12.copyWith(
@@ -704,7 +704,7 @@ class _LoginPageState extends State<LoginPage>
                                           return null;
                                         },
                                       ),
-                                    SizedBox(height: 12.h),
+                                    SizedBox(height: Responsive.h(12)),
 
                                 // Password Field
                                 TextFormField(
@@ -778,9 +778,9 @@ class _LoginPageState extends State<LoginPage>
                                     return null;
                                   },
                                 ),
-                                SizedBox(height: 6.h),
+                                SizedBox(height: Responsive.h(6)),
 
-                                SizedBox(height: 12.h),
+                                SizedBox(height: Responsive.h(12)),
 
                                 // Login Button
                                 SizedBox(
@@ -925,7 +925,7 @@ class _LoginPageState extends State<LoginPage>
               child: Icon(
                 IconlyBold.chat,
                 color: Colors.white,
-                size: 24.sp,
+                size: Responsive.sp(24),
               ),
             ),
           ),

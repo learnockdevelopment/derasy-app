@@ -46,6 +46,9 @@ import '../../views/children/child_details_page.dart';
 import '../../views/admission/apply_to_schools_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
+import '../../views/wallet/wallet_page.dart';
+import '../../views/wallet/deposit_page.dart';
+import '../../views/wallet/withdraw_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -289,6 +292,21 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const ApplicationDetailsPage(),
+        );
+      case AppRoutes.wallet:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const WalletPage(),
+        );
+      case AppRoutes.walletDeposit:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const DepositPage(),
+        );
+      case AppRoutes.walletWithdraw:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const WithdrawPage(),
         );
       default:
         return errorRoute();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 
@@ -34,8 +34,8 @@ class UserAvatar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: size.w,
-        height: size.h,
+        width: Responsive.h(size), // Using height for both to keep aspect ratio if size logic is uniform
+        height: Responsive.h(size),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: AppColors.primaryBlue,
@@ -50,8 +50,8 @@ class UserAvatar extends StatelessWidget {
             ? ClipOval(
                 child: Image.network(
                   imageUrl!,
-                  width: size.w,
-                  height: size.h,
+                  width: Responsive.h(size),
+                  height: Responsive.h(size),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
                       _buildInitials(),
@@ -68,7 +68,7 @@ class UserAvatar extends StatelessWidget {
         _initials,
         style: AppFonts.AlmaraiBold16.copyWith(
           color: Colors.white,
-          fontSize: (size * 0.4).sp,
+          fontSize: Responsive.sp(size * 0.4),
         ),
       ),
     );

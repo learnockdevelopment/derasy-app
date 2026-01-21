@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_fonts.dart';
 
@@ -22,10 +22,10 @@ class StepNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: Responsive.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -47,13 +47,13 @@ class StepNavigation extends StatelessWidget {
             child: GestureDetector(
               onTap: isAccessible ? () => onStepTap(index) : null,
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 8.h),
+                padding: Responsive.symmetric(vertical: 8),
                 child: Column(
                   children: [
                     // Step Icon
                     Container(
-                      width: 40.w,
-                      height: 40.h,
+                      width: Responsive.w(40),
+                      height: Responsive.h(40),
                       decoration: BoxDecoration(
                         color: isActive
                             ? const Color(0xFF3B82F6)
@@ -62,7 +62,7 @@ class StepNavigation extends StatelessWidget {
                                 : isAccessible
                                     ? const Color(0xFF6B7280).withOpacity(0.2)
                                     : const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(20)),
                         border: Border.all(
                           color: isActive
                               ? const Color(0xFF3B82F6)
@@ -93,10 +93,10 @@ class StepNavigation extends StatelessWidget {
                             : isAccessible
                                 ? const Color(0xFF6B7280)
                                 : const Color(0xFF9CA3AF),
-                        size: 20.sp,
+                        size: Responsive.sp(20),
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: Responsive.h(4)),
                     // Step Label
                     Text(
                       step.label.tr,

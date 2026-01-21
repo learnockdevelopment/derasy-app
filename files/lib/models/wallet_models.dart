@@ -131,3 +131,176 @@ class ChargeWalletResponse {
   }
 }
 
+class BankAccount {
+  final String id;
+  final String bankName;
+  final String accountHolder;
+  final String accountNumber;
+  final String iban;
+  final String branch;
+  final String instructions;
+  final bool isActive;
+
+  BankAccount({
+    required this.id,
+    required this.bankName,
+    required this.accountHolder,
+    required this.accountNumber,
+    required this.iban,
+    required this.branch,
+    required this.instructions,
+    required this.isActive,
+  });
+
+  factory BankAccount.fromJson(Map<String, dynamic> json) {
+    return BankAccount(
+      id: json['_id'] ?? json['id'] ?? '',
+      bankName: json['bankName'] ?? '',
+      accountHolder: json['accountHolder'] ?? '',
+      accountNumber: json['accountNumber'] ?? '',
+      iban: json['iban'] ?? '',
+      branch: json['branch'] ?? '',
+      instructions: json['instructions'] ?? '',
+      isActive: json['isActive'] ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'bankName': bankName,
+      'accountHolder': accountHolder,
+      'accountNumber': accountNumber,
+      'iban': iban,
+      'branch': branch,
+      'instructions': instructions,
+      'isActive': isActive,
+    };
+  }
+}
+
+class BankAccountsResponse {
+  final List<BankAccount> accounts;
+
+  BankAccountsResponse({required this.accounts});
+
+  factory BankAccountsResponse.fromJson(Map<String, dynamic> json) {
+    return BankAccountsResponse(
+      accounts: (json['accounts'] as List<dynamic>?)
+              ?.map((e) => BankAccount.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class AttachmentData {
+  final String url;
+  final String publicId;
+
+  AttachmentData({
+    required this.url,
+    required this.publicId,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'publicId': publicId,
+    };
+  }
+
+  factory AttachmentData.fromJson(Map<String, dynamic> json) {
+    return AttachmentData(
+      url: json['url'] ?? '',
+      publicId: json['publicId'] ?? '',
+    );
+  }
+}
+
+class DepositRequest {
+  final double amount;
+  final String method; // 'bank_transfer'
+  final String bankAccountId;
+  final AttachmentData attachment;
+
+  DepositRequest({
+    required this.amount,
+    required this.method,
+    required this.bankAccountId,
+    required this.attachment,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'amount': amount,
+      'method': method,
+      'bankAccountId': bankAccountId,
+      'attachment': attachment.toJson(),
+    };
+  }
+}
+
+class DepositResponse {
+  final bool success;
+  final String message;
+  final WalletTransaction transaction;
+
+  DepositResponse({
+    required this.success,
+    required this.message,
+    required this.transaction,
+  });
+
+  factory DepositResponse.fromJson(Map<String, dynamic> json) {
+    return DepositResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      transaction: WalletTransaction.fromJson(json['transaction'] ?? {}),
+    );
+  }
+}
+
+class WithdrawRequest {
+  final double amount;
+  final String method; // 'bank_transfer'
+  final String details;
+
+  WithdrawRequest({
+    required this.amount,
+    required this.method,
+    required this.details,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'amount': amount,
+      'method': method,
+      'details': details,
+    };
+  }
+}
+
+class WithdrawResponse {
+  final bool success;
+  final String message;
+  final WalletTransaction transaction;
+  final double newBalance;
+
+  WithdrawResponse({
+    required this.success,
+    required this.message,
+    required this.transaction,
+    required this.newBalance,
+  });
+
+  factory WithdrawResponse.fromJson(Map<String, dynamic> json) {
+    return WithdrawResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      transaction: WalletTransaction.fromJson(json['transaction'] ?? {}),
+      newBalance: (json['newBalance'] ?? 0).toDouble(),
+    );
+  }
+}
+

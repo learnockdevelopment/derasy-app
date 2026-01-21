@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/constants/app_colors.dart';
 
 class AnimatedFAB extends StatefulWidget {
@@ -78,7 +78,7 @@ class _AnimatedFABState extends State<AnimatedFAB>
               child: Icon(
                 widget.icon,
                 color: Colors.white,
-                size: 28.sp,
+                size: Responsive.sp(28),
               ),
             ),
           ),

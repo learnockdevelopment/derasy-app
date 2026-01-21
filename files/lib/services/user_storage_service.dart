@@ -58,22 +58,43 @@ class UserStorageService {
     await clearCurrentUser();
   }
 
-  // Check if current user is admin (administrator only)
+  // Role checks
   static bool isStudent() {
     final user = getCurrentUser();
     if (user == null) return false;
-    return user.role.toLowerCase() == 'student';
+    final role = user.role.toLowerCase();
+    return role == 'student';
   }
 
-  // Check if current user is moderator
   static bool isParent() {
     final user = getCurrentUser();
     if (user == null) return false;
-    return user.role.toLowerCase() == 'parent';
+    final role = user.role.toLowerCase();
+    return role == 'parent';
   }
 
-  // Check if current user is admin or moderator
+  static bool isSchoolOwner() {
+    final user = getCurrentUser();
+    if (user == null) return false;
+    final role = user.role.toLowerCase();
+    return role == 'school_owner' || role == 'schoolowner';
+  }
+
+  static bool isSchoolModerator() {
+    final user = getCurrentUser();
+    if (user == null) return false;
+    final role = user.role.toLowerCase();
+    return role == 'school_moderator' || role == 'moderator';
+  }
+
+  static bool isSchoolAdmin() {
+    final user = getCurrentUser();
+    if (user == null) return false;
+    final role = user.role.toLowerCase();
+    return role == 'school_admin' || role == 'admin' || isSchoolOwner() || isSchoolModerator();
+  }
+
   static bool isAdminOrModerator() {
-    return isStudent() || isParent();
+    return isSchoolAdmin() || isSchoolOwner() || isSchoolModerator();
   }
 }

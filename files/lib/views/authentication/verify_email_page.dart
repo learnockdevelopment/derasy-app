@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -274,36 +274,36 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: Responsive.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    SizedBox(height: 40.h),
+                    SizedBox(height: Responsive.h(40)),
                     // Logo and Title row (identical structure as login)
                     Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.all(10.w),
+                          padding: Responsive.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.primaryBlue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                           ),
                           child: SizedBox(
-                            width: 28.w,
-                            height: 28.h,
+                            width: Responsive.w(28),
+                            height: Responsive.h(28),
                             child: SafeNetworkImage(
                               imageUrl: AppConfigController.to.lightLogoUrl,
-                              width: 28.w,
-                              height: 28.h,
+                                width: Responsive.w(28),
+                              height: Responsive.h(28),
                               fit: BoxFit.contain,
                               errorWidget: Icon(
                                 Icons.verified_user,
                                 color: Colors.white,
-                                size: 28.sp,
+                                size: Responsive.sp(28),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        SizedBox(width: Responsive.w(12)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +314,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                                   color: Colors.white,
                                 ),
                               ),
-                              SizedBox(height: 2.h),
+                              SizedBox(height: Responsive.h(2)),
                               Text(
                                 _isPasswordReset ? 'reset_code_sent_message'.tr : 'verification_intro_message'.tr,
                                 style: AppFonts.AlmaraiBold12.copyWith(
@@ -326,13 +326,13 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 50.h),
+                    SizedBox(height: Responsive.h(50)),
                     // Verification Card
                     Container(
-                      padding: EdgeInsets.all(24.w),
+                      padding: Responsive.all(24),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(20.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(20)),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.grey200,
@@ -351,49 +351,49 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                               style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.textPrimary),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: 5.h),
+                            SizedBox(height: Responsive.h(5)),
                             Text(
                               'we_sent_verification_code_to'.tr,
                               style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.textSecondary),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: 20.h),
+                            SizedBox(height: Responsive.h(20)),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                              padding: Responsive.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryBlue.withOpacity(0.07),
-                                borderRadius: BorderRadius.circular(12.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.email_rounded, color: AppColors.primaryBlue, size: 17.sp),
-                                  SizedBox(width: 8.w),
+                                  Icon(Icons.email_rounded, color: AppColors.primaryBlue, size: Responsive.sp(17)),
+                                  SizedBox(width: Responsive.w(8)),
                                   Expanded(
-                                    child: Text(_email, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.textPrimary, fontSize: 14.sp)),
+                                    child: Text(_email, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.textPrimary, fontSize: Responsive.sp(14))),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(height: 24.h),
+                            SizedBox(height: Responsive.h(24)),
                             // OTP Field
                             TextFormField(
                               controller: _otpController,
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
                               maxLength: 6,
-                              style: AppFonts.AlmaraiBold12.copyWith( letterSpacing: 12.w, color: AppColors.primaryBlue),
+                              style: AppFonts.AlmaraiBold12.copyWith( letterSpacing: Responsive.w(12), color: AppColors.primaryBlue),
                               decoration: InputDecoration(
                                 labelText: 'verification_code'.tr,
                                 hintText: '000000',
                                 counterText: '',
-                                prefixIcon: Icon(Icons.verified_user_outlined, color: AppColors.primaryBlue, size: 20.sp),
+                                prefixIcon: Icon(Icons.verified_user_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                   borderSide: BorderSide(color: AppColors.grey300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                  borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
                                 ),
                                 filled: true,
                                 fillColor: AppColors.grey50,
@@ -404,47 +404,47 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 26.h),
+                            SizedBox(height: Responsive.h(26)),
                             // Main action button
                             SizedBox(
-                              height: 50.h,
+                              height: Responsive.h(50),
                               child: ElevatedButton(
                                 onPressed: !_isLoading && _otpController.text.isNotEmpty ? _verifyEmail : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryBlue,
                                   disabledBackgroundColor: AppColors.grey300,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
                                   elevation: 0,
                                 ),
                                 child: _isLoading
-                                    ? SizedBox(height: 20.h, width: 20.w, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                    ? SizedBox(height: Responsive.h(20), width: Responsive.w(20), child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                     : Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.verified_user, color: Colors.white, size: 18.sp),
-                                          SizedBox(width: 8.w),
+                                          Icon(Icons.verified_user, color: Colors.white, size: Responsive.sp(18)),
+                                          SizedBox(width: Responsive.w(8)),
                                           Text('verify'.tr, style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white)),
                                         ],
                                       ),
                               ),
                             ),
-                            SizedBox(height: 18.h),
+                            SizedBox(height: Responsive.h(18)),
                             // Resend section
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.timer, color: AppColors.textSecondary, size: 17.sp),
-                                SizedBox(width: 8.w),
+                                Icon(Icons.timer, color: AppColors.textSecondary, size: Responsive.sp(17)),
+                                SizedBox(width: Responsive.w(8)),
                                 Text('didnt_receive_code'.tr, style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.textSecondary)),
-                                SizedBox(width: 8.w),
+                                SizedBox(width: Responsive.w(8)),
                                 TextButton(
                                   onPressed: _resendCountdown > 0 || _isResending ? null : _resendOtp,
                                   style: TextButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.r)),
+                                    padding: Responsive.symmetric(horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(7))),
                                   ),
                                   child: _isResending
-                                      ? SizedBox(height: 16.h, width: 16.w, child: const CircularProgressIndicator(strokeWidth: 2))
+                                      ? SizedBox(height: Responsive.h(16), width: Responsive.w(16), child: const CircularProgressIndicator(strokeWidth: 2))
                                       : Text(
                                           _resendCountdown > 0
                                               ? 'resend_in_seconds'.tr.replaceAll('{seconds}', _resendCountdown.toString())
@@ -453,7 +453,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 14.h),
+                            SizedBox(height: Responsive.h(14)),
                             // Back to login link
                             TextButton(
                               onPressed: () => Get.offAllNamed(AppRoutes.login),
@@ -463,7 +463,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 40.h),
+                    SizedBox(height: Responsive.h(40)),
                   ],
                 ),
               ),

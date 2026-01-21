@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -45,7 +45,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
         children: [
           // Fixed Top Section
           Container(
-            height: 160.h,
+            height: Responsive.h(160),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -62,14 +62,14 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                 children: [
                   // App Bar with Avatar
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                    padding: Responsive.symmetric(horizontal: 8, vertical: 8),
                     child: Row(
                       children: [
                         Container(
-                          margin: EdgeInsets.all(4.w),
+                          margin: Responsive.all(4),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(10)),
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -77,11 +77,11 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                             onPressed: () => Get.back(),
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        SizedBox(width: Responsive.w(12)),
                         // Teacher Avatar
                         Container(
-                          width: 50.w,
-                          height: 50.w,
+                          width: Responsive.w(50),
+                          height: Responsive.w(50),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
@@ -97,8 +97,8 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                             child: _teacher!.avatar != null && _teacher!.avatar!.isNotEmpty
                                 ? SafeNetworkImage(
                                     imageUrl: _teacher!.avatar!,
-                                    width: 50.w,
-                                    height: 50.w,
+                                    width: Responsive.w(50),
+                                    height: Responsive.w(50),
                                   )
                                 : Container(
                                     decoration: BoxDecoration(
@@ -112,12 +112,12 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                     child: Icon(
                                       Icons.person_rounded,
                                       color: Colors.white,
-                                      size: 25.sp,
+                                      size: Responsive.sp(25),
                                     ),
                                   ),
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        SizedBox(width: Responsive.w(12)),
                         // Teacher Name
                         Expanded(
                           child: Text(
@@ -142,16 +142,16 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(20.w),
+                padding: Responsive.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                       // Information Card
                       Container(
-                          padding: EdgeInsets.all(24.w),
+                          padding: Responsive.all(24),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(20.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(20)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.08),
@@ -167,22 +167,22 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                               Row(
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(10.w),
+                                    padding: Responsive.all(10),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [Color(0xFF10B981), Color(0xFF059669)],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
-                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                     ),
                                     child: Icon(
                                       Icons.info_outline_rounded,
                                       color: Colors.white,
-                                      size: 20.sp,
+                                      size: Responsive.sp(20),
                                     ),
                                   ),
-                                  SizedBox(width: 12.w),
+                                  SizedBox(width: Responsive.w(12)),
                                   Text(
                                     'teacher_information'.tr,
                                     style: AppFonts.h3.copyWith(
@@ -193,7 +193,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 24.h),
+                              SizedBox(height: Responsive.h(24)),
                               // Email
                               if (_teacher!.email != null && _teacher!.email!.isNotEmpty)
                                 _buildInfoRow(
@@ -203,7 +203,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF3B82F6),
                                 ),
                               if (_teacher!.email != null && _teacher!.email!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Phone
                               if (_teacher!.phone != null && _teacher!.phone!.isNotEmpty)
                                 _buildInfoRow(
@@ -213,7 +213,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF10B981),
                                 ),
                               if (_teacher!.phone != null && _teacher!.phone!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Subject
                               if (_teacher!.subject != null && _teacher!.subject!.isNotEmpty)
                                 _buildInfoRow(
@@ -223,7 +223,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF8B5CF6),
                                 ),
                               if (_teacher!.subject != null && _teacher!.subject!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Employee ID
                               if (_teacher!.teacher?.employeeId != null && _teacher!.teacher!.employeeId!.isNotEmpty)
                                 _buildInfoRow(
@@ -233,7 +233,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFFF59E0B),
                                 ),
                               if (_teacher!.teacher?.employeeId != null && _teacher!.teacher!.employeeId!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Username
                               if (_teacher!.username != null && _teacher!.username!.isNotEmpty)
                                 _buildInfoRow(
@@ -243,7 +243,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF6366F1),
                                 ),
                               if (_teacher!.username != null && _teacher!.username!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Hire Date
                               if (_teacher!.teacher?.hireDate != null)
                                 _buildInfoRow(
@@ -253,7 +253,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF10B981),
                                 ),
                               if (_teacher!.teacher?.hireDate != null)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Salary
                               if (_teacher!.teacher?.salary != null)
                                 _buildInfoRow(
@@ -263,7 +263,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF059669),
                                 ),
                               if (_teacher!.teacher?.salary != null)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Employment Type
                               if (_teacher!.teacher?.employmentType != null && _teacher!.teacher!.employmentType!.isNotEmpty)
                                 _buildInfoRow(
@@ -273,7 +273,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF7C3AED),
                                 ),
                               if (_teacher!.teacher?.employmentType != null && _teacher!.teacher!.employmentType!.isNotEmpty)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Experience Years
                               if (_teacher!.teacher?.experienceYears != null)
                                 _buildInfoRow(
@@ -283,7 +283,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFFDC2626),
                                 ),
                               if (_teacher!.teacher?.experienceYears != null)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Qualifications
                               if (_teacher!.teacher?.qualifications.isNotEmpty == true)
                                 _buildInfoRow(
@@ -293,7 +293,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF8B5CF6),
                                 ),
                               if (_teacher!.teacher?.qualifications.isNotEmpty == true)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Grade Levels
                               if (_teacher!.teacher?.gradeLevels.isNotEmpty == true)
                                 _buildInfoRow(
@@ -303,33 +303,33 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                   const Color(0xFF3B82F6),
                                 ),
                               if (_teacher!.teacher?.gradeLevels.isNotEmpty == true)
-                                SizedBox(height: 16.h),
+                                SizedBox(height: Responsive.h(16)),
                               // Classes Section
                               if (_teacher!.teacher?.classes.isNotEmpty == true) ...[
                                 Divider(
-                                  height: 32.h,
+                                  height: Responsive.h(32),
                                   thickness: 1,
                                   color: const Color(0xFFE5E7EB),
                                 ),
                                 Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(8.w),
+                                      padding: Responsive.all(8),
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
                                           colors: [Color(0xFF10B981), Color(0xFF059669)],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
-                                        borderRadius: BorderRadius.circular(10.r),
+                                        borderRadius: BorderRadius.circular(Responsive.r(10)),
                                       ),
                                       child: Icon(
                                         Icons.class_rounded,
                                         color: Colors.white,
-                                        size: 18.sp,
+                                        size: Responsive.sp(18),
                                       ),
                                     ),
-                                    SizedBox(width: 12.w),
+                                    SizedBox(width: Responsive.w(12)),
                                     Text(
                                       'classes'.tr,
                                       style: AppFonts.h3.copyWith(
@@ -340,10 +340,10 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                     ),
                                     const Spacer(),
                                     Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                      padding: Responsive.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF10B981).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8.r),
+                                        borderRadius: BorderRadius.circular(Responsive.r(8)),
                                       ),
                                       child: Text(
                                         '${_teacher!.teacher!.classes.length}',
@@ -356,15 +356,15 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 20.h),
+                                SizedBox(height: Responsive.h(20)),
                                 Wrap(
-                                  spacing: 14.w,
-                                  runSpacing: 14.h,
+                                  spacing: Responsive.w(14),
+                                  runSpacing: Responsive.h(14),
                                   children: _teacher!.teacher!.classes.map((teacherClass) {
                                     return _buildClassChip(teacherClass);
                                   }).toList(),
                                 ),
-                                SizedBox(height: 8.h),
+                                SizedBox(height: Responsive.h(8)),
                               ],
                               // Status
                               _buildInfoRow(
@@ -391,14 +391,14 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(10.w),
+          padding: Responsive.all(10),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
           ),
           child: Icon(icon, color: color, size: AppFonts.size22),
         ),
-        SizedBox(width: 16.w),
+        SizedBox(width: Responsive.w(16)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +411,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 4.h),
+              SizedBox(height: Responsive.h(4)),
               Text(
                 value,
                 style: AppFonts.bodyMedium.copyWith(
@@ -430,9 +430,9 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
   Widget _buildClassChip(TeacherClass teacherClass) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(Responsive.r(16)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         onTap: () {
           if (_schoolId != null) {
             Get.toNamed(AppRoutes.classDetails, arguments: {
@@ -444,7 +444,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
           }
         },
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          padding: Responsive.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -454,7 +454,7 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             border: Border.all(
               color: const Color(0xFF10B981).withOpacity(0.25),
               width: 1.5,
@@ -473,22 +473,22 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(8.w),
+            padding: Responsive.all(8),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF10B981), Color(0xFF059669)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(Responsive.r(10)),
             ),
             child: Icon(
               Icons.class_rounded,
               color: Colors.white,
-              size: 18.sp,
+              size: Responsive.sp(18),
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: Responsive.w(10)),
           Expanded(
             child: Text(
               teacherClass.name,
@@ -502,16 +502,16 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
             ),
           ),
           if (teacherClass.grade != null && teacherClass.grade!.name.isNotEmpty) ...[
-            SizedBox(width: 8.w),
+            SizedBox(width: Responsive.w(8)),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              padding: Responsive.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF10B981), Color(0xFF059669)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(Responsive.r(8)),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF10B981).withOpacity(0.3),
@@ -526,9 +526,9 @@ class _TeacherDetailsPageState extends State<TeacherDetailsPage> {
                   Icon(
                     Icons.school_rounded,
                     color: Colors.white,
-                    size: 12.sp,
+                    size: Responsive.sp(12),
                   ),
-                  SizedBox(width: 4.w),
+                  SizedBox(width: Responsive.w(4)),
                   Text(
                     teacherClass.grade!.name,
                     style: AppFonts.bodySmall.copyWith(

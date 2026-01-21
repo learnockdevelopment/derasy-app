@@ -206,7 +206,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     print('💰 [CART PAGE] _buildWalletCard: Building wallet card with balance: ${_wallet!.balance}');
 
     return Container(
-      margin: Responsive.fromLTRB(16, 0, 16, 12),
+      margin: Responsive.only(left: 16, top: 0, right: 16, bottom: 12),
       padding: Responsive.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/utils/responsive_utils.dart';
-import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -13,8 +12,8 @@ import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
-import '../../widgets/student_selection_sheet.dart';
 import '../../core/controllers/dashboard_controller.dart';
+import '../../widgets/student_selection_sheet.dart';
 
 class ApplicationsPage extends StatefulWidget {
   const ApplicationsPage({Key? key, this.childId, this.child}) : super(key: key);
@@ -38,11 +37,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     super.initState();
     _searchController.addListener(_filterApplications);
     _loadUserData();
-    
-    // Listen to changes in DashboardController to update local state
     final controller = DashboardController.to;
     ever(controller.allApplications, (_) => _filterApplications());
-    
     _filterApplications();
   }
 
@@ -93,20 +89,17 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   }
 
   Color _getStatusColor(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return AppColors.success;
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return AppColors.warning;
       case 'under_review':
         return AppColors.primaryBlue;
+      case 'recommended':
+        return const Color(0xFF6366F1);
       case 'accepted':
         return AppColors.success;
       case 'rejected':
         return AppColors.error;
-      case 'waitlist':
-        return AppColors.primaryPurple;
       case 'draft':
         return AppColors.warning;
       default:
@@ -115,42 +108,36 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   }
 
   String _getStatusLabel(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return '${'paid'.tr} / ${'pending'.tr}';
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return 'pending'.tr;
       case 'under_review':
         return 'under_review'.tr;
+      case 'recommended':
+        return 'recommended'.tr;
       case 'accepted':
         return 'accepted'.tr;
       case 'rejected':
         return 'rejected'.tr;
-      case 'waitlist':
-        return 'waitlist'.tr;
       case 'draft':
         return 'pending'.tr;
       default:
-        return status;
+        return status.tr;
     }
   }
 
   IconData _getStatusIcon(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return Icons.check_circle_outline_rounded;
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return Icons.hourglass_empty_rounded;
       case 'under_review':
         return Icons.visibility_rounded;
+      case 'recommended':
+        return Icons.star_rounded;
       case 'accepted':
         return Icons.check_circle_rounded;
       case 'rejected':
         return Icons.cancel_rounded;
-      case 'waitlist':
-        return Icons.queue_rounded;
       case 'draft':
         return Icons.hourglass_empty_rounded;
       default:
@@ -167,56 +154,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
         color: AppColors.primaryBlue,
         child: Obx(() {
           final controller = DashboardController.to;
-          final totalStudents = controller.relatedChildren.length;
           final isLoading = controller.isLoading;
           return CustomScrollView(
             slivers: [
               if (_filterChildId == null)
                 SliverAppBar(
-                  expandedHeight: Responsive.h(140),
+                  expandedHeight: Responsive.h(80),
                   floating: false,
                   pinned: true,
                   automaticallyImplyLeading: false,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   toolbarHeight: 0,
-                  collapsedHeight: Responsive.h(140),
+                  collapsedHeight: Responsive.h(45),
                   flexibleSpace: FlexibleSpaceBar(
                     background: HeroSectionWidget(
                       userData: _userData,
                       pageTitle: 'applications'.tr,
-                      actionButtonText: isLoading ? null : 'add_application'.tr,
-                      actionButtonIcon: isLoading ? null : IconlyBroken.plus,
-                      onActionTap: isLoading ? null : () {
-                        if (totalStudents == 0) {
-                          Get.snackbar(
-                            'error'.tr,
-                            'no_students_for_application'.tr,
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: AppColors.error,
-                            colorText: Colors.white,
-                          );
-                        } else {
-                          // Show bottom sheet to select student first
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => const StudentSelectionSheet(),
-                          ).then((selectedStudent) {
-                            if (selectedStudent != null && selectedStudent is Student) {
-                              // Navigate with selected student
-                              Get.toNamed(
-                                AppRoutes.applyToSchools,
-                                arguments: {'child': selectedStudent},
-                              );
-                            }
-                          });
-                        }
-                      },
                       showGreeting: false,
-                      isButtonDisabled: isLoading ? false : totalStudents == 0,
-                      disabledMessage: isLoading ? null : 'add_student_first_to_apply'.tr,
                     ),
                   ),
                 )
@@ -272,37 +227,80 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     ),
                   ),
                 ),
-
-              if (controller.isTimeout && !isLoading && _filteredApplications.isEmpty)
+              if (_filterChildId == null)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: Responsive.symmetric(horizontal: 20, vertical: 12),
-                    child: InkWell(
-                      onTap: () => controller.refreshAll(),
-                      child: Container(
-                        padding: Responsive.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(Responsive.r(12)),
-                          border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                    padding: Responsive.all(16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primaryBlue, AppColors.primaryBlue.withOpacity(0.8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.refresh_rounded, color: AppColors.error, size: Responsive.sp(20)),
-                            SizedBox(width: Responsive.w(8)),
-                            Text(
-                              'retry_loading'.tr,
-                              style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
+                        borderRadius: BorderRadius.circular(Responsive.r(16)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isLoading ? null : () {
+                            if (controller.relatedChildren.isEmpty) {
+                              Get.snackbar(
+                                'error'.tr,
+                                'no_students_for_application'.tr,
+                                snackPosition: SnackPosition.BOTTOM,
+                                backgroundColor: AppColors.error,
+                                colorText: Colors.white,
+                              );
+                            } else {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const StudentSelectionSheet(),
+                              ).then((selectedStudent) {
+                                if (selectedStudent != null && selectedStudent is Student) {
+                                  Get.toNamed(
+                                    AppRoutes.applyToSchools,
+                                    arguments: {'child': selectedStudent},
+                                  );
+                                }
+                              });
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(Responsive.r(16)),
+                          child: Padding(
+                            padding: Responsive.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(IconlyBold.plus, color: Colors.white, size: Responsive.sp(20)),
+                                SizedBox(width: Responsive.w(12)),
+                                Text(
+                                  'add_application'.tr,
+                                  style: AppFonts.bodyLarge.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(14),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
+              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(4))),
               
               // Applications List
               isLoading && _filteredApplications.isEmpty
@@ -425,12 +423,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           AppRoutes.applicationDetails,
           arguments: {'applicationId': application.id},
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         child: Container(
-          padding: EdgeInsets.all(12.w),
+          padding: Responsive.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             border: Border.all(
               color: statusColor.withOpacity(0.15),
               width: 1.5,
@@ -453,18 +451,18 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(8.w),
+                        padding: Responsive.all(8),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(10)),
                         ),
                         child: Icon(
                           _getStatusIcon(application.status, isPaid),
                           color: statusColor,
-                          size: 16.sp,
+                          size: Responsive.sp(16),
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: Responsive.w(8)),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -479,8 +477,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           ),
                           if (application.applicationType != null)
                             Container(
-                              margin: EdgeInsets.only(top: 2.h),
-                              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                              margin: Responsive.only(top: 2),
+                              padding: Responsive.symmetric(horizontal: 4, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryBlue.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(Responsive.r(4)),
@@ -499,24 +497,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: Responsive.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
                     ),
                     child: Text(
                       _getStatusLabel(application.status, isPaid),
                       style: AppFonts.bodySmall.copyWith(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 10.sp,
+                        fontSize: Responsive.sp(10),
                       ),
                     ),
                   ),
                 ],
               ),
               
-              SizedBox(height: 10.h),
+              SizedBox(height: Responsive.h(10)),
               
               // School and Child Info Section
               Row(
@@ -530,24 +528,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                           application.school.name,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.textPrimary,
-                            fontSize: 15.sp,
+                            fontSize: Responsive.sp(15),
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (application.school.address != null) ...[
-                          SizedBox(height: 2.h),
+                          SizedBox(height: Responsive.h(2)),
                           Row(
                             children: [
-                              Icon(Icons.location_on_outlined, size: 12.sp, color: AppColors.textSecondary),
-                              SizedBox(width: 2.w),
+                              Icon(Icons.location_on_outlined, size: Responsive.sp(12), color: AppColors.textSecondary),
+                              SizedBox(width: Responsive.w(2)),
                               Expanded(
                                 child: Text(
                                   application.school.address!,
                                   style: AppFonts.bodySmall.copyWith(
                                     color: AppColors.textSecondary,
-                                    fontSize: 10.sp,
+                                    fontSize: Responsive.sp(10),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -562,13 +560,13 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   Icon(
                     IconlyBroken.arrow_right_2,
                     color: AppColors.grey400,
-                    size: 16.sp,
+                    size: Responsive.sp(16),
                   ),
                 ],
               ),
               
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.h),
+                padding: Responsive.symmetric(vertical: 8),
                 child: Divider(color: AppColors.grey200, height: 1),
               ),
 
@@ -576,24 +574,24 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(5.w),
+                    padding: Responsive.all(5),
                     decoration: BoxDecoration(
                       color: AppColors.grey100,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       IconlyBroken.profile,
-                      size: 12.sp,
+                      size: Responsive.sp(12),
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: Responsive.w(8)),
                   Expanded(
                     child: Text(
                       displayName,
                       style: AppFonts.bodyMedium.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 13.sp,
+                        fontSize: Responsive.sp(13),
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -602,12 +600,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   ),
                   if (application.child.gender != null)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                      padding: Responsive.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: application.child.gender?.toLowerCase() == 'male'
                             ? Colors.blue.withOpacity(0.1)
                             : Colors.pink.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(6)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -616,12 +614,12 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                             application.child.gender?.toLowerCase() == 'male'
                                 ? Icons.male
                                 : Icons.female,
-                            size: 10.sp,
+                            size: Responsive.sp(10),
                             color: application.child.gender?.toLowerCase() == 'male'
                                 ? Colors.blue
                                 : Colors.pink,
                           ),
-                          SizedBox(width: 2.w),
+                          SizedBox(width: Responsive.w(2)),
                           Text(
                             application.child.gender?.toLowerCase() == 'male'
                                 ? 'male'.tr
@@ -630,7 +628,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                               color: application.child.gender?.toLowerCase() == 'male'
                                   ? Colors.blue
                                   : Colors.pink,
-                              fontSize: 9.sp,
+                              fontSize: Responsive.sp(9),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -640,7 +638,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                 ],
               ),
               
-              SizedBox(height: 10.h),
+              SizedBox(height: Responsive.h(10)),
               
               // Footer - Dates and Payment
               Row(
@@ -654,7 +652,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: Responsive.w(8)),
                   // Interview or Payment info
                   Expanded(
                     child: interviewDate != null

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../models/admission_models.dart';
 import '../../services/admission_service.dart';
+import '../../services/user_storage_service.dart';
+import '../../core/controllers/dashboard_controller.dart';
 import '../../widgets/shimmer_loading.dart';
 
 class ApplicationDetailsPage extends StatefulWidget {
@@ -70,14 +72,13 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   }
 
   Color _getStatusColor(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return AppColors.success;
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return AppColors.warning;
       case 'under_review':
         return AppColors.primaryBlue;
+      case 'recommended':
+        return const Color(0xFF6366F1);
       case 'accepted':
         return AppColors.success;
       case 'rejected':
@@ -90,20 +91,19 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   }
 
   String _getStatusLabel(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return '${'paid'.tr} / ${'pending'.tr}';
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return 'pending'.tr;
       case 'under_review':
         return 'under_review'.tr;
+      case 'recommended':
+        return 'recommended'.tr;
       case 'accepted':
         return 'accepted'.tr;
       case 'rejected':
         return 'rejected'.tr;
       case 'draft':
-        return 'draft'.tr;
+        return 'pending'.tr;
       default:
         return status;
     }
@@ -118,7 +118,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           backgroundColor: AppColors.primaryBlue,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(20)),
             onPressed: () => Get.back(),
           ),
           title: Text(
@@ -150,7 +150,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           backgroundColor: AppColors.primaryBlue,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(20)),
             onPressed: () => Get.back(),
           ),
         ),
@@ -264,7 +264,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   isHighlight: true,
                 ),
                 if (app.school.address != null) ...[
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   _buildInfoRow(
                     icon: Icons.location_on,
                     label: 'address'.tr,
@@ -288,7 +288,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   isHighlight: true,
                 ),
                 if (app.child.birthDate != null) ...[
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   _buildInfoRow(
                     icon: Icons.cake,
                     label: 'birth_date'.tr,
@@ -296,7 +296,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   ),
                 ],
                 if (app.child.gender != null) ...[
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   _buildInfoRow(
                     icon: Icons.wc,
                     label: 'gender'.tr,
@@ -365,7 +365,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   fontSize: Responsive.sp(13),
                                 ),
                               ),
-                              SizedBox(height: 2.h),
+                              SizedBox(height: Responsive.h(2)),
                               Text(
                                 '${app.payment!.amount} ${'egp'.tr}',
                                 style: AppFonts.bodyMedium.copyWith(
@@ -396,20 +396,20 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   value: app.id,
                   copyable: true,
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: Responsive.h(8)),
                 _buildInfoRow(
                   icon: Icons.calendar_today,
                   label: 'submitted_date'.tr,
                   value: _formatDate(app.submittedAt ?? app.createdAt),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: Responsive.h(8)),
                 _buildInfoRow(
                   icon: Icons.update,
                   label: 'last_updated'.tr,
                   value: _formatDate(app.updatedAt),
                 ),
                 if (app.notes != null && app.notes!.isNotEmpty) ...[
-                  SizedBox(height: 8.h),
+                  SizedBox(height: Responsive.h(8)),
                   Container(
                     padding: Responsive.all(10),
                     decoration: BoxDecoration(
@@ -441,7 +441,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              SizedBox(height: 3.h),
+                              SizedBox(height: Responsive.h(3)),
                               Text(
                                 app.notes!,
                                 style: AppFonts.bodyMedium.copyWith(
@@ -495,7 +495,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           ],
                         ),
                         if (app.interview!.time?.isNotEmpty ?? false) ...[
-                          SizedBox(height: 8.h),
+                          SizedBox(height: Responsive.h(8)),
                           Row(
                             children: [
                               Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
@@ -505,7 +505,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   _formatTimeDisplay(app.interview!.time),
                                   style: AppFonts.bodyMedium.copyWith(
                                     color: AppColors.textPrimary,
-                                    fontSize: 12.sp,
+                                    fontSize: Responsive.sp(12),
                                   ),
                                 ),
                               ),
@@ -513,7 +513,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           ),
                         ],
                         if (app.interview!.location != null) ...[
-                          SizedBox(height: 8.h),
+                          SizedBox(height: Responsive.h(8)),
                           Row(
                             children: [
                               Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
@@ -523,7 +523,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   app.interview!.location!,
                                   style: AppFonts.bodyMedium.copyWith(
                                     color: AppColors.textPrimary,
-                                    fontSize: 12.sp,
+                                    fontSize: Responsive.sp(12),
                                   ),
                                 ),
                               ),
@@ -555,6 +555,9 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               SizedBox(height: Responsive.h(10)),
               _buildEventsTimeline(app.events),
             ],
+
+            // Admin Actions
+            _buildAdminActions(),
 
             SizedBox(height: Responsive.h(16)),
           ],
@@ -599,7 +602,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ),
                 child: Icon(icon, color: iconColor, size: Responsive.sp(16)),
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: Responsive.w(10)),
               Expanded(
                 child: Text(
                   title,
@@ -652,7 +655,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
             ),
             child: Icon(icon, size: Responsive.sp(14), color: AppColors.primaryBlue),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: Responsive.w(10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,7 +668,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 3.h),
+                SizedBox(height: Responsive.h(3)),
                 Row(
                   children: [
                     Expanded(
@@ -746,7 +749,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               color: const Color(0xFFF59E0B),
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: Responsive.w(10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -759,7 +762,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 3.h),
+                SizedBox(height: Responsive.h(3)),
                 Row(
                   children: [
                     Icon(
@@ -786,22 +789,21 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   }
 
   IconData _getStatusIcon(String status, bool isPaid) {
-    if (status.toLowerCase() == 'pending' && isPaid) {
-      return Icons.check_circle_outline_rounded;
-    }
     switch (status.toLowerCase()) {
       case 'pending':
         return Icons.hourglass_empty_rounded;
       case 'under_review':
-        return Icons.search_rounded;
+        return Icons.visibility_rounded;
+      case 'recommended':
+        return Icons.star_rounded;
       case 'accepted':
-        return Icons.check_circle_outline_rounded;
+        return Icons.check_circle_rounded;
       case 'rejected':
-        return Icons.cancel_outlined;
+        return Icons.cancel_rounded;
       case 'draft':
-        return Icons.edit_note_rounded;
+        return Icons.hourglass_empty_rounded;
       default:
-        return Icons.info_outline_rounded;
+        return Icons.info_rounded;
     }
   }
 
@@ -873,7 +875,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ],
               ),
               if (event.description != null && event.description!.isNotEmpty) ...[
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   event.description!.tr,
                   style: AppFonts.bodySmall.copyWith(
@@ -883,7 +885,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ),
               ],
               if (event.createdBy != null) ...[
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   '${'created_by'.tr}: ${event.createdBy!.name}',
                   style: AppFonts.bodySmall.copyWith(
@@ -974,5 +976,397 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     }
     
     return timeStr;
+  }
+
+  Widget _buildAdminActions() {
+    if (!UserStorageService.isSchoolAdmin()) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        SizedBox(height: Responsive.h(10)),
+        _buildInfoCard(
+          icon: Icons.admin_panel_settings_rounded,
+          iconColor: AppColors.primaryBlue,
+          title: 'admin_actions'.tr,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.edit_notifications_rounded,
+                    label: 'update_status'.tr,
+                    color: AppColors.primaryBlue,
+                    onTap: _showUpdateStatusDialog,
+                  ),
+                ),
+                SizedBox(width: Responsive.w(8)),
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.event_rounded,
+                    label: 'schedule_interview'.tr,
+                    color: const Color(0xFFF59E0B),
+                    onTap: _showScheduleInterviewDialog,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: Responsive.h(8)),
+            _buildActionButton(
+              icon: Icons.note_add_rounded,
+              label: 'add_note_event'.tr,
+              color: const Color(0xFF10B981),
+              onTap: _showAddEventDialog,
+              isFullWidth: true,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+    bool isFullWidth = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(Responsive.r(10)),
+        child: Container(
+          width: isFullWidth ? double.infinity : null,
+          padding: Responsive.symmetric(vertical: 10, horizontal: 12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(Responsive.r(10)),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: Responsive.sp(16), color: color),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                label,
+                style: AppFonts.bodySmall.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(12),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showUpdateStatusDialog() {
+    String selectedStatus = _application!.status;
+    final noteController = TextEditingController();
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+        title: Text('update_status'.tr, style: AppFonts.h3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('select_status'.tr, style: AppFonts.bodySmall),
+            SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: ['pending', 'under_review', 'recommended', 'accepted', 'rejected', 'draft'].contains(selectedStatus.toLowerCase()) 
+                  ? selectedStatus.toLowerCase() 
+                  : 'pending',
+              items: ['pending', 'under_review', 'recommended', 'accepted', 'rejected', 'draft']
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s.tr)))
+                  .toList(),
+              onChanged: (val) => selectedStatus = val ?? selectedStatus,
+              decoration: InputDecoration(
+                contentPadding: Responsive.symmetric(horizontal: 12, vertical: 8),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text('note_optional'.tr, style: AppFonts.bodySmall),
+            SizedBox(height: 8),
+            TextField(
+              controller: noteController,
+              maxLines: 2,
+              decoration: InputDecoration(
+                hintText: 'enter_notes'.tr,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Get.back();
+              await _updateStatus(selectedStatus, noteController.text);
+            },
+            child: Text('save'.tr, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showScheduleInterviewDialog() {
+    final dateController = TextEditingController();
+    final timeController = TextEditingController();
+    final locationController = TextEditingController();
+    final notesController = TextEditingController();
+    
+    DateTime selectedDate = DateTime.now();
+    TimeOfDay selectedTime = TimeOfDay.now();
+
+    Get.dialog(
+      StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+            title: Text('schedule_interview'.tr, style: AppFonts.h3),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: dateController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'interview_date'.tr,
+                      suffixIcon: const Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onTap: () async {
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (pickedDate != null) {
+                        setDialogState(() {
+                          selectedDate = pickedDate;
+                          dateController.text = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: timeController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'interview_time'.tr,
+                      suffixIcon: const Icon(Icons.access_time),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onTap: () async {
+                      final pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: selectedTime,
+                      );
+                      if (pickedTime != null) {
+                        setDialogState(() {
+                          selectedTime = pickedTime;
+                          timeController.text = "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: locationController,
+                    decoration: InputDecoration(
+                      labelText: 'interview_location'.tr,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: notesController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'interview_notes'.tr,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF59E0B),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () async {
+                  if (dateController.text.isEmpty || timeController.text.isEmpty) {
+                    Get.snackbar('error'.tr, 'please_select_date_and_time'.tr, snackPosition: SnackPosition.BOTTOM);
+                    return;
+                  }
+                  Get.back();
+                  await _scheduleInterview(
+                    dateController.text,
+                    timeController.text,
+                    locationController.text,
+                    notesController.text,
+                  );
+                },
+                child: Text('save'.tr, style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  void _showAddEventDialog() {
+    String selectedType = 'note_added';
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+
+    Get.dialog(
+      StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+            title: Text('add_note_event'.tr, style: AppFonts.h3),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedType,
+                    items: [
+                      'note_added', 'interview_scheduled', 'interview_attended', 
+                      'interview_missed', 'status_changed', 'parent_contacted', 
+                      'document_requested', 'document_received', 'other'
+                    ].map((t) => DropdownMenuItem(value: t, child: Text(t.tr))).toList(),
+                    onChanged: (val) => setDialogState(() => selectedType = val ?? selectedType),
+                    decoration: InputDecoration(
+                      labelText: 'event_type'.tr,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: 'event_title'.tr,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: descController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'event_description'.tr,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () async {
+                  if (titleController.text.isEmpty) {
+                    Get.snackbar('error'.tr, 'please_enter_title'.tr, snackPosition: SnackPosition.BOTTOM);
+                    return;
+                  }
+                  Get.back();
+                  await _addEvent(selectedType, titleController.text, descController.text);
+                },
+                child: Text('save'.tr, style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  Future<void> _updateStatus(String status, String note) async {
+    setState(() => _isLoading = true);
+    try {
+      final updatedApp = await AdmissionService.updateApplicationStatus(_application!.id, status, note: note);
+      setState(() {
+        _application = updatedApp;
+        _isLoading = false;
+      });
+      DashboardController.to.loadApplications();
+      Get.snackbar('success'.tr, 'status_updated_successfully'.tr, backgroundColor: AppColors.success, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      Get.snackbar('error'.tr, e.toString(), backgroundColor: AppColors.error, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> _scheduleInterview(String date, String time, String location, String notes) async {
+    setState(() => _isLoading = true);
+    try {
+      final updatedApp = await AdmissionService.setInterviewDate(
+        applicationId: _application!.id,
+        date: date,
+        time: time,
+        location: location.isNotEmpty ? location : null,
+        notes: notes.isNotEmpty ? notes : null,
+      );
+      setState(() {
+        _application = updatedApp;
+        _isLoading = false;
+      });
+      DashboardController.to.loadApplications();
+      Get.snackbar('success'.tr, 'interview_scheduled_successfully'.tr, backgroundColor: AppColors.success, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      Get.snackbar('error'.tr, e.toString(), backgroundColor: AppColors.error, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> _addEvent(String type, String title, String description) async {
+    setState(() => _isLoading = true);
+    try {
+      await AdmissionService.addApplicationEvent(
+        applicationId: _application!.id,
+        type: type,
+        title: title,
+        description: description.isNotEmpty ? description : null,
+      );
+      
+      // Reload application to get updated events
+      final updatedApp = await AdmissionService.getApplicationById(_application!.id);
+      
+      setState(() {
+        _application = updatedApp;
+        _isLoading = false;
+      });
+      DashboardController.to.loadApplications();
+      Get.snackbar('success'.tr, 'event_added_successfully'.tr, backgroundColor: AppColors.success, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      Get.snackbar('error'.tr, e.toString(), backgroundColor: AppColors.error, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    }
   }
 }

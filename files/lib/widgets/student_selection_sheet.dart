@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../core/constants/app_colors.dart';
@@ -50,33 +50,33 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle Bar
           Container(
-            margin: EdgeInsets.symmetric(vertical: 12.h),
-            width: 40.w,
-            height: 4.h,
+            margin: Responsive.symmetric(vertical: 12),
+            width: Responsive.w(40),
+            height: Responsive.h(4),
             decoration: BoxDecoration(
               color: AppColors.grey300,
-              borderRadius: BorderRadius.circular(2.r),
+              borderRadius: BorderRadius.circular(Responsive.r(2)),
             ),
           ),
           
           // Title
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            padding: Responsive.symmetric(horizontal: 24),
             child: Row(
               children: [
                 Icon(
                   IconlyBold.profile,
                   color: AppColors.primaryBlue,
-                  size: 24.sp,
+                  size: Responsive.sp(24),
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: Responsive.w(12)),
                 Text(
                   'select_child'.tr,
                   style: AppFonts.h3.copyWith(
@@ -105,10 +105,10 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                 : _children.isEmpty
                     ? _buildEmptyState()
                     : ListView.separated(
-                        padding: EdgeInsets.all(24.w),
+                        padding: Responsive.all(24),
                         shrinkWrap: true,
                         itemCount: _children.length,
-                        separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                        separatorBuilder: (context, index) => SizedBox(height: Responsive.h(16)),
                         itemBuilder: (context, index) {
                           return _buildStudentItem(_children[index]);
                         },
@@ -121,13 +121,13 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
 
   Widget _buildLoadingState() {
     return Padding(
-      padding: EdgeInsets.all(24.w),
+      padding: Responsive.all(24),
       child: Column(
         children: List.generate(
           3,
           (index) => Padding(
-            padding: EdgeInsets.only(bottom: 16.h),
-            child: ShimmerCard(height: 80.h, borderRadius: 16.r),
+            padding: Responsive.only(bottom: 16),
+            child: ShimmerCard(height: Responsive.h(80), borderRadius: Responsive.r(16)),
           ),
         ),
       ),
@@ -136,20 +136,20 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: EdgeInsets.all(40.w),
+      padding: Responsive.all(40),
       child: Column(
         children: [
           Icon(
             IconlyBroken.profile,
-            size: 64.sp,
+            size: Responsive.sp(64),
             color: AppColors.grey400,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: Responsive.h(16)),
           Text(
             'no_children_found'.tr,
             style: AppFonts.h4.copyWith(color: AppColors.textPrimary),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: Responsive.h(8)),
           Text(
             'add_child_first_description'.tr,
             style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
@@ -167,20 +167,20 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
 
     return InkWell(
       onTap: () => Get.back(result: child),
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(Responsive.r(16)),
       child: Container(
-        padding: EdgeInsets.all(12.w),
+        padding: Responsive.all(12),
         decoration: BoxDecoration(
           color: AppColors.grey100.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
           border: Border.all(color: AppColors.grey200),
         ),
         child: Row(
           children: [
             // Avatar
             Container(
-              width: 50.w,
-              height: 50.w,
+              width: Responsive.w(50),
+              height: Responsive.w(50),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -195,7 +195,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                 ),
               ),
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: Responsive.w(16)),
             
             // Info
             Expanded(
@@ -209,15 +209,15 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: Responsive.h(4)),
                   Row(
                     children: [
                       Icon(
                         IconlyBroken.location,
-                        size: 14.sp,
+                        size: Responsive.sp(14),
                         color: AppColors.textSecondary,
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: Responsive.w(4)),
                       Expanded(
                         child: Text(
                           schoolName,
@@ -238,7 +238,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
             Icon(
               IconlyBroken.arrow_left_2,
               color: AppColors.grey400,
-              size: 20.sp,
+              size: Responsive.sp(20),
             ),
           ],
         ),

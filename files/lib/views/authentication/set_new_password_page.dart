@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -166,7 +166,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -175,27 +175,27 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                       icon: Icon(
                         Icons.arrow_back,
                         color: AppColors.textPrimary,
-                        size: 24.sp,
+                        size: Responsive.sp(24),
                       ),
                     ),
                     InkWell(
-                      borderRadius: BorderRadius.circular(8.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
                       onTap: () {
                         final isAr = Get.locale?.languageCode == 'ar';
                         Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
                         setState(() {});
                       },
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                        padding: Responsive.symmetric(horizontal: 8, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.language,
                               color: AppColors.primaryBlue,
-                              size: 22.sp,
+                              size: Responsive.sp(22),
                             ),
-                            SizedBox(width: 4.w),
+                            SizedBox(width: Responsive.w(4)),
                             Text(
                               (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
                               style: AppFonts.AlmaraiMedium14.copyWith(
@@ -212,7 +212,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
 
               Container(
                 width: double.infinity,
-                height: 320.h,
+                height: Responsive.h(320),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -224,8 +224,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30.r),
-                    bottomRight: Radius.circular(30.r),
+                    bottomLeft: Radius.circular(Responsive.r(30)),
+                    bottomRight: Radius.circular(Responsive.r(30)),
                   ),
                 ),
                 child: Stack(
@@ -233,60 +233,60 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                     Align(
                       alignment: Alignment.topCenter,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 24.h),
+                        padding: EdgeInsets.only(top: Responsive.h(24)),
                         child: Image.asset(
                           AssetsManager.logo,
-                          width: 120.w,
-                          height: 120.w,
+                          width: Responsive.w(120),
+                          height: Responsive.w(120),
                           fit: BoxFit.contain,
                         ),
                       ),
                     ),
                     Positioned(
-                      top: 40.h,
-                      right: 30.w,
+                      top: Responsive.h(40),
+                      right: Responsive.w(30),
                       child: Container(
-                        width: 80.w,
-                        height: 80.h,
+                        width: Responsive.w(80),
+                        height: Responsive.h(80),
                         decoration: BoxDecoration(
                           color: AppColors.white.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(40.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(40)),
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: 60.h,
-                      left: 30.w,
+                      bottom: Responsive.h(60),
+                      left: Responsive.w(30),
                       child: Container(
-                        width: 50.w,
-                        height: 50.h,
+                        width: Responsive.w(50),
+                        height: Responsive.h(50),
                         decoration: BoxDecoration(
                           color: AppColors.white.withOpacity(0.07),
-                          borderRadius: BorderRadius.circular(25.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(25)),
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(24.w),
+                      padding: Responsive.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 20.h),
+                          SizedBox(height: Responsive.h(20)),
                           Row(
                             children: [
                               Container(
-                                padding: EdgeInsets.all(12.w),
+                                padding: Responsive.all(12),
                                 decoration: BoxDecoration(
                                   color: AppColors.white.withOpacity(0.22),
-                                  borderRadius: BorderRadius.circular(16.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(16)),
                                 ),
                                 child: Icon(
                                   Icons.lock_reset,
                                   color: AppColors.white,
-                                  size: 32.sp,
+                                  size: Responsive.sp(32),
                                 ),
                               ),
-                              SizedBox(width: 16.w),
+                              SizedBox(width: Responsive.w(16)),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,18 +308,18 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 32.h),
+                          SizedBox(height: Responsive.h(32)),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                            padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
                               color: AppColors.white.withOpacity(0.13),
-                              borderRadius: BorderRadius.circular(20.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(20)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.security, color: AppColors.white, size: 16.sp),
-                                SizedBox(width: 8.w),
+                                Icon(Icons.security, color: AppColors.white, size: Responsive.sp(16)),
+                                SizedBox(width: Responsive.w(8)),
                                 Text(
                                   'secure_password_reset'.tr,
                                   style: AppFonts.AlmaraiMedium14.copyWith(color: AppColors.white),
@@ -335,11 +335,11 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
               ),
 
               Container(
-                margin: EdgeInsets.all(20.w),
-                padding: EdgeInsets.all(28.w),
+                margin: Responsive.all(20),
+                padding: Responsive.all(28),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(24)),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.grey200,
@@ -360,7 +360,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 8.h),
+                      SizedBox(height: Responsive.h(8)),
                       Text(
                         'enter_your_new_password_below'.tr,
                         style: AppFonts.AlmaraiRegular14.copyWith(
@@ -368,21 +368,21 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: Responsive.h(20)),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: 'email'.tr,
                           hintText: 'enter_your_email'.tr,
-                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.primaryBlue, size: 20.sp),
+                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
+                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -394,27 +394,27 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 14.h),
+                      SizedBox(height: Responsive.h(14)),
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
                           labelText: 'phone_number_optional'.tr,
                           hintText: 'enter_phone_optional'.tr,
-                          prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primaryBlue, size: 20.sp),
+                          prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
+                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
                         ),
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: Responsive.h(20)),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: !_isPasswordVisible,
@@ -422,13 +422,13 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           labelText: 'new_password'.tr,
                           hintText: 'enter_your_new_password'.tr,
                           prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
+                            margin: Responsive.all(8),
+                            padding: Responsive.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.primaryBlue.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(8.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(8)),
                             ),
-                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: 20.sp),
+                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -440,12 +440,12 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             },
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
+                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -457,40 +457,40 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         },
                       ),
                       if (_passwordStrength.isNotEmpty) ...[
-                        SizedBox(height: 12.h),
+                        SizedBox(height: Responsive.h(12)),
                         Container(
-                          padding: EdgeInsets.all(12.w),
+                          padding: Responsive.all(12),
                           decoration: BoxDecoration(
                             color: _getPasswordStrengthColor().withOpacity(0.09),
-                            borderRadius: BorderRadius.circular(8.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(8)),
                             border: Border.all(
                               color: _getPasswordStrengthColor().withOpacity(0.23),
                             ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.security, color: _getPasswordStrengthColor(), size: 16.sp),
-                              SizedBox(width: 8.w),
+                              Icon(Icons.security, color: _getPasswordStrengthColor(), size: Responsive.sp(16)),
+                              SizedBox(width: Responsive.w(8)),
                               Text(
                                 'password_strength'.tr,
                                 style: AppFonts.AlmaraiRegular12.copyWith(
                                   color: AppColors.textSecondary,
-                                  fontSize: 12.sp,
+                                  fontSize: Responsive.sp(12),
                                 ),
                               ),
-                              SizedBox(width: 8.w),
+                              SizedBox(width: Responsive.w(8)),
                               Text(
                                 _passwordStrength.tr,
                                 style: AppFonts.AlmaraiBold12.copyWith(
                                   color: _getPasswordStrengthColor(),
-                                  fontSize: 12.sp,
+                                  fontSize: Responsive.sp(12),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ],
-                      SizedBox(height: 18.h),
+                      SizedBox(height: Responsive.h(18)),
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: !_isConfirmPasswordVisible,
@@ -498,13 +498,13 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           labelText: 'confirm_password'.tr,
                           hintText: 're_enter_new_password'.tr,
                           prefixIcon: Container(
-                            margin: EdgeInsets.all(8.w),
-                            padding: EdgeInsets.all(8.w),
+                            margin: Responsive.all(8),
+                            padding: Responsive.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.primaryBlue.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(8.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(8)),
                             ),
-                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: 20.sp),
+                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -516,12 +516,12 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             },
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
+                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -532,22 +532,22 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 28.h),
+                      SizedBox(height: Responsive.h(28)),
                       SizedBox(
-                        height: 56.h,
+                        height: Responsive.h(56),
                         child: ElevatedButton(
                           onPressed: _isFormValid() && !_isLoading ? _setNewPassword : null,
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: AppColors.primaryBlue,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(16)),
                             ),
                           ),
                           child: _isLoading
                               ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.w,
+                                  height: Responsive.h(20),
+                                  width: Responsive.w(20),
                                   child: const CircularProgressIndicator(
                                     color: Colors.white,
                                     strokeWidth: 2,
@@ -556,20 +556,20 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.check_circle_outline, color: Colors.white, size: 20.sp),
-                                    SizedBox(width: 8.w),
+                                    Icon(Icons.check_circle_outline, color: Colors.white, size: Responsive.sp(20)),
+                                    SizedBox(width: Responsive.w(8)),
                                     Text(
                                       'set_new_password'.tr,
                                       style: AppFonts.AlmaraiBold16.copyWith(
                                         color: Colors.white,
-                                        fontSize: 16.sp,
+                                        fontSize: Responsive.sp(16),
                                       ),
                                     ),
                                   ],
                                 ),
                         ),
                       ),
-                      SizedBox(height: 22.h),
+                      SizedBox(height: Responsive.h(22)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -577,22 +577,22 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             'remember_your_password'.tr,
                             style: AppFonts.AlmaraiRegular14.copyWith(
                               color: AppColors.textSecondary,
-                              fontSize: 14.sp,
+                              fontSize: Responsive.sp(14),
                             ),
                           ),
                           TextButton(
                             onPressed: () => Get.offAllNamed(AppRoutes.login),
                             style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                              padding: Responsive.symmetric(horizontal: 8, vertical: 4),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(6)),
                               ),
                             ),
                             child: Text(
                               'back_to_sign_in'.tr,
                               style: AppFonts.AlmaraiBold14.copyWith(
                                 color: AppColors.primaryBlue,
-                                fontSize: 14.sp,
+                                fontSize: Responsive.sp(14),
                               ),
                             ),
                           ),

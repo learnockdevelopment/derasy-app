@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../../core/constants/app_fonts.dart';
 
 class LocationPicker extends StatefulWidget {
@@ -166,7 +166,7 @@ class _LocationPickerState extends State<LocationPicker> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         border: Border.all(
           color: const Color(0xFFE5E7EB),
           width: 1,
@@ -178,10 +178,10 @@ class _LocationPickerState extends State<LocationPicker> {
           children: [
             Icon(
               Icons.map_rounded,
-              size: 48.sp,
+              size: Responsive.sp(48),
               color: const Color(0xFF6B7280),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: Responsive.h(16)),
             Text(
               'Map Unavailable',
               style: AppFonts.h3.copyWith(
@@ -189,14 +189,14 @@ class _LocationPickerState extends State<LocationPicker> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: Responsive.h(8)),
             Text(
               'Please use manual location entry',
               style: AppFonts.bodyMedium.copyWith(
                 color: const Color(0xFF6B7280),
               ),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: Responsive.h(16)),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -204,9 +204,9 @@ class _LocationPickerState extends State<LocationPicker> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                padding: Responsive.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
                 ),
               ),
               child: Text(
@@ -346,7 +346,7 @@ class _LocationPickerState extends State<LocationPicker> {
         children: [
           // Address Display
           Container(
-            padding: EdgeInsets.all(16.w),
+            padding: Responsive.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
@@ -364,9 +364,9 @@ class _LocationPickerState extends State<LocationPicker> {
                     Icon(
                       Icons.location_on_rounded,
                       color: const Color(0xFF3B82F6),
-                      size: 20.sp,
+                      size: Responsive.sp(20),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: Responsive.w(8)),
                     Text(
                       'Selected Address',
                       style: AppFonts.bodyMedium.copyWith(
@@ -376,13 +376,13 @@ class _LocationPickerState extends State<LocationPicker> {
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: Responsive.h(8)),
                 if (_isGettingAddress)
                   Row(
                     children: [
                       SizedBox(
-                        width: 16.w,
-                        height: 16.w,
+                        width: Responsive.w(16),
+                        height: Responsive.w(16),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -390,7 +390,7 @@ class _LocationPickerState extends State<LocationPicker> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: Responsive.w(8)),
                       Text(
                         'Getting address...',
                         style: AppFonts.bodyMedium.copyWith(
@@ -426,7 +426,7 @@ class _LocationPickerState extends State<LocationPicker> {
                             const Color(0xFF3B82F6),
                           ),
                         ),
-                        SizedBox(height: 16.h),
+                        SizedBox(height: Responsive.h(16)),
                         Text(
                           'Loading map...',
                           style: AppFonts.bodyMedium.copyWith(
@@ -441,7 +441,7 @@ class _LocationPickerState extends State<LocationPicker> {
 
           // Instructions
           Container(
-            padding: EdgeInsets.all(16.w),
+            padding: Responsive.all(16),
             decoration: BoxDecoration(
               color: const Color(0xFFF9FAFB),
               border: Border(
@@ -456,9 +456,9 @@ class _LocationPickerState extends State<LocationPicker> {
                 Icon(
                   Icons.info_outline_rounded,
                   color: const Color(0xFF3B82F6),
-                  size: 20.sp,
+                  size: Responsive.sp(20),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: Responsive.w(8)),
                 Expanded(
                   child: Text(
                     'Tap anywhere on the map to select your location',

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -19,10 +19,10 @@ class UserMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200.w,
+      width: Responsive.w(200),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowLight,
@@ -36,12 +36,12 @@ class UserMenu extends StatelessWidget {
         children: [
           // User Info Header
           Container(
-            padding: EdgeInsets.all(16.w),
+            padding: Responsive.all(16),
             decoration: BoxDecoration(
               color: AppColors.grey50,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12.r),
-                topRight: Radius.circular(12.r),
+                topLeft: Radius.circular(Responsive.r(12)),
+                topRight: Radius.circular(Responsive.r(12)),
               ),
             ),
             child: Column(
@@ -55,7 +55,7 @@ class UserMenu extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   email,
                   style: AppFonts.AlmaraiRegular12.copyWith(
@@ -70,7 +70,7 @@ class UserMenu extends StatelessWidget {
 
           // Divider
           Container(
-            height: 1.h,
+            height: Responsive.h(1),
             color: AppColors.grey200,
           ),
 
@@ -94,17 +94,17 @@ class UserMenu extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(Responsive.r(8)),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          padding: Responsive.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               Icon(
                 icon,
-                size: 20.w,
+                size: Responsive.w(20),
                 color: AppColors.textSecondary,
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: Responsive.w(12)),
               Text(
                 title,
                 style: AppFonts.AlmaraiRegular14.copyWith(

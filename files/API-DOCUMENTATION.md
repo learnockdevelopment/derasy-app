@@ -60,17 +60,24 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "password123"
 }
-```
-
-**Response:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "_id": "user_id",
     "role": "parent",
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "username": "user123"
   }
+}
+```
+
+### Validate Token
+```http
+GET /api/me
+Authorization: Bearer <token>
+```
+**Response:**
+```json
+{
+  "user": { ... }
 }
 ```
 
@@ -158,15 +165,15 @@ Form Data:
 - ✅ Automatically detects document type (birth_certificate, national_id, passport)
 - ✅ Extracts child's National ID from top of document
 - ✅ Extracts both father's and mother's National IDs
-- ✅ Converts Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩) to standard digits
 - ✅ Handles Arabic written years (e.g., "عام الفان و ثلاثه عشر" = 2013)
 - ✅ Calculates age in coming October automatically
 - ✅ Combines child name + father name for full Arabic name
 - ✅ Validates National ID uniqueness before extraction completes
+- ✅ **New:** Supports passport extraction for non-Egyptian children.
 
 ---
 
-### Extract National ID Data
+### Extract National ID Data (Egyptian)
 
 **Endpoint:** `POST /api/children/extract-national-id`
 
@@ -281,7 +288,10 @@ Content-Type: application/json
 - `desiredGrade`
 - `currentSchool`
 - `schoolId` (if transferring from another school)
-- `birthCertificate` (object with `data` and `mimeType`)
+- `birthCertificate` (file or object with `data`/`url`)
+- `parentPassport` (file or object, for non-Egyptian)
+- `childPassport` (file or object, for non-Egyptian)
+- `parentNationalIdCard` (file or object, for Egyptian)
 
 **Response (201 Created):**
 ```json
@@ -717,12 +727,27 @@ Authorization: Bearer <token>
       },
       "requestedAt": "2024-01-15T10:00:00.000Z",
       "rejectionReason": null,
-      "childId": null
+      "schoolId": {
+        "_id": "school_id", 
+        "name": "School Name",
+        "nameAr": "اسم المدرسة",
+        "logo": {
+          "url": "..."
+        }
+      },
+      "grade": {
+        "_id": "grade_id",
+        "name": "Grade 1",
+        "nameAr": "الاول الابتدائي"
+      }
     }
   ],
   "count": 1
 }
 ```
+
+### Note on Performance
+The `GET /api/children/get-related` endpoint is optimized to return only essential data for the list view. It specifically populates `schoolId` and `grade` but omits heavy nested relations like `parent.user`, `sections`, etc., to ensure fast loading times.
 
 **Request Statuses:**
 - `pending` - Waiting for admin review
@@ -1728,24 +1753,24 @@ Content-Type: application/json
 **Response (200 Success):**
 ```json
 {
-   "message": "تم تحديث الحالة بنجاح",
-   "application": {
-      "_id": "application_id",
-      "status": "accepted",
-      "events": [
-         {
-            "type": "status_changed",
-            "title": "تغيير الحالة من قيد المراجعة إلى تم القبول",
-            "description": "Application accepted after successful interview",
-            "date": "2025-01-18T10:00:00.000Z",
-            "createdBy": "admin_user_id",
-            "metadata": {
-               "oldStatus": "under_review",
-               "newStatus": "accepted"
-            }
-         }
-      ]
-   }
+  "message": "تم تحديث الحالة بنجاح",
+  "application": {
+    "_id": "application_id",
+    "status": "accepted",
+    "events": [
+      {
+        "type": "status_changed",
+        "title": "تغيير الحالة من قيد المراجعة إلى تم القبول",
+        "description": "Application accepted after successful interview",
+        "date": "2025-01-18T10:00:00.000Z",
+        "createdBy": "admin_user_id",
+        "metadata": {
+          "oldStatus": "under_review",
+          "newStatus": "accepted"
+        }
+      }
+    ]
+  }
 }
 ```
 
@@ -2192,6 +2217,129 @@ try {
 | `/api/me/applications/school/my/[id]/events` | POST | Add event/note |
 | `/api/me/applications/school/my/[id]/events` | GET | Get application events |
 | `/api/me/applications/school/my/[id]/status` | PUT | Update application status |
+| `/api/bank-accounts` | GET | Active bank accounts |
+| `/api/me/wallet/deposit` | POST | Deposit funds |
+| `/api/me/wallet/withdraw` | POST | Withdraw funds |
+
+---
+
+## 💰 Wallet Management APIs
+
+### Get Active Bank Accounts
+
+**Endpoint:** `GET /api/bank-accounts`
+
+**Description:** Get list of active bank accounts for manual transfers.
+
+**Request:**
+```http
+GET /api/bank-accounts
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "accounts": [
+    {
+      "_id": "bank_id",
+      "bankName": "National Bank of Egypt",
+      "accountHolder": "Derasy Inc.",
+      "accountNumber": "1234567890",
+      "iban": "EG1234567890...",
+      "branch": "Main Branch",
+      "instructions": "Please include your email in transfer notes",
+      "isActive": true
+    }
+  ]
+}
+```
+
+---
+
+### Deposit Funds (Bank Transfer)
+
+**Endpoint:** `POST /api/me/wallet/deposit`
+
+**Description:** Requests a deposit via manual bank transfer. The transaction is created with `pending` status until admin approval.
+
+**Request:**
+```http
+POST /api/me/wallet/deposit
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "amount": 1000,
+  "method": "bank_transfer",
+  "bankAccountId": "bank_id_from_get_accounts",
+  "attachment": {
+    "url": "https://imagekit.io/...",
+    "publicId": "receipt_image_id"
+  }
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Deposit request submitted successfully",
+  "transaction": {
+    "user": "user_id",
+    "type": "deposit",
+    "amount": 1000,
+    "method": "bank_transfer",
+    "status": "pending",
+    "description": "تحويل بنكي - في انتظار المراجعة",
+    "createdAt": "2025-01-20T10:00:00.000Z"
+  }
+}
+```
+
+---
+
+### Withdraw Funds
+
+**Endpoint:** `POST /api/me/wallet/withdraw`
+
+**Description:** Requests a withdrawal. The requested amount is **immediately deducted** (held) from the user's balance to prevent double-spending and tagged as `pending`. If rejected, it should be refunded manually by admin.
+
+**Request:**
+```http
+POST /api/me/wallet/withdraw
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "amount": 500,
+  "method": "bank_transfer",
+  "details": "Account Name: John Doe\nIBAN: EG12345..."
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Withdrawal request created successfully",
+  "transaction": {
+    "user": "user_id",
+    "type": "withdraw",
+    "amount": 500,
+    "status": "pending",
+    "adminNote": "Account details...",
+    "createdAt": "2025-01-20T10:00:00.000Z"
+  },
+  "newBalance": 1500
+}
+```
 
 ---
 

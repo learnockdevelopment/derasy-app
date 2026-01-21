@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../utils/responsive_utils.dart';
 
 class AppFonts {
@@ -356,4 +356,4 @@ class AppFonts {
         letterSpacing: 0.5,
       );
 }
-}
+

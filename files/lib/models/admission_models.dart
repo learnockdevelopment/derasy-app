@@ -337,7 +337,7 @@ class InterviewSlot {
 
   Map<String, dynamic> toJson() {
     return {
-      'date': date.toIso8601String(),
+      'date': "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
       'timeRange': timeRange.toJson(),
     };
   }
@@ -381,6 +381,36 @@ class ApplyToSchoolsRequest {
     return {
       'childId': childId,
       'selectedSchools': selectedSchools.map((school) => school.toJson()).toList(),
+    };
+  }
+}
+
+class AdmissionApplyRequest {
+  final String childId;
+  final String schoolId;
+  final String applicationType;
+  final String? desiredGrade;
+  final List<InterviewSlot> preferredInterviewSlots;
+  final String? notes;
+
+  AdmissionApplyRequest({
+    required this.childId,
+    required this.schoolId,
+    required this.applicationType,
+    this.desiredGrade,
+    this.preferredInterviewSlots = const [],
+    this.notes,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'childId': childId,
+      'schoolId': schoolId,
+      'applicationType': applicationType,
+      if (desiredGrade != null) 'desiredGrade': desiredGrade,
+      'preferredInterviewSlots': 
+          preferredInterviewSlots.map((slot) => slot.toJson()).toList(),
+      'notes': notes ?? '',
     };
   }
 }
@@ -469,6 +499,23 @@ class ApplyToSchoolsResponse {
               ?.map((app) => Application.fromJson(app as Map<String, dynamic>))
               .toList() ??
           [],
+    );
+  }
+}
+
+class AdmissionApplyResponse {
+  final String message;
+  final Application application;
+
+  AdmissionApplyResponse({
+    required this.message,
+    required this.application,
+  });
+
+  factory AdmissionApplyResponse.fromJson(Map<String, dynamic> json) {
+    return AdmissionApplyResponse(
+      message: json['message']?.toString() ?? '',
+      application: Application.fromJson(json['application'] as Map<String, dynamic>),
     );
   }
 }

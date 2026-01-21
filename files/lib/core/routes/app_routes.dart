@@ -74,4 +74,9 @@ class AppRoutes {
   static const String editProduct = '/store/products/edit';
   static const String addCategory = '/store/categories/add';
   static const String editCategory = '/store/categories/edit';
+
+  // Wallet Routes
+  static const String wallet = '/wallet';
+  static const String walletDeposit = '/wallet/deposit';
+  static const String walletWithdraw = '/wallet/withdraw';
 }

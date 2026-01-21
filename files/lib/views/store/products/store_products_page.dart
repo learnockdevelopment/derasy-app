@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/assets.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/responsive_utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/store_models.dart';
 import '../../../services/store_service.dart';
@@ -163,10 +164,10 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.transparent,
+          backgroundColor: const Color(0xFFF8FAFC),
           elevation: 0,
           toolbarHeight: 0,
-          collapsedHeight: Responsive.h(80),
+          collapsedHeight: Responsive.h(45),
           flexibleSpace: FlexibleSpaceBar(
             background: HeroSectionWidget(
               userData: _userData,
@@ -179,16 +180,16 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         // Categories Filter
         SliverToBoxAdapter(
           child: Container(
-            color: Colors.white,
-            padding: Responsive.symmetric(horizontal: 16, vertical: 16),
+            color: Colors.transparent,
+            padding: Responsive.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'categories'.tr,
-                  style: AppFonts.h4.copyWith(
+                  style: AppFonts.bodyLarge.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: Responsive.sp(16),
+                    fontSize: Responsive.sp(14),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -196,7 +197,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                 // Categories Filter
                 if (_isLoadingCategories)
                   SizedBox(
-                    height: Responsive.h(40),
+                    height: Responsive.h(36),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: 5,
@@ -204,11 +205,11 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                       itemBuilder: (context, index) {
                         return ShimmerLoading(
                           child: Container(
-                            width: 100.w,
-                            height: Responsive.h(40),
+                            width: Responsive.w(90),
+                            height: Responsive.h(36),
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(Responsive.r(20)),
+                              borderRadius: BorderRadius.circular(Responsive.r(18)),
                             ),
                           ),
                         );
@@ -217,7 +218,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   )
                 else
                   SizedBox(
-                    height: Responsive.h(40),
+                    height: Responsive.h(36),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length + 1,
@@ -235,15 +236,23 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             ),
           ),
         ),
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
         // Products List
         if (_isLoading && _products.isEmpty)
-          SliverToBoxAdapter(child: _buildProductsShimmer())
+          const SliverFillRemaining(
+             child: Center(child: CircularProgressIndicator())) // Simplified loader for grid transition
         else if (_products.isEmpty)
           SliverFillRemaining(child: _buildEmptyState())
         else
           SliverPadding(
             padding: Responsive.symmetric(horizontal: 16, vertical: 8),
-            sliver: SliverList(
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.68,
+                crossAxisSpacing: Responsive.w(12),
+                mainAxisSpacing: Responsive.h(12),
+              ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _buildProductCard(_products[index]),
                 childCount: _products.length,
@@ -278,12 +287,12 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
           });
           _loadProducts(resetPage: true);
         },
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          padding: Responsive.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryBlue : Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             border: Border.all(
               color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
               width: Responsive.w(1.5),
@@ -308,7 +317,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             label,
             style: AppFonts.bodyMedium.copyWith(
               color: isSelected ? Colors.white : AppColors.textPrimary,
-              fontSize: 12.sp,
+              fontSize: Responsive.sp(12),
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
@@ -326,27 +335,19 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         onTap: () {
           Get.toNamed(AppRoutes.storeProductDetails, arguments: {'productId': product.id});
         },
         child: Container(
-          margin: EdgeInsets.only(bottom: Responsive.h(12)),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
             color: Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: Responsive.r(4),
-                offset: Offset(0, Responsive.h(2)),
-                spreadRadius: 0,
               ),
             ],
           ),
@@ -358,110 +359,45 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12.r),
-                      topRight: Radius.circular(12.r),
+                      topLeft: Radius.circular(Responsive.r(16)),
+                      topRight: Radius.circular(Responsive.r(16)),
                     ),
                     child: Container(
                       width: double.infinity,
-                      height: 140.h,
+                      height: Responsive.h(120),
                       color: AppColors.primaryBlue.withOpacity(0.05),
                       child: product.images.isNotEmpty
                           ? SafeNetworkImage(
                               imageUrl: product.images.first,
                               width: double.infinity,
-                              height: 140.h,
+                              height: Responsive.h(120),
                               fit: BoxFit.cover,
-                              errorWidget: Container(
-                                color: AppColors.primaryBlue.withOpacity(0.1),
-                                child: Icon(
-                                  Icons.shopping_bag_rounded,
-                                  color: AppColors.primaryBlue,
-                                  size: 40.sp,
-                                ),
-                              ),
                             )
                           : Icon(
                               Icons.shopping_bag_rounded,
                               color: AppColors.primaryBlue,
-                              size: 40.sp,
+                              size: Responsive.sp(32),
                             ),
                     ),
                   ),
-                  // Featured Badge
-                  if (product.isFeatured)
-                    Positioned(
-                      top: 10.h,
-                      right: 10.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryBlue.withOpacity(0.4),
-                              blurRadius: Responsive.r(8),
-                              offset: Offset(0, Responsive.h(4)),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Colors.white,
-                              size: 12.sp,
-                            ),
-                            SizedBox(width: Responsive.w(4)),
-                            Text(
-                              'featured'.tr,
-                              style: AppFonts.bodySmall.copyWith(
-                                color: Colors.white,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   // Discount Badge
                   if (hasDiscount)
                     Positioned(
-                      top: 10.h,
-                      left: 10.w,
+                      top: Responsive.h(8),
+                      left: Responsive.w(8),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: Responsive.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.error,
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.error.withOpacity(0.4),
-                              blurRadius: Responsive.r(8),
-                              offset: Offset(0, Responsive.h(4)),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(Responsive.r(4)),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.local_offer_rounded,
-                              color: Colors.white,
-                              size: 12.sp,
-                            ),
-                            SizedBox(width: Responsive.w(4)),
-                            Text(
-                              '${product.discount!.global?.toStringAsFixed(0) ?? ''}%',
-                              style: AppFonts.bodySmall.copyWith(
-                                color: Colors.white,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          '${product.discount!.global?.toStringAsFixed(0) ?? ''}%',
+                          style: AppFonts.bodySmall.copyWith(
+                            color: Colors.white,
+                            fontSize: Responsive.sp(9),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -469,85 +405,60 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
               ),
               // Product Info Section
               Padding(
-                padding: EdgeInsets.all(12.w),
+                padding: Responsive.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Product Title
                     Text(
                       product.titleAr,
-                      style: AppFonts.h4.copyWith(
+                      style: AppFonts.bodySmall.copyWith(
                         color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
-                        height: 1.3,
+                        fontWeight: FontWeight.w600,
+                        fontSize: Responsive.sp(11),
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 10.h),
-                    // Price and Stock Row
+                    SizedBox(height: Responsive.h(6)),
+                    // Price
                     Row(
                       children: [
-                        // Price Section
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (hasDiscount)
-                                Text(
-                                  '${product.price.toStringAsFixed(0)} ${'egp'.tr}',
-                                  style: AppFonts.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 11.sp,
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                ),
-                              SizedBox(height: hasDiscount ? 2.h : 0),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (hasDiscount)
                               Text(
-                                '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
-                                style: AppFonts.h3.copyWith(
-                                  color: AppColors.primaryBlue,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16.sp,
+                                '${product.price.toStringAsFixed(0)} ${'egp'.tr}',
+                                style: AppFonts.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontSize: Responsive.sp(9),
+                                  decoration: TextDecoration.lineThrough,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        // Stock Status
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                          decoration: BoxDecoration(
-                            color: product.stock > 0
-                                ? AppColors.success.withOpacity(0.1)
-                                : AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              color: product.stock > 0
-                                  ? AppColors.success.withOpacity(0.3)
-                                  : AppColors.error.withOpacity(0.3),
-                              width: Responsive.w(1.5),
+                             Text(
+                              '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
+                              style: AppFonts.h4.copyWith(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Responsive.sp(13),
+                              ),
                             ),
+                          ],
+                        ),
+                        const Spacer(),
+                        // Add Button (Small)
+                        Container(
+                          padding: Responsive.all(5),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryBlue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(Responsive.r(8)),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                product.stock > 0 ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                size: 14.sp,
-                                color: product.stock > 0 ? AppColors.success : AppColors.error,
-                              ),
-                              SizedBox(width: 4.w),
-                              Text(
-                                product.stock > 0 ? 'in_stock'.tr : 'out_of_stock'.tr,
-                                style: AppFonts.bodyMedium.copyWith(
-                                  color: product.stock > 0 ? AppColors.success : AppColors.error,
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                          child: Icon(
+                            IconlyBold.bag,
+                            size: Responsive.sp(14),
+                            color: AppColors.primaryBlue,
                           ),
                         ),
                       ],
@@ -569,8 +480,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         children: [
           SvgPicture.asset(
             AssetsManager.storeSvg,
-            width: 100.w,
-            height: 100.h,
+            width: Responsive.w(100),
+            height: Responsive.h(100),
             colorFilter: const ColorFilter.mode(
               Color(0xFF9CA3AF),
               BlendMode.srcIn,
@@ -581,7 +492,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             'no_products_found'.tr,
             style: AppFonts.bodyLarge.copyWith(
               color: const Color(0xFF6B7280),
-              fontSize: 15.sp,
+              fontSize: Responsive.sp(15),
             ),
           ),
         ],
@@ -594,66 +505,66 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       children: List.generate(
         5,
         (index) => Padding(
-          padding: EdgeInsets.fromLTRB(Responsive.w(16), 0, Responsive.w(16), Responsive.h(12)),
+          padding: Responsive.only(left: 16, right: 16, bottom: 12),
           child: ShimmerLoading(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              padding: Responsive.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
                 color: Colors.white,
               ),
               child: Row(
                 children: [
                   // Product Icon/Image Shimmer
                   Container(
-                    width: 60.w,
-                    height: 60.w,
+                    width: Responsive.w(60),
+                    height: Responsive.w(60),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                       color: Colors.grey[300],
                     ),
                   ),
-                  SizedBox(width: 12.w),
+                  SizedBox(width: Responsive.w(12)),
                   // Product Info Shimmer
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          height: 14.h,
+                          height: Responsive.h(14),
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(6)),
                           ),
                         ),
-                        SizedBox(height: 6.h),
+                        SizedBox(height: Responsive.h(6)),
                         Container(
-                          height: 12.h,
-                          width: 80.w,
+                          height: Responsive.h(12),
+                          width: Responsive.w(80),
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(6)),
                           ),
                         ),
-                        SizedBox(height: 6.h),
+                        SizedBox(height: Responsive.h(6)),
                         Row(
                           children: [
                             Container(
-                              height: 10.h,
-                              width: 50.w,
+                              height: Responsive.h(10),
+                              width: Responsive.w(50),
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(4.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(4)),
                               ),
                             ),
                             SizedBox(width: Responsive.w(8)),
                             Container(
-                              height: 10.h,
-                              width: 30.w,
+                              height: Responsive.h(10),
+                              width: Responsive.w(30),
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(4.r),
+                                borderRadius: BorderRadius.circular(Responsive.r(4)),
                               ),
                             ),
                           ],
@@ -664,11 +575,11 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                   SizedBox(width: Responsive.w(12)),
                   // Arrow Icon Shimmer
                   Container(
-                    width: 20.w,
-                    height: 20.w,
+                    width: Responsive.w(20),
+                    height: Responsive.w(20),
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(10)),
                     ),
                   ),
                 ],

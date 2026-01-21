@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
@@ -189,7 +189,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 'mark_all_read'.tr,
                 style: AppFonts.AlmaraiBlack18.copyWith(
                   color: AppColors.white,
-                  fontSize: 14.sp,
+                  fontSize: Responsive.sp(14),
                 ),
               ),
               onPressed: _markAllAsRead,
@@ -208,9 +208,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   onRefresh: _loadNotifications,
                   color: AppColors.primaryBlue,
                   child: ListView.separated(
-                    padding: EdgeInsets.all(16.w),
+                    padding: Responsive.all(16),
                     itemCount: _notifications.length,
-                    separatorBuilder: (context, index) => SizedBox(height: 12.h),
+                    separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
                     itemBuilder: (context, index) {
                       final notification = _notifications[index];
                       return _buildNotificationItem(notification);
@@ -227,17 +227,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
         children: [
           Icon(
             IconlyBroken.notification,
-            size: 80.sp,
+            size: Responsive.sp(80),
             color: AppColors.grey400,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: Responsive.h(24)),
           Text(
             'no_new_notifications'.tr,
             style: AppFonts.h3.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: Responsive.h(8)),
           Text(
             'no_notifications_description'.tr,
             style: AppFonts.AlmaraiBlack18.copyWith(
@@ -259,15 +259,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: Responsive.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           color: AppColors.error,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(Responsive.r(12)),
         ),
         child: Icon(
           IconlyBroken.delete,
           color: AppColors.white,
-          size: 24.sp,
+          size: Responsive.sp(24),
         ),
       ),
       onDismissed: (direction) {
@@ -280,12 +280,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
           }
           // TODO: Navigate to notification details if needed
         },
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          padding: Responsive.all(16),
           decoration: BoxDecoration(
             color: notification.isRead ? AppColors.white : AppColors.blue50,
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
             border: Border.all(
               color: notification.isRead
                   ? AppColors.borderLight
@@ -305,8 +305,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
             children: [
               // Icon
               Container(
-                width: 48.w,
-                height: 48.w,
+                width: Responsive.w(48),
+                height: Responsive.w(48),
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.1),
                   shape: BoxShape.circle,
@@ -314,10 +314,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 child: Icon(
                   icon,
                   color: iconColor,
-                  size: 24.sp,
+                  size: Responsive.sp(24),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: Responsive.w(12)),
               // Content
               Expanded(
                 child: Column(
@@ -338,8 +338,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ),
                         if (!notification.isRead)
                           Container(
-                            width: 8.w,
-                            height: 8.w,
+                            width: Responsive.w(8),
+                            height: Responsive.w(8),
                             decoration: BoxDecoration(
                               color: AppColors.primaryBlue,
                               shape: BoxShape.circle,
@@ -347,7 +347,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: Responsive.h(4)),
                     Text(
                       notification.message,
                       style: AppFonts.AlmaraiBlack18.copyWith(
@@ -356,7 +356,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: Responsive.h(8)),
                     Text(
                       _formatDateTime(notification.createdAt),
                       style: AppFonts.caption.copyWith(

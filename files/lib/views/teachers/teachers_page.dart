@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
@@ -188,7 +188,7 @@ class _TeachersPageState extends State<TeachersPage> {
         children: [
           // Gradient Header BG
           Container(
-            height: 180.h,
+            height: Responsive.h(180),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -207,7 +207,7 @@ class _TeachersPageState extends State<TeachersPage> {
               children: [
                 // TopBar: title + buttons
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+                  padding: Responsive.fromLTRB(16, 12, 16, 12),
                   child: Column(
                     children: [
                       Row(
@@ -222,10 +222,10 @@ class _TeachersPageState extends State<TeachersPage> {
                             children: [
                               // Bus Button
                               Container(
-                                margin: EdgeInsets.only(right: 8.w),
+                                margin: Responsive.only(right: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                   border: Border.all(
                                     color: Colors.white.withOpacity(0.3),
                                     width: 1.5,
@@ -242,20 +242,20 @@ class _TeachersPageState extends State<TeachersPage> {
                                   color: Colors.transparent,
                                   child: InkWell(
                                     onTap: () => Get.toNamed(AppRoutes.buses),
-                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                                     child: Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                      padding: Responsive.symmetric(horizontal: 12, vertical: 8),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(IconlyBold.discovery, color: Colors.white, size: 18.sp),
-                                          SizedBox(width: 6.w),
+                                          Icon(IconlyBold.discovery, color: Colors.white, size: Responsive.sp(18)),
+                                          SizedBox(width: Responsive.w(6)),
                                           Text(
                                             'buses'.tr,
                                             style: AppFonts.bodyMedium.copyWith(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 13.sp,
+                                              fontSize: Responsive.sp(13),
                                             ),
                                           ),
                                         ],
@@ -268,7 +268,7 @@ class _TeachersPageState extends State<TeachersPage> {
                               Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                   border: Border.all(
                                     color: Colors.white.withOpacity(0.3),
                                     width: 1.5,
@@ -295,18 +295,18 @@ class _TeachersPageState extends State<TeachersPage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: Responsive.h(12)),
                       // Search bar and filter buttons
                       Row(
                         children: [
                           Expanded(
                             child: Material(
                               elevation: 6,
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
                               color: Colors.white.withOpacity(0.95),
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                                height: 42.h,
+                                padding: Responsive.symmetric(horizontal: 12),
+                                height: Responsive.h(42),
                                 child: Center(
                                   child: TextField(
                                     controller: _searchController,
@@ -315,7 +315,7 @@ class _TeachersPageState extends State<TeachersPage> {
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       hintText: 'search_teachers'.tr,
-                                      hintStyle: TextStyle(color: const Color(0xFF7F7FD5).withOpacity(0.7), fontSize: 14.sp),
+                                      hintStyle: TextStyle(color: const Color(0xFF7F7FD5).withOpacity(0.7), fontSize: Responsive.sp(14)),
                                       prefixIcon: Icon(Icons.search, color: const Color(0xFF7F7FD5), size: 20),
                                       suffixIcon: _searchQuery.isNotEmpty
                                           ? GestureDetector(
@@ -323,27 +323,27 @@ class _TeachersPageState extends State<TeachersPage> {
                                               onTap: _clearSearch,
                                             )
                                           : null,
-                                      contentPadding: EdgeInsets.symmetric(vertical: 8.h),
+                                      contentPadding: Responsive.symmetric(vertical: 8),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(width: 10.w),
+                          SizedBox(width: Responsive.w(10)),
                           // Filter button
                           Material(
                             elevation: 6,
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             color: Colors.white.withOpacity(0.95),
                             child: InkWell(
                               onTap: _showFilterModal,
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
                               child: Container(
-                                width: 42.w,
-                                height: 42.h,
+                                width: Responsive.w(42),
+                                height: Responsive.h(42),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 ),
                                 child: Stack(
                                   children: [
@@ -353,7 +353,7 @@ class _TeachersPageState extends State<TeachersPage> {
                                         color: (_selectedGradeId != null || _selectedClassId != null)
                                             ? AppColors.primaryBlue
                                             : const Color(0xFF7F7FD5),
-                                        size: 22.sp,
+                                        size: Responsive.sp(22),
                                       ),
                                     ),
                                     if (_selectedGradeId != null || _selectedClassId != null)
@@ -374,35 +374,35 @@ class _TeachersPageState extends State<TeachersPage> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 10.w),
+                          SizedBox(width: Responsive.w(10)),
                           // School filter button
                           Material(
                             elevation: 6,
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
                             color: Colors.white.withOpacity(0.95),
                             child: InkWell(
                               onTap: _showSchoolFilterModal,
-                              borderRadius: BorderRadius.circular(12.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
                               child: Container(
-                                width: 42.w,
-                                height: 42.h,
+                                width: Responsive.w(42),
+                                height: Responsive.h(42),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 ),
                                 child: _selectedSchool != null && _getSchoolImageUrl(_selectedSchool!) != null
                                     ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12.r),
-                                        child: SafeSchoolImage(
-                                          imageUrl: _getSchoolImageUrl(_selectedSchool!),
-                                          width: 42.w,
-                                          height: 42.h,
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.school_rounded,
-                                        color: const Color(0xFF7F7FD5),
-                                        size: 22.sp,
-                                      ),
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                  child: SafeSchoolImage(
+                                    imageUrl: _getSchoolImageUrl(_selectedSchool!),
+                                    width: Responsive.w(42),
+                                    height: Responsive.h(42),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.school_rounded,
+                                  color: const Color(0xFF7F7FD5),
+                                  size: Responsive.sp(22),
+                                ),
                               ),
                             ),
                           ),
@@ -411,13 +411,13 @@ class _TeachersPageState extends State<TeachersPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: Responsive.h(20)),
                 // BODY: Teachers List
                 Expanded(
                   child: _isLoading
                       ? ListView.builder(
                           itemCount: 10,
-                          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 9.h),
+                          padding: Responsive.symmetric(horizontal: 18, vertical: 9),
                           itemBuilder: (c, i) {
                             return const ShimmerListTile(padding: null);
                           },
@@ -428,9 +428,9 @@ class _TeachersPageState extends State<TeachersPage> {
                               onRefresh: () => _loadTeachers(),
                               color: const Color(0xFF7F7FD5),
                               child: ListView.separated(
-                                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 9.h),
+                                padding: Responsive.symmetric(horizontal: 18, vertical: 9),
                                 itemCount: _filteredTeachers.length,
-                                separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                                separatorBuilder: (_, __) => SizedBox(height: Responsive.h(8)),
                                 itemBuilder: (ctx, idx) => _buildTeacherCard(_filteredTeachers[idx]),
                               ),
                             ),
@@ -447,16 +447,16 @@ class _TeachersPageState extends State<TeachersPage> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.only(top: 30.h),
+        padding: Responsive.only(top: 30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 100.w,
-              height: 100.h,
+              width: Responsive.w(100),
+              height: Responsive.h(100),
               child: SvgPicture.asset(AssetsManager.emptySvg, fit: BoxFit.contain),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: Responsive.h(20)),
             Text(
               _searchQuery.isNotEmpty ? 'no_teachers_found'.tr : 'no_teachers_available'.tr,
               style: AppFonts.h3.copyWith(
@@ -466,7 +466,7 @@ class _TeachersPageState extends State<TeachersPage> {
                 letterSpacing: 0.2,
               ),
             ),
-            SizedBox(height: 7.h),
+            SizedBox(height: Responsive.h(7)),
             Text(
               _searchQuery.isNotEmpty
                   ? 'try_adjusting_search_terms'.tr
@@ -486,11 +486,11 @@ class _TeachersPageState extends State<TeachersPage> {
   Widget _buildTeacherCard(Teacher teacher) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(Responsive.r(12)),
       elevation: 2,
       shadowColor: Colors.black.withOpacity(0.06),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         onTap: () {
           Get.toNamed(AppRoutes.teacherDetails, arguments: {
             'teacher': teacher,
@@ -498,17 +498,17 @@ class _TeachersPageState extends State<TeachersPage> {
           });
         },
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          padding: Responsive.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
             color: const Color(0xFF10B981).withOpacity(0.1),
           ),
           child: Row(
             children: [
               // AVATAR
               Container(
-                width: 48.w,
-                height: 48.w,
+                width: Responsive.w(48),
+                height: Responsive.w(48),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF10B981),
@@ -523,10 +523,10 @@ class _TeachersPageState extends State<TeachersPage> {
                 child: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
-                  size: 24.sp,
+                  size: Responsive.sp(24),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: Responsive.w(12)),
               // INFO
               Expanded(
                 child: Column(
@@ -538,24 +538,24 @@ class _TeachersPageState extends State<TeachersPage> {
                       style: AppFonts.bodyLarge.copyWith(
                         color: const Color(0xFF1F2937),
                         fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
+                        fontSize: Responsive.sp(15),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: Responsive.h(4)),
                     if (teacher.subject != null && teacher.subject!.isNotEmpty)
                       Container(
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(6.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(6)),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: Responsive.symmetric(horizontal: 8, vertical: 3),
                         child: Text(
                           teacher.subject!,
                           style: AppFonts.labelSmall.copyWith(
                             color: Colors.white,
-                            fontSize: 11.sp,
+                            fontSize: Responsive.sp(11),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -564,11 +564,11 @@ class _TeachersPageState extends State<TeachersPage> {
                 ),
               ),
               // Edit Button (Admin/Moderator only)
-              SizedBox(width: 8.w),
+              SizedBox(width: Responsive.w(8)),
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 color: const Color(0xFF9CA3AF),
-                size: 14.sp,
+                size: Responsive.sp(14),
               ),
             ],
           ),
@@ -598,15 +598,15 @@ class _TeachersPageState extends State<TeachersPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
+            topLeft: Radius.circular(Responsive.r(24)),
+            topRight: Radius.circular(Responsive.r(24)),
           ),
         ),
         child: Column(
           children: [
             // Header
             Container(
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: const Color(0xFFE5E7EB), width: 1),
@@ -651,7 +651,7 @@ class _TeachersPageState extends State<TeachersPage> {
             // Filter Content
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
+                padding: Responsive.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -664,17 +664,17 @@ class _TeachersPageState extends State<TeachersPage> {
                         
                       ),
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedGradeId,
                           isExpanded: true,
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: Responsive.symmetric(horizontal: 16),
                           hint: Text(
                             'select_grade'.tr,
                             style: AppFonts.bodyMedium.copyWith(
@@ -687,14 +687,14 @@ class _TeachersPageState extends State<TeachersPage> {
                               value: null,
                               child: Text(
                                 'all_grades'.tr,
-                                style: AppFonts.bodyMedium.copyWith(fontSize: 14.sp),
+                                style: AppFonts.bodyMedium.copyWith(fontSize: Responsive.sp(14)),
                               ),
                             ),
                             ..._grades.map((grade) => DropdownMenuItem<String>(
                               value: grade.id,
                               child: Text(
                                 grade.name,
-                                style: AppFonts.bodyMedium.copyWith(fontSize: 14.sp),
+                                style: AppFonts.bodyMedium.copyWith(fontSize: Responsive.sp(14)),
                               ),
                             )),
                           ],
@@ -706,7 +706,7 @@ class _TeachersPageState extends State<TeachersPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: Responsive.h(24)),
                     // Class Filter
                     Text(
                       'class'.tr,
@@ -716,17 +716,17 @@ class _TeachersPageState extends State<TeachersPage> {
                         
                       ),
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: Responsive.h(12)),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedClassId,
                           isExpanded: true,
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: Responsive.symmetric(horizontal: 16),
                           hint: Text(
                             'select_class'.tr,
                             style: AppFonts.bodyMedium.copyWith(
@@ -739,14 +739,14 @@ class _TeachersPageState extends State<TeachersPage> {
                               value: null,
                               child: Text(
                                 'all_classes'.tr,
-                                style: AppFonts.bodyMedium.copyWith(fontSize: 14.sp),
+                                style: AppFonts.bodyMedium.copyWith(fontSize: Responsive.sp(14)),
                               ),
                             ),
                             ..._classes.map((cls) => DropdownMenuItem<String>(
                               value: cls,
                               child: Text(
                                 cls,
-                                style: AppFonts.bodyMedium.copyWith(fontSize: 14.sp),
+                                style: AppFonts.bodyMedium.copyWith(fontSize: Responsive.sp(14)),
                               ),
                             )),
                           ],
@@ -764,7 +764,7 @@ class _TeachersPageState extends State<TeachersPage> {
             ),
             // Apply Button
             Container(
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: const Color(0xFFE5E7EB), width: 1),
@@ -781,9 +781,9 @@ class _TeachersPageState extends State<TeachersPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    padding: Responsive.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                     ),
                   ),
                   child: Text(
@@ -818,15 +818,15 @@ class _TeachersPageState extends State<TeachersPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
+            topLeft: Radius.circular(Responsive.r(24)),
+            topRight: Radius.circular(Responsive.r(24)),
           ),
         ),
         child: Column(
           children: [
             // Header
             Container(
-              padding: EdgeInsets.all(20.w),
+              padding: Responsive.all(20),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: const Color(0xFFE5E7EB), width: 1),
@@ -853,9 +853,9 @@ class _TeachersPageState extends State<TeachersPage> {
             // Schools List
             Expanded(
               child: ListView.separated(
-                padding: EdgeInsets.all(16.w),
+                padding: Responsive.all(16),
                 itemCount: _schools.length,
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                separatorBuilder: (_, __) => SizedBox(height: Responsive.h(12)),
                 itemBuilder: (context, index) {
                   final school = _schools[index];
                   final isSelected = _schoolId == school.id;
@@ -865,7 +865,7 @@ class _TeachersPageState extends State<TeachersPage> {
                     color: isSelected
                         ? AppColors.primaryBlue.withOpacity(0.08)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
                     child: InkWell(
                       onTap: () async {
                         Get.back();
@@ -880,11 +880,11 @@ class _TeachersPageState extends State<TeachersPage> {
                           await _loadTeachers();
                         }
                       },
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                       child: Container(
-                        padding: EdgeInsets.all(16.w),
+                        padding: Responsive.all(16),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.r),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primaryBlue
@@ -896,15 +896,15 @@ class _TeachersPageState extends State<TeachersPage> {
                           children: [
                             // School Image/Icon
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(10.r),
+                              borderRadius: BorderRadius.circular(Responsive.r(10)),
                               child: Container(
-                                width: 48.w,
-                                height: 48.h,
+                                width: Responsive.w(48),
+                                height: Responsive.h(48),
                                 child: imageUrl != null
                                     ? SafeSchoolImage(
                                         imageUrl: imageUrl,
-                                        width: 48.w,
-                                        height: 48.h,
+                                        width: Responsive.w(48),
+                                        height: Responsive.h(48),
                                       )
                                     : Container(
                                         decoration: BoxDecoration(
@@ -920,12 +920,12 @@ class _TeachersPageState extends State<TeachersPage> {
                                         child: Icon(
                                           Icons.school_rounded,
                                           color: Colors.white,
-                                          size: 24.sp,
+                                          size: Responsive.sp(24),
                                         ),
                                       ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            SizedBox(width: Responsive.w(12)),
                             // School Name
                             Expanded(
                               child: Text(
@@ -941,13 +941,13 @@ class _TeachersPageState extends State<TeachersPage> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(width: 8.w),
+                            SizedBox(width: Responsive.w(8)),
                             // Selected Indicator
                             if (isSelected)
                               Icon(
                                 Icons.check_circle_rounded,
                                 color: AppColors.primaryBlue,
-                                size: 24.sp,
+                                size: Responsive.sp(24),
                               ),
                           ],
                         ),

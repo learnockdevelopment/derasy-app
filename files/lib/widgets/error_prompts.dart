@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
@@ -17,8 +17,8 @@ class ErrorPrompts {
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: duration,
-      margin: EdgeInsets.all(16.w),
-      borderRadius: 12.r,
+      margin: Responsive.all(16),
+      borderRadius: Responsive.r(12),
       isDismissible: true,
       dismissDirection: DismissDirection.horizontal,
       forwardAnimationCurve: Curves.easeOutBack,
@@ -51,8 +51,8 @@ class ErrorPrompts {
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: duration,
-      margin: EdgeInsets.all(16.w),
-      borderRadius: 12.r,
+      margin: Responsive.all(16),
+      borderRadius: Responsive.r(12),
       isDismissible: true,
       dismissDirection: DismissDirection.horizontal,
       forwardAnimationCurve: Curves.easeOutBack,
@@ -85,8 +85,8 @@ class ErrorPrompts {
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: duration,
-      margin: EdgeInsets.all(16.w),
-      borderRadius: 12.r,
+      margin: Responsive.all(16),
+      borderRadius: Responsive.r(12),
       isDismissible: true,
       dismissDirection: DismissDirection.horizontal,
       forwardAnimationCurve: Curves.easeOutBack,

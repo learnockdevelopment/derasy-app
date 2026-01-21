@@ -42,7 +42,11 @@ class ApiConstants {
   static const String applyToSchoolsEndpoint = '/admission/apply';
   static const String createApplicationEndpoint = '/application';
   static const String getApplicationsEndpoint = '/application';
-  static const String getApplicationByIdEndpoint = '/application';
+  static const String getAdmissionApplicationsEndpoint = '/admission/applications';
+  static const String getSchoolApplicationsEndpoint = '/schools/my/[id]/admission-forms';
+  static const String getSingleApplicationEndpoint = '/me/applications/school/my';
+  static const String addApplicationEventEndpoint = '/me/applications/school/my/[id]/events';
+  static const String updateApplicationStatusEndpoint = '/me/applications/school/my/[id]/status';
 
   // Guardians Endpoints
   static const String updateStudentGuardiansEndpoint =

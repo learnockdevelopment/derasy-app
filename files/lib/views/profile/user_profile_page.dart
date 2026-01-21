@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -291,7 +291,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         backgroundColor: AppColors.primaryBlue,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -299,27 +299,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
           style: AppFonts.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
+            fontSize: Responsive.sp(18),
           ),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: Responsive.all(16),
           child: Column(
             children: [
               // User Profile Card with Image, Name, Email
               _buildProfileCard(),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
 
               // User Information Section
               _buildUserInfoSection(),
-              SizedBox(height: 16.h),
+              SizedBox(height: Responsive.h(16)),
 
+              // Wallet Section
+              _buildWalletSection(),
+              SizedBox(height: Responsive.h(16)),
 
               // Logout Button
               _buildLogoutButton(),
-              SizedBox(height: 32.h),
+              SizedBox(height: Responsive.h(32)),
             ],
           ),
         ),
@@ -339,10 +342,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
         _userData?['profileImage']?.toString();
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: Responsive.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -355,8 +358,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           // Profile Image
           Container(
-            width: 100.w,
-            height: 100.w,
+            width: Responsive.w(100),
+            height: Responsive.w(100),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
@@ -375,15 +378,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
               child: avatarUrl != null && avatarUrl.isNotEmpty
                   ? SafeNetworkImage(
                 imageUrl: avatarUrl,
-                width: 100.w,
-                height: 100.w,
+                width: Responsive.w(100),
+                height: Responsive.w(100),
                 fit: BoxFit.cover,
                 errorWidget: Container(
                   color: AppColors.primaryBlue,
                   child: Icon(
                     Icons.person_rounded,
                     color: Colors.white,
-                    size: 50.sp,
+                    size: Responsive.sp(50),
                   ),
                 ),
               )
@@ -392,41 +395,41 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
-                  size: 50.sp,
+                  size: Responsive.sp(50),
                 ),
               ),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: Responsive.h(16)),
           // User Name
           Text(
             userName,
             style: AppFonts.h3.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
-              fontSize: 20.sp,
+              fontSize: Responsive.sp(20),
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: Responsive.h(8)),
           // User Email
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.email_rounded,
-                size: 16.sp,
+                size: Responsive.sp(16),
                 color: AppColors.textSecondary,
               ),
-              SizedBox(width: 6.w),
+              SizedBox(width: Responsive.w(6)),
               Flexible(
                 child: Text(
                   userEmail,
                   style: AppFonts.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14.sp,
+                    fontSize: Responsive.sp(14),
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -442,10 +445,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildUserInfoSection() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: Responsive.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -460,40 +463,40 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8.w),
+                padding: Responsive.all(8),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10.r),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
                 ),
                 child: Icon(
                   Icons.person_outline_rounded,
                   color: AppColors.primaryBlue,
-                  size: 20.sp,
+                  size: Responsive.sp(20),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: Responsive.w(12)),
               Text(
                 'personal_information'.tr,
                 style: AppFonts.h4.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16.sp,
+                  fontSize: Responsive.sp(16),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: Responsive.h(20)),
 
           // Editable fields when in edit mode
           if (_isEditing) ...[
             _buildEditableField(
                 'full_name'.tr, _nameController, Icons.person_rounded),
-            SizedBox(height: 16.h),
+            SizedBox(height: Responsive.h(16)),
             _buildEditableField(
                 'phone'.tr, _phoneController, Icons.phone_rounded),
-            SizedBox(height: 16.h),
+            SizedBox(height: Responsive.h(16)),
             _buildAvatarField(),
-            SizedBox(height: 20.h),
+            SizedBox(height: Responsive.h(20)),
             _buildSaveCancelButtons(),
           ] else
             ...[
@@ -501,13 +504,107 @@ class _UserProfilePageState extends State<UserProfilePage> {
               _buildInfoRow(
                   'phone'.tr, _userData?['phone'] ?? 'N/A',
                   Icons.phone_rounded),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               _buildInfoRow('role'.tr, _userData?['role'] ?? 'N/A',
                   Icons.admin_panel_settings_rounded),
-              SizedBox(height: 12.h),
+              SizedBox(height: Responsive.h(12)),
               _buildInfoRow(
                   'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
             ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalletSection() {
+    return Container(
+      padding: Responsive.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: Colors.green,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: Responsive.w(12)),
+              Text(
+                'wallet_title'.tr,
+                style: AppFonts.h4.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () => Get.toNamed(AppRoutes.wallet),
+                child: Text('view_all'.tr),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(12)),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Get.toNamed(AppRoutes.wallet),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
+              child: Container(
+                padding: Responsive.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'current_balance'.tr,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_userData?['walletBalance']?.toString() ?? '0.00'} EGP',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -517,7 +614,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _buildLogoutButton() {
     return Container(
       width: double.infinity,
-      height: 56.h,
+      height: Responsive.h(56),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -527,7 +624,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFEF4444).withOpacity(0.3),
@@ -540,7 +637,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: _logout,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
           child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -550,7 +647,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   color: Colors.white,
                   size: AppFonts.size20,
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: Responsive.w(8)),
                 Text(
                   'logout'.tr,
                   style: AppFonts.bodyMedium.copyWith(
@@ -569,11 +666,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildInfoRow(String label, String value, IconData icon) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
+      margin: Responsive.only(bottom: 16),
+      padding: Responsive.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         border: Border.all(
           color: const Color(0xFFE5E7EB),
           width: 1,
@@ -584,9 +681,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Icon(
             icon,
             color: const Color(0xFF6B7280),
-            size: 20.sp,
+            size: Responsive.sp(20),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: Responsive.w(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,7 +696,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     fontSize: AppFonts.size12,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: Responsive.h(4)),
                 Text(
                   value,
                   style: AppFonts.bodyMedium.copyWith(
@@ -629,7 +726,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               color: const Color(0xFF6B7280),
               size: AppFonts.size18,
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: Responsive.w(8)),
             Text(
               label,
               style: AppFonts.bodyMedium.copyWith(
@@ -640,7 +737,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ],
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: Responsive.h(8)),
         TextFormField(
           controller: controller,
           style: AppFonts.bodyMedium.copyWith(
@@ -654,19 +751,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
               fontSize: AppFonts.size16,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
             ),
             contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            Responsive.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
       ],
@@ -681,9 +778,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
             onPressed: _isLoading ? null : _toggleEdit,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6B7280),
-              padding: EdgeInsets.symmetric(vertical: 12.h),
+              padding: Responsive.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
               ),
             ),
             child: Text(
@@ -696,21 +793,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ),
         ),
-        SizedBox(width: 12.w),
+        SizedBox(width: Responsive.w(12)),
         Expanded(
           child: ElevatedButton(
             onPressed: _isLoading ? null : _updateProfile,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
-              padding: EdgeInsets.symmetric(vertical: 12.h),
+              padding: Responsive.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
               ),
             ),
             child: _isLoading
                 ? SizedBox(
-              width: 20.w,
-              height: 20.h,
+              width: Responsive.w(20),
+              height: Responsive.h(20),
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -741,7 +838,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               color: const Color(0xFF6B7280),
               size: AppFonts.size18,
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: Responsive.w(8)),
             Text(
               'profile_picture'.tr,
               style: AppFonts.bodyMedium.copyWith(
@@ -752,43 +849,43 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: Responsive.h(12)),
         GestureDetector(
           onTap: _pickImage,
           child: Container(
             width: double.infinity,
-            height: 120.h,
+            height: Responsive.h(120),
             decoration: BoxDecoration(
               border: Border.all(
                 color: const Color(0xFFE5E7EB),
                 width: 2,
                 style: BorderStyle.solid,
               ),
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(Responsive.r(12)),
               color: const Color(0xFFF9FAFB),
             ),
             child: _selectedImage != null
                 ? ClipRRect(
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(Responsive.r(10)),
               child: Image.file(
                 _selectedImage!,
                 width: double.infinity,
-                height: 120.h,
+                height: Responsive.h(120),
                 fit: BoxFit.cover,
               ),
             )
-                : SafeNetworkImage(
+            : SafeNetworkImage(
               imageUrl: _userData?['avatar']?.toString(),
               width: double.infinity,
-              height: 120.h,
+              height: Responsive.h(120),
               fit: BoxFit.cover,
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(Responsive.r(10)),
               errorWidget: _buildAvatarPlaceholder(),
               placeholder: _buildAvatarPlaceholder(),
             ),
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: Responsive.h(8)),
         Center(
           child: Text(
             'tap_to_select_image_from_gallery'.tr,
@@ -805,7 +902,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _buildAvatarPlaceholder() {
     return Container(
       width: double.infinity,
-      height: 120.h,
+      height: Responsive.h(120),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -815,7 +912,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(Responsive.r(10)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -825,7 +922,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             color: Colors.white,
             size: AppFonts.size32,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: Responsive.h(8)),
           Text(
             'select_image'.tr,
             style: AppFonts.bodyMedium.copyWith(

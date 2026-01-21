@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -181,7 +181,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double heroHeight = Responsive.h(120);
+    Responsive.h(120);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -199,21 +199,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
             slivers: [
               // Hero Section with dynamic height
               SliverAppBar(
-                expandedHeight: heroHeight,
+                expandedHeight: Responsive.h(80),
                 floating: false,
                 pinned: true,
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 toolbarHeight: 0,
-                collapsedHeight: heroHeight,
+                collapsedHeight: Responsive.h(45),
                 flexibleSpace: FlexibleSpaceBar(
                   background: HeroSectionWidget(
                     userData: _userData,
                     pageTitle: 'my_students'.tr,
-                    actionButtonText: 'add_student'.tr,
-                    actionButtonIcon: IconlyBroken.plus,
-                    onActionTap: _navigateToAddChild,
                     showGreeting: false,
                   ),
                 ),
@@ -275,7 +272,55 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                   ),
                 ),
 
-              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: Responsive.all(16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primaryBlue, AppColors.primaryBlue.withOpacity(0.8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(Responsive.r(16)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _navigateToAddChild,
+                          borderRadius: BorderRadius.circular(Responsive.r(16)),
+                          child: Padding(
+                            padding: Responsive.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(IconlyBold.plus, color: Colors.white, size: Responsive.sp(20)),
+                                SizedBox(width: Responsive.w(12)),
+                                Text(
+                                  'add_student'.tr,
+                                  style: AppFonts.bodyLarge.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(14),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              SliverToBoxAdapter(child: SizedBox(height: Responsive.h(4))),
               // Students List
               isLoading && _filteredChildren.isEmpty
                   ? SliverList(
@@ -413,10 +458,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
         _schoolEducationSystems[schoolId] ?? child.schoolId.educationSystem;
 
     return Container(
-        margin: EdgeInsets.only(bottom: 12.h),
+        margin: Responsive.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryBlue.withOpacity(0.08),
@@ -451,16 +496,16 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                 children: [
                   // Delete icon - top left
                   // Positioned(
-                  //   top: 8.h,
-                  //   left: 8.w,
+                  //   top: Responsive.h(8),
+                  //   left: Responsive.w(8),
                   //   child: GestureDetector(
                   //     onTap: () => _showDeleteConfirmation(child),
                   //     child: Container(
-                  //       width: 32.w,
-                  //       height: 32.w,
+                  //       width: Responsive.w(32),
+                  //       height: Responsive.w(32),
                   //       decoration: BoxDecoration(
                   //         color: Colors.red.withOpacity(0.1),
-                  //         borderRadius: BorderRadius.circular(8.r),
+                  //         borderRadius: BorderRadius.circular(Responsive.r(8)),
                   //         border: Border.all(
                   //           color: Colors.red.withOpacity(0.3),
                   //           width: 1,
@@ -469,13 +514,13 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                   //       child: Icon(
                   //         IconlyBroken.delete,
                   //         color: Colors.red,
-                  //         size: 18.sp,
+                  //         size: Responsive.sp(18),
                   //       ),
                   //     ),
                   //   ),
                   // ),
                   Padding(
-                    padding: EdgeInsets.all(12.w),
+                    padding: Responsive.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -484,8 +529,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                        children: [
                         // Student Avatar/Initial Circle
                         Container(
-                          width: 40.w,
-                          height: 40.w,
+                          width: Responsive.w(40),
+                          height: Responsive.w(40),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -514,7 +559,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16.sp,
+                                fontSize: Responsive.sp(16),
                               ),
                             ),
                           ),
@@ -618,7 +663,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         style: AppFonts.h4.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15.sp,
+                          fontSize: Responsive.sp(15),
                           letterSpacing: 0.1,
                           height: 1.2,
                         ),
@@ -662,11 +707,11 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         'nationality'.tr,
                                         style: AppFonts.bodySmall.copyWith(
                                           color: AppColors.textSecondary,
-                                          fontSize: 10.sp,
+                                          fontSize: Responsive.sp(10),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      SizedBox(height: 1.h),
+                                      SizedBox(height: Responsive.h(1)),
                                       Text(
                                         _translateNationality(
                                             child.nationality),
@@ -807,17 +852,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         'age_in_coming_october'.tr,
                                         style: AppFonts.bodySmall.copyWith(
                                           color: AppColors.textSecondary,
-                                          fontSize: 10.sp,
+                                          fontSize: Responsive.sp(10),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      SizedBox(height: 1.h),
+
+                                      SizedBox(height: Responsive.h(1)),
                                       Text(
                                         _formatAgeInOctober(child.ageInOctober,
                                             child.birthDate),
                                         style: AppFonts.bodyMedium.copyWith(
                                           color: AppColors.textPrimary,
-                                          fontSize: 12.sp,
+                                          fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -904,10 +950,6 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       ),
     );
 }
-
-
-
-
 
   Widget _buildAdmissionButton(Student child) {
     final hasSchool = child.schoolId.id.isNotEmpty;
