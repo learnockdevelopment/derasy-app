@@ -248,7 +248,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             padding: Responsive.symmetric(horizontal: 16, vertical: 8),
             sliver: SliverGrid(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+                crossAxisCount: Responsive.isTablet || Responsive.isDesktop ? 4 : 2,
                 childAspectRatio: 0.68,
                 crossAxisSpacing: Responsive.w(12),
                 mainAxisSpacing: Responsive.h(12),
