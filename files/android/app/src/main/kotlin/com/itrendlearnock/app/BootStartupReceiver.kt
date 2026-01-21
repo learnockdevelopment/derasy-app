@@ -1,4 +1,4 @@
-package com.derassy.app
+package com.derasy.app
 
 
 import android.content.BroadcastReceiver

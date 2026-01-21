@@ -482,6 +482,20 @@ class CreateApplicationRequest {
   }
 }
 
+class ReorderApplicationsRequest {
+  final List<String> orderedIds;
+
+  ReorderApplicationsRequest({
+    required this.orderedIds,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'orderedIds': orderedIds,
+    };
+  }
+}
+
 // Response Models
 class ApplyToSchoolsResponse {
   final String message;

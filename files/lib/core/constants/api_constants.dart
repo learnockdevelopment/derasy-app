@@ -34,7 +34,11 @@ class ApiConstants {
   static const String getChildrenBySchoolEndpoint = '/children';
   static const String extractBirthCertificateEndpoint = '/children/extract-birth-certificate';
   static const String extractNationalIdEndpoint = '/children/extract-national-id';
+  static const String extractNationalIdEndpoint = '/children/extract-national-id';
   static const String submitNonEgyptianRequestEndpoint = '/children/non-egyptian-request';
+  static const String getNonEgyptianRequestsEndpoint = '/children/non-egyptian-requests';
+  static const String sendOtpEndpoint = '/children/send-otp';
+  static const String verifyOtpEndpoint = '/children/verify-otp';
   static const String updateChildEndpoint = '/children/get-related'; // PUT /api/children/get-related/[id]
   static const String deleteChildEndpoint = '/children/get-related'; // DELETE /api/children/get-related/[id]
 
@@ -42,7 +46,8 @@ class ApiConstants {
   static const String applyToSchoolsEndpoint = '/admission/apply';
   static const String createApplicationEndpoint = '/application';
   static const String getApplicationsEndpoint = '/application';
-  static const String getAdmissionApplicationsEndpoint = '/admission/applications';
+  static const String getAdmissionApplicationsEndpoint = '/me/applications';
+  static const String reorderApplicationsEndpoint = '/applications/reorder';
   static const String getSchoolApplicationsEndpoint = '/schools/my/[id]/admission-forms';
   static const String getSingleApplicationEndpoint = '/me/applications/school/my';
   static const String addApplicationEventEndpoint = '/me/applications/school/my/[id]/events';

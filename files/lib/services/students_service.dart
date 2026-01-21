@@ -1013,4 +1013,138 @@ class StudentsService {
       }
     }
   }
+
+  /// Send OTP to guardian for verification
+  static Future<Map<String, dynamic>> sendOtpToGuardian(
+      SendOtpRequest request) async {
+    try {
+      print('🔐 [OTP] Sending OTP to guardian');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.sendOtpEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🔐 [OTP] URL: $url');
+      print('🔐 [OTP] Body: ${jsonEncode(request.toJson())}');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      ).timeout(const Duration(seconds: 30));
+
+      print('🔐 [OTP] Response status: ${response.statusCode}');
+      print('🔐 [OTP] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else if (response.statusCode == 400) {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw StudentsException(
+            errorData['message']?.toString() ?? 'Bad request');
+      } else if (response.statusCode == 404) {
+        throw StudentsException('Guardian not found');
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw StudentsException(
+            errorData['message']?.toString() ?? 'Failed to send OTP');
+      }
+    } catch (e) {
+      print('🔐 [OTP] Error sending OTP: $e');
+      if (e is StudentsException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Verify OTP and link child
+  static Future<VerifyOtpResponse> verifyOtpAndLinkChild(
+      VerifyOtpRequest request) async {
+    try {
+      print('🔐 [OTP] Verifying OTP');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.verifyOtpEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🔐 [OTP] URL: $url');
+      print('🔐 [OTP] Body: ${jsonEncode(request.toJson())}');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      ).timeout(const Duration(seconds: 30));
+
+      print('🔐 [OTP] Response status: ${response.statusCode}');
+      print('🔐 [OTP] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        return VerifyOtpResponse.fromJson(responseData);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw StudentsException(
+            errorData['message']?.toString() ?? 'Failed to verify OTP');
+      }
+    } catch (e) {
+      print('🔐 [OTP] Error verifying OTP: $e');
+      if (e is StudentsException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get non-Egyptian child requests
+  static Future<NonEgyptianRequestsResponse> getNonEgyptianRequests() async {
+    try {
+      print('🌍 [NON_EGYPTIAN] Getting requests');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.getNonEgyptianRequestsEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🌍 [NON_EGYPTIAN] URL: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+
+      print('🌍 [NON_EGYPTIAN] Response status: ${response.statusCode}');
+      print('🌍 [NON_EGYPTIAN] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        return NonEgyptianRequestsResponse.fromJson(responseData);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw StudentsException(
+            errorData['message']?.toString() ?? 'Failed to get requests');
+      }
+    } catch (e) {
+      print('🌍 [NON_EGYPTIAN] Error getting requests: $e');
+      if (e is StudentsException) {
+        rethrow;
+      } else {
+        throw StudentsException('Network error: ${e.toString()}');
+      }
+    }
+  }
 }

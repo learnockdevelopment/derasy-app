@@ -52,7 +52,7 @@ afterEvaluate {
 }
 
 android {
-    namespace "com.derassy.app"
+    namespace "com.derasy.app"
     compileSdk 36
     ndkVersion "28.0.12674087"
     compileOptions {
@@ -76,7 +76,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.derassy.app"
+        applicationId = "com.derasy.app"
         minSdk = 24
         targetSdk = 36
         versionCode = flutterVersionCode.toInteger()

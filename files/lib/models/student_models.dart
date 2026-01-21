@@ -966,3 +966,160 @@ class StudentResponse {
     );
   }
 }
+
+// OTP Models
+class SendOtpRequest {
+  final String childId;
+  final String guardianUserId;
+  final String phoneNumber;
+
+  SendOtpRequest({
+    required this.childId,
+    required this.guardianUserId,
+    required this.phoneNumber,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'childId': childId,
+      'guardianUserId': guardianUserId,
+      'phoneNumber': phoneNumber,
+    };
+  }
+}
+
+class VerifyOtpRequest {
+  final String childId;
+  final String guardianUserId;
+  final String otp;
+
+  VerifyOtpRequest({
+    required this.childId,
+    required this.guardianUserId,
+    required this.otp,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'childId': childId,
+      'guardianUserId': guardianUserId,
+      'otp': otp,
+    };
+  }
+}
+
+class VerifyOtpResponse {
+  final String message;
+  final Student child;
+
+  VerifyOtpResponse({
+    required this.message,
+    required this.child,
+  });
+
+  factory VerifyOtpResponse.fromJson(Map<String, dynamic> json) {
+    return VerifyOtpResponse(
+      message: json['message']?.toString() ?? '',
+      child: Student.fromJson(json['child'] as Map<String, dynamic>),
+    );
+  }
+}
+
+// Non Egyptian Request Models
+class NonEgyptianRequest {
+  final String id;
+  final String fullName;
+  final String? arabicFullName;
+  final DateTime birthDate;
+  final String gender;
+  final String nationality;
+  final String status;
+  final RequestPassport parentPassport;
+  final RequestPassport childPassport;
+  final DateTime requestedAt;
+  final String? rejectionReason;
+  final SchoolInfo? schoolId;
+  final GradeInfo? grade;
+
+  NonEgyptianRequest({
+    required this.id,
+    required this.fullName,
+    this.arabicFullName,
+    required this.birthDate,
+    required this.gender,
+    required this.nationality,
+    required this.status,
+    required this.parentPassport,
+    required this.childPassport,
+    required this.requestedAt,
+    this.rejectionReason,
+    this.schoolId,
+    this.grade,
+  });
+
+  factory NonEgyptianRequest.fromJson(Map<String, dynamic> json) {
+    return NonEgyptianRequest(
+      id: json['_id'] ?? '',
+      fullName: json['fullName'] ?? '',
+      arabicFullName: json['arabicFullName'],
+      birthDate: json['birthDate'] != null
+          ? DateTime.parse(json['birthDate'])
+          : DateTime.now(),
+      gender: json['gender'] ?? '',
+      nationality: json['nationality'] ?? 'Non-Egyptian',
+      status: json['status'] ?? 'pending',
+      parentPassport: RequestPassport.fromJson(json['parentPassport'] ?? {}),
+      childPassport: RequestPassport.fromJson(json['childPassport'] ?? {}),
+      requestedAt: json['requestedAt'] != null
+          ? DateTime.parse(json['requestedAt'])
+          : DateTime.now(),
+      rejectionReason: json['rejectionReason'],
+      schoolId: json['schoolId'] != null && json['schoolId'] is Map
+          ? SchoolInfo.fromJson(json['schoolId'] as Map<String, dynamic>)
+          : null,
+      grade: json['grade'] != null && json['grade'] is Map
+          ? GradeInfo.fromJson(json['grade'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class RequestPassport {
+  final String url;
+  final DateTime? uploadedAt;
+
+  RequestPassport({
+    required this.url,
+    this.uploadedAt,
+  });
+
+  factory RequestPassport.fromJson(Map<String, dynamic> json) {
+    return RequestPassport(
+      url: json['url'] ?? '',
+      uploadedAt: json['uploadedAt'] != null
+          ? DateTime.parse(json['uploadedAt'])
+          : null,
+    );
+  }
+}
+
+class NonEgyptianRequestsResponse {
+  final List<NonEgyptianRequest> requests;
+  final int count;
+
+  NonEgyptianRequestsResponse({
+    required this.requests,
+    required this.count,
+  });
+
+  factory NonEgyptianRequestsResponse.fromJson(Map<String, dynamic> json) {
+    final requestsList = (json['requests'] as List<dynamic>?)
+            ?.map((e) => NonEgyptianRequest.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [];
+    return NonEgyptianRequestsResponse(
+      requests: requestsList,
+      count: json['count'] ?? requestsList.length,
+    );
+  }
+}

@@ -66,6 +66,52 @@ class AdmissionService {
     }
   }
 
+  /// Reorder applications priority
+  static Future<void> reorderApplications(
+      ReorderApplicationsRequest request) async {
+    try {
+      print('🎓 [ADMISSION] Reordering applications');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.reorderApplicationsEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🎓 [ADMISSION] URL: $url');
+      print('🎓 [ADMISSION] Body: ${jsonEncode(request.toJson())}');
+
+      final response = await http.put(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      ).timeout(const Duration(seconds: 30));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return;
+      } else if (response.statusCode == 401) {
+        throw AdmissionException('Unauthorized', 401);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to reorder applications',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error reordering applications: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
   /// Submit an admission application for a child to a school
   static Future<AdmissionApplyResponse> applyAdmission(
       AdmissionApplyRequest request) async {
