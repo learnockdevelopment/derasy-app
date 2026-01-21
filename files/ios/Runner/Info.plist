@@ -9,6 +9,12 @@
 		<key>YourPurposeKey</key>
 		<string>The example App requires temporary access to the device&apos;s precise location.</string>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take photos for your profile/assignments.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photos access to select images for your profile/assignments.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access for video recording.</string>
 	<key>AppLovinSdkKey</key>
 	<string>YOUR_SDK_KEY</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
