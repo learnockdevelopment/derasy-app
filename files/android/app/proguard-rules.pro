@@ -103,7 +103,7 @@
 }
 
 # Keep all classes in the app package
--keep class com.derasy.app.** { *; }
+-keep class com.derassy.app.** { *; }
 
 # Keep all model classes
 -keep class * extends java.lang.Object {
