@@ -11,7 +11,7 @@ import 'core/constants/app_fonts.dart';
 import 'core/controllers/app_translations.dart';
 import 'core/controllers/language_controller.dart';
 import 'core/controllers/app_config_controller.dart';
-import 'core/controllers/dashboard_controller.dart';
+import 'core/controllers/dashboard_controller.dart'; 
 
 void main() async {
   try {
