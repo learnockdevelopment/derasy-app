@@ -160,7 +160,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       slivers: [
         // Hero Section
         SliverAppBar(
-          expandedHeight: Responsive.h(80),
+          expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
           floating: false,
           pinned: true,
           automaticallyImplyLeading: false,

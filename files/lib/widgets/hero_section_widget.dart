@@ -96,7 +96,12 @@ class HeroSectionWidget extends StatelessWidget {
           ),
           // Content
           Padding(
-            padding: Responsive.only(left: 16, top: 50, right: 16, bottom: 6),
+            padding: Responsive.only(
+              left: 16, 
+              top: (Responsive.isTablet || Responsive.isDesktop) ? 70 : 50, 
+              right: 16, 
+              bottom: (Responsive.isTablet || Responsive.isDesktop) ? 20 : 6
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

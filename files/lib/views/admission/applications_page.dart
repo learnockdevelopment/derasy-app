@@ -159,7 +159,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             slivers: [
               if (_filterChildId == null)
                 SliverAppBar(
-                  expandedHeight: Responsive.h(80),
+                  expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
                   floating: false,
                   pinned: true,
                   automaticallyImplyLeading: false,

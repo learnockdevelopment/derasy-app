@@ -199,7 +199,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
             slivers: [
               // Hero Section with dynamic height
               SliverAppBar(
-                expandedHeight: Responsive.h(80),
+                expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
                 floating: false,
                 pinned: true,
                 automaticallyImplyLeading: false,
