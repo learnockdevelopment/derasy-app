@@ -753,6 +753,15 @@
   "step_mother": "الأم",
   "step_father": "الأب",
   "step_add_student": "إضافة طالب",
+  "login_succeeded": "تم تسجيل الدخول بنجاح",
+  "biometric_login": "تسجيل الدخول البيومتري",
+  "enable_biometric_login": "تفعيل الدخول البيومتري",
+  "confirm_password_for_biometric": "أكد كلمة المرور لتفعيل الدخول البيومتري",
+  "biometric_enabled_success": "تم تفعيل الدخول البيومتري بنجاح",
+  "biometric_disabled_success": "تم تعطيل الدخول البيومتري",
+  "scan_fingerprint": "امسح بصمتك لتسجيل الدخول",
+  "biometric_error": "فشل التحقق البيومتري",
+  "biometric_not_supported": "التحقق البيومتري غير مدعوم على هذا الجهاز",
   "choose_nationality_documents": "اختر الجنسية لتحديد المستندات المطلوبة",
   "invalid_national_id_title": "الرقم القومي غير صحيح",
   "invalid_national_id_message": "يرجى إدخال رقم قومي صحيح مكون من 14 رقماً",
@@ -1269,6 +1278,7 @@
   "scan_certificate": "مسح الشهادة",
   "scan_with_camera": "التقط صورة بكاميرا الهاتف",
   "position_certificate_in_frame": "ضع الشهادة في الإطار",
+  "position_id_in_frame": "ضع البطاقة في الإطار",
   "ensure_all_edges_are_visible": "تأكد من أن جميع الحواف مرئية",
   "tap_to_capture": "اضغط للإلتقاط",
   "camera_initialization_failed": "فشل في تهيئة الكاميرا",
@@ -1655,5 +1665,6 @@
   "iban_required": "رقم IBAN مطلوب",
   "account_number_required": "رقم الحساب مطلوب",
   "enter_bank_details_for_withdrawal": "أدخل تفاصيل حسابك البنكي لاستلام السحب",
-  "insufficient_balance": "الرصيد غير كافٍ لهذا السحب"
+  "insufficient_balance": "الرصيد غير كافٍ لهذا السحب",
+  "select_bank": "اختر البنك"
 }

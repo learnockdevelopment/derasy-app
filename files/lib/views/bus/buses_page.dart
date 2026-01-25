@@ -409,7 +409,7 @@ class _BusesPageState extends State<BusesPage> {
         ? '${bus.currentOccupancy ?? 0}'
         : '${bus.currentOccupancy ?? 0}/${bus.capacity}';
 
-    Color statusColor = AppColors.primaryBlue;
+    Color statusColor = AppColors.blue1;
     switch (bus.status) {
       case 'maintenance':
         statusColor = Colors.orange;
@@ -418,7 +418,7 @@ class _BusesPageState extends State<BusesPage> {
         statusColor = Colors.grey;
         break;
       default:
-        statusColor = AppColors.primaryBlue;
+        statusColor = AppColors.blue1;
     }
 
     return Padding(
@@ -455,10 +455,10 @@ class _BusesPageState extends State<BusesPage> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.08),
+                      color: AppColors.blue1.withOpacity(0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(IconlyBold.discovery, color: AppColors.primaryBlue, size: 20.sp),
+                    child: Icon(IconlyBold.discovery, color: AppColors.blue1, size: 20.sp),
                   ),
                   SizedBox(width: 8.w),
                   Expanded(
@@ -543,4 +543,5 @@ class _BusesPageState extends State<BusesPage> {
     );
   }
 }
+
 

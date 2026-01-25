@@ -475,3 +475,4 @@ class _LocationPickerState extends State<LocationPicker> {
     );
   }
 }
+

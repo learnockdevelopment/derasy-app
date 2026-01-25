@@ -288,7 +288,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       backgroundColor: AppColors.grey200,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
@@ -363,12 +363,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primaryBlue.withOpacity(0.3),
+                color: AppColors.blue1.withOpacity(0.3),
                 width: 3,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.2),
+                  color: AppColors.blue1.withOpacity(0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -382,7 +382,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 height: Responsive.w(100),
                 fit: BoxFit.cover,
                 errorWidget: Container(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   child: Icon(
                     Icons.person_rounded,
                     color: Colors.white,
@@ -391,7 +391,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               )
                   : Container(
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
                 child: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
@@ -465,12 +465,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
               Container(
                 padding: Responsive.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  color: AppColors.blue1.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(Responsive.r(10)),
                 ),
                 child: Icon(
                   Icons.person_outline_rounded,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: Responsive.sp(20),
                 ),
               ),
@@ -510,6 +510,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
               SizedBox(height: Responsive.h(12)),
               _buildInfoRow(
                   'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
+              SizedBox(height: Responsive.h(16)),
+              InkWell(
+                onTap: () => Get.toNamed(AppRoutes.settings),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                child: Container(
+                  padding: Responsive.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue1.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                    border: Border.all(
+                      color: AppColors.blue1.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.settings_rounded,
+                        color: AppColors.blue1,
+                        size: Responsive.sp(20),
+                      ),
+                      SizedBox(width: Responsive.w(16)),
+                      Text(
+                        'settings'.tr,
+                        style: AppFonts.bodyMedium.copyWith(
+                          color: AppColors.blue1,
+                          fontWeight: FontWeight.w600,
+                          fontSize: AppFonts.size14,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: AppColors.blue1,
+                        size: Responsive.sp(16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
         ],
       ),
@@ -937,3 +977,4 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
 }
+

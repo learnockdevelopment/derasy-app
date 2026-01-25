@@ -59,7 +59,7 @@ class _CountrySelectorState extends State<CountrySelector> {
             Container(
               padding: Responsive.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(Responsive.r(20)),
                   topRight: Radius.circular(Responsive.r(20)),
@@ -139,7 +139,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primaryBlue.withOpacity(0.1)
+                            ? AppColors.blue1.withOpacity(0.1)
                             : Colors.transparent,
                         border: Border(
                           bottom: BorderSide(
@@ -177,7 +177,7 @@ class _CountrySelectorState extends State<CountrySelector> {
                           if (isSelected)
                             Icon(
                               Icons.check,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               size: Responsive.w(20),
                             ),
                         ],
@@ -193,3 +193,4 @@ class _CountrySelectorState extends State<CountrySelector> {
     );
   }
 }
+

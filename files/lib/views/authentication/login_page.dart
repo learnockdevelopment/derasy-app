@@ -14,6 +14,7 @@ import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
 import '../../core/controllers/dashboard_controller.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key); 
@@ -37,6 +38,10 @@ class _LoginPageState extends State<LoginPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  // Biometric
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometric = false;
 
   @override
   void initState() {
@@ -65,6 +70,7 @@ class _LoginPageState extends State<LoginPage>
     ));
 
     _animationController.forward();
+    _checkBiometrics();
     
     // Set initial chat button position after frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -365,7 +371,7 @@ class _LoginPageState extends State<LoginPage>
             ? loginResponse.message 
             : 'welcome_back_message'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
@@ -421,6 +427,46 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
+
+  Future<void> _checkBiometrics() async {
+    try {
+      final canCheck = await auth.canCheckBiometrics;
+      final isEnabled = UserStorageService.isBiometricEnabled();
+      final creds = UserStorageService.getBiometricCredentials();
+      if (mounted) {
+        setState(() {
+          _canCheckBiometric = canCheck && isEnabled && creds != null;
+        });
+      }
+    } catch (e) {
+      print('Biometric check failed: $e');
+    }
+  }
+
+  Future<void> _triggerBiometric() async {
+    try {
+      final didAuthenticate = await auth.authenticate(
+        localizedReason: 'scan_fingerprint'.tr,
+        options: const AuthenticationOptions(stickyAuth: true),
+      );
+      if (didAuthenticate) {
+        final creds = UserStorageService.getBiometricCredentials();
+        if (creds != null) {
+          setState(() {
+            _isPhoneLogin = false; // Force email mode to use the stored email/username
+            _emailController.text = creds['email']!;
+            _passwordController.text = creds['password']!;
+          });
+          _handleLogin();
+        }
+      }
+    } catch (e) {
+      Get.snackbar('error'.tr, 'biometric_error'.tr, 
+          snackPosition: SnackPosition.BOTTOM, 
+          backgroundColor: AppColors.error, 
+          colorText: Colors.white);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -497,7 +543,7 @@ class _LoginPageState extends State<LoginPage>
                             FadeTransition(
                               opacity: _fadeAnimation,
                               child: Image.asset(
-                                AssetsManager.logo,
+                                AssetsManager.login,
                                 width: Responsive.w(90),
                                 height: Responsive.w(90),
                                 fit: BoxFit.contain,
@@ -789,47 +835,64 @@ class _LoginPageState extends State<LoginPage>
                                   child: ElevatedButton(
                                     onPressed: _isLoading ? null : _handleLogin,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryBlue,
+                                      backgroundColor: AppColors.blue1,
                                       foregroundColor: Colors.white,
                                       elevation: 6,
                                       disabledBackgroundColor: AppColors.grey300,
                                       side: BorderSide(
-                                        color: AppColors.primaryBlue,
+                                        color: AppColors.blue1,
                                         width: Responsive.w(2),
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(Responsive.r(14)),
+                                        borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       ),
                                     ),
                                     child: _isLoading
                                         ? SizedBox(
-                                            height: Responsive.h(20),
-                                            width: Responsive.w(20),
+                                            height: Responsive.w(24),
+                                            width: Responsive.w(24),
                                             child: CircularProgressIndicator(
                                               color: Colors.white,
-                                              strokeWidth: 2,
+                                              strokeWidth: Responsive.w(2),
                                             ),
                                           )
-                                        : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                IconlyBold.login,
-                                                size: Responsive.sp(22),
-                                              ),
-                                              SizedBox(width: Responsive.w(8)),
-                                              Text(
-                                                'login'.tr,
-                                                style: AppFonts.AlmaraiBold16.copyWith(
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
+                                        : Text(
+                                            'login'.tr,
+                                            style: AppFonts.AlmaraiBold16.copyWith(
+                                              color: Colors.white,
+                                            ),
                                           ),
                                   ),
                                 ),
-                                SizedBox(height: Responsive.h(12)),
-
+                                
+                                if (_canCheckBiometric) ...[
+                                  SizedBox(height: Responsive.h(20)),
+                                  InkWell(
+                                    onTap: _triggerBiometric,
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.blue1.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppColors.blue1.withOpacity(0.3)),
+                                      ),
+                                      child: Icon(
+                                        Icons.fingerprint,
+                                        size: 40,
+                                        color: AppColors.blue1,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'biometric_login'.tr,
+                                    style: TextStyle(
+                                      color: AppColors.blue1, 
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
                                 // Login with Email/Phone Toggle
                                 TextButton(
                                   onPressed: () {
@@ -850,6 +913,7 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ),
                         ),
+
 
                         SizedBox(height: Responsive.h(20)),
 
@@ -877,6 +941,49 @@ class _LoginPageState extends State<LoginPage>
                           ],
                         ),
 
+                        SizedBox(height: Responsive.h(24)),
+
+                        // Terms and Privacy Policy
+                        Padding(
+                          padding: Responsive.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  _showPolicyDialog(context, 'privacy_policy'.tr, 'privacy_policy_content'.tr);
+                                },
+                                child: Text(
+                                  'privacy_policy'.tr,
+                                  style: AppFonts.AlmaraiRegular12.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: Responsive.symmetric(horizontal: 8),
+                                child: Text(
+                                  '|',
+                                  style: AppFonts.AlmaraiRegular12.copyWith(
+                                    color: AppColors.grey400,
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _showPolicyDialog(context, 'terms_conditions'.tr, 'terms_conditions_content'.tr);
+                                },
+                                child: Text(
+                                  'terms_conditions'.tr,
+                                  style: AppFonts.AlmaraiRegular12.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         SizedBox(height: Responsive.h(40)),
                       ],
                     ),
@@ -886,9 +993,7 @@ class _LoginPageState extends State<LoginPage>
             ),
           ],
         ),
-      ),
-
-      // Draggable Floating Chat Button
+      ),      // Draggable Floating Chat Button
       Positioned(
         left: _chatButtonPosition.dx,
         top: _chatButtonPosition.dy,
@@ -900,10 +1005,10 @@ class _LoginPageState extends State<LoginPage>
               height: Responsive.h(56),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryGreen,
+                color: AppColors.blue1,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryGreen.withOpacity(0.4),
+                    color: AppColors.blue1.withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
@@ -920,7 +1025,7 @@ class _LoginPageState extends State<LoginPage>
             opacity: 0.3,
             child: FloatingActionButton(
               onPressed: null,
-              backgroundColor: AppColors.primaryGreen,
+              backgroundColor: AppColors.blue1,
               elevation: 0,
               child: Icon(
                 IconlyBold.chat,
@@ -946,7 +1051,7 @@ class _LoginPageState extends State<LoginPage>
             onPressed: () {
               Get.toNamed(AppRoutes.chatbot);
             },
-            backgroundColor: AppColors.primaryGreen,
+            backgroundColor: AppColors.blue1,
             elevation: 6,
             child: Icon(
               IconlyBold.chat,
@@ -960,4 +1065,43 @@ class _LoginPageState extends State<LoginPage>
     ),
     );
   }
+
+
+  void _showPolicyDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          title,
+          style: AppFonts.AlmaraiBold18.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            content,
+            style: AppFonts.AlmaraiRegular14.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'close'.tr,
+              style: AppFonts.AlmaraiBold14.copyWith(
+                color: AppConfigController.to.primaryColorAsColor,
+              ),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
+        ),
+      ),
+    );
+  }
 }
+

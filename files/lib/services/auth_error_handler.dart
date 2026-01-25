@@ -31,3 +31,4 @@ class AuthErrorHandler {
     return false;
   }
 }
+

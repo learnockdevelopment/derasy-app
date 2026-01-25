@@ -152,7 +152,7 @@ class _AddProductPageState extends State<AddProductPage> {
           'success'.tr,
           'product_added_successfully'.tr,
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           colorText: Colors.white,
         );
         Get.back(result: true);
@@ -181,7 +181,7 @@ class _AddProductPageState extends State<AddProductPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'add_product'.tr,
@@ -277,7 +277,7 @@ class _AddProductPageState extends State<AddProductPage> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
+                          backgroundColor: AppColors.blue1,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
@@ -350,7 +350,7 @@ class _AddProductPageState extends State<AddProductPage> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+          prefixIcon: Icon(icon, color: AppColors.blue1, size: 20.sp),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
@@ -395,7 +395,7 @@ class _AddProductPageState extends State<AddProductPage> {
         value: value,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+          prefixIcon: Icon(icon, color: AppColors.blue1, size: 20.sp),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
@@ -448,7 +448,7 @@ class _AddProductPageState extends State<AddProductPage> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.primaryBlue,
+            activeColor: AppColors.blue1,
           ),
         ],
       ),
@@ -497,7 +497,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     }
                   });
                 },
-                selectedColor: AppColors.primaryBlue,
+                selectedColor: AppColors.blue1,
                 labelStyle: AppFonts.bodySmall.copyWith(
                   color: isSelected ? Colors.white : const Color(0xFF1F2937),
                   fontSize: AppFonts.size12,
@@ -510,4 +510,5 @@ class _AddProductPageState extends State<AddProductPage> {
     );
   }
 }
+
 

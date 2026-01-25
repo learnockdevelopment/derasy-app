@@ -73,7 +73,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
               children: [
                 Icon(
                   IconlyBold.profile,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: Responsive.sp(24),
                 ),
                 SizedBox(width: Responsive.w(12)),
@@ -177,21 +177,32 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
         ),
         child: Row(
           children: [
-            // Avatar (now pill-shaped with full name)
+            // Student Avatar
             Container(
-              padding: Responsive.symmetric(horizontal: 12, vertical: 8),
+              width: Responsive.w(48),
+              height: Responsive.w(48),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(Responsive.r(20)), // Pill shape
+                color: AppColors.blue1.withOpacity(0.1),
+                shape: BoxShape.circle,
+                image: (child.profileImage != null || child.avatar != null)
+                    ? DecorationImage(
+                        image: NetworkImage(child.profileImage ?? child.avatar!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: Text(
-                displayName.isNotEmpty ? displayName : 'Student',
-                style: AppFonts.bodyMedium.copyWith(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: Responsive.sp(12),
-                ),
-              ),
+              child: (child.profileImage == null && child.avatar == null)
+                  ? Center(
+                      child: Text(
+                        _getInitials(displayName),
+                        style: AppFonts.h4.copyWith(
+                          color: AppColors.blue1,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(16),
+                        ),
+                      ),
+                    )
+                  : null,
             ),
             SizedBox(width: Responsive.w(16)),
             
@@ -205,7 +216,10 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                     style: AppFonts.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
+                      fontSize: Responsive.sp(14),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: Responsive.h(4)),
                   Row(
@@ -221,6 +235,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                           schoolName,
                           style: AppFonts.bodySmall.copyWith(
                             color: AppColors.textSecondary,
+                            fontSize: Responsive.sp(12),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -234,7 +249,9 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
             
             // Arrow
             Icon(
-              IconlyBroken.arrow_left_2,
+              Get.locale?.languageCode == 'ar' 
+                  ? IconlyBroken.arrow_left_2 
+                  : IconlyBroken.arrow_right_2,
               color: AppColors.grey400,
               size: Responsive.sp(20),
             ),
@@ -243,4 +260,14 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
       ),
     );
   }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'S';
+    List<String> parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
 }
+

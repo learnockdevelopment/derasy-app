@@ -76,7 +76,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       case 'pending':
         return AppColors.warning;
       case 'under_review':
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
       case 'recommended':
         return const Color(0xFF6366F1);
       case 'accepted':
@@ -115,7 +115,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(20)),
@@ -147,7 +147,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(20)),
@@ -190,377 +190,384 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       ),
       body: SingleChildScrollView(
         padding: Responsive.all(12),
-        child: Column(
-          children: [
-            // Compact Status Header
-            Container(
-              width: double.infinity,
-              padding: Responsive.all(12),
-              margin: Responsive.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: statusColor,
-                borderRadius: BorderRadius.circular(Responsive.r(12)),
-                boxShadow: [
-                  BoxShadow(
-                    color: statusColor.withOpacity(0.3),
-                    blurRadius: Responsive.r(8),
-                    offset: Offset(0, Responsive.h(4)),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: Responsive.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(Responsive.r(10)),
-                    ),
-                    child: Icon(
-                      _getStatusIcon(app.status, isPaid),
-                      color: statusColor,
-                      size: Responsive.sp(20),
-                    ),
-                  ),
-                  SizedBox(width: Responsive.w(12)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _getStatusLabel(app.status, isPaid),
-                          style: AppFonts.h4.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(16),
-                          ),
-                        ),
-                        SizedBox(height: Responsive.h(4)),
-                        Text(
-                          '${'id'.tr}: ${app.id.substring(0, 8).toUpperCase()}',
-                          style: AppFonts.bodySmall.copyWith(
-                            color: Colors.white,
-                            fontSize: Responsive.sp(11),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: Responsive.isDesktop ? 900 : (Responsive.isTablet ? 700 : double.infinity),
             ),
-
-            // School Information
-            _buildInfoCard(
-              icon: Icons.school_rounded,
-              iconColor: const Color(0xFF6366F1),
-              title: 'school_information'.tr,
+            child: Column(
               children: [
-                _buildInfoRow(
-                  icon: Icons.business,
-                  label: 'school_name'.tr,
-                  value: app.school.name,
-                  isHighlight: true,
-                ),
-                if (app.school.address != null) ...[
-                  SizedBox(height: Responsive.h(8)),
-                  _buildInfoRow(
-                    icon: Icons.location_on,
-                    label: 'address'.tr,
-                    value: app.school.address!,
-                  ),
-                ],
-              ],
-            ),
-            SizedBox(height: Responsive.h(10)),
-
-            // Child Information
-            _buildInfoCard(
-              icon: Icons.child_care_rounded,
-              iconColor: const Color(0xFF10B981),
-              title: 'student_information'.tr,
-              children: [
-                _buildInfoRow(
-                  icon: Icons.person,
-                  label: 'full_name'.tr,
-                  value: app.child.arabicFullName ?? app.child.fullName,
-                  isHighlight: true,
-                ),
-                if (app.child.birthDate != null) ...[
-                  SizedBox(height: Responsive.h(8)),
-                  _buildInfoRow(
-                    icon: Icons.cake,
-                    label: 'birth_date'.tr,
-                    value: _formatDate(app.child.birthDate!),
-                  ),
-                ],
-                if (app.child.gender != null) ...[
-                  SizedBox(height: Responsive.h(8)),
-                  _buildInfoRow(
-                    icon: Icons.wc,
-                    label: 'gender'.tr,
-                    value: app.child.gender!.toLowerCase() == 'male' ? 'male'.tr : 'female'.tr,
-                  ),
-                ],
-              ],
-            ),
-            SizedBox(height: Responsive.h(10)),
-
-            // Payment Information
-            if (app.payment != null)
-              _buildInfoCard(
-                icon: Icons.payments_rounded,
-                iconColor: app.payment!.isPaid
-                    ? AppColors.success
-                    : AppColors.warning,
-                title: 'payment_information'.tr,
-                children: [
-                  Container(
-                    padding: Responsive.all(10),
-                    decoration: BoxDecoration(
-                      color: (app.payment!.isPaid
-                              ? AppColors.success
-                              : AppColors.warning)
-                          .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(Responsive.r(10)),
-                      border: Border.all(
-                        color: (app.payment!.isPaid
-                                ? AppColors.success
-                                : AppColors.warning)
-                            .withOpacity(0.3),
-                        width: 1.5,
+                // Compact Status Header
+                Container(
+                  width: double.infinity,
+                  padding: Responsive.all(12),
+                  margin: Responsive.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: statusColor.withOpacity(0.3),
+                        blurRadius: Responsive.r(8),
+                        offset: Offset(0, Responsive.h(4)),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: Responsive.all(6),
-                          decoration: BoxDecoration(
-                            color: app.payment!.isPaid
-                                ? AppColors.success
-                                : AppColors.warning,
-                            borderRadius: BorderRadius.circular(Responsive.r(8)),
-                          ),
-                          child: Icon(
-                            app.payment!.isPaid
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            color: Colors.white,
-                            size: Responsive.sp(16),
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(10)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                app.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
-                                style: AppFonts.h4.copyWith(
-                                  color: app.payment!.isPaid
-                                      ? AppColors.success
-                                      : AppColors.warning,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: Responsive.sp(13),
-                                ),
-                              ),
-                              SizedBox(height: Responsive.h(2)),
-                              Text(
-                                '${app.payment!.amount} ${'egp'.tr}',
-                                style: AppFonts.bodyMedium.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontSize: Responsive.sp(13),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            if (app.payment != null) SizedBox(height: Responsive.h(10)),
-
-            // Application Details
-            _buildInfoCard(
-              icon: Icons.info_outline_rounded,
-              iconColor: AppColors.primaryBlue,
-              title: 'application_details_title'.tr,
-              children: [
-                _buildInfoRow(
-                  icon: Icons.fingerprint,
-                  label: 'application_id_label'.tr,
-                  value: app.id,
-                  copyable: true,
-                ),
-                SizedBox(height: Responsive.h(8)),
-                _buildInfoRow(
-                  icon: Icons.calendar_today,
-                  label: 'submitted_date'.tr,
-                  value: _formatDate(app.submittedAt ?? app.createdAt),
-                ),
-                SizedBox(height: Responsive.h(8)),
-                _buildInfoRow(
-                  icon: Icons.update,
-                  label: 'last_updated'.tr,
-                  value: _formatDate(app.updatedAt),
-                ),
-                if (app.notes != null && app.notes!.isNotEmpty) ...[
-                  SizedBox(height: Responsive.h(8)),
-                  Container(
-                    padding: Responsive.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.grey100,
-                      borderRadius: BorderRadius.circular(Responsive.r(10)),
-                      border: Border.all(
-                        color: AppColors.borderLight,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.note,
-                          size: Responsive.sp(14),
-                          color: AppColors.textSecondary,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: Responsive.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(Responsive.r(10)),
                         ),
-                        SizedBox(width: Responsive.w(10)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'notes'.tr,
-                                style: AppFonts.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: Responsive.sp(10),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: Responsive.h(3)),
-                              Text(
-                                app.notes!,
-                                style: AppFonts.bodyMedium.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontSize: Responsive.sp(12),
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: Icon(
+                          _getStatusIcon(app.status, isPaid),
+                          color: statusColor,
+                          size: Responsive.sp(20),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            
-            // Confirmed Interview (if exists)
-            if (app.interview?.date != null) ...[
-              SizedBox(height: Responsive.h(10)),
-              _buildInfoCard(
-                icon: Icons.event_available_rounded,
-                iconColor: AppColors.success,
-                title: 'interview_scheduled'.tr,
-                children: [
-                  Container(
-                    padding: Responsive.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(Responsive.r(10)),
-                      border: Border.all(
-                        color: AppColors.success.withOpacity(0.2),
-                        width: 1,
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                      SizedBox(width: Responsive.w(12)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.calendar_today, size: Responsive.sp(14), color: AppColors.success),
-                            SizedBox(width: Responsive.w(8)),
                             Text(
-                              _formatDate(app.interview!.date!),
-                              style: AppFonts.bodyMedium.copyWith(
-                                color: AppColors.textPrimary,
+                              _getStatusLabel(app.status, isPaid),
+                              style: AppFonts.h4.copyWith(
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: Responsive.sp(13),
+                                fontSize: Responsive.sp(16),
+                              ),
+                            ),
+                            SizedBox(height: Responsive.h(4)),
+                            Text(
+                              '${'id'.tr}: ${app.id.substring(0, 8).toUpperCase()}',
+                              style: AppFonts.bodySmall.copyWith(
+                                color: Colors.white,
+                                fontSize: Responsive.sp(11),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        if (app.interview!.time?.isNotEmpty ?? false) ...[
-                          SizedBox(height: Responsive.h(8)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
-                              SizedBox(width: Responsive.w(8)),
-                              Expanded(
-                                child: Text(
-                                  _formatTimeDisplay(app.interview!.time),
-                                  style: AppFonts.bodyMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontSize: Responsive.sp(12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (app.interview!.location != null) ...[
-                          SizedBox(height: Responsive.h(8)),
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
-                              SizedBox(width: Responsive.w(8)),
-                              Expanded(
-                                child: Text(
-                                  app.interview!.location!,
-                                  style: AppFonts.bodyMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontSize: Responsive.sp(12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+    
+                // School Information
+                _buildInfoCard(
+                  icon: Icons.school_rounded,
+                  iconColor: const Color(0xFF6366F1),
+                  title: 'school_information'.tr,
+                  children: [
+                    _buildInfoRow(
+                      icon: Icons.business,
+                      label: 'school_name'.tr,
+                      value: app.school.name,
+                      isHighlight: true,
                     ),
+                    if (app.school.address != null) ...[
+                      SizedBox(height: Responsive.h(8)),
+                      _buildInfoRow(
+                        icon: Icons.location_on,
+                        label: 'address'.tr,
+                        value: app.school.address!,
+                      ),
+                    ],
+                  ],
+                ),
+                SizedBox(height: Responsive.h(10)),
+    
+                // Child Information
+                _buildInfoCard(
+                  icon: Icons.child_care_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  title: 'student_information'.tr,
+                  children: [
+                    _buildInfoRow(
+                      icon: Icons.person,
+                      label: 'full_name'.tr,
+                      value: app.child.arabicFullName ?? app.child.fullName,
+                      isHighlight: true,
+                    ),
+                    if (app.child.birthDate != null) ...[
+                      SizedBox(height: Responsive.h(8)),
+                      _buildInfoRow(
+                        icon: Icons.cake,
+                        label: 'birth_date'.tr,
+                        value: _formatDate(app.child.birthDate!),
+                      ),
+                    ],
+                    if (app.child.gender != null) ...[
+                      SizedBox(height: Responsive.h(8)),
+                      _buildInfoRow(
+                        icon: Icons.wc,
+                        label: 'gender'.tr,
+                        value: app.child.gender!.toLowerCase() == 'male' ? 'male'.tr : 'female'.tr,
+                      ),
+                    ],
+                  ],
+                ),
+                SizedBox(height: Responsive.h(10)),
+    
+                // Payment Information
+                if (app.payment != null)
+                  _buildInfoCard(
+                    icon: Icons.payments_rounded,
+                    iconColor: app.payment!.isPaid
+                        ? AppColors.success
+                        : AppColors.warning,
+                    title: 'payment_information'.tr,
+                    children: [
+                      Container(
+                        padding: Responsive.all(10),
+                        decoration: BoxDecoration(
+                          color: (app.payment!.isPaid
+                                  ? AppColors.success
+                                  : AppColors.warning)
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(Responsive.r(10)),
+                          border: Border.all(
+                            color: (app.payment!.isPaid
+                                    ? AppColors.success
+                                    : AppColors.warning)
+                                .withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: Responsive.all(6),
+                              decoration: BoxDecoration(
+                                color: app.payment!.isPaid
+                                    ? AppColors.success
+                                    : AppColors.warning,
+                                borderRadius: BorderRadius.circular(Responsive.r(8)),
+                              ),
+                              child: Icon(
+                                app.payment!.isPaid
+                                    ? Icons.check_circle
+                                    : Icons.pending,
+                                color: Colors.white,
+                                size: Responsive.sp(16),
+                              ),
+                            ),
+                            SizedBox(width: Responsive.w(10)),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    app.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
+                                    style: AppFonts.h4.copyWith(
+                                      color: app.payment!.isPaid
+                                          ? AppColors.success
+                                          : AppColors.warning,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(13),
+                                    ),
+                                  ),
+                                  SizedBox(height: Responsive.h(2)),
+                                  Text(
+                                    '${app.payment!.amount} ${'egp'.tr}',
+                                    style: AppFonts.bodyMedium.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontSize: Responsive.sp(13),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                if (app.payment != null) SizedBox(height: Responsive.h(10)),
+    
+                // Application Details
+                _buildInfoCard(
+                  icon: Icons.info_outline_rounded,
+                  iconColor: AppColors.blue1,
+                  title: 'application_details_title'.tr,
+                  children: [
+                    _buildInfoRow(
+                      icon: Icons.fingerprint,
+                      label: 'application_id_label'.tr,
+                      value: app.id,
+                      copyable: true,
+                    ),
+                    SizedBox(height: Responsive.h(8)),
+                    _buildInfoRow(
+                      icon: Icons.calendar_today,
+                      label: 'submitted_date'.tr,
+                      value: _formatDate(app.submittedAt ?? app.createdAt),
+                    ),
+                    SizedBox(height: Responsive.h(8)),
+                    _buildInfoRow(
+                      icon: Icons.update,
+                      label: 'last_updated'.tr,
+                      value: _formatDate(app.updatedAt),
+                    ),
+                    if (app.notes != null && app.notes!.isNotEmpty) ...[
+                      SizedBox(height: Responsive.h(8)),
+                      Container(
+                        padding: Responsive.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.grey100,
+                          borderRadius: BorderRadius.circular(Responsive.r(10)),
+                          border: Border.all(
+                            color: AppColors.borderLight,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.note,
+                              size: Responsive.sp(14),
+                              color: AppColors.textSecondary,
+                            ),
+                            SizedBox(width: Responsive.w(10)),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'notes'.tr,
+                                    style: AppFonts.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontSize: Responsive.sp(10),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(height: Responsive.h(3)),
+                                  Text(
+                                    app.notes!,
+                                    style: AppFonts.bodyMedium.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontSize: Responsive.sp(12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                
+                // Confirmed Interview (if exists)
+                if (app.interview?.date != null) ...[
+                  SizedBox(height: Responsive.h(10)),
+                  _buildInfoCard(
+                    icon: Icons.event_available_rounded,
+                    iconColor: AppColors.success,
+                    title: 'interview_scheduled'.tr,
+                    children: [
+                      Container(
+                        padding: Responsive.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(Responsive.r(10)),
+                          border: Border.all(
+                            color: AppColors.success.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today, size: Responsive.sp(14), color: AppColors.success),
+                                SizedBox(width: Responsive.w(8)),
+                                Text(
+                                  _formatDate(app.interview!.date!),
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (app.interview!.time?.isNotEmpty ?? false) ...[
+                              SizedBox(height: Responsive.h(8)),
+                              Row(
+                                children: [
+                                  Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
+                                  SizedBox(width: Responsive.w(8)),
+                                  Expanded(
+                                    child: Text(
+                                      _formatTimeDisplay(app.interview!.time),
+                                      style: AppFonts.bodyMedium.copyWith(
+                                        color: AppColors.textPrimary,
+                                        fontSize: Responsive.sp(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (app.interview!.location != null) ...[
+                              SizedBox(height: Responsive.h(8)),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
+                                  SizedBox(width: Responsive.w(8)),
+                                  Expanded(
+                                    child: Text(
+                                      app.interview!.location!,
+                                      style: AppFonts.bodyMedium.copyWith(
+                                        color: AppColors.textPrimary,
+                                        fontSize: Responsive.sp(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
-
-            // Interview Slots
-            if (app.preferredInterviewSlots.isNotEmpty) ...[
-              SizedBox(height: Responsive.h(10)),
-              _buildInfoCard(
-                icon: Icons.event_rounded,
-                iconColor: const Color(0xFFF59E0B),
-                title: 'preferred_interview_slots'.tr,
-                children: app.preferredInterviewSlots
-                    .map((slot) => _buildInterviewSlot(slot))
-                    .toList(),
-              ),
-            ],
-
-            // Events Timeline
-            if (app.events.isNotEmpty) ...[
-              SizedBox(height: Responsive.h(10)),
-              _buildEventsTimeline(app.events),
-            ],
-
-            // Admin Actions
-            _buildAdminActions(),
-
-            SizedBox(height: Responsive.h(16)),
-          ],
+    
+                // Interview Slots
+                if (app.preferredInterviewSlots.isNotEmpty) ...[
+                  SizedBox(height: Responsive.h(10)),
+                  _buildInfoCard(
+                    icon: Icons.event_rounded,
+                    iconColor: const Color(0xFFF59E0B),
+                    title: 'preferred_interview_slots'.tr,
+                    children: app.preferredInterviewSlots
+                        .map((slot) => _buildInterviewSlot(slot))
+                        .toList(),
+                  ),
+                ],
+    
+                // Events Timeline
+                if (app.events.isNotEmpty) ...[
+                  SizedBox(height: Responsive.h(10)),
+                  _buildEventsTimeline(app.events),
+                ],
+    
+                // Admin Actions
+                _buildAdminActions(),
+    
+                SizedBox(height: Responsive.h(16)),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -637,7 +644,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         borderRadius: BorderRadius.circular(Responsive.r(8)),
         border: isHighlight
             ? Border.all(
-                color: AppColors.primaryBlue.withOpacity(0.3),
+                color: AppColors.blue1.withOpacity(0.3),
                 width: 1.5,
               )
             : Border.all(
@@ -650,10 +657,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           Container(
             padding: Responsive.all(5),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(Responsive.r(6)),
             ),
-            child: Icon(icon, size: Responsive.sp(14), color: AppColors.primaryBlue),
+            child: Icon(icon, size: Responsive.sp(14), color: AppColors.blue1),
           ),
           SizedBox(width: Responsive.w(10)),
           Expanded(
@@ -702,13 +709,13 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                           child: Container(
                             padding: Responsive.all(4),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withOpacity(0.1),
+                              color: AppColors.blue1.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(Responsive.r(6)),
                             ),
                             child: Icon(
                               Icons.copy,
                               size: Responsive.sp(12),
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                             ),
                           ),
                         ),
@@ -810,7 +817,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   Widget _buildEventsTimeline(List<ApplicationEvent> events) {
     return _buildInfoCard(
       icon: Icons.history_rounded,
-      iconColor: AppColors.primaryBlue,
+      iconColor: AppColors.blue1,
       title: 'events_timeline'.tr,
       children: [
         ListView.separated(
@@ -905,7 +912,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   Color _getEventColor(String type) {
     switch (type.toLowerCase()) {
       case 'status_change':
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
       case 'note':
         return const Color(0xFF6B7280);
       case 'interview':
@@ -986,7 +993,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         SizedBox(height: Responsive.h(10)),
         _buildInfoCard(
           icon: Icons.admin_panel_settings_rounded,
-          iconColor: AppColors.primaryBlue,
+          iconColor: AppColors.blue1,
           title: 'admin_actions'.tr,
           children: [
             Row(
@@ -995,7 +1002,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   child: _buildActionButton(
                     icon: Icons.edit_notifications_rounded,
                     label: 'update_status'.tr,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                     onTap: _showUpdateStatusDialog,
                   ),
                 ),
@@ -1108,7 +1115,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.blue1,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () async {
@@ -1370,3 +1377,4 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     }
   }
 }
+

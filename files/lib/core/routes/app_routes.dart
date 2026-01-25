@@ -28,6 +28,7 @@ class AppRoutes {
 
   // Profile Routes
   static const String userProfile = '/user-profile';
+  static const String settings = '/settings';
 
   // Notifications Routes
   static const String notifications = '/notifications';
@@ -80,3 +81,4 @@ class AppRoutes {
   static const String walletDeposit = '/wallet/deposit';
   static const String walletWithdraw = '/wallet/withdraw';
 }
+

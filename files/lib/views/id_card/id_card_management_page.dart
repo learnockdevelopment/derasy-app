@@ -102,7 +102,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
         'success'.tr,
         'password_reset_successfully'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
     } catch (e) {
@@ -125,7 +125,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'id_card_management'.tr,
@@ -162,7 +162,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
-                          color: !_showResetPassword ? AppColors.primaryBlue : Colors.transparent,
+                          color: !_showResetPassword ? AppColors.blue1 : Colors.transparent,
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
@@ -182,7 +182,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
-                          color: _showResetPassword ? AppColors.primaryBlue : Colors.transparent,
+                          color: _showResetPassword ? AppColors.blue1 : Colors.transparent,
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
@@ -211,7 +211,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _getIdCard,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.blue1,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -250,7 +250,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _resetPassword,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.blue1,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -279,9 +279,9 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                 Container(
                   padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.primaryBlue),
+                    border: Border.all(color: AppColors.blue1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +297,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                       Text(
                         _newPassword!,
                         style: AppFonts.h3.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.blue1,
                           fontWeight: FontWeight.bold,
                           
                         ),
@@ -328,7 +328,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
       maxLength: maxLength,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.primaryBlue),
+        prefixIcon: Icon(icon, color: AppColors.blue1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
@@ -369,10 +369,10 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
                   width: 80.w,
                   height: 80.h,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Icon(Icons.person_rounded, color: AppColors.primaryBlue, size: 40.sp),
+                  child: Icon(Icons.person_rounded, color: AppColors.blue1, size: 40.sp),
                 ),
               SizedBox(width: 16.w),
               Expanded(
@@ -443,7 +443,7 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
   Widget _buildInfoRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+        Icon(icon, color: AppColors.blue1, size: 20.sp),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -470,4 +470,5 @@ class _IdCardManagementPageState extends State<IdCardManagementPage> {
     );
   }
 }
+
 

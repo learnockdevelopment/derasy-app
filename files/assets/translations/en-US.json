@@ -798,6 +798,15 @@
   "step_age_birth_data": "Age & Birth Data",
   "step_age_birth": "Age & Birth",
   "step_name_grade": "Name & Grade",
+  "login_succeeded": "Login succeeded",
+  "biometric_login": "Biometric Login",
+  "enable_biometric_login": "Enable Biometric Login",
+  "confirm_password_for_biometric": "Confirm password to enable biometric login",
+  "biometric_enabled_success": "Biometric login enabled successfully",
+  "biometric_disabled_success": "Biometric login disabled",
+  "scan_fingerprint": "Scan your fingerprint to login",
+  "biometric_error": "Biometric authentication failed",
+  "biometric_not_supported": "Biometric authentication not supported on this device",
   "step_address": "Address",
   "step_medical": "Medical",
   "step_mother": "Mother",
@@ -1326,6 +1335,7 @@
   "scan_certificate": "Scan Certificate",
   "scan_with_camera": "Take a photo with your camera",
   "position_certificate_in_frame": "Position certificate in frame",
+  "position_id_in_frame": "Put ID in frame",
   "ensure_all_edges_are_visible": "Ensure all edges are visible",
   "tap_to_capture": "Tap to capture",
   "camera_initialization_failed": "Failed to initialize camera",
@@ -1666,5 +1676,6 @@
   "bank_name_required": "Bank name is required",
   "iban_required": "IBAN is required",
   "account_number_required": "Account number is required",
-  "enter_bank_details_for_withdrawal": "Enter your bank account details to receive the withdrawal"
+  "enter_bank_details_for_withdrawal": "Enter your bank account details to receive the withdrawal",
+  "select_bank": "Select Bank"
 }

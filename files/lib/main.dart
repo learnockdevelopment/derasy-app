@@ -76,10 +76,10 @@ class DerasyApp extends StatelessWidget {
             return AppScaffoldWrapper(child: child ?? const SizedBox());
           },
           theme: ThemeData(
-            primaryColor: AppColors.primaryBlue,
+            primaryColor: AppColors.blue1,
             colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.primaryBlue,
-              primary: AppColors.primaryBlue,
+              seedColor: AppColors.blue1,
+              primary: AppColors.blue1,
               secondary: AppColors.secondary,
             ),
             fontFamily: AppFonts.Almarai,
@@ -111,3 +111,4 @@ class DerasyApp extends StatelessWidget {
     );
   }
 }
+

@@ -42,7 +42,7 @@ class HeroSectionWidget extends StatelessWidget {
 
     return Container( 
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.blue1,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(Responsive.r(30)),
           bottomRight: Radius.circular(Responsive.r(30)),
@@ -82,9 +82,9 @@ class HeroSectionWidget extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryBlue.withOpacity(0.8),
-                  AppColors.primaryGreen.withOpacity(0.9),
+                  AppColors.blue1,
+                  AppColors.blue1.withOpacity(0.8),
+                  AppColors.blue1.withOpacity(0.9),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -95,6 +95,7 @@ class HeroSectionWidget extends StatelessWidget {
             ),
           ),
           // Content
+          // Content
           Padding(
             padding: Responsive.only(
               left: 16, 
@@ -102,138 +103,145 @@ class HeroSectionWidget extends StatelessWidget {
               right: 16, 
               bottom: (Responsive.isTablet || Responsive.isDesktop) ? 20 : 6
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Top Row: Greeting/Page Name and Icons
-                Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: Responsive.isDesktop ? 1200 : (Responsive.isTablet ? 800 : double.infinity),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (showGreeting) ...[
-                      Icon(
-                        greetingIcon,
-                        color: Colors.white,
-                        size: Responsive.sp(16),
-                      ),
-                      SizedBox(width: Responsive.w(6)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              greeting,
-                              style: AppFonts.bodyMedium.copyWith(
-                                color: Colors.white.withOpacity(0.95),
-                                fontSize: Responsive.sp(10),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              userName,
-                              style: AppFonts.h3.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: Responsive.sp(12), 
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ] else ...[
-                      // Page Name with small font
-                      if (pageTitle != null)
-                        Expanded(
-                          child: Text(
-                            pageTitle!,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: Responsive.sp(14),
-                            ),
-                          ),
-                        ),
-                    ],
-                    // Icons Row
+                    // Top Row: Greeting/Page Name and Icons
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Settings Icon
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              Get.toNamed(AppRoutes.userProfile);
-                            },
-                            borderRadius: BorderRadius.circular(Responsive.r(10)),
-                            child: Container(
-                              width: Responsive.w(32),
-                              height: Responsive.w(32),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(Responsive.r(10)),
-                              ),
-                              child: Icon(
-                                IconlyBroken.setting,
-                                color: Colors.white,
-                                size: Responsive.sp(18),
-                              ),
+                        if (showGreeting) ...[
+                          Icon(
+                            greetingIcon,
+                            color: Colors.white,
+                            size: Responsive.sp(16),
+                          ),
+                          SizedBox(width: Responsive.w(6)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  greeting,
+                                  style: AppFonts.bodyMedium.copyWith(
+                                    color: Colors.white.withOpacity(0.95),
+                                    fontSize: Responsive.sp(10),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  userName,
+                                  style: AppFonts.h3.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(12), 
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        SizedBox(width: Responsive.w(6)),
-                        // Notification Icon from Iconly
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              Get.toNamed(AppRoutes.notifications);
-                            },
-                            borderRadius: BorderRadius.circular(Responsive.r(10)),
-                            child: Container(
-                              width: Responsive.w(32),
-                              height: Responsive.w(32),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(Responsive.r(10)),
+                        ] else ...[
+                          // Page Name with small font
+                          if (pageTitle != null)
+                            Expanded(
+                              child: Text(
+                                pageTitle!,
+                                style: AppFonts.bodyMedium.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: Responsive.sp(14),
+                                ),
                               ),
-                              child: Stack(
-                                alignment: Alignment.center,  
-                                children: [
-                                  Icon(
-                                    IconlyBroken.notification,
+                            ),
+                        ],
+                        // Icons Row
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Settings Icon
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Get.toNamed(AppRoutes.userProfile);
+                                },
+                                borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                child: Container(
+                                  width: Responsive.w(32),
+                                  height: Responsive.w(32),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                  ),
+                                  child: Icon(
+                                    IconlyBroken.setting,
                                     color: Colors.white,
                                     size: Responsive.sp(18),
                                   ),
-                                  // Notification badge 
-                                  Positioned(
-                                    right: Responsive.w(6),
-                                    top: Responsive.w(6),
-                                    child: Container(
-                                      width: Responsive.w(6),
-                                      height: Responsive.w(6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(Responsive.r(3)),
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 1.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                            SizedBox(width: Responsive.w(6)),
+                            // Notification Icon from Iconly
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Get.toNamed(AppRoutes.notifications);
+                                },
+                                borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                child: Container(
+                                  width: Responsive.w(32),
+                                  height: Responsive.w(32),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,  
+                                    children: [
+                                      Icon(
+                                        IconlyBroken.notification,
+                                        color: Colors.white,
+                                        size: Responsive.sp(18),
+                                      ),
+                                      // Notification badge 
+                                      Positioned(
+                                        right: Responsive.w(6),
+                                        top: Responsive.w(6),
+                                        child: Container(
+                                          width: Responsive.w(6),
+                                          height: Responsive.w(6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(Responsive.r(3)),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    // Action Button removed as per user request
                   ],
                 ),
-                // Action Button removed as per user request
-              ],
+              ),
             ),
           ),
         ],
@@ -241,4 +249,5 @@ class HeroSectionWidget extends StatelessWidget {
     );
   }
 }
+
 

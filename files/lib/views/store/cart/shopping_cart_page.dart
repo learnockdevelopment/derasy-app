@@ -149,7 +149,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         'success'.tr,
         'item_removed'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
     } catch (e) {
@@ -170,7 +170,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       'info'.tr,
       'checkout_coming_soon'.tr,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.blue1,
       colorText: Colors.white,
     );
   }
@@ -192,7 +192,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       'info'.tr,
       'wallet_checkout_coming_soon'.tr,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.blue1,
       colorText: Colors.white,
     );
   }
@@ -211,8 +211,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primaryBlue,
-            AppColors.primaryBlue.withOpacity(0.8),
+            AppColors.blue1,
+            AppColors.blue1.withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -220,7 +220,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         borderRadius: BorderRadius.circular(Responsive.r(16)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.3),
+            color: AppColors.blue1.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -290,7 +290,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'shopping_cart'.tr,
@@ -372,7 +372,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                               Text(
                                 '${_cart!.total.toStringAsFixed(0)} ${'egp'.tr}',
                                 style: AppFonts.h2.copyWith(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   fontWeight: FontWeight.bold,
                                   fontSize: AppFonts.size20,
                                 ),
@@ -389,7 +389,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                                 Row(
                                   children: [
                                     Icon(Icons.account_balance_wallet_rounded, 
-                                        color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                                        color: AppColors.blue1, size: Responsive.sp(20)),
                                     SizedBox(width: Responsive.w(8)),
                                     Text(
                                       'wallet_balance'.tr,
@@ -431,7 +431,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                                   ? _checkoutWithWallet
                                   : _checkout,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryBlue,
+                                backgroundColor: AppColors.blue1,
                                 padding: Responsive.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -510,7 +510,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                   Text(
                     '${item.price.toStringAsFixed(0)} ${'egp'.tr}',
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                       fontWeight: FontWeight.bold,
                       fontSize: AppFonts.size12,
                     ),
@@ -521,7 +521,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                       IconButton(
                         icon: const Icon(Icons.remove_circle_outline_rounded, size: 20),
                         onPressed: () => _updateQuantity(item, item.quantity - 1),
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -537,7 +537,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
                         onPressed: () => _updateQuantity(item, item.quantity + 1),
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -578,7 +578,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
           ElevatedButton(
             onPressed: () => Get.toNamed(AppRoutes.storeProducts),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.blue1,
               padding: Responsive.symmetric(horizontal: 32, vertical: 12),
             ),
             child: Text(
@@ -594,4 +594,5 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     );
   }
 }
+
 

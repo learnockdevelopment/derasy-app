@@ -107,7 +107,7 @@ class BottomNavBarWidget extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
+                  color: isSelected ? AppColors.blue1 : const Color(0xFF9CA3AF),
                   size: Responsive.sp(22),
                 ),
                 SizedBox(height: Responsive.h(4)),
@@ -115,7 +115,7 @@ class BottomNavBarWidget extends StatelessWidget {
                   child: Text(
                     label,
                     style: AppFonts.labelSmall.copyWith(
-                      color: isSelected ? AppColors.primaryBlue : const Color(0xFF9CA3AF),
+                      color: isSelected ? AppColors.blue1 : const Color(0xFF9CA3AF),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                       fontSize: Responsive.sp(10),
                     ),
@@ -132,4 +132,5 @@ class BottomNavBarWidget extends StatelessWidget {
     );
   }
 }
+
 

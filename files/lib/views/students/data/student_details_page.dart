@@ -1078,3 +1078,4 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     );
   }
 }
+

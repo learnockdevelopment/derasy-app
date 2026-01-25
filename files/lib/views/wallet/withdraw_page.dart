@@ -6,6 +6,113 @@ import '../../core/constants/app_fonts.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../services/wallet_service.dart';
 import '../../models/wallet_models.dart';
+import '../../../widgets/safe_network_image.dart';
+
+class EgyptianBank {
+  final String name;
+  final String nameAr;
+  final String logo;
+
+  EgyptianBank({required this.name, required this.nameAr, required this.logo});
+}
+
+final List<EgyptianBank> egyptianBanks = [
+  EgyptianBank(
+    name: 'National Bank of Egypt (NBE)',
+    nameAr: 'البنك الأهلي المصري',
+    logo: 'https://logo.bankconv.com/nbe.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Banque Misr',
+    nameAr: 'بنك مصر',
+    logo: 'https://logo.bankconv.com/banquemisr.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Commercial International Bank (CIB)',
+    nameAr: 'البنك التجاري الدولي',
+    logo: 'https://logo.bankconv.com/cibeg.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Banque du Caire',
+    nameAr: 'بنك القاهرة',
+    logo: 'https://logo.bankconv.com/bdc.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'QNB Alahli',
+    nameAr: 'قطر الوطني الأهلي',
+    logo: 'https://logo.bankconv.com/qnb.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Alex Bank',
+    nameAr: 'بنك الإسكندرية',
+    logo: 'https://logo.bankconv.com/alexbank.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'HSBC Bank Egypt',
+    nameAr: 'إتش إس بي سي مصر',
+    logo: 'https://logo.bankconv.com/hsbc.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Arab African International Bank (AAIB)',
+    nameAr: 'البنك العربي الأفريقي الدولي',
+    logo: 'https://logo.bankconv.com/aaib.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Abu Dhabi Islamic Bank (ADIB) Egypt',
+    nameAr: 'مصرف أبو ظبي الإسلامي مصر',
+    logo: 'https://logo.bankconv.com/adib.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Faisal Islamic Bank of Egypt',
+    nameAr: 'بنك فيصل الإسلامي المصري',
+    logo: 'https://logo.bankconv.com/faisalbank.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Housing and Development Bank',
+    nameAr: 'بنك التعمير والإسكان',
+    logo: 'https://logo.bankconv.com/hdb-egy.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Emirates NBD Egypt',
+    nameAr: 'بنك الإمارات دبي الوطني مصر',
+    logo: 'https://logo.bankconv.com/emiratesnbd.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Credit Agricole Egypt',
+    nameAr: 'كريدي أجريكول مصر',
+    logo: 'https://logo.bankconv.com/ca-egypt.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Al Baraka Bank Egypt',
+    nameAr: 'بنك البركة مصر',
+    logo: 'https://logo.bankconv.com/albaraka.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'EG Bank',
+    nameAr: 'البنك المصري الخليجي',
+    logo: 'https://logo.bankconv.com/eg-bank.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'United Bank of Egypt',
+    nameAr: 'المصرف المتحد',
+    logo: 'https://logo.bankconv.com/theubeg.com?size=128',
+  ),
+  EgyptianBank(
+    name: 'Suez Canal Bank',
+    nameAr: 'بنك قناة السويس',
+    logo: 'https://logo.bankconv.com/scbank.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'SAIB Bank',
+    nameAr: 'بنك سايب',
+    logo: 'https://logo.bankconv.com/saib.com.eg?size=128',
+  ),
+  EgyptianBank(
+    name: 'Attijariwafa Bank Egypt',
+    nameAr: 'التجاري وفا بنك مصر',
+    logo: 'https://logo.bankconv.com/attijariwafabank.com.eg?size=128',
+  ),
+];
 
 class WithdrawPage extends StatefulWidget {
   const WithdrawPage({Key? key}) : super(key: key);
@@ -21,6 +128,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
   final _ibanController = TextEditingController();
   final _accountNumberController = TextEditingController();
   final _bankNameController = TextEditingController();
+  EgyptianBank? _selectedBank;
   
   bool _isSubmitting = false;
   bool _isLoadingWallet = true;
@@ -139,8 +247,8 @@ ${'bank_name'.tr}: ${_bankNameController.text}''';
       Get.snackbar(
         'success'.tr,
         response.message,
-        backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-        colorText: AppColors.primaryGreen,
+        backgroundColor: AppColors.blue1.withOpacity(0.1),
+        colorText: AppColors.blue1,
         duration: const Duration(seconds: 3),
       );
 
@@ -326,7 +434,7 @@ ${'bank_name'.tr}: ${_bankNameController.text}''';
       children: [
         _buildTextField(_accountNameController, 'account_holder_name'.tr, IconlyLight.profile),
         SizedBox(height: Responsive.h(16)),
-        _buildTextField(_bankNameController, 'bank_name'.tr, IconlyLight.category),
+        _buildBankSelector(),
         SizedBox(height: Responsive.h(16)),
         _buildTextField(_ibanController, 'iban'.tr, IconlyLight.wallet),
         SizedBox(height: Responsive.h(16)),
@@ -385,4 +493,148 @@ ${'bank_name'.tr}: ${_bankNameController.text}''';
       ),
     );
   }
+
+  Widget _buildBankSelector() {
+    final displayName = _selectedBank != null 
+        ? (Get.locale?.languageCode == 'ar' ? _selectedBank!.nameAr : _selectedBank!.name)
+        : 'select_bank'.tr;
+
+    return InkWell(
+      onTap: _showBankSelectionSheet,
+      borderRadius: BorderRadius.circular(Responsive.r(16)),
+      child: Container(
+        padding: Responsive.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.grey50,
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
+          border: _selectedBank == null && _isSubmitting ? Border.all(color: AppColors.error) : null,
+        ),
+        child: Row(
+          children: [
+            if (_selectedBank != null) ...[
+              Container(
+                width: Responsive.w(32),
+                height: Responsive.w(32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                  border: Border.all(color: AppColors.grey200),
+                ),
+                padding: Responsive.all(4),
+                child: SafeNetworkImage(
+                  imageUrl: _selectedBank!.logo,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              SizedBox(width: Responsive.w(12)),
+            ] else ...[
+              Icon(IconlyLight.category, color: AppColors.textSecondary),
+              SizedBox(width: Responsive.w(12)),
+            ],
+            Expanded(
+              child: Text(
+                displayName,
+                style: AppFonts.bodyMedium.copyWith(
+                  color: _selectedBank != null ? AppColors.textPrimary : AppColors.textHint,
+                ),
+              ),
+            ),
+            const Icon(IconlyLight.arrow_down_2, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBankSelectionSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: Responsive.symmetric(vertical: 12),
+                width: Responsive.w(40),
+                height: Responsive.h(4),
+                decoration: BoxDecoration(
+                  color: AppColors.grey300,
+                  borderRadius: BorderRadius.circular(Responsive.r(2)),
+                ),
+              ),
+              Padding(
+                padding: Responsive.symmetric(horizontal: 24, vertical: 8),
+                child: Row(
+                  children: [
+                    Text(
+                      'select_bank'.tr,
+                      style: AppFonts.h3.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  padding: Responsive.all(20),
+                  itemCount: egyptianBanks.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final bank = egyptianBanks[index];
+                    final bankName = Get.locale?.languageCode == 'ar' ? bank.nameAr : bank.name;
+                    return ListTile(
+                      onTap: () {
+                        setState(() {
+                          _selectedBank = bank;
+                          _bankNameController.text = bank.name;
+                        });
+                        Get.back();
+                      },
+                      leading: Container(
+                        width: Responsive.w(40),
+                        height: Responsive.w(40),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(Responsive.r(8)),
+                          border: Border.all(color: AppColors.grey200),
+                        ),
+                        padding: Responsive.all(4),
+                        child: SafeNetworkImage(
+                          imageUrl: bank.logo,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      title: Text(
+                        bankName,
+                        style: AppFonts.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: _selectedBank == bank 
+                          ? const Icon(Icons.check_circle, color: AppColors.blue1)
+                          : const Icon(Icons.arrow_forward_ios, size: 14),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+

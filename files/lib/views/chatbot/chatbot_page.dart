@@ -104,7 +104,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
         margin: EdgeInsets.only(bottom: 12.h, left: isUser ? 40.w : 0, right: isUser ? 0 : 40.w),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.primaryBlue : const Color(0xFFF3F4F6),
+          color: isUser ? AppColors.blue1 : const Color(0xFFF3F4F6),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.r),
             topRight: Radius.circular(20.r),
@@ -141,7 +141,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
               height: 20.h,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
               ),
             ),
             SizedBox(width: 8.w),
@@ -168,12 +168,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   Container(
                     padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      color: AppColors.blue1.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.chat_bubble_outline_rounded,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                       size: 40.sp,
                     ),
                   ),
@@ -254,8 +254,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryBlue,
-                    AppColors.primaryBlue.withOpacity(0.8),
+                    AppColors.blue1,
+                    AppColors.blue1.withOpacity(0.8),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -281,7 +281,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.blue1,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
@@ -302,7 +302,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.blue1,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(14.r),
           topRight: Radius.circular(14.r),
@@ -369,4 +369,5 @@ class _ChatbotPageState extends State<ChatbotPage> {
     );
   }
 }
+
 

@@ -23,6 +23,7 @@ import '../../views/schools/schools_page.dart';
 import '../../views/schools/school_details_page.dart';
 import '../../views/attendance/attendance_page.dart';
 import '../../views/profile/user_profile_page.dart';
+import '../../views/settings/settings_page.dart';
 import '../../views/notifications/notifications_page.dart';
 import '../../views/chatbot/chatbot_page.dart';
 import '../../views/teachers/management/add_teacher_page.dart';
@@ -156,6 +157,11 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const UserProfilePage(),
+        );
+      case AppRoutes.settings:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const SettingsPage(),
         );
       case AppRoutes.notifications:
         return GetPageRoute(
@@ -323,3 +329,4 @@ class RouteGenerator {
     );
   }
 }
+

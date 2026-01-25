@@ -72,7 +72,7 @@ class _AnimatedFABState extends State<AnimatedFAB>
             angle: _rotationAnimation.value,
             child: FloatingActionButton(
               onPressed: widget.onPressed,
-              backgroundColor: widget.backgroundColor ?? AppColors.primaryBlue,
+              backgroundColor: widget.backgroundColor ?? AppColors.blue1,
               tooltip: widget.tooltip,
               elevation: 8,
               child: Icon(
@@ -87,4 +87,5 @@ class _AnimatedFABState extends State<AnimatedFAB>
     );
   }
 }
+
 

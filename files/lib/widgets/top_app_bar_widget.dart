@@ -28,16 +28,16 @@ class TopAppBarWidget extends StatelessWidget {
       floating: false,
       pinned: true,
       automaticallyImplyLeading: false,
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.blue1,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.primaryBlue.withOpacity(0.98),
-                AppColors.primaryBlue.withOpacity(0.88),
-                AppColors.primaryBlue.withOpacity(0.78),
+                AppColors.blue1.withOpacity(0.98),
+                AppColors.blue1.withOpacity(0.88),
+                AppColors.blue1.withOpacity(0.78),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -262,7 +262,7 @@ class TopAppBarWidget extends StatelessWidget {
               child: SafeAvatarImage(
                 imageUrl: imageUrl?.isNotEmpty == true ? imageUrl : null,
                 size: 44,
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.blue1,
               ),
             ),
           ),
@@ -287,4 +287,5 @@ class TopAppBarWidget extends StatelessWidget {
     );
   }
 }
+
 

@@ -38,7 +38,7 @@ class UserAvatar extends StatelessWidget {
         height: Responsive.h(size),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primaryBlue,
+          color: AppColors.blue1,
           border: Border.all(
             color: AppColors.grey300,
             width: 1,
@@ -74,3 +74,4 @@ class UserAvatar extends StatelessWidget {
     );
   }
 }
+

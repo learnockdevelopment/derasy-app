@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Simple network image widget that loads and displays images
 /// Falls back to a placeholder if loading fails
@@ -11,6 +12,7 @@ class SafeNetworkImage extends StatefulWidget {
   final Widget? placeholder;
   final Widget? errorWidget;
   final BorderRadius? borderRadius;
+  final Map<String, String>? headers;
 
   const SafeNetworkImage({
     Key? key,
@@ -21,6 +23,7 @@ class SafeNetworkImage extends StatefulWidget {
     this.placeholder,
     this.errorWidget,
     this.borderRadius,
+    this.headers,
   }) : super(key: key);
 
   @override
@@ -74,6 +77,25 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
       return widget.errorWidget ?? _buildErrorWidget();
     }
 
+    // Check if it's an SVG
+    final isSvg = trimmedUrl.toLowerCase().split('?').first.endsWith('.svg');
+    if (isSvg) {
+      return SvgPicture.network(
+        trimmedUrl,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+        placeholderBuilder: (context) => widget.placeholder ?? _buildPlaceholder(),
+        errorBuilder: (context, error, stackTrace) => widget.errorWidget ?? _buildErrorWidget(),
+      );
+    }
+
+    // Use browser User-Agent to avoid blocks
+    final Map<String, String> mergedHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      if (widget.headers != null) ...widget.headers!,
+    };
+
     // Wrap Image.network in error boundary to catch all exceptions
     Widget imageWidget;
     try {
@@ -82,6 +104,7 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
         width: widget.width,
         height: widget.height,
         fit: widget.fit,
+        headers: mergedHeaders,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) {
             // Image finished loading successfully
@@ -111,17 +134,6 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
           });
           // Return error widget immediately to prevent invalid image data errors
           return widget.errorWidget ?? _buildErrorWidget();
-        },
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          // frame == null during async loading is normal - don't mark as error
-          // Only return error widget if we explicitly got an error
-          if (_hasError) {
-            return widget.errorWidget ?? _buildErrorWidget();
-          }
-          
-          // If frame is null, it just means image is still loading
-          // Don't mark as error - let loadingBuilder and errorBuilder handle it
-          return child;
         },
       );
     } catch (e) {
@@ -319,3 +331,4 @@ class SafeSchoolImage extends StatelessWidget {
     );
   }
 }
+

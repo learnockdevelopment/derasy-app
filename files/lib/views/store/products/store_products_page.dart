@@ -291,16 +291,16 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
         child: Container(
           padding: Responsive.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryBlue : Colors.white,
+            color: isSelected ? AppColors.blue1 : Colors.white,
             borderRadius: BorderRadius.circular(Responsive.r(8)),
             border: Border.all(
-              color: isSelected ? AppColors.primaryBlue : AppColors.borderLight,
+              color: isSelected ? AppColors.blue1 : AppColors.borderLight,
               width: Responsive.w(1.5),
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      color: AppColors.blue1.withOpacity(0.3),
                       blurRadius: Responsive.r(8),
                       offset: Offset(0, Responsive.h(4)),
                     ),
@@ -365,7 +365,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                     child: Container(
                       width: double.infinity,
                       height: Responsive.h(120),
-                      color: AppColors.primaryBlue.withOpacity(0.05),
+                      color: AppColors.blue1.withOpacity(0.05),
                       child: product.images.isNotEmpty
                           ? SafeNetworkImage(
                               imageUrl: product.images.first,
@@ -375,7 +375,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                             )
                           : Icon(
                               Icons.shopping_bag_rounded,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               size: Responsive.sp(32),
                             ),
                     ),
@@ -440,7 +440,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                              Text(
                               '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
                               style: AppFonts.h4.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 fontWeight: FontWeight.bold,
                                 fontSize: Responsive.sp(13),
                               ),
@@ -452,13 +452,13 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
                         Container(
                           padding: Responsive.all(5),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withOpacity(0.1),
+                            color: AppColors.blue1.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(Responsive.r(8)),
                           ),
                           child: Icon(
                             IconlyBold.bag,
                             size: Responsive.sp(14),
-                            color: AppColors.primaryBlue,
+                            color: AppColors.blue1,
                           ),
                         ),
                       ],
@@ -591,5 +591,6 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     );
   }
 }
+
 
 

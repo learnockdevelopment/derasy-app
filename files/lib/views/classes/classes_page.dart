@@ -174,9 +174,9 @@ class _ClassesPageState extends State<ClassesPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.95),
-                  AppColors.primaryBlue.withOpacity(0.85),
-                  AppColors.primaryBlue.withOpacity(0.75),
+                  AppColors.blue1.withOpacity(0.95),
+                  AppColors.blue1.withOpacity(0.85),
+                  AppColors.blue1.withOpacity(0.75),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -209,7 +209,7 @@ class _ClassesPageState extends State<ClassesPage> {
                               borderRadius: BorderRadius.circular(28.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryBlue.withOpacity(0.25),
+                                  color: AppColors.blue1.withOpacity(0.25),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 )
@@ -596,7 +596,7 @@ class _ClassesPageState extends State<ClassesPage> {
 
                   return Material(
                     color: isSelected
-                        ? AppColors.primaryBlue.withOpacity(0.08)
+                        ? AppColors.blue1.withOpacity(0.08)
                         : Colors.white,
                     borderRadius: BorderRadius.circular(12.r),
                     child: InkWell(
@@ -619,7 +619,7 @@ class _ClassesPageState extends State<ClassesPage> {
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
                             color: isSelected
-                                ? AppColors.primaryBlue
+                                ? AppColors.blue1
                                 : const Color(0xFFE5E7EB),
                             width: isSelected ? 2 : 1,
                           ),
@@ -675,7 +675,7 @@ class _ClassesPageState extends State<ClassesPage> {
                             if (isSelected)
                               Icon(
                                 Icons.check_circle_rounded,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: 24.sp,
                               ),
                           ],
@@ -692,5 +692,6 @@ class _ClassesPageState extends State<ClassesPage> {
     );
   }
 }
+
 
 

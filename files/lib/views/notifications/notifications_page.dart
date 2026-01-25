@@ -151,17 +151,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Color _getNotificationColor(NotificationType type) {
     switch (type) {
       case NotificationType.message:
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
       case NotificationType.attendance:
-        return AppColors.primaryGreen;
+        return AppColors.blue1;
       case NotificationType.homework:
-        return AppColors.primaryYellow;
+        return AppColors.blue2;
       case NotificationType.event:
-        return AppColors.primaryPurple;
+        return AppColors.blue2;
       case NotificationType.grade:
-        return AppColors.primaryRed;
+        return AppColors.blue1;
       default:
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
     }
   }
 
@@ -172,7 +172,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         foregroundColor: AppColors.white,
         elevation: 0,
         title: Text(
@@ -199,14 +199,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
             )
           : _notifications.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
                   onRefresh: _loadNotifications,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   child: ListView.separated(
                     padding: Responsive.all(16),
                     itemCount: _notifications.length,
@@ -278,18 +278,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
           if (!notification.isRead) {
             _markAsRead(notification.id);
           }
-          // TODO: Navigate to notification details if needed
         },
         borderRadius: BorderRadius.circular(Responsive.r(12)),
         child: Container(
           padding: Responsive.all(16),
           decoration: BoxDecoration(
-            color: notification.isRead ? AppColors.white : AppColors.blue50,
+            color: notification.isRead ? AppColors.white : AppColors.blue2,
             borderRadius: BorderRadius.circular(Responsive.r(12)),
             border: Border.all(
               color: notification.isRead
                   ? AppColors.borderLight
-                  : AppColors.primaryBlue.withOpacity(0.3),
+                  : AppColors.blue1.withOpacity(0.3),
               width: notification.isRead ? 1 : 1.5,
             ),
             boxShadow: [
@@ -341,7 +340,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             width: Responsive.w(8),
                             height: Responsive.w(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -417,4 +416,5 @@ class NotificationItem {
     );
   }
 }
+
 

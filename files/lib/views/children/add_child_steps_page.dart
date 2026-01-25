@@ -57,7 +57,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
@@ -323,12 +323,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
-                          side: BorderSide(color: AppColors.primaryBlue, width: 2),
+                          side: BorderSide(color: AppColors.blue1, width: 2),
                         ),
                         child: Text(
                           'retry'.tr,
                           style: AppFonts.bodyMedium.copyWith(
-                            color: AppColors.primaryBlue,
+                            color: AppColors.blue1,
                             fontWeight: FontWeight.bold,
                             fontSize: 16.sp,
                           ),
@@ -343,7 +343,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                         onAccept();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.blue1,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -415,19 +415,19 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   color: _selectedNationality == 'egyptian'
-                      ? AppColors.primaryBlue.withOpacity(0.1)
+                      ? AppColors.blue1.withOpacity(0.1)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: _selectedNationality == 'egyptian'
-                        ? AppColors.primaryBlue
+                        ? AppColors.blue1
                         : AppColors.borderLight,
                     width: _selectedNationality == 'egyptian' ? 2 : 1.5,
                   ),
                   boxShadow: _selectedNationality == 'egyptian'
                       ? [
                           BoxShadow(
-                            color: AppColors.primaryBlue.withOpacity(0.2),
+                            color: AppColors.blue1.withOpacity(0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -446,8 +446,8 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
                         color: _selectedNationality == 'egyptian'
-                            ? AppColors.primaryBlue
-                            : AppColors.primaryBlue.withOpacity(0.1),
+                            ? AppColors.blue1
+                            : AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Text(
@@ -482,7 +482,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     if (_selectedNationality == 'egyptian')
                       Icon(
                         Icons.check_circle,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         size: 24.sp,
                       ),
                   ],
@@ -516,7 +516,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.blue1.withOpacity(0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 6),
                 ),
@@ -534,12 +534,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 margin: EdgeInsets.only(right: 8.w),
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.blue1.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.primaryGreen,
+                  color: AppColors.blue1,
                   size: 22.sp,
                 ),
               ),
@@ -568,15 +568,15 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primaryGreen.withOpacity(0.15),
-                        AppColors.primaryGreen.withOpacity(0.08),
+                        AppColors.blue1.withOpacity(0.15),
+                        AppColors.blue1.withOpacity(0.08),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     Icons.public_rounded,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                     size: 22.sp,
                   ),
                 ),
@@ -589,21 +589,21 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
                   borderSide: BorderSide(
-                    color: AppColors.primaryGreen.withOpacity(0.3),
+                    color: AppColors.blue1.withOpacity(0.3),
                     width: 1.5,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
                   borderSide: BorderSide(
-                    color: AppColors.primaryGreen.withOpacity(0.3),
+                    color: AppColors.blue1.withOpacity(0.3),
                     width: 1.5,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16.r),
                   borderSide: BorderSide(
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                     width: 2.5,
                   ),
                 ),
@@ -627,7 +627,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                           width: 36.w,
                           height: 36.w,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryGreen.withOpacity(0.08),
+                            color: AppColors.blue1.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Center(
@@ -651,7 +651,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                         if (_selectedForeignCountry == country.code)
                           Icon(
                             Icons.check_circle,
-                            color: AppColors.primaryGreen,
+                            color: AppColors.blue1,
                             size: 20.sp,
                           ),
                       ],
@@ -677,13 +677,13 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
                 color: _selectedNationality == 'egyptian'
-                    ? AppColors.primaryBlue.withOpacity(0.05)
-                    : AppColors.primaryGreen.withOpacity(0.05),
+                    ? AppColors.blue1.withOpacity(0.05)
+                    : AppColors.blue1.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(
                   color: _selectedNationality == 'egyptian'
-                      ? AppColors.primaryBlue.withOpacity(0.2)
-                      : AppColors.primaryGreen.withOpacity(0.2),
+                      ? AppColors.blue1.withOpacity(0.2)
+                      : AppColors.blue1.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -692,8 +692,8 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                   Icon(
                     IconlyBroken.info_circle,
                     color: _selectedNationality == 'egyptian'
-                        ? AppColors.primaryBlue
-                        : AppColors.primaryGreen,
+                        ? AppColors.blue1
+                        : AppColors.blue1,
                     size: 20.sp,
                   ),
                   SizedBox(width: 10.w),
@@ -741,14 +741,14 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryBlue.withOpacity(0.8),
+                  AppColors.blue1,
+                  AppColors.blue1.withOpacity(0.8),
                 ],
               ),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.blue1.withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -793,7 +793,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               decoration: BoxDecoration(
                 border: Border.all(
                   color: _birthCertificateFile != null
-                      ? AppColors.primaryBlue
+                      ? AppColors.blue1
                       : AppColors.grey300,
                   width: 2.5,
                 ),
@@ -806,7 +806,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
                           ),
                           SizedBox(height: 20.h),
                           Text(
@@ -869,12 +869,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                             Container(
                               padding: EdgeInsets.all(18.w),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                color: AppColors.blue1.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 IconlyBroken.upload,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: 36.sp,
                               ),
                             ),
@@ -904,10 +904,10 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.05),
+              color: AppColors.blue1.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: AppColors.primaryBlue.withOpacity(0.2),
+                color: AppColors.blue1.withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -915,7 +915,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               children: [
                 Icon(
                   IconlyBroken.info_circle,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: 24.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -939,7 +939,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 12.h),
-                      child: CircularProgressIndicator(color: AppColors.primaryBlue),
+                      child: CircularProgressIndicator(color: AppColors.blue1),
                     ),
                   )
                 : ElevatedButton(
@@ -947,7 +947,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                       await _extractBirthCertificateData(_birthCertificateFile!);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
+                      backgroundColor: AppColors.blue1,
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -1089,7 +1089,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 ? _submitNonEgyptianRequest 
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGreen,
+              backgroundColor: AppColors.blue1,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -1135,7 +1135,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
             height: 150.h,
             decoration: BoxDecoration(
               border: Border.all(
-                color: file != null ? AppColors.primaryGreen : AppColors.grey300,
+                color: file != null ? AppColors.blue1 : AppColors.grey300,
                 width: 2,
               ),
               borderRadius: BorderRadius.circular(12.r),
@@ -1173,7 +1173,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(IconlyBroken.upload, color: AppColors.primaryGreen, size: 32.sp),
+                      Icon(IconlyBroken.upload, color: AppColors.blue1, size: 32.sp),
                       SizedBox(height: 8.h),
                       Text(
                         hint,
@@ -1216,7 +1216,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.primaryGreen),
+                leading: Icon(Icons.camera_alt, color: AppColors.blue1),
                 title: Text('scan_with_camera'.tr),
                 onTap: () async {
                   Navigator.pop(context);
@@ -1227,7 +1227,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 },
               ),
               ListTile(
-                leading: Icon(IconlyBroken.upload, color: AppColors.primaryGreen),
+                leading: Icon(IconlyBroken.upload, color: AppColors.blue1),
                 title: Text('upload_from_gallery'.tr),
                 onTap: () async {
                   Navigator.pop(context);
@@ -1255,7 +1255,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     if (_extractedData == null) {
       return Center(
         child: CircularProgressIndicator(
-          color: AppColors.primaryBlue,
+          color: AppColors.blue1,
         ),
       );
     }
@@ -1300,12 +1300,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 if (_parentExtractedData != null) ...[
                   Row(
                     children: [
-                      Icon(IconlyBroken.profile, color: AppColors.primaryBlue, size: 20.sp),
+                      Icon(IconlyBroken.profile, color: AppColors.blue1, size: 20.sp),
                       SizedBox(width: 8.w),
                       Text(
                         'parent_data'.tr,
                         style: AppFonts.h3.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.blue1,
                           fontWeight: FontWeight.bold,
                           fontSize: 18.sp,
                         ),
@@ -1329,12 +1329,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 // Child Data Section
                 Row(
                   children: [
-                    Icon(IconlyBroken.star, color: AppColors.primaryBlue, size: 20.sp),
+                    Icon(IconlyBroken.star, color: AppColors.blue1, size: 20.sp),
                     SizedBox(width: 8.w),
                     Text(
                       'child_data'.tr,
                       style: AppFonts.h3.copyWith(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         fontWeight: FontWeight.bold,
                         fontSize: 18.sp,
                       ),
@@ -1366,7 +1366,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
           ElevatedButton(
             onPressed: _isSubmitting ? null : _submitChild,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.blue1,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -1503,18 +1503,18 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               shape: BoxShape.circle,
               gradient: isCompleted
                   ? LinearGradient(
-                      colors: [AppColors.primaryGreen, AppColors.primaryGreen.withOpacity(0.8)],
+                      colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
                     )
                   : isCurrentStep
                       ? LinearGradient(
-                          colors: [AppColors.primaryBlue, AppColors.primaryBlue.withOpacity(0.8)],
+                          colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
                         )
                       : null,
               color: isCompleted || isCurrentStep ? null : AppColors.grey300,
               boxShadow: (isCompleted || isCurrentStep)
                   ? [
                       BoxShadow(
-                        color: (isCompleted ? AppColors.primaryGreen : AppColors.primaryBlue)
+                        color: (isCompleted ? AppColors.blue1 : AppColors.blue1)
                             .withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
@@ -1542,7 +1542,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
               label,
               style: AppFonts.bodySmall.copyWith(
                 color: isCurrentStep || isCompleted
-                    ? AppColors.primaryBlue
+                    ? AppColors.blue1
                     : AppColors.textSecondary,
                 fontWeight: isCurrentStep ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 9.sp,
@@ -1566,7 +1566,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
         borderRadius: BorderRadius.circular(2.r),
         gradient: isCompleted
             ? LinearGradient(
-                colors: [AppColors.primaryGreen, AppColors.primaryGreen.withOpacity(0.6)],
+                colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.6)],
               )
             : null,
         color: isCompleted ? null : AppColors.grey300,
@@ -1770,12 +1770,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     Icons.camera_alt,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                     size: 24.sp,
                   ),
                 ),
@@ -1808,12 +1808,12 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     IconlyBroken.upload,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                     size: 24.sp,
                   ),
                 ),
@@ -2101,7 +2101,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(
-            color: imageFile != null ? AppColors.primaryBlue : AppColors.grey300,
+            color: imageFile != null ? AppColors.blue1 : AppColors.grey300,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16.r),
@@ -2137,7 +2137,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(IconlyBroken.upload, color: AppColors.primaryBlue, size: 32.sp),
+                  Icon(IconlyBroken.upload, color: AppColors.blue1, size: 32.sp),
                   SizedBox(height: 8.h),
                   Text(
                     title,
@@ -2190,7 +2190,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.primaryBlue),
+                leading: Icon(Icons.camera_alt, color: AppColors.blue1),
                 title: Text('scan_with_camera'.tr),
                 onTap: () async {
                   Navigator.pop(context);
@@ -2209,7 +2209,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 },
               ),
               ListTile(
-                leading: Icon(IconlyBroken.upload, color: AppColors.primaryGreen),
+                leading: Icon(IconlyBroken.upload, color: AppColors.blue1),
                 title: Text('upload_from_gallery'.tr),
                 onTap: () async {
                   Navigator.pop(context);
@@ -2338,7 +2338,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 child: Column(
                   children: [
                     CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
                     ),
                     SizedBox(height: 16.h),
                     Text(
@@ -2361,7 +2361,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     ? _extractParentNationalId
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.blue1,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -2401,5 +2401,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     super.dispose();
   }
 }
+
 
 

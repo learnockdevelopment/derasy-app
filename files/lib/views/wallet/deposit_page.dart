@@ -138,8 +138,8 @@ class _DepositPageState extends State<DepositPage> {
       Get.snackbar(
         'success'.tr,
         response.message,
-        backgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-        colorText: AppColors.primaryGreen,
+        backgroundColor: AppColors.blue1.withOpacity(0.1),
+        colorText: AppColors.blue1,
         duration: const Duration(seconds: 3),
       );
 
@@ -261,19 +261,19 @@ class _DepositPageState extends State<DepositPage> {
     return Container(
       padding: Responsive.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.05),
+        color: AppColors.blue1.withOpacity(0.05),
         borderRadius: BorderRadius.circular(Responsive.r(16)),
-        border: Border.all(color: AppColors.primaryBlue.withOpacity(0.1)),
+        border: Border.all(color: AppColors.blue1.withOpacity(0.1)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(IconlyBroken.info_square, color: AppColors.primaryBlue, size: Responsive.sp(22)),
+          Icon(IconlyBroken.info_square, color: AppColors.blue1, size: Responsive.sp(22)),
           SizedBox(width: Responsive.w(12)),
           Expanded(
             child: Text(
               'deposit_info_message'.tr,
-              style: AppFonts.bodySmall.copyWith(color: AppColors.primaryBlue, height: 1.4),
+              style: AppFonts.bodySmall.copyWith(color: AppColors.blue1, height: 1.4),
             ),
           ),
         ],
@@ -393,7 +393,7 @@ class _DepositPageState extends State<DepositPage> {
           color: AppColors.grey50,
           borderRadius: BorderRadius.circular(Responsive.r(20)),
           border: Border.all(
-            color: _receiptImage != null ? AppColors.primaryGreen : AppColors.grey200,
+            color: _receiptImage != null ? AppColors.blue1 : AppColors.grey200,
             width: 1.5,
             style: _receiptImage != null ? BorderStyle.solid : BorderStyle.none,
           ),
@@ -444,3 +444,4 @@ class _DepositPageState extends State<DepositPage> {
     );
   }
 }
+

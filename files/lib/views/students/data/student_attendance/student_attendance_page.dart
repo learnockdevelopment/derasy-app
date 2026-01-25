@@ -162,7 +162,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         foregroundColor: AppColors.white,
         elevation: 0,
         title: Text(
@@ -211,7 +211,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: 20.sp,
                 ),
                 SizedBox(width: 8.w),
@@ -269,7 +269,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _createAttendance,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.blue1,
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.r),
@@ -341,7 +341,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue),
+          borderSide: BorderSide(color: AppColors.blue1),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       ),
@@ -378,7 +378,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue),
+          borderSide: BorderSide(color: AppColors.blue1),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         hintText: 'HH:MM',
@@ -412,7 +412,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue),
+          borderSide: BorderSide(color: AppColors.blue1),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         hintStyle: AppFonts.bodySmall.copyWith(

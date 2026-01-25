@@ -255,15 +255,15 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.1),
-                  AppColors.primaryBlue.withOpacity(0.05),
+                  AppColors.blue1.withOpacity(0.1),
+                  AppColors.blue1.withOpacity(0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: AppColors.primaryBlue.withOpacity(0.2),
+                color: AppColors.blue1.withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -272,16 +272,16 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.15),
+                    color: AppColors.blue1.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.people_rounded, color: AppColors.primaryBlue, size: 18.sp),
+                  child: Icon(Icons.people_rounded, color: AppColors.blue1, size: 18.sp),
                 ),
                 SizedBox(width: 10.w),
                 Text(
                   '${students.length} ${'students'.tr}',
                   style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -408,7 +408,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         color = Colors.grey;
         break;
       default:
-        color = AppColors.primaryBlue;
+        color = AppColors.blue1;
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
@@ -454,7 +454,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                 icon: Icons.add_rounded,
                 label: 'add_route'.tr,
                 onTap: () => _openRouteDialog(),
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
             ],
           ),
@@ -621,7 +621,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                       icon: Icons.add_rounded,
                       label: 'add_line'.tr,
                       onTap: () => _openLineDialog(),
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                   if (_linesDateFilter != null) ...[
@@ -687,7 +687,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
     final notes = map['notes']?.toString() ?? '';
     
     // Determine status color
-    Color statusColor = AppColors.primaryBlue;
+    Color statusColor = AppColors.blue1;
     if (status.toLowerCase() == 'completed') {
       statusColor = const Color(0xFF10B981);
     } else if (status.toLowerCase() == 'active' || status.toLowerCase() == 'in_progress') {
@@ -724,7 +724,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                   runSpacing: 8.h,
                   children: [
                     if (date.isNotEmpty)
-                      _lineDataChip(Icons.calendar_today_rounded, date, AppColors.primaryBlue),
+                      _lineDataChip(Icons.calendar_today_rounded, date, AppColors.blue1),
                     _lineDataChip(Icons.location_on_rounded, '${stations.length} ${'stations'.tr}', const Color(0xFF10B981)),
                     if (status.isNotEmpty)
                       _lineDataChip(Icons.circle, status.tr, statusColor),
@@ -738,7 +738,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                   _lineActionBtn(
                     icon: Icons.edit_rounded,
                     onTap: () => _editLine(map),
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                   ),
                   SizedBox(width: 8.w),
                   _lineActionBtn(
@@ -902,10 +902,10 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withOpacity(0.1),
+            color: AppColors.blue1.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, size: 16.sp, color: AppColors.primaryBlue),
+          child: Icon(icon, size: 16.sp, color: AppColors.blue1),
         ),
         SizedBox(width: 10.w),
         Expanded(
@@ -1112,18 +1112,18 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                               child: Container(
                                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  color: AppColors.blue1.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.edit_rounded, size: 12.sp, color: AppColors.primaryBlue),
+                                    Icon(Icons.edit_rounded, size: 12.sp, color: AppColors.blue1),
                                     SizedBox(width: 4.w),
                                     Text(
                                       'edit_att'.tr,
                                       style: AppFonts.labelSmall.copyWith(
-                                        color: AppColors.primaryBlue,
+                                        color: AppColors.blue1,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -1185,7 +1185,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
       case 'suspended':
         return const Color(0xFF6B7280);
       default:
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
     }
   }
 
@@ -1320,7 +1320,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         _loadLines();
         Get.snackbar('success'.tr, 'line_deleted'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) {
         Get.snackbar('error'.tr, e.toString(),
@@ -1394,7 +1394,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             gradient: LinearGradient(
               colors: [
                 Colors.white,
-                AppColors.primaryBlue.withOpacity(0.02),
+                AppColors.blue1.withOpacity(0.02),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -1411,13 +1411,13 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.primaryBlue.withOpacity(0.15),
-                          AppColors.primaryBlue.withOpacity(0.25),
+                          AppColors.blue1.withOpacity(0.15),
+                          AppColors.blue1.withOpacity(0.25),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: Icon(Icons.alt_route_rounded, color: AppColors.primaryBlue, size: 24.sp),
+                    child: Icon(Icons.alt_route_rounded, color: AppColors.blue1, size: 24.sp),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
@@ -1441,7 +1441,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
+                  border: Border.all(color: AppColors.blue1.withOpacity(0.2)),
                 ),
                 child: TextField(
                   controller: nameCtrl,
@@ -1450,7 +1450,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                     labelText: 'route_name'.tr,
                     labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
                     border: InputBorder.none,
-                    prefixIcon: Icon(Icons.label_rounded, color: AppColors.primaryBlue),
+                    prefixIcon: Icon(Icons.label_rounded, color: AppColors.blue1),
                   ),
                 ),
               ),
@@ -1460,7 +1460,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
+                  border: Border.all(color: AppColors.blue1.withOpacity(0.2)),
                 ),
                 child: TextField(
                   controller: descCtrl,
@@ -1470,7 +1470,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                     labelText: 'description'.tr,
                     labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
                     border: InputBorder.none,
-                    prefixIcon: Icon(Icons.description_rounded, color: AppColors.primaryBlue),
+                    prefixIcon: Icon(Icons.description_rounded, color: AppColors.blue1),
                   ),
                 ),
               ),
@@ -1495,7 +1495,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                     child: ElevatedButton(
                       onPressed: () => Get.back(result: true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.blue1,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                       ),
@@ -1523,7 +1523,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         _loadRoutes();
         Get.snackbar('success'.tr, isEdit ? 'route_updated'.tr : 'route_added'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) {
         Get.snackbar('error'.tr, e.toString(),
@@ -1552,7 +1552,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             gradient: LinearGradient(
               colors: [
                 Colors.white,
-                AppColors.primaryBlue.withOpacity(0.02),
+                AppColors.blue1.withOpacity(0.02),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -1570,13 +1570,13 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primaryBlue.withOpacity(0.15),
-                            AppColors.primaryBlue.withOpacity(0.25),
+                            AppColors.blue1.withOpacity(0.15),
+                            AppColors.blue1.withOpacity(0.25),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      child: Icon(Icons.route_rounded, color: AppColors.primaryBlue, size: 24.sp),
+                      child: Icon(Icons.route_rounded, color: AppColors.blue1, size: 24.sp),
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -1646,7 +1646,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                       child: ElevatedButton(
                         onPressed: () => Get.back(result: true),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
+                          backgroundColor: AppColors.blue1,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         ),
@@ -1692,7 +1692,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         _loadLines();
         Get.snackbar('success'.tr, isEdit ? 'line_updated'.tr : 'line_added'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) { 
         Get.snackbar('error'.tr, e.toString(),
@@ -1716,7 +1716,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
+        border: Border.all(color: AppColors.blue1.withOpacity(0.2)),
       ),
       child: TextField(
         controller: controller,
@@ -1727,8 +1727,8 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
           labelText: label,
           labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
           border: InputBorder.none,
-          prefixIcon: Icon(icon, color: AppColors.primaryBlue),
-          suffixIcon: readOnly ? Icon(Icons.arrow_drop_down_rounded, color: AppColors.primaryBlue) : null,
+          prefixIcon: Icon(icon, color: AppColors.blue1),
+          suffixIcon: readOnly ? Icon(Icons.arrow_drop_down_rounded, color: AppColors.blue1) : null,
         ),
       ),
     );
@@ -1747,7 +1747,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         Get.back(result: true);
         Get.snackbar('success'.tr, 'bus_deleted'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) {
         Get.snackbar('error'.tr, e.toString(),
@@ -1829,10 +1829,10 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.03),
+        color: AppColors.blue1.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -1843,15 +1843,15 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.1),
-                  AppColors.primaryBlue.withOpacity(0.2),
+                  AppColors.blue1.withOpacity(0.1),
+                  AppColors.blue1.withOpacity(0.2),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+            child: Icon(icon, color: AppColors.blue1, size: 20.sp),
           ),
           SizedBox(width: 14.w),
           Expanded(
@@ -2000,19 +2000,19 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
         gradient: LinearGradient(
           colors: [
             Colors.white,
-            AppColors.primaryBlue.withOpacity(0.02),
+            AppColors.blue1.withOpacity(0.02),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.05),
+            color: AppColors.blue1.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2025,8 +2025,8 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.15),
-                  AppColors.primaryBlue.withOpacity(0.25),
+                  AppColors.blue1.withOpacity(0.15),
+                  AppColors.blue1.withOpacity(0.25),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -2035,7 +2035,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             ),
             child: Icon(
               Icons.person_rounded,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 20.sp,
             ),
           ),
@@ -2465,10 +2465,10 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
                         child: Container(
                           padding: EdgeInsets.all(14.w),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withOpacity(0.03),
+                            color: AppColors.blue1.withOpacity(0.03),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: AppColors.primaryBlue.withOpacity(0.1),
+                              color: AppColors.blue1.withOpacity(0.1),
                               width: 1,
                             ),
                           ),
@@ -2477,13 +2477,13 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
                               Container(
                                 padding: EdgeInsets.all(8.w),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  color: AppColors.blue1.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
                                 child: Text(
                                   order,
                                   style: AppFonts.bodyMedium.copyWith(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.blue1,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -2554,10 +2554,10 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.03),
+        color: AppColors.blue1.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -2566,10 +2566,10 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 18.sp),
+            child: Icon(icon, color: AppColors.blue1, size: 18.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -2704,7 +2704,7 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
         Get.back();
         Get.snackbar('success'.tr, 'route_deleted'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) {
         Get.snackbar('error'.tr, e.toString(),
@@ -3134,10 +3134,10 @@ class _LineDetailsPageState extends State<LineDetailsPage> {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.03),
+        color: AppColors.blue1.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -3146,10 +3146,10 @@ class _LineDetailsPageState extends State<LineDetailsPage> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 18.sp),
+            child: Icon(icon, color: AppColors.blue1, size: 18.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -3465,10 +3465,10 @@ class _LineDetailsPageState extends State<LineDetailsPage> {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.03),
+        color: AppColors.blue1.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1,
         ),
       ),
@@ -3480,10 +3480,10 @@ class _LineDetailsPageState extends State<LineDetailsPage> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  color: AppColors.blue1.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: AppColors.primaryBlue, size: 18.sp),
+                child: Icon(icon, color: AppColors.blue1, size: 18.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -3604,7 +3604,7 @@ class _LineDetailsPageState extends State<LineDetailsPage> {
         Get.back();
         Get.snackbar('success'.tr, 'line_deleted'.tr,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white);
       } catch (e) {
         Get.snackbar('error'.tr, e.toString(),
@@ -3672,7 +3672,7 @@ class _RouteEditPageState extends State<_RouteEditPage> {
             ElevatedButton(
               onPressed: _loading ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.blue1,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
               ),
@@ -3820,7 +3820,7 @@ class _LineEditPageState extends State<_LineEditPage> {
             ElevatedButton(
               onPressed: _loading ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.blue1,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
               ),
@@ -3856,7 +3856,7 @@ class _LineEditPageState extends State<_LineEditPage> {
           labelText: label,
           border: InputBorder.none,
           labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
-          suffixIcon: onTap != null ? Icon(Icons.calendar_today_rounded, color: AppColors.primaryBlue) : null,
+          suffixIcon: onTap != null ? Icon(Icons.calendar_today_rounded, color: AppColors.blue1) : null,
         ),
         style: AppFonts.bodyLarge,
         validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'required_field'.tr : null : null,
@@ -4006,7 +4006,7 @@ class _StationAttendancePageState extends State<_StationAttendancePage> {
             onPressed: _saving ? null : _saveAttendance,
             child: _saving
                 ? SizedBox(width: 20.w, height: 20.w, child: const CircularProgressIndicator(strokeWidth: 2))
-                : Text('save'.tr, style: AppFonts.bodyMedium.copyWith(color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
+                : Text('save'.tr, style: AppFonts.bodyMedium.copyWith(color: AppColors.blue1, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4073,13 +4073,13 @@ class _StationAttendancePageState extends State<_StationAttendancePage> {
                                     : Container(
                                         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primaryBlue.withOpacity(0.1),
+                                          color: AppColors.blue1.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(20.r),
                                         ),
                                         child: Text(
                                           displayName.isNotEmpty ? displayName : '?',
                                           style: AppFonts.bodyMedium.copyWith(
-                                            color: AppColors.primaryBlue,
+                                            color: AppColors.blue1,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -4208,7 +4208,7 @@ class _StationAttendancePageState extends State<_StationAttendancePage> {
       case 'suspended':
         return const Color(0xFF6B7280);
       default:
-        return AppColors.primaryBlue;
+        return AppColors.blue1;
     }
   }
 
@@ -4255,4 +4255,5 @@ class _StationAttendancePageState extends State<_StationAttendancePage> {
     );
   }
 }
+
 

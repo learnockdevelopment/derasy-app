@@ -24,6 +24,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
   bool _isProcessing = false;
+  bool get _isIdType => widget.documentType.contains('id');
 
   @override
   void initState() {
@@ -118,7 +119,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
             else
               Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                 ),
               ),
 
@@ -156,11 +157,11 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                     ),
                     Expanded(
                       child: Text(
-                        widget.documentType == 'parent_id'
-                            ? 'scan_parent_national_id'.tr
-                            : widget.documentType == 'child_id'
-                                ? 'scan_child_national_id'.tr
-                                : 'scan_certificate'.tr,
+                        _isIdType
+                            ? (widget.documentType.contains('parent') 
+                                ? 'scan_parent_national_id'.tr 
+                                : 'scan_child_national_id'.tr)
+                            : 'scan_certificate'.tr,
                         style: AppFonts.h3.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -190,7 +191,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                 child: Column(
                   children: [
                     Icon(
-                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
+                      _isIdType
                           ? Icons.badge
                           : Icons.document_scanner,
                       color: Colors.white,
@@ -198,8 +199,8 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
-                          ? 'position_national_id_in_frame'.tr
+                      _isIdType
+                          ? 'position_id_in_frame'.tr
                           : 'position_certificate_in_frame'.tr,
                       style: AppFonts.bodyMedium.copyWith(
                         color: Colors.white,
@@ -210,7 +211,7 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      widget.documentType == 'parent_id' || widget.documentType == 'child_id'
+                      _isIdType
                           ? 'ensure_national_id_edges_visible'.tr
                           : 'ensure_all_edges_are_visible'.tr,
                       style: AppFonts.bodySmall.copyWith(
@@ -254,14 +255,14 @@ class _CertificateScannerPageState extends State<CertificateScannerPage> {
                           shape: BoxShape.circle,
                           color: _isProcessing
                               ? Colors.grey
-                              : AppColors.primaryBlue,
+                              : AppColors.blue1,
                           border: Border.all(
                             color: Colors.white,
                             width: 4,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primaryBlue.withOpacity(0.5),
+                              color: AppColors.blue1.withOpacity(0.5),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -307,6 +308,8 @@ class ScannerOverlayPainter extends CustomPainter {
   
   ScannerOverlayPainter({this.documentType = 'certificate'});
   
+  bool get _isIdType => documentType.contains('id');
+  
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
@@ -314,10 +317,10 @@ class ScannerOverlayPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // National ID is smaller than certificate
-    final scanAreaWidth = (documentType == 'parent_id' || documentType == 'child_id')
+    final scanAreaWidth = _isIdType
         ? size.width * 0.9 
         : size.width * 0.85;
-    final scanAreaHeight = (documentType == 'parent_id' || documentType == 'child_id')
+    final scanAreaHeight = _isIdType
         ? size.height * 0.35
         : size.height * 0.5;
     final scanAreaLeft = (size.width - scanAreaWidth) / 2;
@@ -348,7 +351,7 @@ class ScannerOverlayPainter extends CustomPainter {
 
     // Draw corner indicators
     final cornerPaint = Paint()
-      ..color = AppColors.primaryBlue
+      ..color = AppColors.blue1
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 
@@ -406,4 +409,5 @@ class ScannerOverlayPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
 

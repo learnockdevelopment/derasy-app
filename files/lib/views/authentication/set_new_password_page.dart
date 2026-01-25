@@ -192,14 +192,14 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           children: [
                             Icon(
                               Icons.language,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               size: Responsive.sp(22),
                             ),
                             SizedBox(width: Responsive.w(4)),
                             Text(
                               (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
                               style: AppFonts.AlmaraiMedium14.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                               ),
                             ),
                           ],
@@ -216,9 +216,9 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryBlue,
-                      AppColors.primaryBlue,
-                      AppColors.primaryBlue.withOpacity(0.9),
+                      AppColors.blue1,
+                      AppColors.blue1,
+                      AppColors.blue1.withOpacity(0.9),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -235,7 +235,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                       child: Padding(
                         padding: EdgeInsets.only(top: Responsive.h(24)),
                         child: Image.asset(
-                          AssetsManager.logo,
+                          AssetsManager.login,
                           width: Responsive.w(120),
                           height: Responsive.w(120),
                           fit: BoxFit.contain,
@@ -375,14 +375,14 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         decoration: InputDecoration(
                           labelText: 'email'.tr,
                           hintText: 'enter_your_email'.tr,
-                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                          prefixIcon: Icon(Icons.email_outlined, color: AppColors.blue1, size: Responsive.sp(20)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
+                            borderSide: BorderSide(color: AppColors.blue1, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -401,14 +401,14 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         decoration: InputDecoration(
                           labelText: 'phone_number_optional'.tr,
                           hintText: 'enter_phone_optional'.tr,
-                          prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                          prefixIcon: Icon(Icons.phone_outlined, color: AppColors.blue1, size: Responsive.sp(20)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
                             borderSide: BorderSide(color: AppColors.grey300),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
+                            borderSide: BorderSide(color: AppColors.blue1, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -425,15 +425,15 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             margin: Responsive.all(8),
                             padding: Responsive.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withOpacity(0.07),
+                              color: AppColors.blue1.withOpacity(0.07),
                               borderRadius: BorderRadius.circular(Responsive.r(8)),
                             ),
-                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                            child: Icon(Icons.lock_outlined, color: AppColors.blue1, size: Responsive.sp(20)),
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                             ),
                             onPressed: () {
                               setState(() => _isPasswordVisible = !_isPasswordVisible);
@@ -445,7 +445,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
+                            borderSide: BorderSide(color: AppColors.blue1, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -501,15 +501,15 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             margin: Responsive.all(8),
                             padding: Responsive.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withOpacity(0.07),
+                              color: AppColors.blue1.withOpacity(0.07),
                               borderRadius: BorderRadius.circular(Responsive.r(8)),
                             ),
-                            child: Icon(Icons.lock_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                            child: Icon(Icons.lock_outlined, color: AppColors.blue1, size: Responsive.sp(20)),
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                             ),
                             onPressed: () {
                               setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible);
@@ -521,7 +521,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
+                            borderSide: BorderSide(color: AppColors.blue1, width: Responsive.w(2)),
                           ),
                           filled: true,
                           fillColor: AppColors.grey50,
@@ -539,7 +539,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                           onPressed: _isFormValid() && !_isLoading ? _setNewPassword : null,
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: AppColors.primaryBlue,
+                            backgroundColor: AppColors.blue1,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(Responsive.r(16)),
                             ),
@@ -591,7 +591,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                             child: Text(
                               'back_to_sign_in'.tr,
                               style: AppFonts.AlmaraiBold14.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 fontSize: Responsive.sp(14),
                               ),
                             ),
@@ -609,3 +609,4 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     );
   } 
 }
+

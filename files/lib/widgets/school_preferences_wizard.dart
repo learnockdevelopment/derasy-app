@@ -398,8 +398,8 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                   AppColors.error.withOpacity(0.03),
                 ]
               : [
-                  AppColors.primaryBlue.withOpacity(0.08),
-                  AppColors.primaryBlue.withOpacity(0.03),
+                  AppColors.blue1.withOpacity(0.08),
+                  AppColors.blue1.withOpacity(0.03),
                 ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -408,7 +408,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         border: Border.all(
           color: widget.hasExistingApplication
               ? AppColors.error.withOpacity(0.15)
-              : AppColors.primaryBlue.withOpacity(0.15),
+              : AppColors.blue1.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -419,12 +419,12 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             decoration: BoxDecoration(
               color: widget.hasExistingApplication
                   ? AppColors.error.withOpacity(0.1)
-                  : AppColors.primaryBlue.withOpacity(0.1),
+                  : AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               widget.hasExistingApplication ? Icons.info_outline : Icons.auto_awesome,
-              color: widget.hasExistingApplication ? AppColors.error : AppColors.primaryBlue,
+              color: widget.hasExistingApplication ? AppColors.error : AppColors.blue1,
               size: 24.sp,
             ),
           ),
@@ -465,14 +465,14 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: _selectedMainCategory != null 
-              ? AppColors.primaryBlue.withOpacity(0.4)
+              ? AppColors.blue1.withOpacity(0.4)
               : AppColors.grey300,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: _selectedMainCategory != null
-                ? AppColors.primaryBlue.withOpacity(0.08)
+                ? AppColors.blue1.withOpacity(0.08)
                 : Colors.black.withOpacity(0.03),
             blurRadius: 12,
             offset: const Offset(0, 3),
@@ -498,7 +498,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             padding: EdgeInsets.only(right: isArabic ? 0 : 14.w, left: isArabic ? 14.w : 0),
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 26.sp,
             ),
           ),
@@ -518,13 +518,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         Icons.category_outlined,
                         size: 18.sp,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -560,7 +560,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ),
@@ -582,14 +582,14 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all( 
           color: _selectedSubType != null 
-              ? AppColors.primaryBlue.withOpacity(0.4)
+              ? AppColors.blue1.withOpacity(0.4)
               : AppColors.grey300,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: _selectedSubType != null
-                ? AppColors.primaryBlue.withOpacity(0.08)
+                ? AppColors.blue1.withOpacity(0.08)
                 : Colors.black.withOpacity(0.03),
             blurRadius: 12,
             offset: const Offset(0, 3),
@@ -615,7 +615,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             padding: EdgeInsets.only(right: isArabic ? 0 : 14.w, left: isArabic ? 14.w : 0),
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 26.sp,
             ),
           ),
@@ -635,13 +635,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         Icons.school_outlined,
                         size: 18.sp,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -672,7 +672,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ),
@@ -693,14 +693,14 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: _selectedGovernorate != null 
-              ? AppColors.primaryBlue.withOpacity(0.4)
+              ? AppColors.blue1.withOpacity(0.4)
               : AppColors.grey300,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: _selectedGovernorate != null
-                ? AppColors.primaryBlue.withOpacity(0.08)
+                ? AppColors.blue1.withOpacity(0.08)
                 : Colors.black.withOpacity(0.03),
             blurRadius: 12,
             offset: const Offset(0, 3),
@@ -726,7 +726,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             padding: EdgeInsets.only(right: isArabic ? 0 : 14.w, left: isArabic ? 14.w : 0),
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 26.sp,
             ),
           ),
@@ -746,13 +746,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         Icons.location_city,
                         size: 18.sp,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -788,7 +788,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ),
@@ -810,14 +810,14 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: _selectedCity != null 
-              ? AppColors.primaryBlue.withOpacity(0.4)
+              ? AppColors.blue1.withOpacity(0.4)
               : AppColors.grey300,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: _selectedCity != null
-                ? AppColors.primaryBlue.withOpacity(0.08)
+                ? AppColors.blue1.withOpacity(0.08)
                 : Colors.black.withOpacity(0.03),
             blurRadius: 12,
             offset: const Offset(0, 3),
@@ -843,7 +843,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             padding: EdgeInsets.only(right: isArabic ? 0 : 14.w, left: isArabic ? 14.w : 0),
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 26.sp,
             ),
           ),
@@ -863,13 +863,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         Icons.location_on,
                         size: 18.sp,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -900,7 +900,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ),
@@ -928,13 +928,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
+                color: AppColors.blue1.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 icon,
                 size: 18.sp,
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
             ),
             SizedBox(width: 12.w),
@@ -962,8 +962,8 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             min: 0,
             max: max,
             divisions: (max / 1000).round(),
-            activeColor: AppColors.primaryBlue,
-            inactiveColor: AppColors.primaryBlue.withOpacity(0.2),
+            activeColor: AppColors.blue1,
+            inactiveColor: AppColors.blue1.withOpacity(0.2),
             label: '${(value / 1000).round()}K',
             onChanged: onChanged,
           ),
@@ -973,10 +973,10 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withOpacity(0.05),
+            color: AppColors.blue1.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: AppColors.primaryBlue.withOpacity(0.2),
+              color: AppColors.blue1.withOpacity(0.2),
               width: 1,
             ),
           ),
@@ -986,7 +986,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
               Icon(
                 Icons.payments_outlined,
                 size: 18.sp,
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
               SizedBox(width: 8.w),
               Text(
@@ -994,7 +994,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                 style: AppFonts.bodyMedium.copyWith(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                 ),
               ),
             ],
@@ -1028,13 +1028,13 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
+                color: AppColors.blue1.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 icon,
                 size: 18.sp,
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
             ),
             SizedBox(width: 12.w),
@@ -1062,8 +1062,8 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
             min: 0,
             max: max,
             divisions: (max / 1000).round(),
-            activeColor: AppColors.primaryBlue,
-            inactiveColor: AppColors.primaryBlue.withOpacity(0.2),
+            activeColor: AppColors.blue1,
+            inactiveColor: AppColors.blue1.withOpacity(0.2),
             labels: RangeLabels(
               '${(minValue / 1000).round()}K',
               '${(maxValue / 1000).round()}K',
@@ -1076,10 +1076,10 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withOpacity(0.05),
+            color: AppColors.blue1.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: AppColors.primaryBlue.withOpacity(0.2),
+              color: AppColors.blue1.withOpacity(0.2),
               width: 1,
             ),
           ),
@@ -1092,7 +1092,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                   Icon(
                     Icons.arrow_downward,
                     size: 16.sp,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                   ),
                   SizedBox(width: 6.w),
                   Text(
@@ -1100,7 +1100,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ],
@@ -1111,7 +1111,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                   Icon(
                     Icons.arrow_upward,
                     size: 16.sp,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                   ),
                   SizedBox(width: 6.w),
                   Text(
@@ -1119,7 +1119,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     style: AppFonts.bodyMedium.copyWith(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                     ),
                   ),
                 ],
@@ -1138,7 +1138,7 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
       child: ElevatedButton(
         onPressed: (widget.isLoading || widget.hasExistingApplication) ? null : _submit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           disabledBackgroundColor: AppColors.grey300,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14.r),
@@ -1174,3 +1174,4 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
     );
   }
 }
+

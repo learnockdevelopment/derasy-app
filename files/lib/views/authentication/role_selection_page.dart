@@ -157,7 +157,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                             children: [
                               // Logo
                               Image.asset(
-                                AssetsManager.logo,
+                                AssetsManager.login,
                                 width: Responsive.w(140),
                                 height: Responsive.w(140),
                                 fit: BoxFit.contain,
@@ -181,7 +181,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                   icon: IconlyBold.login,
                                   onPressed: _handleLogin,
                                   isPrimary: true,
-                                  primary: AppColors.primaryBlue,
+                                  primary: AppColors.blue1,
                                 ),
                                 SizedBox(height: Responsive.h(25)),
                                 
@@ -191,7 +191,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                   icon: IconlyBold.edit,
                                   onPressed: _handleRegister,
                                   isPrimary: false,
-                                  primary: AppColors.primaryBlue,
+                                  primary: AppColors.blue1,
                                 ),
                               ],
                             ),
@@ -231,7 +231,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                       child: Text(
                         'privacy_policy'.tr,
                         style: AppFonts.AlmaraiRegular12.copyWith(
-                          color: AppColors.primaryPurple,
+                          color: AppColors.blue2,
                         ),
                       ),
                     ),
@@ -251,7 +251,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                       child: Text(
                         'terms_conditions'.tr,
                         style: AppFonts.AlmaraiRegular12.copyWith(
-                          color: AppColors.primaryPurple,
+                          color: AppColors.blue2,
                         ),
                       ),
                     ),
@@ -284,7 +284,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                   ),
                   child: Icon(
                     IconlyBold.chat,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                   ),
                 ),
               ),
@@ -296,7 +296,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                   elevation: 0,
                   child: Icon(
                     IconlyBold.chat,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                     size: Responsive.sp(24),
                   ),
                 ),
@@ -318,7 +318,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                 onPressed: () {
                   Get.toNamed(AppRoutes.chatbot);
                 },
-                backgroundColor: AppColors.primaryGreen,
+                backgroundColor: AppColors.blue1,
                 elevation: 6,
                 child: Icon(
                   IconlyBold.chat,
@@ -368,3 +368,4 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
     );
   }
 }
+

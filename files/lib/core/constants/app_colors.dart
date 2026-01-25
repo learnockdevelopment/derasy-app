@@ -4,12 +4,9 @@ import '../../core/controllers/app_config_controller.dart';
 class AppColors {
 
   // Primary Color Variants
-  static const Color primaryBlue = Color(0xFF079eda);
-  static const Color primaryPurple = Color(0xFF814098);
-  static const Color primaryGreen = Color(0xFF009550);
-  static const Color primaryRed = Color(0xFFed2028);
-  static const Color primaryYellow = Color(0xFFffde03);
-  
+  static const Color blue1 = Color(0xFF0ea5e9);
+  static const Color blue2 = Color(0xFF00e1b5);
+
   // Selection Colors
   static const Color selectedBlue = Color(0xFF7AC1FF);
 
@@ -18,7 +15,7 @@ class AppColors {
     try {
       return AppConfigController.to.secondaryColorAsColor;
     } catch (_) {
-      return const Color(0xFFF69220);
+      return const Color(0xFF1E88E5);
     }
   }
   static Color get secondaryLight => secondary.withOpacity(0.8);
@@ -29,7 +26,7 @@ class AppColors {
     try {
       return AppConfigController.to.accentColorAsColor;
     } catch (_) {
-      return const Color(0xFF4CAF50);
+      return const Color(0xFF64B5F6);
     }
   }
   static Color get accentLight => accent.withOpacity(0.8);
@@ -335,3 +332,4 @@ class AppColors {
   // Custom Colors
   static const Color lightPeach = Color(0xFFFFDBB2);
 }
+

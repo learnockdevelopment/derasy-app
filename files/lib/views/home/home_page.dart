@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
 
     return RefreshIndicator(
       onRefresh: _refreshData,
-      color: AppColors.primaryBlue,
+      color: AppColors.blue1,
       child: CustomScrollView(
         slivers: [
           // Hero Section
@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> {
                                   icon: IconlyBroken.profile,
                                   title: 'total_students'.tr,
                                   value: _formatNumber(totalStudents.toString()),
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   showAddButton: true,
                                   onAddTap: () => Get.toNamed(AppRoutes.addChildSteps),
                                 ),
@@ -204,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                                   icon: IconlyBroken.document,
                                   title: 'total_applications'.tr,
                                   value: _formatNumber(totalApplications.toString()),
-                                  color: AppColors.primaryGreen,
+                                  color: AppColors.blue1,
                                   showAddButton: true,
                                   onAddTap: () {
                                     if (totalStudents == 0) {
@@ -236,7 +236,7 @@ class _HomePageState extends State<HomePage> {
                                   buttonText: 'add_application'.tr,
                                   isButtonDisabled: totalStudents == 0,
                                   disabledMessage: 'add_student_first_to_apply'.tr,
-                                  buttonColor: AppColors.primaryGreen,
+                                  buttonColor: AppColors.blue1,
                                 ),
                         ),
                       ],
@@ -664,4 +664,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
 

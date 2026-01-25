@@ -67,7 +67,7 @@ class _ClinicRecordsPageState extends State<ClinicRecordsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         foregroundColor: AppColors.white,
         elevation: 0,
         title: Text(
@@ -222,7 +222,7 @@ class _ClinicRecordsPageState extends State<ClinicRecordsPage> {
             children: [
               Icon(
                 Icons.assignment,
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -291,13 +291,13 @@ class _ClinicRecordsPageState extends State<ClinicRecordsPage> {
               Icon(
                 Icons.calendar_today,
                 size: 16.sp,
-                color: AppColors.primaryBlue,
+                color: AppColors.blue1,
               ),
               SizedBox(width: 8.w),
               Text(
                 _formatDate(record.date),
                 style: AppFonts.labelMedium.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                 ),
               ),
               const Spacer(),
@@ -387,3 +387,4 @@ class _ClinicRecordsPageState extends State<ClinicRecordsPage> {
     }
   }
 }
+

@@ -384,7 +384,7 @@ class _RegisterPageState extends State<RegisterPage>
         'success'.tr,
         response.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
     } catch (e) {
@@ -482,7 +482,7 @@ class _RegisterPageState extends State<RegisterPage>
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: Image.asset(
-                      AssetsManager.logo,
+                      AssetsManager.login,
                       width: Responsive.w(70),
                       height: Responsive.w(70),
                       fit: BoxFit.contain,
@@ -538,7 +538,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   ),
                                   prefixIcon: Icon(
                                     Icons.person_outlined,
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.blue1,
                                     size: Responsive.sp(20),
                                   ),
                                   border: OutlineInputBorder(
@@ -549,7 +549,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(Responsive.r(12)),
                                     borderSide: BorderSide(
-                                      color: AppColors.primaryBlue,
+                                      color: AppColors.blue1,
                                       width: Responsive.w(2),
                                     ),
                                   ),
@@ -637,7 +637,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
                                   borderSide: BorderSide(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.blue1,
                                     width: Responsive.w(2),
                                   ),
                                 ),
@@ -680,7 +680,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 focusedBorder: InputBorder.none,
                                 prefixIcon: Icon(
                                   Icons.person_outline,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   size: Responsive.sp(20),
                                 ),
                               ),
@@ -720,7 +720,7 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                               prefixIcon: Icon(
                                 Icons.email_outlined,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: Responsive.sp(20),
                               ),
                               border: OutlineInputBorder(
@@ -731,7 +731,7 @@ class _RegisterPageState extends State<RegisterPage>
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   width: Responsive.w(2),
                                 ),
                               ),
@@ -769,7 +769,7 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                               prefixIcon: Icon(
                                 Icons.lock_outlined,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: Responsive.sp(20),
                               ),
                               suffixIcon: IconButton(
@@ -777,7 +777,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   _isPasswordVisible
                                       ? Icons.visibility_off
                                       : Icons.visibility,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -793,7 +793,7 @@ class _RegisterPageState extends State<RegisterPage>
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   width: Responsive.w(2),
                                 ),
                               ),
@@ -870,7 +870,7 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                               prefixIcon: Icon(
                                 Icons.lock_outlined,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: Responsive.sp(20),
                               ),
                               suffixIcon: IconButton(
@@ -878,7 +878,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   _isConfirmPasswordVisible
                                       ? Icons.visibility_off
                                       : Icons.visibility,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -895,7 +895,7 @@ class _RegisterPageState extends State<RegisterPage>
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide: BorderSide(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                   width: Responsive.w(2),
                                 ),
                               ),
@@ -928,7 +928,7 @@ class _RegisterPageState extends State<RegisterPage>
                                     }
                                   : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryBlue,
+                                backgroundColor: AppColors.blue1,
                                 disabledBackgroundColor: AppColors.grey300,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -977,3 +977,4 @@ class _RegisterPageState extends State<RegisterPage>
         ])));
   }
 }
+

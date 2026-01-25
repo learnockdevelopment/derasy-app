@@ -101,7 +101,7 @@ class _EditClassPageState extends State<EditClassPage> {
         'success'.tr,
         'class_updated_successfully'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
       
@@ -126,7 +126,7 @@ class _EditClassPageState extends State<EditClassPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'edit_class'.tr,
@@ -191,7 +191,7 @@ class _EditClassPageState extends State<EditClassPage> {
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryBlue.withOpacity(0.3),
+                            color: AppColors.blue1.withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -200,7 +200,7 @@ class _EditClassPageState extends State<EditClassPage> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBlue,
+                          backgroundColor: AppColors.blue1,
                           padding: EdgeInsets.symmetric(vertical: 18.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.r),
@@ -274,10 +274,10 @@ class _EditClassPageState extends State<EditClassPage> {
             margin: EdgeInsets.all(12.w),
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+            child: Icon(icon, color: AppColors.blue1, size: 20.sp),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16.r),
@@ -289,7 +289,7 @@ class _EditClassPageState extends State<EditClassPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16.r),
-            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+            borderSide: BorderSide(color: AppColors.blue1, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -343,10 +343,10 @@ class _EditClassPageState extends State<EditClassPage> {
             margin: EdgeInsets.all(12.w),
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+            child: Icon(icon, color: AppColors.blue1, size: 20.sp),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16.r),
@@ -358,7 +358,7 @@ class _EditClassPageState extends State<EditClassPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16.r),
-            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+            borderSide: BorderSide(color: AppColors.blue1, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -381,4 +381,5 @@ class _EditClassPageState extends State<EditClassPage> {
     );
   }
 }
+
 

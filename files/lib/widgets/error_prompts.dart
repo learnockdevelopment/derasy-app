@@ -81,7 +81,7 @@ class ErrorPrompts {
     Get.snackbar(
       title,
       message,
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.blue1,
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
       duration: duration,
@@ -384,3 +384,4 @@ class ErrorPrompts {
     return error;
   }
 }
+

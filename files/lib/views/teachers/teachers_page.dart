@@ -192,9 +192,9 @@ class _TeachersPageState extends State<TeachersPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.95),
-                  AppColors.primaryBlue.withOpacity(0.85),
-                  AppColors.primaryBlue.withOpacity(0.75),
+                  AppColors.blue1.withOpacity(0.95),
+                  AppColors.blue1.withOpacity(0.85),
+                  AppColors.blue1.withOpacity(0.75),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -351,7 +351,7 @@ class _TeachersPageState extends State<TeachersPage> {
                                       child: Icon(
                                         Icons.filter_list_rounded,
                                         color: (_selectedGradeId != null || _selectedClassId != null)
-                                            ? AppColors.primaryBlue
+                                            ? AppColors.blue1
                                             : const Color(0xFF7F7FD5),
                                         size: Responsive.sp(22),
                                       ),
@@ -364,7 +364,7 @@ class _TeachersPageState extends State<TeachersPage> {
                                           width: 8,
                                           height: 8,
                                           decoration: BoxDecoration(
-                                            color: AppColors.primaryBlue,
+                                            color: AppColors.blue1,
                                             shape: BoxShape.circle,
                                           ),
                                         ),
@@ -636,7 +636,7 @@ class _TeachersPageState extends State<TeachersPage> {
                       child: Text(
                         'clear_all'.tr,
                         style: AppFonts.bodyMedium.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.blue1,
                           
                         ),
                       ),
@@ -780,7 +780,7 @@ class _TeachersPageState extends State<TeachersPage> {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.blue1,
                     padding: Responsive.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -863,7 +863,7 @@ class _TeachersPageState extends State<TeachersPage> {
 
                   return Material(
                     color: isSelected
-                        ? AppColors.primaryBlue.withOpacity(0.08)
+                        ? AppColors.blue1.withOpacity(0.08)
                         : Colors.white,
                     borderRadius: BorderRadius.circular(Responsive.r(12)),
                     child: InkWell(
@@ -887,7 +887,7 @@ class _TeachersPageState extends State<TeachersPage> {
                           borderRadius: BorderRadius.circular(Responsive.r(12)),
                           border: Border.all(
                             color: isSelected
-                                ? AppColors.primaryBlue
+                                ? AppColors.blue1
                                 : const Color(0xFFE5E7EB),
                             width: isSelected ? 2 : 1,
                           ),
@@ -946,7 +946,7 @@ class _TeachersPageState extends State<TeachersPage> {
                             if (isSelected)
                               Icon(
                                 Icons.check_circle_rounded,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: Responsive.sp(24),
                               ),
                           ],
@@ -963,4 +963,5 @@ class _TeachersPageState extends State<TeachersPage> {
     );
   }
 }
+
 

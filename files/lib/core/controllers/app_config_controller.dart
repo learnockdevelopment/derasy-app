@@ -113,12 +113,12 @@ class AppConfigController extends GetxController {
 
   /// Get secondary color
   String get secondaryColor {
-    return _appConfig.value?.branding.colors.secondary ?? '#64748b';
+    return _appConfig.value?.branding.colors.secondary ?? '#1e88e5';
   }
 
   /// Get accent color
   String get accentColor {
-    return _appConfig.value?.branding.colors.accent ?? '#f59e0b';
+    return _appConfig.value?.branding.colors.accent ?? '#64b5f6';
   }
 
   /// Get light logo URL
@@ -213,4 +213,5 @@ class AppConfigController extends GetxController {
   Color get successColorAsColor => hexToColor(successColorHex, fallback: Colors.green);
   Color get infoColorAsColor => hexToColor(infoColorHex, fallback: Colors.blue);
 }
+
 

@@ -33,3 +33,4 @@ class LanguageController extends GetxController {
   bool get isEnglish => currentLanguage == 'en';
   bool get isArabic => currentLanguage == 'ar';
 }
+

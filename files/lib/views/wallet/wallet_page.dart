@@ -376,13 +376,13 @@ class _WalletPageState extends State<WalletPage> {
             padding: Responsive.all(12),
             decoration: BoxDecoration(
               color: isDeposit 
-                  ? AppColors.primaryGreen.withOpacity(0.1) 
+                  ? AppColors.blue1.withOpacity(0.1) 
                   : AppColors.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(Responsive.r(14)),
             ),
             child: Icon(
               isDeposit ? IconlyBroken.arrow_down_2 : IconlyBroken.arrow_up_2,
-              color: isDeposit ? AppColors.primaryGreen : AppColors.error,
+              color: isDeposit ? AppColors.blue1 : AppColors.error,
               size: Responsive.sp(20),
             ),
           ),
@@ -412,7 +412,7 @@ class _WalletPageState extends State<WalletPage> {
               Text(
                 '${isDeposit ? '+' : '-'}${_formatCurrency(transaction.amount, "")}',
                 style: AppFonts.bodyMedium.copyWith(
-                  color: isDeposit ? AppColors.primaryGreen : AppColors.error,
+                  color: isDeposit ? AppColors.blue1 : AppColors.error,
                   fontWeight: FontWeight.bold,
                   fontSize: Responsive.sp(15),
                 ),
@@ -456,3 +456,4 @@ class _WalletPageState extends State<WalletPage> {
     }
   }
 }
+

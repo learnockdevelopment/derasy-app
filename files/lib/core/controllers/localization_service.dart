@@ -69,3 +69,4 @@ extension LocalizationExtension on String {
   String trParams(Map<String, String> params) =>
       LocalizationService.to.translate(this, params: params);
 }
+

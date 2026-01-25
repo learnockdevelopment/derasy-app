@@ -102,7 +102,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         'success'.tr,
         'add_to_cart'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
     } catch (e) {
@@ -123,7 +123,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       return Scaffold(
         backgroundColor: const Color(0xFFF6F8FB),
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
@@ -138,7 +138,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       return Scaffold(
         backgroundColor: const Color(0xFFF6F8FB),
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           elevation: 0,
           title: Text(
             'product_details'.tr,
@@ -168,7 +168,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           _product?.titleAr ?? 'product_details'.tr,
@@ -250,13 +250,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  color: AppColors.blue1.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
                                   _getCategoryTitle(_product!.category!),
                                   style: AppFonts.bodySmall.copyWith(
-                                    color: AppColors.primaryBlue,
+                                    color: AppColors.blue1,
                                     fontSize: AppFonts.size12,
                                   ),
                                 ),
@@ -280,7 +280,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           Text(
                             '${finalPrice.toStringAsFixed(0)} ${'egp'.tr}',
                             style: AppFonts.h2.copyWith(
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               fontWeight: FontWeight.bold,
                               fontSize: AppFonts.size24,
                             ),
@@ -341,7 +341,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             onPressed: _quantity > 1
                                 ? () => setState(() => _quantity--)
                                 : null,
-                            color: AppColors.primaryBlue,
+                            color: AppColors.blue1,
                           ),
                           Container(
                             width: 50.w,
@@ -359,7 +359,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             onPressed: _quantity < _product!.stock
                                 ? () => setState(() => _quantity++)
                                 : null,
-                            color: AppColors.primaryBlue,
+                            color: AppColors.blue1,
                           ),
                         ],
                       ),
@@ -373,7 +373,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     child: ElevatedButton(
                       onPressed: _product!.stock > 0 ? _addToCart : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.blue1,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -492,7 +492,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   }
                 });
               },
-              selectedColor: AppColors.primaryBlue,
+              selectedColor: AppColors.blue1,
               labelStyle: AppFonts.bodySmall.copyWith(
                 color: isSelected ? Colors.white : const Color(0xFF1F2937),
                 fontSize: AppFonts.size12,
@@ -563,4 +563,5 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 }
+
 

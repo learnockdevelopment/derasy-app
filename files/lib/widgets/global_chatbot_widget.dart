@@ -51,7 +51,7 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> {
             onPressed: () {
               Get.toNamed(AppRoutes.chatbot);
             },
-            backgroundColor: AppColors.primaryGreen,
+            backgroundColor: AppColors.blue1,
             elevation: 6,
             child: Icon(
               IconlyBold.chat,
@@ -64,3 +64,4 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> {
     );
   }
 }
+

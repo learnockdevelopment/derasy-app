@@ -107,7 +107,7 @@ class _OrdersPageState extends State<OrdersPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'orders'.tr,
@@ -179,7 +179,7 @@ class _OrdersPageState extends State<OrdersPage> {
         });
         _loadOrders(resetPage: true);
       },
-      selectedColor: AppColors.primaryBlue,
+      selectedColor: AppColors.blue1,
       labelStyle: AppFonts.bodyMedium.copyWith(
         color: isSelected ? Colors.white : const Color(0xFF1F2937),
         fontSize: AppFonts.size12,
@@ -261,7 +261,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   Text(
                     '${order.total.toStringAsFixed(0)} ${'egp'.tr}',
                     style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                       fontWeight: FontWeight.bold,
                       fontSize: AppFonts.size16,
                     ),
@@ -308,4 +308,5 @@ class _OrdersPageState extends State<OrdersPage> {
     return '${date.day}/${date.month}/${date.year}';
   }
 }
+
 

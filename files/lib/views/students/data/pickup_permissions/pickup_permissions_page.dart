@@ -185,7 +185,7 @@ class _PickupPermissionsPageState extends State<PickupPermissionsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         foregroundColor: AppColors.white,
         elevation: 0,
         title: Text(
@@ -234,7 +234,7 @@ class _PickupPermissionsPageState extends State<PickupPermissionsPage> {
               children: [
                 Icon(
                   Icons.car_rental,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: 20.sp,
                 ),
                 SizedBox(width: 8.w),
@@ -305,7 +305,7 @@ class _PickupPermissionsPageState extends State<PickupPermissionsPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _addPermission,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.blue1,
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.r),
@@ -358,7 +358,7 @@ class _PickupPermissionsPageState extends State<PickupPermissionsPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue),
+          borderSide: BorderSide(color: AppColors.blue1),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         hintStyle: AppFonts.bodySmall.copyWith(
@@ -581,3 +581,4 @@ class _PickupPermissionsPageState extends State<PickupPermissionsPage> {
     }
   }
 }
+

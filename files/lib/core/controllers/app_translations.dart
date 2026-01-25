@@ -34,3 +34,4 @@ class AppTranslations extends Translations {
     }
   }
 }
+

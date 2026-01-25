@@ -970,3 +970,4 @@ class SchoolsException implements Exception {
   @override
   String toString() => 'SchoolsException: $message';
 }
+

@@ -334,3 +334,4 @@ class _SimpleLocationPickerState extends State<SimpleLocationPicker> {
     );
   }
 }
+

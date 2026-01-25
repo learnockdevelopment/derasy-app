@@ -100,7 +100,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           title: Text('order_details'.tr),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -110,7 +110,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     if (_order == null) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           title: Text('order_details'.tr),
         ),
         body: Center(
@@ -122,7 +122,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'order_details'.tr,
@@ -390,7 +390,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           Text(
             '${item.subtotal.toStringAsFixed(0)} ${'egp'.tr}',
             style: AppFonts.bodyMedium.copyWith(
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               fontWeight: FontWeight.bold,
               fontSize: AppFonts.size14,
             ),
@@ -417,7 +417,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           Text(
             value,
             style: AppFonts.bodyMedium.copyWith(
-              color: isTotal ? AppColors.primaryBlue : const Color(0xFF1F2937),
+              color: isTotal ? AppColors.blue1 : const Color(0xFF1F2937),
               fontSize: isTotal ? AppFonts.size18 : AppFonts.size14,
               fontWeight: FontWeight.bold,
             ),
@@ -431,4 +431,5 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 }
+
 

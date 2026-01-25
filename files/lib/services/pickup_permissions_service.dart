@@ -200,3 +200,4 @@ class PickupPermissionsException implements Exception {
   @override
   String toString() => 'PickupPermissionsException: $message';
 }
+

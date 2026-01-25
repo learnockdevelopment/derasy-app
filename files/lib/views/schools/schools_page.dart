@@ -119,7 +119,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'my_schools_title'.tr,
@@ -149,7 +149,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(24),
                 bottomRight: Radius.circular(24),
@@ -218,7 +218,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
                     ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: _loadSchools,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         child: ListView.builder(
                           padding: EdgeInsets.all(16.w),
                           itemCount: _filteredSchools.length,
@@ -305,7 +305,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
                 Row(
                   children: [
                     // Accent bar
-                    Container(width: 4.w, height: 48.h, decoration: BoxDecoration(borderRadius: BorderRadius.circular(2.r), gradient: LinearGradient(colors: [AppColors.primaryBlue, AppColors.primaryBlue.withOpacity(0.6)], begin: Alignment.topCenter, end: Alignment.bottomCenter))),
+                    Container(width: 4.w, height: 48.h, decoration: BoxDecoration(borderRadius: BorderRadius.circular(2.r), gradient: LinearGradient(colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.6)], begin: Alignment.topCenter, end: Alignment.bottomCenter))),
                     SizedBox(width: 12.w),
                     // Logo
                     ClipRRect(
@@ -388,13 +388,13 @@ class _SchoolsPageState extends State<SchoolsPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.06),
+        color: AppColors.blue1.withOpacity(0.06),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primaryBlue, size: 14.sp),
+          Icon(icon, color: AppColors.blue1, size: 14.sp),
           SizedBox(width: 6.w),
           Text(text, style: AppFonts.labelSmall.copyWith(color: AppColors.textPrimary, fontSize: 11.sp)),
         ],
@@ -447,3 +447,4 @@ class _SchoolsPageState extends State<SchoolsPage> {
 
 
 }
+

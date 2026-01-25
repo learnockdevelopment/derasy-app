@@ -257,7 +257,7 @@ class _BusFormPageState extends State<BusFormPage> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.blue1,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -317,7 +317,7 @@ class _BusFormPageState extends State<BusFormPage> {
         labelStyle: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
         hintText: hint ?? '${'enter'.tr} $label',
         hintStyle: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary.withOpacity(0.6)),
-        prefixIcon: Icon(icon, color: AppColors.primaryBlue, size: 20.sp),
+        prefixIcon: Icon(icon, color: AppColors.blue1, size: 20.sp),
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
@@ -331,7 +331,7 @@ class _BusFormPageState extends State<BusFormPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+          borderSide: BorderSide(color: AppColors.blue1, width: 2),
         ),
       ),
       validator: required
@@ -351,7 +351,7 @@ class _BusFormPageState extends State<BusFormPage> {
     return DropdownButtonFormField<String>(
       value: safeValue,
       isExpanded: true,
-      icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primaryBlue),
+      icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.blue1),
       style: AppFonts.bodySmall.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
@@ -371,7 +371,7 @@ class _BusFormPageState extends State<BusFormPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+          borderSide: BorderSide(color: AppColors.blue1, width: 2),
         ),
       ),
       items: items
@@ -399,3 +399,4 @@ class _BusFormPageState extends State<BusFormPage> {
     }
   }
 }
+

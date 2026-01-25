@@ -111,7 +111,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             'success'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white,
           );
         } else {
@@ -155,7 +155,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             'success'.tr,
             response.message,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.blue1,
             colorText: Colors.white,
           );
         } else {
@@ -220,7 +220,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         'Success',
         response.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
     } catch (e) {
@@ -284,7 +284,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                         Container(
                           padding: Responsive.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withOpacity(0.1),
+                            color: AppColors.blue1.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(Responsive.r(12)),
                           ),
                           child: SizedBox(
@@ -361,12 +361,12 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                             Container(
                               padding: Responsive.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryBlue.withOpacity(0.07),
+                                color: AppColors.blue1.withOpacity(0.07),
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.email_rounded, color: AppColors.primaryBlue, size: Responsive.sp(17)),
+                                  Icon(Icons.email_rounded, color: AppColors.blue1, size: Responsive.sp(17)),
                                   SizedBox(width: Responsive.w(8)),
                                   Expanded(
                                     child: Text(_email, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.textPrimary, fontSize: Responsive.sp(14))),
@@ -381,19 +381,19 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
                               maxLength: 6,
-                              style: AppFonts.AlmaraiBold12.copyWith( letterSpacing: Responsive.w(12), color: AppColors.primaryBlue),
+                              style: AppFonts.AlmaraiBold12.copyWith( letterSpacing: Responsive.w(12), color: AppColors.blue1),
                               decoration: InputDecoration(
                                 labelText: 'verification_code'.tr,
                                 hintText: '000000',
                                 counterText: '',
-                                prefixIcon: Icon(Icons.verified_user_outlined, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+                                prefixIcon: Icon(Icons.verified_user_outlined, color: AppColors.blue1, size: Responsive.sp(20)),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
                                   borderSide: BorderSide(color: AppColors.grey300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                  borderSide: BorderSide(color: AppColors.primaryBlue, width: Responsive.w(2)),
+                                  borderSide: BorderSide(color: AppColors.blue1, width: Responsive.w(2)),
                                 ),
                                 filled: true,
                                 fillColor: AppColors.grey50,
@@ -411,7 +411,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                               child: ElevatedButton(
                                 onPressed: !_isLoading && _otpController.text.isNotEmpty ? _verifyEmail : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryBlue,
+                                  backgroundColor: AppColors.blue1,
                                   disabledBackgroundColor: AppColors.grey300,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
                                   elevation: 0,
@@ -449,7 +449,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                                           _resendCountdown > 0
                                               ? 'resend_in_seconds'.tr.replaceAll('{seconds}', _resendCountdown.toString())
                                               : 'resend_code'.tr,
-                                          style: AppFonts.AlmaraiBold12.copyWith(color: _resendCountdown > 0 ? Colors.grey : AppColors.primaryBlue)),
+                                          style: AppFonts.AlmaraiBold12.copyWith(color: _resendCountdown > 0 ? Colors.grey : AppColors.blue1)),
                                 ),
                               ],
                             ),
@@ -474,3 +474,4 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     );
   }
 }
+

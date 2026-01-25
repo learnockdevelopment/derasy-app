@@ -25,7 +25,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
@@ -50,15 +50,15 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryBlue,
-                    AppColors.primaryBlue.withOpacity(0.85),
+                    AppColors.blue1,
+                    AppColors.blue1.withOpacity(0.85),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    color: AppColors.blue1.withOpacity(0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 6),
                   ),
@@ -150,8 +150,8 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.primaryBlue,
-                                AppColors.primaryBlue.withOpacity(0.85),
+                                AppColors.blue1,
+                                AppColors.blue1.withOpacity(0.85),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -159,7 +159,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryBlue.withOpacity(0.3),
+                                color: AppColors.blue1.withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -197,12 +197,12 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: AppColors.primaryBlue,
+                              color: AppColors.blue1,
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                color: AppColors.blue1.withOpacity(0.1),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),
@@ -211,14 +211,14 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.assignment_rounded, size: 16.sp, color: AppColors.primaryBlue),
+                              Icon(Icons.assignment_rounded, size: 16.sp, color: AppColors.blue1),
                               SizedBox(width: 6.w),
                               Text(
                                 'view_applications'.tr,
                                 style: AppFonts.bodyMedium.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12.sp,
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.blue1,
                                 ),
                               ),
                             ],
@@ -310,7 +310,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
         ),
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.1),
+          color: AppColors.blue1.withOpacity(0.1),
           width: 1.5,
         ),
         boxShadow: [
@@ -320,7 +320,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.05),
+            color: AppColors.blue1.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -336,8 +336,8 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primaryBlue,
-                      AppColors.primaryBlue.withOpacity(0.8),
+                      AppColors.blue1,
+                      AppColors.blue1.withOpacity(0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -345,7 +345,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                   borderRadius: BorderRadius.circular(10.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      color: AppColors.blue1.withOpacity(0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -427,4 +427,5 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     );
   }
 }
+
 

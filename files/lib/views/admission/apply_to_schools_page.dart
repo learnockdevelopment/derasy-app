@@ -136,7 +136,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           'info'.tr,
           'loading_schools_please_wait'.tr,
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.blue1,
           colorText: Colors.white,
         );
       } else {
@@ -321,7 +321,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(title, style: AppFonts.h4.copyWith(color: Colors.white, fontSize: Responsive.sp(16))),
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -407,16 +407,16 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      color: AppColors.primaryBlue.withOpacity(0.05),
+      color: AppColors.blue1.withOpacity(0.05),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.person, color: AppColors.primaryBlue, size: Responsive.sp(18)),
+            child: Icon(Icons.person, color: AppColors.blue1, size: Responsive.sp(18)),
           ),
           SizedBox(width: Responsive.w(12)),
           Expanded(
@@ -466,416 +466,457 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
     
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // AI Analysis Section
-          if (_aiResponse != null) ...[ 
-            Container(
-              padding: Responsive.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryBlue.withOpacity(0.1),
-                    AppColors.primaryBlue.withOpacity(0.05),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3), width: 2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: Responsive.isDesktop ? 1200 : (Responsive.isTablet ? 800 : double.infinity),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // AI Analysis Section
+              if (_aiResponse != null) ...[ 
+                Container(
+                  padding: Responsive.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.blue1.withOpacity(0.1),
+                        AppColors.blue1.withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: AppColors.blue1.withOpacity(0.3), width: 2),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.auto_awesome, color: AppColors.primaryBlue, size: 20.sp),
-                      SizedBox(width: Responsive.w(8)),
-                      Text(
-                        'ai_analysis_result'.tr,
-                        style: AppFonts.h4.copyWith(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: Responsive.sp(14),
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: AppColors.blue1, size: 20.sp),
+                          SizedBox(width: Responsive.w(8)),
+                          Text(
+                            'ai_analysis_result'.tr,
+                            style: AppFonts.h4.copyWith(
+                              color: AppColors.blue1,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(14),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+                      MarkdownBody(
+                        data: _aiResponse!.markdown ?? _aiResponse!.message,
+                        styleSheet: MarkdownStyleSheet(
+                          p: AppFonts.bodySmall.copyWith(fontSize: Responsive.sp(11)),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 10.h),
-                  MarkdownBody(
-                    data: _aiResponse!.markdown ?? _aiResponse!.message,
-                    styleSheet: MarkdownStyleSheet(
-                      p: AppFonts.bodySmall.copyWith(fontSize: Responsive.sp(11)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: Responsive.h(16)),
-          ],
-
-          // Selection Progress Hint 
-          Container(
-            padding: Responsive.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  _selectedSchools.isNotEmpty
-                      ? AppColors.success.withOpacity(0.1)
-                      : AppColors.warning.withOpacity(0.1),
-                  _selectedSchools.isNotEmpty
-                      ? AppColors.success.withOpacity(0.05)
-                      : AppColors.warning.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(Responsive.r(16)),
-              border: Border.all(
-                color: _selectedSchools.isNotEmpty
-                    ? AppColors.success.withOpacity(0.3)
-                    : AppColors.warning.withOpacity(0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _selectedSchools.isNotEmpty
-                      ? Icons.check_circle_rounded
-                      : Icons.info_rounded,
-                  color: _selectedSchools.isNotEmpty ? AppColors.success : AppColors.warning,
-                  size: Responsive.sp(18),
                 ),
-                SizedBox(width: Responsive.w(12)),
-                Expanded(
-                  child: Text(
-                    _selectedSchools.isNotEmpty
-                        ? '${_selectedSchools.length} ${'schools_selected_tap_to_continue'.tr}'
-                        : 'select_up_to_3_schools_to_continue'.tr,
-                    style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: Responsive.sp(12),
-                    ),
+                SizedBox(height: Responsive.h(16)),
+              ],
+
+              // Selection Progress Hint 
+              Container(
+                padding: Responsive.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _selectedSchools.isNotEmpty
+                          ? AppColors.success.withOpacity(0.1)
+                          : AppColors.warning.withOpacity(0.1),
+                      _selectedSchools.isNotEmpty
+                          ? AppColors.success.withOpacity(0.05)
+                          : AppColors.warning.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
+                  border: Border.all(
+                    color: _selectedSchools.isNotEmpty
+                        ? AppColors.success.withOpacity(0.3)
+                        : AppColors.warning.withOpacity(0.3),
+                    width: 1.5,
                   ),
                 ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-
-          // AI Suggested Schools Section
-          if (_suggestedSchools.isNotEmpty) ...[ 
-            Row(
-              children: [
-                Icon(Icons.stars, color: AppColors.primaryBlue, size: Responsive.sp(18)),
-                SizedBox(width: Responsive.w(8)),
-                Text(
-                  'ai_suggested_schools'.tr,
-                  style: AppFonts.h4.copyWith(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.sp(12),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: Responsive.h(10)),
-            ..._suggestedSchools.map((school) => _buildSchoolCard(school, isAISuggested: true)).toList(),
-            SizedBox(height: Responsive.h(16)),
-          ],
-
-          // Search Bar for Schools
-          Container(
-            margin: EdgeInsets.only(bottom: Responsive.h(16)),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(Responsive.r(12)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  _schoolSearchQuery = value;
-                });
-              },
-              style: TextStyle(fontSize: Responsive.sp(12)),
-              decoration: InputDecoration(
-                hintText: 'search_schools_hint'.tr,
-                hintStyle: TextStyle(fontSize: Responsive.sp(12)),
-                prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue, size: Responsive.sp(20)),
-                suffixIcon: _schoolSearchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () {
-                          setState(() {
-                            _schoolSearchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: Responsive.symmetric(horizontal: 12, vertical: 10),
-              ),
-            ),
-          ),
-
-          // Other Schools Section
-          if (filteredOtherSchools.isNotEmpty) ...[
-            Row(
-              children: [
-                Icon(Icons.school, color: AppColors.textSecondary, size: Responsive.sp(18)),
-                SizedBox(width: Responsive.w(8)),
-                Text(
-                  'other_schools'.tr,
-                  style: AppFonts.h4.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.sp(12),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: Responsive.h(10)),
-            ...filteredOtherSchools.map((school) => _buildSchoolCard(school, isAISuggested: false)).toList(),
-          ],
-          
-          if (_suggestedSchools.isEmpty && filteredOtherSchools.isEmpty)
-            Center(
-              child: Padding(
-                padding: Responsive.all(40),
-                child: Column(
+                child: Row(
                   children: [
-                    Icon(Icons.search_off, size: Responsive.sp(48), color: AppColors.grey400),
-                    SizedBox(height: Responsive.h(12)),
-                    Text(
-                      'no_schools_match_preferences'.tr,
-                      style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
-                      textAlign: TextAlign.center,
+                    Icon(
+                      _selectedSchools.isNotEmpty
+                          ? Icons.check_circle_rounded
+                          : Icons.info_rounded,
+                      color: _selectedSchools.isNotEmpty ? AppColors.success : AppColors.warning,
+                      size: Responsive.sp(18),
+                    ),
+                    SizedBox(width: Responsive.w(12)),
+                    Expanded(
+                      child: Text(
+                        _selectedSchools.isNotEmpty
+                            ? '${_selectedSchools.length} ${'schools_selected_tap_to_continue'.tr}'
+                            : 'select_up_to_3_schools_to_continue'.tr,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(12),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-             
-          SizedBox(height: 16.h),
-          
-          // Retry Button
-          Center(
-            child: OutlinedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _showResults = false;
-                  _selectedSchools.clear();
-                });
-              },
-              icon: Icon(Icons.refresh, size: 16.sp),
-              label: Text('try_different_preferences'.tr, style: TextStyle(fontSize: Responsive.sp(12))),
-              style: OutlinedButton.styleFrom(
-                padding: Responsive.symmetric(horizontal: 16, vertical: 10),
-                side: BorderSide(color: AppColors.primaryBlue),
+              SizedBox(height: 16.h),
+
+              // AI Suggested Schools Section
+              if (_suggestedSchools.isNotEmpty) ...[ 
+                Row(
+                  children: [
+                    Icon(Icons.stars, color: AppColors.blue1, size: Responsive.sp(18)),
+                    SizedBox(width: Responsive.w(8)),
+                    Text(
+                      'ai_suggested_schools'.tr,
+                      style: AppFonts.h4.copyWith(
+                        color: AppColors.blue1,
+                        fontWeight: FontWeight.bold,
+                        fontSize: Responsive.sp(12),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(10)),
+                _buildSchoolGrid(_suggestedSchools, isAISuggested: true),
+                SizedBox(height: Responsive.h(16)),
+              ],
+
+              // Search Bar for Schools
+              Container(
+                margin: EdgeInsets.only(bottom: Responsive.h(16)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _schoolSearchQuery = value;
+                    });
+                  },
+                  style: TextStyle(fontSize: Responsive.sp(12)),
+                  decoration: InputDecoration(
+                    hintText: 'search_schools_hint'.tr,
+                    hintStyle: TextStyle(fontSize: Responsive.sp(12)),
+                    prefixIcon: Icon(Icons.search, color: AppColors.blue1, size: Responsive.sp(20)),
+                    suffixIcon: _schoolSearchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              setState(() {
+                                _schoolSearchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Responsive.r(12)),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: Responsive.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
               ),
-            ),
+
+              // Other Schools Section
+              if (filteredOtherSchools.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(Icons.school, color: AppColors.textSecondary, size: Responsive.sp(18)),
+                    SizedBox(width: Responsive.w(8)),
+                    Text(
+                      'other_schools'.tr,
+                      style: AppFonts.h4.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: Responsive.sp(12),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(10)),
+                _buildSchoolGrid(filteredOtherSchools, isAISuggested: false),
+              ],
+              
+              if (_suggestedSchools.isEmpty && filteredOtherSchools.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: Responsive.all(40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.search_off, size: Responsive.sp(48), color: AppColors.grey400),
+                        SizedBox(height: Responsive.h(12)),
+                        Text(
+                          'no_schools_match_preferences'.tr,
+                          style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                 
+              SizedBox(height: 16.h),
+              
+              // Retry Button
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showResults = false;
+                      _selectedSchools.clear();
+                    });
+                  },
+                  icon: Icon(Icons.refresh, size: 16.sp),
+                  label: Text('try_different_preferences'.tr, style: TextStyle(fontSize: Responsive.sp(12))),
+                  style: OutlinedButton.styleFrom(
+                    padding: Responsive.symmetric(horizontal: 16, vertical: 10),
+                    side: BorderSide(color: AppColors.blue1),
+                  ),
+                ),
+              ),
+              SizedBox(height: Responsive.h(24)),
+            ],
           ),
-          SizedBox(height: Responsive.h(24)),
-        ],
+        ),
       ),
     );
   }
 
+  Widget _buildSchoolGrid(List<School> schools, {required bool isAISuggested}) {
+    if (Responsive.isMobile) {
+      return Column(
+        children: schools.map((school) => _buildSchoolCard(school, isAISuggested: isAISuggested)).toList(),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = Responsive.isDesktop ? 3 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: schools.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: Responsive.w(16),
+            mainAxisSpacing: Responsive.h(16),
+            mainAxisExtent: Responsive.h(250),
+          ),
+          itemBuilder: (context, index) => _buildSchoolCard(schools[index], isAISuggested: isAISuggested),
+        );
+      },
+    );
+  }
+
+
   Widget _buildAdmissionForm() {
     return SingleChildScrollView(
       padding: Responsive.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: Responsive.isDesktop ? 800 : (Responsive.isTablet ? 600 : double.infinity),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                onPressed: () => setState(() => _isFormVisible = false),
-                icon: const Icon(Icons.arrow_back),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => setState(() => _isFormVisible = false),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  Text(
+                    'admission_details'.tr,
+                    style: AppFonts.h3.copyWith(color: AppColors.textPrimary),
+                  ),
+                ],
               ),
-              Text(
-                'admission_details'.tr,
-                style: AppFonts.h3.copyWith(color: AppColors.textPrimary),
+              SizedBox(height: Responsive.h(20)),
+              
+              // School Info Card
+              Column(
+                children: _selectedSchools.map((school) => Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding: Responsive.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  border: Border.all(color: AppColors.grey200),
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
+                      child: SafeNetworkImage(
+                        imageUrl: school.bannerImage,
+                        width: Responsive.w(32),
+                        height: Responsive.w(32),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(12)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            school.name,
+                            style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12)),
+                          ),
+                          Text(
+                            school.location?.city ?? '',
+                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: Responsive.sp(10)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )).toList(),
               ),
-            ],
-          ),
-          SizedBox(height: Responsive.h(20)),
-          
-          // School Info Card
-          Column(
-            children: _selectedSchools.map((school) => Container(
-            margin: EdgeInsets.only(bottom: 8.h),
-            padding: Responsive.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(Responsive.r(12)),
-              border: Border.all(color: AppColors.grey200),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(Responsive.r(8)),
-                  child: SafeNetworkImage(
-                    imageUrl: school.bannerImage,
-                    width: Responsive.w(32),
-                    height: Responsive.w(32),
-                    fit: BoxFit.cover,
-                  ),
+              SizedBox(height: Responsive.h(20)),
+    
+              // Application Type (Auto-determined)
+              Text('application_type'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
+              SizedBox(height: Responsive.h(8)),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: AppColors.blue1.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  border: Border.all(color: AppColors.blue1.withOpacity(0.2)),
                 ),
-                SizedBox(width: Responsive.w(12)),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        school.name,
-                        style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12)),
+                child: Row(
+                  children: [
+                    Icon(
+                      _applicationType == 'transfer' ? Icons.swap_horiz_rounded : Icons.person_add_rounded,
+                      color: AppColors.blue1,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12.w),
+                    Text(
+                      _applicationType.tr,
+                      style: AppFonts.bodyMedium.copyWith(
+                        color: AppColors.blue1,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        school.location?.city ?? '',
-                        style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: Responsive.sp(10)),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.blue1.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                    ],
-                  ),
+                      child: Text(
+                        'auto_determined'.tr,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.blue1,
+                          fontSize: 10.sp,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )).toList(),
-          ),
-          SizedBox(height: Responsive.h(20)),
-
-          // Application Type (Auto-determined)
-          Text('application_type'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
-          SizedBox(height: Responsive.h(8)),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(Responsive.r(12)),
-              border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _applicationType == 'transfer' ? Icons.swap_horiz_rounded : Icons.person_add_rounded,
-                  color: AppColors.primaryBlue,
-                  size: 20,
+              ),
+              SizedBox(height: Responsive.h(20)),
+    
+              // Desired Grade
+              Text('desired_grade'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
+              SizedBox(height: Responsive.h(8)),
+              DropdownButtonFormField<String>(
+                value: _selectedGrade,
+                items: (_selectedSchools.firstOrNull?.gradesOffered ?? [])
+                    .map((grade) => DropdownMenuItem(
+                          value: grade,
+                          child: Text(grade, style: TextStyle(fontSize: Responsive.sp(13))),
+                        ))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedGrade = value),
+                decoration: InputDecoration(
+                  hintText: 'please_select_grade'.tr,
+                  hintStyle: TextStyle(fontSize: Responsive.sp(13)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                  contentPadding: Responsive.symmetric(horizontal: 16, vertical: 8),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
-                SizedBox(width: 12.w),
-                Text(
-                  _applicationType.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    'auto_determined'.tr,
-                    style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.primaryBlue,
-                      fontSize: 10.sp,
+              ),
+              SizedBox(height: Responsive.h(20)),
+    
+              // Preferred Interview Slots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('preferred_interview_slots'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
+                  TextButton.icon(
+                    onPressed: _addInterviewSlot,
+                    icon: const Icon(Icons.add, size: 16),
+                    label: Text('add'.tr, style: TextStyle(fontSize: Responsive.sp(12))),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: Responsive.h(20)),
-
-          // Desired Grade
-          Text('desired_grade'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
-          SizedBox(height: Responsive.h(8)),
-          DropdownButtonFormField<String>(
-            value: _selectedGrade,
-            items: (_selectedSchools.firstOrNull?.gradesOffered ?? [])
-                .map((grade) => DropdownMenuItem(
-                      value: grade,
-                      child: Text(grade, style: TextStyle(fontSize: Responsive.sp(13))),
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() => _selectedGrade = value),
-            decoration: InputDecoration(
-              hintText: 'please_select_grade'.tr,
-              hintStyle: TextStyle(fontSize: Responsive.sp(13)),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
-              contentPadding: Responsive.symmetric(horizontal: 16, vertical: 8),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-          ),
-          SizedBox(height: Responsive.h(20)),
-
-          // Preferred Interview Slots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('preferred_interview_slots'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
-              TextButton.icon(
-                onPressed: _addInterviewSlot,
-                icon: const Icon(Icons.add, size: 16),
-                label: Text('add'.tr, style: TextStyle(fontSize: Responsive.sp(12))),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ],
+              ),
+              if (_preferredInterviewSlots.isEmpty)
+                 Text('no_slots_selected'.tr, style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
+              ..._preferredInterviewSlots.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final slot = entry.value;
+                return Card(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  child: ListTile(
+                    dense: true,
+                    title: Text('${slot.date.year}-${slot.date.month}-${slot.date.day}'),
+                    subtitle: Text('${slot.timeRange.from} - ${slot.timeRange.to}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: AppColors.red50, size: 18),
+                      onPressed: () => setState(() => _preferredInterviewSlots.removeAt(idx)),
+                    ),
+                  ),
+                );
+              }).toList(),
+              SizedBox(height: Responsive.h(20)),
+    
+              // Notes
+              Text('notes'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
+              SizedBox(height: Responsive.h(8)),
+              TextField(
+                controller: _notesController,
+                maxLines: 2,
+                style: TextStyle(fontSize: Responsive.sp(13)),
+                decoration: InputDecoration(
+                  hintText: 'additional_notes'.tr,
+                  hintStyle: TextStyle(fontSize: Responsive.sp(13)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                  contentPadding: Responsive.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
+              SizedBox(height: Responsive.h(40)),
             ],
           ),
-          if (_preferredInterviewSlots.isEmpty)
-             Text('no_slots_selected'.tr, style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
-          ..._preferredInterviewSlots.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final slot = entry.value;
-            return Card(
-              margin: EdgeInsets.only(bottom: 8.h),
-              child: ListTile(
-                dense: true,
-                title: Text('${slot.date.year}-${slot.date.month}-${slot.date.day}'),
-                subtitle: Text('${slot.timeRange.from} - ${slot.timeRange.to}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: AppColors.red50, size: 18),
-                  onPressed: () => setState(() => _preferredInterviewSlots.removeAt(idx)),
-                ),
-              ),
-            );
-          }).toList(),
-          SizedBox(height: Responsive.h(20)),
-
-          // Notes
-          Text('notes'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
-          SizedBox(height: Responsive.h(8)),
-          TextField(
-            controller: _notesController,
-            maxLines: 2,
-            style: TextStyle(fontSize: Responsive.sp(13)),
-            decoration: InputDecoration(
-              hintText: 'additional_notes'.tr,
-              hintStyle: TextStyle(fontSize: Responsive.sp(13)),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
-              contentPadding: Responsive.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          SizedBox(height: Responsive.h(40)),
-        ],
+        ),
       ),
     );
   }
@@ -916,7 +957,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 'info'.tr,
                 'max_3_schools_allowed'.tr,
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.blue1,
                 colorText: Colors.white,
                 duration: const Duration(seconds: 2),
               );
@@ -932,15 +973,15 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           borderRadius: BorderRadius.circular(Responsive.r(16)),
           border: Border.all(
             color: isSelected 
-                ? AppColors.primaryBlue 
-                : (isAISuggested ? AppColors.primaryBlue.withOpacity(0.3) : Colors.transparent),
+                ? AppColors.blue1 
+                : (isAISuggested ? AppColors.blue1.withOpacity(0.3) : Colors.transparent),
             width: isSelected ? 2.5 : (isAISuggested ? 1.5 : 0),
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected 
-                  ? AppColors.primaryBlue.withOpacity(0.15)
-                  : (isAISuggested ? AppColors.primaryBlue.withOpacity(0.08) : Colors.black.withOpacity(0.04)),
+                  ? AppColors.blue1.withOpacity(0.15)
+                  : (isAISuggested ? AppColors.blue1.withOpacity(0.08) : Colors.black.withOpacity(0.04)),
               blurRadius: isSelected ? 15 : 10,
               offset: Offset(0, isSelected ? 6 : 3),
             ),
@@ -1011,8 +1052,8 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primaryBlue,
-                            AppColors.primaryBlue.withOpacity(0.8),
+                            AppColors.blue1,
+                            AppColors.blue1.withOpacity(0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -1046,7 +1087,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                     child: Container(
                       padding: Responsive.all(6),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.blue1,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -1086,7 +1127,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                       _buildModernTag(
                         school.type ?? 'general'.tr,
                         Icons.school_outlined,
-                        AppColors.primaryBlue,
+                        AppColors.blue1,
                       ),
                       if (school.location?.city != null)
                         _buildModernTag(
@@ -1162,3 +1203,4 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   }
 
 }
+

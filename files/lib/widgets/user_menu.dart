@@ -126,3 +126,4 @@ class UserMenu extends StatelessWidget {
     Get.offAllNamed(AppRoutes.login);
   }
 }
+

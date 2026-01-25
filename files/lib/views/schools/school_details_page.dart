@@ -621,3 +621,4 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
   }
 
 }
+

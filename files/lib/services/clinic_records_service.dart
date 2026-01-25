@@ -164,3 +164,4 @@ class ClinicRecordsException implements Exception {
   @override
   String toString() => 'ClinicRecordsException: $message';
 }
+

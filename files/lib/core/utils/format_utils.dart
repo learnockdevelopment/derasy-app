@@ -52,3 +52,4 @@ class FormatUtils {
     return formattedAmount;
   }
 }
+

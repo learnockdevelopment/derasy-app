@@ -31,7 +31,7 @@ class _AddChildPageState extends State<AddChildPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
@@ -67,14 +67,14 @@ class _AddChildPageState extends State<AddChildPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryBlue.withOpacity(0.8),
+                  AppColors.blue1,
+                  AppColors.blue1.withOpacity(0.8),
                 ],
               ),
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.blue1.withOpacity(0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -120,7 +120,7 @@ class _AddChildPageState extends State<AddChildPage> {
               decoration: BoxDecoration(
                 border: Border.all(
                   color: _birthCertificateFile != null
-                      ? AppColors.primaryBlue
+                      ? AppColors.blue1
                       : AppColors.grey300,
                   width: 3,
                 ),
@@ -133,7 +133,7 @@ class _AddChildPageState extends State<AddChildPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
                           ),
                           SizedBox(height: 20.h),
                           Text(
@@ -204,12 +204,12 @@ class _AddChildPageState extends State<AddChildPage> {
                             Container(
                               padding: EdgeInsets.all(24.w),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                color: AppColors.blue1.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 IconlyBroken.upload,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.blue1,
                                 size: 48.sp,
                               ),
                             ),
@@ -239,10 +239,10 @@ class _AddChildPageState extends State<AddChildPage> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.05),
+              color: AppColors.blue1.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: AppColors.primaryBlue.withOpacity(0.2),
+                color: AppColors.blue1.withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -250,7 +250,7 @@ class _AddChildPageState extends State<AddChildPage> {
               children: [
                 Icon(
                   IconlyBroken.info_circle,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.blue1,
                   size: 24.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -409,7 +409,7 @@ class _AddChildPageState extends State<AddChildPage> {
                   },
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
-                    side: BorderSide(color: AppColors.primaryBlue, width: 2),
+                    side: BorderSide(color: AppColors.blue1, width: 2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -417,7 +417,7 @@ class _AddChildPageState extends State<AddChildPage> {
                   child: Text(
                     'upload_again'.tr,
                     style: AppFonts.h4.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                       fontWeight: FontWeight.bold,
                       fontSize: 16.sp,
                     ),
@@ -430,7 +430,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitChild,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.blue1,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -492,12 +492,12 @@ class _AddChildPageState extends State<AddChildPage> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               icon,
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               size: 20.sp,
             ),
           ),
@@ -582,12 +582,12 @@ class _AddChildPageState extends State<AddChildPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     Icons.camera_alt,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.blue1,
                     size: 24.sp,
                   ),
                 ),
@@ -620,12 +620,12 @@ class _AddChildPageState extends State<AddChildPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     IconlyBroken.upload,
-                    color: AppColors.primaryGreen,
+                    color: AppColors.blue1,
                     size: 24.sp,
                   ),
                 ),
@@ -837,3 +837,4 @@ class _AddChildPageState extends State<AddChildPage> {
     }
   }
 }
+

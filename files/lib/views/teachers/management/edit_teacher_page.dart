@@ -124,7 +124,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
         'success'.tr,
         'teacher_updated_successfully'.tr,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         colorText: Colors.white,
       );
       
@@ -149,7 +149,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.blue1,
         elevation: 0,
         title: Text(
           'edit_teacher'.tr,
@@ -213,11 +213,11 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                   SizedBox(width: Responsive.w(12)),
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.blue1,
                       borderRadius: BorderRadius.circular(Responsive.r(12)),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          color: AppColors.blue1.withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -257,10 +257,10 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                   children: _qualifications.map((q) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.blue1.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(Responsive.r(20)),
                         border: Border.all(
-                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          color: AppColors.blue1.withOpacity(0.3),
                           width: 1,
                         ),
                       ),
@@ -268,7 +268,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                         label: Text(
                           q,
                           style: AppFonts.bodySmall.copyWith(
-                            color: AppColors.primaryBlue,
+                            color: AppColors.blue1,
                             fontSize: Responsive.sp(12),
                             fontWeight: FontWeight.w600,
                           ),
@@ -281,7 +281,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                         deleteIcon: Icon(
                           Icons.close_rounded,
                           size: Responsive.sp(18),
-                          color: AppColors.primaryBlue,
+                          color: AppColors.blue1,
                         ),
                         backgroundColor: Colors.transparent,
                         padding: Responsive.symmetric(horizontal: 8),
@@ -331,7 +331,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                   ),
                   value: _isActive,
                   onChanged: (value) => setState(() => _isActive = value),
-                  activeColor: AppColors.primaryBlue,
+                  activeColor: AppColors.blue1,
                 ),
               ),
               
@@ -343,7 +343,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                   borderRadius: BorderRadius.circular(Responsive.r(16)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.3),
+                      color: AppColors.blue1.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -352,7 +352,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.blue1,
                     padding: Responsive.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(Responsive.r(16)),
@@ -401,7 +401,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
             width: Responsive.w(4),
             height: Responsive.h(24),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
+              color: AppColors.blue1,
               borderRadius: BorderRadius.circular(Responsive.r(2)),
             ),
           ),
@@ -457,10 +457,10 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
             margin: Responsive.all(12),
             padding: Responsive.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(Responsive.r(10)),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+            child: Icon(icon, color: AppColors.blue1, size: Responsive.sp(20)),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(Responsive.r(16)),
@@ -472,7 +472,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(Responsive.r(16)),
-            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+            borderSide: BorderSide(color: AppColors.blue1, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -525,10 +525,10 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
             margin: Responsive.all(12),
             padding: Responsive.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(0.1),
               borderRadius: BorderRadius.circular(Responsive.r(10)),
             ),
-            child: Icon(icon, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+            child: Icon(icon, color: AppColors.blue1, size: Responsive.sp(20)),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(Responsive.r(16)),
@@ -540,7 +540,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(Responsive.r(16)),
-            borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+            borderSide: BorderSide(color: AppColors.blue1, width: 2),
           ),
           filled: true,
           fillColor: Colors.white,
@@ -601,10 +601,10 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
               margin: Responsive.all(12),
               padding: Responsive.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
+                color: AppColors.blue1.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(Responsive.r(10)),
               ),
-              child: Icon(Icons.calendar_today_rounded, color: AppColors.primaryBlue, size: Responsive.sp(20)),
+              child: Icon(Icons.calendar_today_rounded, color: AppColors.blue1, size: Responsive.sp(20)),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(Responsive.r(16)),
@@ -616,7 +616,7 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(Responsive.r(16)),
-              borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+              borderSide: BorderSide(color: AppColors.blue1, width: 2),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -659,4 +659,5 @@ class _EditTeacherPageState extends State<EditTeacherPage> {
     );
   }
 }
+
 

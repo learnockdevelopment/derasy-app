@@ -94,17 +94,17 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primaryBlue,
-                AppColors.primaryBlue.withOpacity(0.9),
-                AppColors.primaryPurple.withOpacity(0.85),
-                AppColors.primaryPurple.withOpacity(0.75),
+                AppColors.blue1,
+                AppColors.blue1.withOpacity(0.9),
+                AppColors.blue2.withOpacity(0.85),
+                AppColors.blue2.withOpacity(0.75),
               ],
               stops: const [0.0, 0.3, 0.7, 1.0],
             ),
             borderRadius: BorderRadius.circular(32.r),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.4),
+                color: AppColors.blue1.withOpacity(0.4),
                 blurRadius: 30,
                 offset: const Offset(0, 12),
                 spreadRadius: 0,
@@ -372,7 +372,7 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget>
                                                   if (widget.actionButtonIcon != null) ...[
                                                     Icon(
                                                       widget.actionButtonIcon,
-                                                      color: AppColors.primaryBlue,
+                                                      color: AppColors.blue1,
                                                       size: 16.sp,
                                                     ),
                                                     SizedBox(width: 6.w),
@@ -380,7 +380,7 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget>
                                                   Text(
                                                     widget.actionButtonText!,
                                                     style: AppFonts.bodyMedium.copyWith(
-                                                      color: AppColors.primaryBlue,
+                                                      color: AppColors.blue1,
                                                       fontSize: 12.sp,
                                                       fontWeight: FontWeight.bold,
                                                       letterSpacing: 0.2,
@@ -409,4 +409,5 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget>
     );
   }
 }
+
 

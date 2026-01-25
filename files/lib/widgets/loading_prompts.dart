@@ -23,7 +23,7 @@ class LoadingPrompts {
               children: [
                 // Loading indicator
                 CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
                   strokeWidth: 3.w,
                 ),
                 SizedBox(height: 20.h),
@@ -103,3 +103,4 @@ class LoadingPrompts {
     );
   }
 }
+

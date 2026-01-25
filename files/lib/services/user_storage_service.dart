@@ -97,4 +97,40 @@ class UserStorageService {
   static bool isAdminOrModerator() {
     return isSchoolAdmin() || isSchoolOwner() || isSchoolModerator();
   }
+  // Biometric Login Support
+  static const String _biometricEnabledKey = 'biometric_enabled';
+  static const String _storedEmailKey = 'stored_email';
+  static const String _storedPasswordKey = 'stored_password';
+
+  static Future<void> setBiometricEnabled(bool enabled) async {
+    await _storage.write(_biometricEnabledKey, enabled);
+    if (!enabled) {
+      await clearBiometricCredentials();
+    }
+  }
+
+  static bool isBiometricEnabled() {
+    return _storage.read(_biometricEnabledKey) ?? false;
+  }
+
+  static Future<void> saveBiometricCredentials(String email, String password) async {
+    await _storage.write(_storedEmailKey, email);
+    await _storage.write(_storedPasswordKey, password);
+    await setBiometricEnabled(true);
+  }
+
+  static Future<void> clearBiometricCredentials() async {
+    await _storage.remove(_storedEmailKey);
+    await _storage.remove(_storedPasswordKey);
+  }
+
+  static Map<String, String>? getBiometricCredentials() {
+    final email = _storage.read(_storedEmailKey);
+    final password = _storage.read(_storedPasswordKey);
+    if (email != null && password != null) {
+      return {'email': email, 'password': password};
+    }
+    return null;
+  }
 }
+
