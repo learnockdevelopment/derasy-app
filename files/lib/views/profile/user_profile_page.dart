@@ -557,16 +557,28 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildWalletSection() {
+    final balance = _userData?['walletBalance']?.toString() ?? '0.00';
+    // Use the same gradient design as Home Page
     return Container(
-      padding: Responsive.all(20),
+      width: double.infinity,
+      padding: Responsive.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        color: const Color(0xFF0F172A), // Midnight Dark Blue
+        borderRadius: BorderRadius.circular(Responsive.r(24)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0F172A), // Dark Slate
+            const Color(0xFF1E293B), // Slate 800
+            const Color(0xFF334155), // Slate 700
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF0F172A).withOpacity(0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -574,76 +586,61 @@ class _UserProfilePageState extends State<UserProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: Responsive.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(Responsive.r(10)),
-                ),
-                child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: Colors.green,
-                  size: 20,
-                ),
+              // Balance Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'current_balance'.tr,
+                    style: AppFonts.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: Responsive.sp(11),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: Responsive.h(4)),
+                  Text(
+                    '$balance EGP',
+                    style: AppFonts.h1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(24),
+                      height: 1.0,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: Responsive.w(12)),
-              Text(
-                'wallet_title'.tr,
-                style: AppFonts.h4.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: Responsive.sp(16),
-                ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () => Get.toNamed(AppRoutes.wallet),
-                child: Text('view_all'.tr),
-              ),
-            ],
-          ),
-          SizedBox(height: Responsive.h(12)),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => Get.toNamed(AppRoutes.wallet),
-              borderRadius: BorderRadius.circular(Responsive.r(12)),
-              child: Container(
-                padding: Responsive.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
+              // Transactions Button
+              Material(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                child: InkWell(
+                  onTap: () => Get.toNamed(AppRoutes.wallet),
                   borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: Responsive.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Icon(IconlyBroken.document, color: Colors.white, size: Responsive.sp(14)),
+                        SizedBox(width: Responsive.w(6)),
                         Text(
-                          'current_balance'.tr,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_userData?['walletBalance']?.toString() ?? '0.00'} EGP',
-                          style: const TextStyle(
+                          'transactions'.tr,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: Colors.white,
+                            fontSize: Responsive.sp(11),
                             fontWeight: FontWeight.bold,
-                            fontSize: 18,
                           ),
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    const Icon(Icons.chevron_right, color: Colors.grey),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -705,6 +702,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildInfoRow(String label, String value, IconData icon) {
+    if (value.isEmpty || value == 'N/A' || value == 'null') {
+      return const SizedBox.shrink();
+    }
     return Container(
       margin: Responsive.only(bottom: 16),
       padding: Responsive.all(16),

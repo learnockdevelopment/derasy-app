@@ -81,6 +81,7 @@ class _HomePageState extends State<HomePage> {
       onRefresh: _refreshData,
       color: AppColors.blue1,
       child: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
           // Hero Section
         SliverAppBar(
@@ -188,6 +189,7 @@ class _HomePageState extends State<HomePage> {
                           child: isLoading && totalStudents == 0
                               ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
+                                  height: Responsive.h(160),
                                   icon: IconlyBroken.profile,
                                   title: 'total_students'.tr,
                                   value: _formatNumber(totalStudents.toString()),
@@ -201,6 +203,7 @@ class _HomePageState extends State<HomePage> {
                           child: isLoading && totalApplications == 0
                               ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
+                                  height: Responsive.h(160),
                                   icon: IconlyBroken.document,
                                   title: 'total_applications'.tr,
                                   value: _formatNumber(totalApplications.toString()),
@@ -283,8 +286,10 @@ class _HomePageState extends State<HomePage> {
     bool isButtonDisabled = false,
     String? disabledMessage,
     Color? buttonColor,
+    double? height,
   }) {
     return Container(
+      height: height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(Responsive.r(24)),

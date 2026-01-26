@@ -32,6 +32,7 @@ class AppRoutes {
 
   // Notifications Routes
   static const String notifications = '/notifications';
+  static const String notificationDetails = '/notification-details';
 
   // Chatbot Routes
   static const String chatbot = '/chatbot';

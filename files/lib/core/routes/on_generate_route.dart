@@ -25,6 +25,8 @@ import '../../views/attendance/attendance_page.dart';
 import '../../views/profile/user_profile_page.dart';
 import '../../views/settings/settings_page.dart';
 import '../../views/notifications/notifications_page.dart';
+import '../../views/notifications/notification_details_page.dart';
+import '../../models/notification_model.dart';
 import '../../views/chatbot/chatbot_page.dart';
 import '../../views/teachers/management/add_teacher_page.dart';
 import '../../views/teachers/management/edit_teacher_page.dart';
@@ -167,6 +169,12 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const NotificationsPage(),
+        );
+      case AppRoutes.notificationDetails:
+        final notification = settings.arguments as NotificationItem;
+        return GetPageRoute(
+          settings: settings,
+          page: () => NotificationDetailsPage(notification: notification),
         );
       case AppRoutes.chatbot:
         return GetPageRoute(
