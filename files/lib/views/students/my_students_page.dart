@@ -358,6 +358,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
           );
         }),
       ),
+    ),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
