@@ -1666,5 +1666,10 @@
   "account_number_required": "رقم الحساب مطلوب",
   "enter_bank_details_for_withdrawal": "أدخل تفاصيل حسابك البنكي لاستلام السحب",
   "insufficient_balance": "الرصيد غير كافٍ لهذا السحب",
-  "select_bank": "اختر البنك"
+  "select_bank": "اختر البنك",
+  "or_continue_with": "أو المتابعة باستخدام",
+  "continue_with_google": "المتابعة باستخدام جوجل",
+  "continue_with_apple": "المتابعة باستخدام أبل",
+  "google_login_failed": "فشل تسجيل الدخول بجوجل",
+  "apple_login_failed": "فشل تسجيل الدخول بأبل"
 }

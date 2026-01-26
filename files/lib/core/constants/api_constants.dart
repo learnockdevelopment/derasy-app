@@ -7,6 +7,8 @@ class ApiConstants {
 
   // Auth Endpoints
   static const String loginEndpoint = '/login';
+  static const String googleLoginEndpoint = '/login/google';
+  static const String appleLoginEndpoint = '/login/apple';
   static const String registerEndpoint = '/register';
   static const String quickRegisterEndpoint = '/register/quick-register';
   static const String verifyEmailEndpoint = '/register/verify';

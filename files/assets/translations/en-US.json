@@ -1677,5 +1677,10 @@
   "iban_required": "IBAN is required",
   "account_number_required": "Account number is required",
   "enter_bank_details_for_withdrawal": "Enter your bank account details to receive the withdrawal",
-  "select_bank": "Select Bank"
+  "select_bank": "Select Bank",
+  "or_continue_with": "Or continue with",
+  "continue_with_google": "Continue with Google",
+  "continue_with_apple": "Continue with Apple",
+  "google_login_failed": "Google login failed",
+  "apple_login_failed": "Apple login failed"
 }

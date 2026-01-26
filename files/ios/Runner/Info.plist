@@ -13,7 +13,7 @@
 	<string>We need camera access to take photos for your profile/assignments.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need photos access to select images for your profile/assignments.</string>
-	<key>NSMicrophoneUsageDescription</key>
+	<key>NSMicrophoneUsageDescription</key> 
 	<string>We need microphone access for video recording.</string>
 	<key>AppLovinSdkKey</key>
 	<string>YOUR_SDK_KEY</string>
@@ -26,7 +26,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.derasy.app</string>
+	<string>com.derassy.app</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLocalizations</key>
