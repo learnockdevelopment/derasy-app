@@ -25,6 +25,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late Animation<Alignment> _beginAlignmentAnimation;
   late Animation<Alignment> _endAlignmentAnimation;
 
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +83,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       begin: Alignment.bottomRight,
       end: Alignment.topRight,
     ).animate(_gradientController);
+
+
 
     // Start animations
     _fadeController.forward();
@@ -193,7 +196,6 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo with enhanced pulse animation
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: ScaleTransition(
@@ -202,7 +204,6 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           animation: _pulseAnimation,
                           builder: (context, child) {
                             return Transform.scale(
-                              // Stronger pulse effect: 1.0 to 1.15
                               scale: _pulseAnimation.value,
                               child: Container(
                                 decoration: BoxDecoration(
