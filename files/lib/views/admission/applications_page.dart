@@ -14,6 +14,7 @@ import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
 import '../../core/controllers/dashboard_controller.dart';
 import '../../widgets/student_selection_sheet.dart';
+import '../../widgets/horizontal_swipe_detector.dart';
 
 class ApplicationsPage extends StatefulWidget {
   const ApplicationsPage({Key? key, this.childId, this.child}) : super(key: key);
@@ -149,10 +150,22 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: AppColors.blue1,
-        child: Obx(() {
+      body: _filterChildId == null 
+        ? HorizontalSwipeDetector(
+          onSwipeRight: () {
+            Get.offNamed(AppRoutes.myStudents);
+          },
+          onSwipeLeft: () {
+            Get.offNamed(AppRoutes.storeProducts);
+          },
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: AppColors.blue1,
+            child: Obx(() {
+        : RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: AppColors.blue1,
+          child: Obx(() {
           final controller = DashboardController.to;
           final isLoading = controller.isLoading;
           

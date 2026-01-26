@@ -1164,8 +1164,8 @@ class _SchoolPreferencesWizardState extends State<SchoolPreferencesWizard> {
                     'get_ai_suggestions'.tr,
                     style: AppFonts.h4.copyWith(
                       color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

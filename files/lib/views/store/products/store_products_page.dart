@@ -16,6 +16,7 @@ import '../../../widgets/safe_network_image.dart';
 import '../../../widgets/shimmer_loading.dart';
 import '../../../widgets/hero_section_widget.dart';
 import '../../../widgets/global_chatbot_widget.dart';
+import '../../../widgets/horizontal_swipe_detector.dart';
 
 class StoreProductsPage extends StatefulWidget {
   const StoreProductsPage({Key? key}) : super(key: key);
@@ -156,7 +157,11 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: CustomScrollView(
+      body: HorizontalSwipeDetector(
+        onSwipeRight: () {
+          Get.offNamed(AppRoutes.applications);
+        },
+        child: CustomScrollView(
       slivers: [
         // Hero Section
         SliverAppBar(

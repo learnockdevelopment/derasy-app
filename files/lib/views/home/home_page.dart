@@ -15,6 +15,7 @@ import '../../core/controllers/dashboard_controller.dart';
 import '../../models/wallet_models.dart'; 
 import '../../widgets/student_selection_sheet.dart';
 import '../../core/utils/format_utils.dart';
+import '../../widgets/horizontal_swipe_detector.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -58,7 +59,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Obx(() => _buildHomeContent()),
+      body: HorizontalSwipeDetector(
+        onSwipeLeft: () {
+          Get.toNamed(AppRoutes.myStudents);
+        },
+        child: Obx(() => _buildHomeContent()),
+      ),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},
@@ -279,7 +285,7 @@ class _HomePageState extends State<HomePage> {
     required String title,
     required String value,
     required IconData icon,
-    required Color color, 
+    required Color color,
     bool showAddButton = false,
     VoidCallback? onAddTap,
     String? buttonText,
@@ -288,126 +294,169 @@ class _HomePageState extends State<HomePage> {
     Color? buttonColor,
     double? height,
   }) {
+    // Fixed height ensures both cards are exactly the same size as requested
+    final cardHeight = height ?? Responsive.h(180); 
+
     return Container(
-      height: height,
+      height: cardHeight,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Responsive.r(24)),
+        borderRadius: BorderRadius.circular(Responsive.r(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: color.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.01),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
           ),
         ],
-        border: Border.all(color: AppColors.grey100),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
-      child: Stack(
-        children: [
-          // Background Accent
-          Positioned(
-            right: -Responsive.w(15),
-            top: -Responsive.h(15),
-            child: Container(
-              width: Responsive.w(70),
-              height: Responsive.h(70),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.05),
-                shape: BoxShape.circle,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(Responsive.r(20)),
+        child: Stack(
+          children: [
+            // Decorative Circle Background
+            Positioned(
+              right: -Responsive.w(20),
+              top: -Responsive.h(20),
+              child: Container(
+                width: Responsive.w(100),
+                height: Responsive.w(100),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.03),
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: Responsive.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon Header
-                Container(
-                  padding: Responsive.all(10),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(Responsive.r(14)),
-                  ),
-                  child: Icon(icon, color: color, size: Responsive.sp(18)),
-                ),
-                SizedBox(height: Responsive.h(12)),
-                // Title
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppFonts.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                          fontSize: Responsive.sp(12),
+            
+            Padding(
+              padding: Responsive.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Icon with soft background
+                      Container(
+                        padding: Responsive.all(12),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(Responsive.r(16)),
+                        ),
+                        child: Icon(icon, color: color, size: Responsive.sp(22)),
+                      ),
+                      
+                      // Value (Number)
+                      Text(
+                        value,
+                        style: AppFonts.h2.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(28),
+                          height: 1.0,
                         ),
                       ),
+                    ],
+                  ),
+                  
+                  const Spacer(),
+                  
+                  // Title
+                  Text(
+                    title,
+                    style: AppFonts.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: Responsive.sp(14),
                     ),
-                    SizedBox(width: Responsive.w(8)),
-                    Text(
-                      value,
-                      style: AppFonts.h3.copyWith(
-                        color: const Color(0xFF0F172A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: Responsive.sp(24),
-                      ),
-                    ),
-                  ],
-                ),
-                // Action Button (if any)
-                if (showAddButton && onAddTap != null) ...[
-                  SizedBox(height: Responsive.h(12)),
-                  InkWell(
-                    onTap: isButtonDisabled ? null : onAddTap,
-                    borderRadius: BorderRadius.circular(Responsive.r(10)),
-                    child: Container(
-                      width: double.infinity,
-                      padding: Responsive.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isButtonDisabled 
-                            ? AppColors.grey50 
-                            : (buttonColor ?? color).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(Responsive.r(10)),
-                      ),
-                      child: Center(
-                        child: Text(
-                          buttonText ?? 'add_student'.tr,
-                          style: AppFonts.bodySmall.copyWith(
-                            color: isButtonDisabled 
-                                ? AppColors.textSecondary 
-                                : (buttonColor ?? color),
-                            fontSize: Responsive.sp(9),
-                            fontWeight: FontWeight.bold,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  SizedBox(height: Responsive.h(16)),
+
+                  // Action Button
+                  if (showAddButton && onAddTap != null) ...[
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: isButtonDisabled ? null : onAddTap,
+                        borderRadius: BorderRadius.circular(Responsive.r(12)),
+                        child: Container(
+                          width: double.infinity,
+                          padding: Responsive.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isButtonDisabled
+                                ? AppColors.grey50
+                                : color,
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                             gradient: isButtonDisabled ? null : LinearGradient(
+                              colors: [
+                                color,
+                                color.withOpacity(0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: isButtonDisabled ? null : [
+                              BoxShadow(
+                                color: color.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              buttonText ?? 'add'.tr,
+                              style: AppFonts.bodySmall.copyWith(
+                                color: isButtonDisabled
+                                    ? AppColors.textSecondary
+                                    : Colors.white,
+                                fontSize: Responsive.sp(12),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (isButtonDisabled && disabledMessage != null)
-                    Padding(
-                      padding: Responsive.only(top: 4),
-                      child: Text(
-                        disabledMessage,
-                        style: AppFonts.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: Responsive.sp(8),
+                    
+                     if (isButtonDisabled && disabledMessage != null)
+                      Padding(
+                        padding: Responsive.only(top: 6),
+                        child: Center(
+                          child: Text(
+                            disabledMessage,
+                            style: AppFonts.bodySmall.copyWith(
+                              color: AppColors.error,
+                              fontSize: Responsive.sp(10),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                  ] else ...[
+                     // Maintain height consistency if no button
+                     SizedBox(height: Responsive.h(36)), // Height of button + padding
+                  ]
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

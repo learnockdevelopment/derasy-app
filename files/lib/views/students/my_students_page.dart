@@ -14,6 +14,7 @@ import '../../widgets/bottom_nav_bar_widget.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../core/controllers/dashboard_controller.dart';
+import '../../widgets/horizontal_swipe_detector.dart';
 
 class MyStudentsPage extends StatefulWidget { 
   const MyStudentsPage({Key? key}) : super(key: key);
@@ -178,7 +179,14 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: RefreshIndicator(
+      body: HorizontalSwipeDetector(
+        onSwipeRight: () {
+          Get.offNamed(AppRoutes.home);
+        },
+        onSwipeLeft: () {
+          Get.offNamed(AppRoutes.applications);
+        },
+        child: RefreshIndicator(
         onRefresh: _onRefresh,
         color: AppColors.blue1,
         child: Obx(() {
