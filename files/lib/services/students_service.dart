@@ -353,7 +353,7 @@ class StudentsService {
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         // Handle unauthorized - logout and navigate to login
-        await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
+        // await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
         
         try {
           final errorData = jsonDecode(response.body) as Map<String, dynamic>;

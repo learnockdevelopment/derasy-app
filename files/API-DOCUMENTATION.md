@@ -10,7 +10,9 @@
 ## 📚 Table of Contents
 1. [Quick Start Guide](#quick-start-guide)
 2. [Authentication](#authentication)
-3. [Children Management APIs](#children-management-apis)
+3. [User & Account Management](#user--account-management-apis)
+   - [Check User Existence](#check-user-existence)
+4. [Children Management APIs](#children-management-apis)
    - [Add Child with Birth Certificate Extraction](#add-child-with-birth-certificate-extraction)
    - [Two-Step Document Upload Flow](#two-step-document-upload-flow)
    - [OTP Verification Flow for Existing Children](#otp-verification-flow-for-existing-children)
@@ -19,16 +21,26 @@
    - [Get Children](#get-children)
    - [Update Child](#update-child)
    - [Upload Documents](#upload-documents)
-4. [Admission Flow APIs](#admission-flow-apis)
+5. [Admission Flow APIs](#admission-flow-apis)
+   - [Get AI School Suggestions](#get-ai-school-suggestions)
    - [Submit Admission Application](#submit-admission-application)
+   - [Reorder Applications](#reorder-applications)
    - [Get Parent's Applications](#get-parents-applications)
    - [Get School Applications](#get-school-applications)
-   - [Get Single Application](#get-single-application)
+   - [Get Single Application Detail](#get-single-application-detail)
    - [Set Interview Date](#set-interview-date)
-   - [Application Events/Notes](#application-eventsnotes)
-   - [Update Application Status](#update-application-status)
-5. [Common Workflows](#common-workflows)
-6. [Error Handling](#error-handling)
+   - [Custom Admission Forms APIs](#custom-admission-forms-apis)
+6. [School Management & Sales APIs](#school-management--sales-apis)
+   - [Sales: Register New School (Onboarding)](#sales-register-new-school-onboarding)
+   - [School: Get Quick Statistics](#school-get-quick-statistics)
+   - [School: Check User Access Permissions](#school-check-user-access-permissions)
+7. [Common Workflows](#common-workflows)
+8. [Error Handling](#error-handling)
+9. [Wallet Management APIs](#wallet-management-apis)
+10. [Reports & Analytics APIs](#reports--analytics-apis)
+   - [School Comprehensive AI Report](#school-comprehensive-ai-report)
+   - [List Custom Report Templates](#list-custom-report-templates)
+   - [Manage Report Templates](#manage-report-templates)
 
 ---
 
@@ -80,6 +92,46 @@ Authorization: Bearer <token>
   "user": { ... }
 }
 ```
+
+---
+
+## 👤 User & Account Management APIs
+
+### Check User Existence
+
+**Endpoint:** `POST /api/users/check`
+
+**Description:** Check if a user already exists in the system by email or phone number. Useful for validation before creating new accounts during onboarding.
+
+**Request:**
+```http
+POST /api/users/check
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "phone": "01234567890"
+}
+```
+
+**Response (200 Success - Found):**
+```json
+{
+  "exists": true,
+  "message": "User already exists: user@example.com"
+}
+```
+
+**Response (200 Success - Not Found):**
+```json
+{
+  "exists": false
+}
+```
+
+**Notes:**
+- ✅ Checks against both `email` and `phone` fields.
+- ✅ Returns `exists: true` if either matches.
 
 ---
 
@@ -1182,7 +1234,7 @@ Content-Type: application/json
 
 **Endpoint:** `POST /api/admission/apply`
 
-**Description:** Submit an admission application for a child to a school. Deducts admission fee from parent's wallet.
+**Description:** Submit an admission application for a child to one or more schools. The system will create a "pending" application for the first school and "draft" applications for others. Deducts the *highest* admission fee among the selected schools from the parent's wallet.
 
 **Request:**
 ```http
@@ -1195,98 +1247,97 @@ Content-Type: application/json
 ```json
 {
   "childId": "child_id",
-  "schoolId": "school_id",
-  "applicationType": "new_student",
-  "desiredGrade": "Grade 5",
-  "preferredInterviewSlots": [
+  "selectedSchools": [
     {
-      "date": "2025-02-15",
-      "timeRange": {
-        "from": "10:00 AM",
-        "to": "12:00 PM"
-      }
+      "_id": "school_id_1",
+      "name": "Primary Choice School",
+      "admissionFee": { "amount": 500 }
+    },
+    {
+      "_id": "school_id_2",
+      "name": "Secondary Choice School",
+      "admissionFee": { "amount": 300 }
     }
-  ],
-  "notes": "Additional notes for the school"
+  ]
 }
 ```
 
 **Required Fields:**
 - `childId` - The ID of the child applying
-- `schoolId` - The ID of the school
-- `applicationType` - Either `"new_student"` or `"transfer"`
+- `selectedSchools` - Array of school objects. The first one will be the primary application.
 
-**Optional Fields:**
-- `desiredGrade` - Desired grade level
-- `preferredInterviewSlots` - Array of preferred interview dates/times
-- `notes` - Additional notes for the school
-
-**Response (201 Created):**
+**Response (200 Success):**
 ```json
 {
-  "message": "Application submitted successfully",
-  "application": {
-    "_id": "application_id",
-    "parent": "parent_user_id",
-    "child": {
-      "_id": "child_id",
-      "fullName": "Child Name",
-      "arabicFullName": "اسم الطفل"
+  "message": "✅ تم إنشاء الطلبات بنجاح",
+  "applications": [
+    {
+      "_id": "application_id_1",
+      "status": "pending",
+      "priority": 0,
+      "payment": { "isPaid": true, "amount": 500 }
+      // ...
     },
-    "school": {
-      "_id": "school_id",
-      "name": "School Name",
-      "nameAr": "اسم المدرسة"
-    },
-    "status": "pending",
-    "applicationType": "new_student",
-    "payment": {
-      "isPaid": true,
-      "amount": 500,
-      "paidAt": "2025-01-15T10:00:00.000Z",
-      "method": "wallet"
-    },
-    "submittedAt": "2025-01-15T10:00:00.000Z"
-  }
+    {
+      "_id": "application_id_2",
+      "status": "draft",
+      "priority": 1,
+      "payment": { "isPaid": true, "amount": 0 }
+      // ...
+    }
+  ]
 }
 ```
 
 **Response (400 Bad Request - Insufficient Balance):**
 ```json
 {
-  "message": "Insufficient wallet balance",
-  "error": "INSUFFICIENT_BALANCE",
-  "required": 500,
-  "available": 200
+  "message": "رصيدك غير كافٍ. تحتاج إلى 500 جنيه على الأقل.",
+  "details": {
+    "currentBalance": 200,
+    "requiredAmount": 500,
+    "shortfall": 300
+  }
 }
 ```
 
-**Response (400 Bad Request - Validation Error):**
+---
+
+### Reorder Applications
+
+**Endpoint:** `PUT /api/applications/reorder`
+
+**Description:** Reorder the priority of a parent's applications. Useful for changing which school is the primary choice.
+
+**Request:**
+```http
+PUT /api/applications/reorder
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "orderedIds": ["app_id_2", "app_id_1", "app_id_3"]
+}
+```
+
+**Response (200 Success):**
 ```json
 {
-  "message": "Child must not have a school for new_student application",
-  "error": "VALIDATION_ERROR"
+  "message": "Order updated successfully"
 }
 ```
-
-**Notes:**
-- ✅ Automatically deducts admission fee from parent's wallet
-- ✅ Validates child's school status matches application type
-- ✅ Creates payment record
-- ✅ Sends email notification to school
-- ✅ Application status starts as "pending"
 
 ---
 
 ### Get Parent's Applications
 
-**Endpoint:** `GET /api/admission/applications`
+**Endpoint:** `GET /api/me/applications`
 
 **Description:** Get all admission applications submitted by the authenticated parent.
 
 **Request:**
 ```http
-GET /api/admission/applications
+GET /api/me/applications
 Authorization: Bearer <token>
 ```
 
@@ -1296,44 +1347,15 @@ Authorization: Bearer <token>
   "applications": [
     {
       "_id": "application_id",
-      "child": {
-        "_id": "child_id",
-        "fullName": "Child Name",
-        "arabicFullName": "اسم الطفل",
-        "birthDate": "2013-06-03T00:00:00.000Z"
-      },
-      "school": {
-        "_id": "school_id",
-        "name": "School Name",
-        "nameAr": "اسم المدرسة",
-        "logo": { "url": "logo_url" }
-      },
-      "status": "under_review",
-      "applicationType": "new_student",
-      "interview": {
-        "date": "2025-02-20T00:00:00.000Z",
-        "time": "11:30 AM",
-        "location": "Main Office",
-        "notes": "Bring required documents"
-      },
-      "payment": {
-        "isPaid": true,
-        "amount": 500
-      },
+      "child": { ... },
+      "school": { ... },
+      "status": "pending",
+      "priority": 0,
       "submittedAt": "2025-01-15T10:00:00.000Z"
     }
-  ],
-  "count": 1
+  ]
 }
 ```
-
-**Application Statuses:**
-- `pending` - Waiting for school review
-- `under_review` - School is reviewing (interview may be scheduled)
-- `recommended` - Recommended for acceptance
-- `accepted` - Application accepted
-- `rejected` - Application rejected
-- `draft` - Draft (not yet submitted)
 
 ---
 
@@ -1341,7 +1363,7 @@ Authorization: Bearer <token>
 
 **Endpoint:** `GET /api/schools/my/[id]/admission-forms`
 
-**Description:** Get all admission applications for a specific school (school owner/moderator/admin only).
+**Description:** Get all admission applications for a specific school (school owner/moderator/admin only). Returns only non-draft applications.
 
 **Request:**
 ```http
@@ -1349,8 +1371,100 @@ GET /api/schools/my/school_id/admission-forms
 Authorization: Bearer <token>
 ```
 
-**Query Parameters:**
-- `status` (optional) - Filter by status: "pending", "under_review", "accepted", "rejected", etc.
+**Response (200 Success):**
+```json
+{
+  "applications": [ ... ],
+  "school": { ... },
+  "totalApplications": 15,
+  "byStatus": {
+    "pending": 5,
+    "under_review": 3,
+    "accepted": 5,
+    "rejected": 2
+  }
+}
+```
+
+---
+
+### Get Single Application Detail
+
+**Endpoint:** `GET /api/me/applications/school/my/[applicationId]`
+
+**Description:** Get detailed information about a specific application (school owner/moderator/admin only).
+
+**Request:**
+```http
+GET /api/me/applications/school/my/application_id
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "_id": "application_id",
+  "parent": { ... },
+  "child": { ... },
+  "school": { ... },
+  "status": "under_review",
+  "interview": { ... },
+  "events": [ ... ]
+}
+```
+
+---
+
+### Set Interview Date
+
+**Endpoint:** `PUT /api/me/applications/school/my/[applicationId]`
+
+**Description:** Set or update the interview date for an application. Automatically updates status to `under_review` and sends email notification to parent.
+
+**Request:**
+```http
+PUT /api/me/applications/school/my/application_id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "interviewDate": "2025-02-20",
+  "interviewTime": "11:30 AM",
+  "location": "Main Office",
+  "notes": "Bring original birth certificate"
+}
+```
+
+**Response (200 Success):**
+```json
+{
+  "message": "تم تحديد موعد المقابلة بنجاح",
+  "application": { ... }
+}
+```
+
+---
+
+### Custom Admission Forms APIs
+
+These APIs manage the school's own customized admission forms (builder-based).
+
+#### List School Custom Forms
+**Endpoint:** `GET /api/schools/my/[id]/admission-forms/templates`
+*(Note: Route may vary, please verify school-side form listing)*
+
+#### Get Custom Form Details
+**Endpoint:** `GET /api/schools/my/[id]/admission-forms/[formId]`
+
+#### Submit Custom Form
+**Endpoint:** `POST /api/schools/my/[id]/admission-forms/[formId]/submissions`
+
+#### View Form Submissions
+**Endpoint:** `GET /api/schools/my/[id]/admission-forms/[formId]/submissions`
+
+#### Manage Submission Status
+**Endpoint:** `PUT /api/schools/my/[id]/admission-forms/[formId]/submissions/[submissionId]`
+**Body:** `{ "status": "approved", "notes": "..." }`
 
 **Response (200 Success):**
 ```json
@@ -1796,6 +1910,141 @@ Content-Type: application/json
 
 ---
 
+## 🏫 School Management & Sales APIs
+
+### Sales: Register New School (Onboarding)
+
+**Endpoint:** `POST /api/sales/onboarding`
+
+**Description:** Performs a complete onboarding of a new school, including creating or updating the School Owner and Moderator accounts, and initializing the school record.
+
+**Request:**
+```http
+POST /api/sales/onboarding
+Authorization: Bearer <sales_token>
+Content-Type: application/json
+
+{
+  "schoolData": {
+    "name": "School Name",
+    "type": "General",
+    "location": { ... },
+    "feesDetails": { ... }
+  },
+  "ownerData": {
+    "name": "Owner Name",
+    "email": "owner@example.com",
+    "phone": "01012345678",
+    "password": "securepassword"
+  },
+  "moderatorData": {
+    "name": "Moderator Name",
+    "email": "mod@example.com",
+    "phone": "01087654321",
+    "password": "securepassword"
+  },
+  "configData": {
+    "approved": true,
+    "showInSearch": true
+  }
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "School created successfully",
+  "schoolId": "new_school_id"
+}
+```
+
+---
+
+### School: Get Quick Statistics
+
+**Endpoint:** `GET /api/schools/my/[id]/quick-stats`
+
+**Description:** Returns a summary of key metrics for a school. Requires Owner, Moderator, or Admin permissions.
+
+**Request:**
+```http
+GET /api/schools/my/school_id/quick-stats
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "stats": {
+    "activeStudents": 150,
+    "applications": 45,
+    "tasks": 12
+  }
+}
+```
+
+**Notes:**
+- **activeStudents**: Total children enrolled in the school.
+- **applications**: Total admission applications (excluding drafts).
+- **tasks**: Applications pending review (status: `pending` or `under_review`).
+
+---
+
+### School: Get Quick Statistics
+
+**Endpoint:** `GET /api/schools/my/[id]/quick-stats`
+
+**Description:** Get key metrics for the school moderator dashboard, including student count, total applications, and pending tasks.
+
+**Request:**
+```http
+GET /api/schools/my/school_id/quick-stats
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "stats": {
+    "activeStudents": 150,
+    "applications": 45,
+    "tasks": 12
+  }
+}
+```
+
+---
+
+### School: Check User Access Permissions
+
+**Endpoint:** `GET /api/schools/my/[id]/check-access`
+
+**Description:** Verifies if the authenticated user has permission to manage the specified school and returns their role-based permissions.
+
+**Request:**
+```http
+GET /api/schools/my/school_id/check-access
+Authorization: Bearer <token>
+```
+
+**Response (200 Success):**
+```json
+{
+  "authorized": true,
+  "isOwner": false,
+  "isModerator": true,
+  "isAdmin": false,
+  "isSales": false,
+  "school": {
+    "_id": "school_id",
+    "name": "School Name",
+    "nameAr": "اسم المدرسة"
+  }
+}
+```
+
+---
+
 ## 📋 Common Workflows
 
 ### Workflow 1: Add Child with Automatic Data Extraction (Recommended)
@@ -1912,7 +2161,7 @@ Content-Type: application/json
 
 ### Workflow 4: Submit Admission Application
 
-**Use Case:** Parent wants to apply for their child to a school.
+**Use Case:** Parent wants to apply for their child to one or more schools.
 
 **Steps:**
 1. **Submit Application**
@@ -1925,27 +2174,19 @@ Content-Type: application/json
      },
      body: JSON.stringify({
        childId: 'child_id',
-       schoolId: 'school_id',
-       applicationType: 'new_student',
-       desiredGrade: 'Grade 5',
-       preferredInterviewSlots: [
-         {
-           date: '2025-02-15',
-           timeRange: {
-             from: '10:00 AM',
-             to: '12:00 PM'
-           }
-         }
+       selectedSchools: [
+         { _id: 'school_id_1', name: 'School 1', admissionFee: { amount: 500 } },
+         { _id: 'school_id_2', name: 'School 2', admissionFee: { amount: 300 } }
        ]
      })
    });
    
-   const { application } = await response.json();
+   const { applications } = await response.json();
    ```
 
 2. **Check Application Status**
    ```javascript
-   const response = await fetch('/api/admission/applications', {
+   const response = await fetch('/api/me/applications', {
      headers: { 'Authorization': `Bearer ${token}` }
    });
    
@@ -1953,9 +2194,10 @@ Content-Type: application/json
    ```
 
 **✅ Benefits:**
-- Automatic wallet deduction
-- Email notification to school
-- Application tracking
+- Automatic highest fee wallet deduction
+- First school gets "pending" status, others "draft"
+- Email notification to primary school
+- Full application tracking
 
 ---
 
@@ -1982,8 +2224,8 @@ Content-Type: application/json
        'Content-Type': 'application/json'
      },
      body: JSON.stringify({
-       date: '2025-02-20',
-       time: '11:30 AM',
+       interviewDate: '2025-02-20',
+       interviewTime: '11:30 AM',
        location: 'Main Office',
        notes: 'Bring required documents'
      })
@@ -2203,6 +2445,10 @@ try {
 
 | Endpoint | Method | Use Case |
 |----------|--------|----------|
+| `/api/users/check` | POST | Check if user exists (email/phone) |
+| `/api/sales/onboarding` | POST | New school registration (Sales) |
+| `/api/schools/my/[id]/quick-stats` | GET | School summary metrics |
+| `/api/schools/my/[id]/check-access` | GET | Verify permissions for a school |
 | `/api/children/extract-birth-certificate` | POST | Extract data from documents |
 | `/api/children` | POST | Add new child |
 | `/api/children/get-related` | GET | Get all children |
@@ -2210,7 +2456,8 @@ try {
 | `/api/children/get-related/[id]` | PUT | Update child |
 | `/api/children/get-related/[id]/upload` | PUT | Upload documents |
 | `/api/admission/apply` | POST | Submit admission application |
-| `/api/admission/applications` | GET | Get parent's applications |
+| `/api/applications/reorder` | PUT | Reorder parent applications |
+| `/api/me/applications` | GET | Get parent's applications |
 | `/api/schools/my/[id]/admission-forms` | GET | Get school applications |
 | `/api/me/applications/school/my/[id]` | GET | Get single application |
 | `/api/me/applications/school/my/[id]` | PUT | Set interview date |
@@ -2350,6 +2597,71 @@ For API issues or questions:
 - Verify authentication token is valid
 - Ensure required fields are provided
 - Check network connectivity
+---
+
+## 📊 Reports & Analytics APIs
+
+### School Comprehensive AI Report
+
+**Endpoint:** `GET /api/schools/my/[id]/reports`
+
+**Description:** Generates a comprehensive AI-powered report for the school, analyzing students, attendance, clinic visits, and more. Uses Google Gemini AI for qualitative analysis.
+
+**Response (200 Success):**
+```json
+{
+  "stats": {
+    "studentsCount": 150,
+    "applicationsCount": 45,
+    "attendanceCount": 1200,
+    "avgAttendanceRate": "0.92",
+    "clinicVisitsCount": 8,
+    "classroomsCount": 12,
+    "studentIdCardsCount": 5,
+    "eventsCount": 3
+  },
+  "studentsByClass": { ... },
+  "markdown": "# 📊 تقرير شامل للمدرسة...",
+  "html": "<h1>📊 تقرير شامل للمدرسة</h1>..."
+}
+```
+
+---
+
+### List Custom Report Templates
+
+**Endpoint:** `GET /api/schools/my/[id]/reports/list`
+
+**Description:** Get the list of available report templates for the school.
+
+**Response (200 Success):**
+```json
+{
+  "reports": [
+    {
+      "id": "template_id",
+      "name": "إحصائيات الطلاب الجدد",
+      "code": "STU_STATS_NEW",
+      "category": "admission",
+      "type": "list"
+    }
+  ]
+}
+```
+
+---
+
+### Manage Report Templates
+
+#### Create/List Templates
+**Endpoint:** `GET/POST /api/schools/my/[id]/reports/templates`
+
+#### Update/Delete Template
+**Endpoint:** `GET/PUT/DELETE /api/schools/my/[id]/reports/templates/[templateId]`
+
+---
+
+_Last updated: January 2024_
 
 ---
 

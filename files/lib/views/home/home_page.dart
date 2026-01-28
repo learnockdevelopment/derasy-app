@@ -195,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                           child: isLoading && totalStudents == 0
                               ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
-                                  height: Responsive.h(160),
+                                  height: Responsive.h(180),
                                   icon: IconlyBroken.profile,
                                   title: 'total_students'.tr,
                                   value: _formatNumber(totalStudents.toString()),
@@ -209,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                           child: isLoading && totalApplications == 0
                               ? ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(16))
                               : _buildStatCard(
-                                  height: Responsive.h(160),
+                                  height: Responsive.h(180),
                                   icon: IconlyBroken.document,
                                   title: 'total_applications'.tr,
                                   value: _formatNumber(totalApplications.toString()),

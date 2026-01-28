@@ -47,7 +47,7 @@ class WalletService {
         return WalletResponse.fromJson(data);
       } else if (response.statusCode == 403 || response.statusCode == 401) {
         // Handle unauthorized - logout and navigate to login
-        await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
+        // await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
         throw WalletException('Unauthorized access');
       } else if (response.statusCode == 404) {
         throw WalletException('User not found');

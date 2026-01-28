@@ -670,18 +670,8 @@ class _LoginPageState extends State<LoginPage>
                 Padding(
                   padding: Responsive.symmetric(horizontal: 16, vertical: 6),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      IconButton(
-                        onPressed: () => Get.back(),
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: AppColors.textPrimary,
-                          size: Responsive.sp(20),
-                        ),
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
-                      ),
                       // Language Button (toggle)
                       InkWell(
                         borderRadius: BorderRadius.circular(Responsive.r(6)),
