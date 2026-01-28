@@ -1,39 +1,54 @@
 {
   "project_info": {
-    "project_number": "562013974270",
-    "project_id": "derasy-app",
-    "storage_bucket": "derasy-app.appspot.com"
+    "project_number": "121260320184",
+    "project_id": "derasy",
+    "storage_bucket": "derasy.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:562013974270:android:60cb39f10275d52af17faf",
+        "mobilesdk_app_id": "1:121260320184:android:769d6b75ab5bf437aedb4d",
         "android_client_info": {
-          "package_name": "com.derassy.app"
+          "package_name": "com.derasy.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "562013974270-v4l73gef2bkhqi0nk3gm5lo924in0mq1.apps.googleusercontent.com",
+          "client_id": "121260320184-l6nndhg5gvofd5fi6tfgeq7cvlljasf8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.derasy.app",
+            "certificate_hash": "55aa69b3facd8b29215b345c3d35f9a8bb500abc"
+          }
+        },
+        {
+          "client_id": "121260320184-vdet5at22mltt7f6br70pgrnpmvh6s7e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.derasy.app",
+            "certificate_hash": "7501b48b4c3d44996bff087fe093182ddd0425fa"
+          }
+        },
+        {
+          "client_id": "121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCm2-2NP5Iyo3OuE9QVCDmb1PNekdb5314"
+          "current_key": "AIzaSyDD_yrGMIRuJHdQJtFnQpel0N5_lXRNofs"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "562013974270-hgrvhnocf699iiqr155gi0dc5q4o60a6.apps.googleusercontent.com",
+              "client_id": "121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
         }
-      },
-      "admob_app_id": "ca-app-pub-5934133126616525~7750654394"
+      }
     }
   ],
   "configuration_version": "1"

@@ -578,13 +578,24 @@ class _LoginPageState extends State<LoginPage>
       );
 
       final identityToken = credential.identityToken;
-      final authorizationCode = credential.authorizationCode;
 
       if (identityToken == null) {
           throw AuthException('Failed to get Apple Identity Token', 0);
       }
 
-      final loginResponse = await AuthService.loginWithApple(identityToken, authorizationCode);
+      // Prepare user object for first-time login as per mobile auth documentation
+      Map<String, dynamic>? userObj;
+      if (credential.givenName != null || credential.familyName != null || credential.email != null) {
+        userObj = {
+          'name': {
+            'firstName': credential.givenName ?? '',
+            'lastName': credential.familyName ?? '',
+          },
+          'email': credential.email,
+        };
+      }
+
+      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
 
        if (!mounted) return;
 
@@ -1152,9 +1163,9 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ),
                           
+                          // Social Login Buttons
                           if (Platform.isIOS) ...[
                             SizedBox(height: Responsive.h(16)),
-                            // Apple Button
                             SizedBox(
                               height: Responsive.h(45),
                                child: OutlinedButton(
@@ -1294,17 +1305,16 @@ class _LoginPageState extends State<LoginPage>
               ),
             ),
           ),
-          childWhenDragging: Opacity(
-            opacity: 0.3,
-            child: FloatingActionButton(
-              onPressed: null,
-              backgroundColor: AppColors.blue1,
-              elevation: 0,
-              child: Icon(
-                IconlyBold.chat,
-                color: Colors.white,
-                size: Responsive.sp(24),
-              ),
+          child: FloatingActionButton(
+            onPressed: () {
+              Get.toNamed(AppRoutes.chatbot);
+            },
+            backgroundColor: AppColors.blue1,
+            elevation: 6,
+            child: Icon(
+              IconlyBold.chat,
+              color: Colors.white,
+              size: Responsive.sp(24),
             ),
           ),
           onDragEnd: (details) {
@@ -1320,18 +1330,6 @@ class _LoginPageState extends State<LoginPage>
               _chatButtonPosition = Offset(newX, newY);
             });
           },
-          child: FloatingActionButton(
-            onPressed: () {
-              Get.toNamed(AppRoutes.chatbot);
-            },
-            backgroundColor: AppColors.blue1,
-            elevation: 6,
-            child: Icon(
-              IconlyBold.chat,
-              color: Colors.white,
-              size: Responsive.sp(24),
-            ),
-          ),
         ),
       ),
     ],

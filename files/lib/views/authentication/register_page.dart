@@ -532,13 +532,24 @@ class _RegisterPageState extends State<RegisterPage>
       );
 
       final identityToken = credential.identityToken;
-      final authorizationCode = credential.authorizationCode;
 
       if (identityToken == null) {
           throw AuthException('Failed to get Apple Identity Token', 0);
       }
 
-      final loginResponse = await AuthService.loginWithApple(identityToken, authorizationCode);
+      // Prepare user object for first-time login as per mobile auth documentation
+      Map<String, dynamic>? userObj;
+      if (credential.givenName != null || credential.familyName != null || credential.email != null) {
+        userObj = {
+          'name': {
+            'firstName': credential.givenName ?? '',
+            'lastName': credential.familyName ?? '',
+          },
+          'email': credential.email,
+        };
+      }
+
+      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
 
        if (!mounted) return;
 
@@ -1211,9 +1222,9 @@ class _RegisterPageState extends State<RegisterPage>
                             ),
                           ),
                           
+                           // Social Login Buttons
                           if (Platform.isIOS) ...[
-                            SizedBox(height: Responsive.h(16)),
-                            // Apple Button
+                           SizedBox(height: Responsive.h(16)),
                             SizedBox(
                               height: Responsive.h(50),
                                child: OutlinedButton(

@@ -265,7 +265,8 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
             ),
           ),
       ],
-    ),
+        ),
+      ),
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _getCurrentIndex(),
         onTap: (index) {},

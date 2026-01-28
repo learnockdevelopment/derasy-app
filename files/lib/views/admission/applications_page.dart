@@ -161,22 +161,22 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           child: RefreshIndicator(
             onRefresh: _onRefresh,
             color: AppColors.blue1,
-          final controller = DashboardController.to;
-          final isLoading = controller.isLoading;
-          return _buildBodyContent(controller, isLoading);
-        }),
-      ),
-    ) 
-    : RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: AppColors.blue1,
-        child: Obx(() {
-          final controller = DashboardController.to;
-          final isLoading = controller.isLoading;
-          return _buildBodyContent(controller, isLoading);
-        }),
-      ),
-      ),
+            child: Obx(() {
+              final controller = DashboardController.to;
+              final isLoading = controller.isLoading;
+              return _buildBodyContent(controller, isLoading);
+            }),
+          ),
+        )
+      : RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: AppColors.blue1,
+          child: Obx(() {
+            final controller = DashboardController.to;
+            final isLoading = controller.isLoading;
+            return _buildBodyContent(controller, isLoading);
+          }),
+        ),
       bottomNavigationBar: _filterChildId == null
           ? BottomNavBarWidget(
               currentIndex: _getCurrentIndex(),
@@ -184,9 +184,146 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             )
           : null,
       floatingActionButton: _filterChildId == null
-          ? DraggableChatbotWidget()
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    final controller = DashboardController.to;
+                    if (controller.relatedChildren.isEmpty) {
+                      Get.snackbar(
+                        'error'.tr,
+                        'no_students_for_application'.tr,
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: AppColors.error,
+                        colorText: Colors.white,
+                      );
+                    } else {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const StudentSelectionSheet(),
+                      ).then((selectedStudent) {
+                        if (selectedStudent != null && selectedStudent is Student) {
+                          Get.toNamed(
+                            AppRoutes.applyToSchools,
+                            arguments: {'child': selectedStudent},
+                          );
+                        }
+                      });
+                    }
+                  },
+                  backgroundColor: AppColors.blue1,
+                  tooltip: 'add_application'.tr,
+                  child: const Icon(Icons.add, color: Colors.white),
+                ),
+                SizedBox(height: Responsive.h(16)),
+                DraggableChatbotWidget(),
+              ],
+            )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildBodyContent(DashboardController controller, bool isLoading) {
+    return CustomScrollView(
+      slivers: [
+        // Hero Section
+        if (_filterChildId == null)
+          SliverAppBar(
+            expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
+            floating: false,
+            pinned: true,
+            automaticallyImplyLeading: false,
+            backgroundColor: const Color(0xFFF8FAFC),
+            elevation: 0,
+            toolbarHeight: 0,
+            collapsedHeight: Responsive.h(45),
+            flexibleSpace: FlexibleSpaceBar(
+              background: HeroSectionWidget(
+                userData: _userData,
+                pageTitle: 'applications'.tr,
+                showGreeting: false,
+              ),
+            ),
+          )
+        else
+          SliverAppBar(
+            title: Text('applications'.tr, style: AppFonts.h3),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            pinned: true,
+            automaticallyImplyLeading: true,
+          ),
+
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
+
+        // Search Bar
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: Responsive.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'search_applications'.tr,
+                prefixIcon: const Icon(IconlyLight.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  borderSide: BorderSide(color: AppColors.grey300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  borderSide: BorderSide(color: AppColors.grey200),
+                ),
+                contentPadding: Responsive.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ),
+
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(16))),
+
+        // Content
+        if (isLoading && _filteredApplications.isEmpty)
+          const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (_filteredApplications.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(IconlyLight.document, size: Responsive.sp(64), color: AppColors.grey400),
+                  SizedBox(height: Responsive.h(16)),
+                  Text(
+                    'no_applications_found'.tr,
+                    style: AppFonts.bodyLarge.copyWith(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: Responsive.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return Padding(
+                    padding: Responsive.only(bottom: 12),
+                    child: _buildApplicationCard(_filteredApplications[index]),
+                  );
+                },
+                childCount: _filteredApplications.length,
+              ),
+            ),
+          ),
+        
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(80))), // Bottom padding
+      ],
     );
   }
 

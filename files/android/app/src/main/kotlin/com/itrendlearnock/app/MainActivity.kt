@@ -1,4 +1,4 @@
-package com.derassy.app
+package com.derasy.app
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

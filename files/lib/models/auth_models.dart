@@ -153,7 +153,7 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       message: json['message']?.toString() ?? '',
-      token: json['token']?.toString() ?? '',
+      token: (json['token'] ?? json['accessToken'])?.toString() ?? '',
       user: User.fromJson(json['user'] as Map<String, dynamic>? ?? {}),
       redirectUrl: json['redirectUrl']?.toString(),
     );

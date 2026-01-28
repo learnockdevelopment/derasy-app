@@ -436,11 +436,12 @@ class AuthService {
       print('🔐 [LOGIN_GOOGLE] ========== REQUEST ==========');
       print('🔐 [LOGIN_GOOGLE] URL: $_baseUrl${ApiConstants.googleLoginEndpoint}');
       print('🔐 [LOGIN_GOOGLE] Headers: ${ApiConstants.getHeaders()}');
+      print('🔐 [LOGIN_GOOGLE] ID Token: ${idToken.substring(0, 10)}...');
 
       final response = await http.post(
         Uri.parse('$_baseUrl${ApiConstants.googleLoginEndpoint}'),
         headers: ApiConstants.getHeaders(),
-        body: jsonEncode({'id_token': idToken}),
+        body: jsonEncode({'idToken': idToken}),
       ).timeout(const Duration(seconds: 10));
 
       print('🔐 [LOGIN_GOOGLE] ========== RESPONSE ==========');
@@ -454,7 +455,7 @@ class AuthService {
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AuthException(
-            errorData['message'] ?? 'Google login failed', response.statusCode);
+            errorData['error'] ?? errorData['message'] ?? 'Google login failed', response.statusCode);
       }
     } catch (e) {
       print('🔐 [AUTH] Google login error: $e');
@@ -465,19 +466,21 @@ class AuthService {
 
   // 11. Login with Apple
   static Future<LoginResponse> loginWithApple(
-      String identityToken, String authorizationCode) async {
+      String idToken, {Map<String, dynamic>? user}) async {
     try {
       print('🔐 [LOGIN_APPLE] ========== REQUEST ==========');
       print('🔐 [LOGIN_APPLE] URL: $_baseUrl${ApiConstants.appleLoginEndpoint}');
       print('🔐 [LOGIN_APPLE] Headers: ${ApiConstants.getHeaders()}');
+      
+      final Map<String, dynamic> body = {'idToken': idToken};
+      if (user != null) {
+        body['user'] = user;
+      }
 
       final response = await http.post(
         Uri.parse('$_baseUrl${ApiConstants.appleLoginEndpoint}'),
         headers: ApiConstants.getHeaders(),
-        body: jsonEncode({
-          'identity_token': identityToken,
-          'authorization_code': authorizationCode,
-        }),
+        body: jsonEncode(body),
       ).timeout(const Duration(seconds: 10));
 
       print('🔐 [LOGIN_APPLE] ========== RESPONSE ==========');
@@ -491,7 +494,7 @@ class AuthService {
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AuthException(
-            errorData['message'] ?? 'Apple login failed', response.statusCode);
+            errorData['error'] ?? errorData['message'] ?? 'Apple login failed', response.statusCode);
       }
     } catch (e) {
       print('🔐 [AUTH] Apple login error: $e');
