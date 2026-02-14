@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -177,7 +177,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             children: [
               _pill(Icons.event_seat_rounded, occupancy, light: true),
               _pill(Icons.route, _localizedBusType(bus.busType), light: true),
-              _pill(Icons.calendar_today_rounded, bus.year?.toString() ?? 'â€”', light: true),
+              _pill(Icons.calendar_today_rounded, bus.year?.toString() ?? '—', light: true),
               if (bus.color?.isNotEmpty == true) _pill(Icons.palette_rounded, bus.color!, light: true),
             ],
           ),
@@ -193,15 +193,15 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _enhancedInfoRow(Icons.precision_manufacturing_rounded, 'manufacturer'.tr, bus.manufacturer ?? 'â€”'),
+          _enhancedInfoRow(Icons.precision_manufacturing_rounded, 'manufacturer'.tr, bus.manufacturer ?? '—'),
           SizedBox(height: 12.h),
-          _enhancedInfoRow(Icons.directions_car_rounded, 'model'.tr, bus.model ?? 'â€”'),
+          _enhancedInfoRow(Icons.directions_car_rounded, 'model'.tr, bus.model ?? '—'),
           SizedBox(height: 12.h),
-          _enhancedInfoRow(Icons.palette_rounded, 'color'.tr, bus.color ?? 'â€”'),
+          _enhancedInfoRow(Icons.palette_rounded, 'color'.tr, bus.color ?? '—'),
           SizedBox(height: 12.h),
-          _enhancedInfoRow(Icons.settings_rounded, 'motor_number'.tr, bus.motorNumber ?? 'â€”'),
+          _enhancedInfoRow(Icons.settings_rounded, 'motor_number'.tr, bus.motorNumber ?? '—'),
           SizedBox(height: 12.h),
-          _enhancedInfoRow(Icons.build_rounded, 'chassis_number'.tr, bus.chassisNumber ?? 'â€”'),
+          _enhancedInfoRow(Icons.build_rounded, 'chassis_number'.tr, bus.chassisNumber ?? '—'),
           if (bus.notes?.isNotEmpty == true) ...[
             SizedBox(height: 12.h),
             _enhancedInfoRow(Icons.note_rounded, 'notes'.tr, bus.notes!),
@@ -310,7 +310,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
             ...students.map((s) => Padding(
                   padding: EdgeInsets.only(bottom: 10.h),
                   child: _enhancedStudentCard(
-                    name: s.student?.fullName ?? 'â€”',
+                    name: s.student?.fullName ?? '—',
                     route: s.route ?? s.status ?? '',
                   ),
                 )),
@@ -500,7 +500,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
 
   Widget _routeTile(dynamic route) {
     final map = route as Map<String, dynamic>? ?? {};
-    final name = map['name']?.toString() ?? 'â€”';
+    final name = map['name']?.toString() ?? '—';
     final desc = map['description']?.toString() ?? '';
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -910,7 +910,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
   }
 
   Widget _linePersonRow(IconData icon, String label, Map<String, dynamic> person) {
-    final personName = person['name']?.toString() ?? 'â€”';
+    final personName = person['name']?.toString() ?? '—';
     final phone = person['phone']?.toString() ?? '';
     return Row(
       children: [
@@ -1882,7 +1882,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
           Expanded(
             flex: 3,
             child: Text(
-              value.isEmpty ? 'â€”' : value,
+              value.isEmpty ? '—' : value,
               style: AppFonts.bodyMedium.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -1971,7 +1971,7 @@ class _BusDetailsPageState extends State<BusDetailsPage> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  hasPerson ? person.name : 'â€”',
+                  hasPerson ? person.name : '—',
                   style: AppFonts.bodyLarge.copyWith(
                     color: hasPerson ? Colors.white : AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -2289,7 +2289,7 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.route['name']?.toString() ?? 'â€”';
+    final name = widget.route['name']?.toString() ?? '—';
     final desc = widget.route['description']?.toString() ?? '';
     final id = widget.route['_id']?.toString() ?? '';
     final stations = widget.route['stations'] as List<dynamic>? ?? [];
@@ -2731,10 +2731,1195 @@ class _RouteDetailsPageState extends State<RouteDetailsPage> {
   }
 
   String _formatDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return 'â€”';
+    if (dateStr == null || dateStr.isEmpty) return '—';
     final parsed = DateTime.tryParse(dateStr);
     if (parsed == null) return dateStr;
     return '${parsed.year}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}';
+  }
+}
+
+class LineDetailsPage extends StatefulWidget {
+  final String schoolId;
+  final String busId;
+  final Map<String, dynamic> line;
+  final VoidCallback onUpdated;
+
+  const LineDetailsPage({
+    Key? key,
+    required this.schoolId,
+    required this.busId,
+    required this.line,
+    required this.onUpdated,
+  }) : super(key: key);
+
+  @override
+  State<LineDetailsPage> createState() => _LineDetailsPageState();
+}
+
+class _LineDetailsPageState extends State<LineDetailsPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Print line details
+    debugPrint('=== LINE DETAILS ===');
+    debugPrint('Line ID: ${widget.line['_id']}');
+    debugPrint('Line Name: ${widget.line['name']}');
+    debugPrint('Route Name: ${widget.line['routeName']}');
+    debugPrint('Date: ${widget.line['date']}');
+    debugPrint('Trip Type: ${widget.line['tripType']}');
+    debugPrint('Status: ${widget.line['status']}');
+    debugPrint('Stations: ${widget.line['stations']}');
+    debugPrint('Driver: ${widget.line['driver']}');
+    debugPrint('Assistant: ${widget.line['assistant']}');
+    debugPrint('Notes: ${widget.line['notes']}');
+    debugPrint('Full Line Data: ${widget.line}');
+    debugPrint('===================');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = widget.line['name']?.toString() ?? '—';
+    final routeName = widget.line['routeName']?.toString() ?? '';
+    final tripType = widget.line['tripType']?.toString() ?? '';
+    final date = _formatDisplayDate(widget.line['date']?.toString());
+    final status = widget.line['status']?.toString() ?? '';
+    final id = widget.line['_id']?.toString() ?? '';
+    final stations = widget.line['stations'] as List<dynamic>? ?? [];
+    final driver = widget.line['driver'] as Map<String, dynamic>?;
+    final assistant = widget.line['assistant'] as Map<String, dynamic>?;
+    final notes = widget.line['notes']?.toString() ?? '';
+    final startedAt = widget.line['startedAt']?.toString();
+    final completedAt = widget.line['completedAt']?.toString();
+    final createdAt = widget.line['createdAt']?.toString();
+
+    // Determine gradient colors
+    List<Color> gradientColors;
+    if (status.toLowerCase() == 'completed') {
+      gradientColors = [const Color(0xFF10B981), const Color(0xFF059669)];
+    } else if (status.toLowerCase() == 'active' || status.toLowerCase() == 'in_progress') {
+      gradientColors = [const Color(0xFF3B82F6), const Color(0xFF2563EB)];
+    } else if (status.toLowerCase() == 'cancelled') {
+      gradientColors = [const Color(0xFFEF4444), const Color(0xFFDC2626)];
+    } else {
+      gradientColors = [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)];
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('line_details'.tr, style: AppFonts.h3),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0.2,
+      ),
+      body: Container(
+        color: const Color(0xFFF6F7FB),
+        child: ListView(
+          padding: EdgeInsets.all(16.w),
+          children: [
+            // Header Card
+            Container(
+              padding: EdgeInsets.all(24.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradientColors[0].withOpacity(0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.route_rounded, color: Colors.white, size: 32.sp),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    name,
+                    style: AppFonts.h2.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (routeName.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    Text(
+                      routeName,
+                      style: AppFonts.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 16.h),
+                  Wrap(
+                    spacing: 10.w,
+                    runSpacing: 10.h,
+                    children: [
+                      if (date.isNotEmpty)
+                        _whiteInfoChip(Icons.calendar_today_rounded, date),
+                      if (tripType.isNotEmpty)
+                        _whiteInfoChip(Icons.swap_horiz_rounded, tripType),
+                      if (status.isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            status.tr,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.h),
+            // Line Data Box
+            Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              gradientColors[0].withOpacity(0.15),
+                              gradientColors[1].withOpacity(0.25),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(Icons.info_rounded, color: gradientColors[0], size: 22.sp),
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'line_information'.tr,
+                        style: AppFonts.h3.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  _dataRow(Icons.title_rounded, 'line_name'.tr, name),
+                  if (routeName.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.label_rounded, 'route_name'.tr, routeName),
+                  ],
+                  if (date.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.calendar_today_rounded, 'date'.tr, date),
+                  ],
+                  if (tripType.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.swap_horiz_rounded, 'trip_type'.tr, tripType),
+                  ],
+                  if (status.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.info_rounded, 'status'.tr, status.tr),
+                  ],
+                  if (id.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.fingerprint_rounded, 'line_id'.tr, id),
+                  ],
+                  if (notes.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.note_rounded, 'notes'.tr, notes),
+                  ],
+                  if (startedAt != null) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.play_circle_rounded, 'started_at'.tr, _formatDateTime(startedAt)),
+                  ],
+                  if (completedAt != null) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.check_circle_rounded, 'completed_at'.tr, _formatDateTime(completedAt)),
+                  ],
+                  if (createdAt != null) ...[
+                    SizedBox(height: 16.h),
+                    _dataRow(Icons.calendar_today_rounded, 'created_at'.tr, _formatDateTime(createdAt)),
+                  ],
+                ],
+              ),
+            ),
+            // Driver & Assistant Section
+            if (driver != null || assistant != null) ...[
+              SizedBox(height: 20.h),
+              Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                gradientColors[0].withOpacity(0.15),
+                                gradientColors[1].withOpacity(0.25),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Icon(Icons.people_rounded, color: gradientColors[0], size: 22.sp),
+                        ),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'team'.tr,
+                          style: AppFonts.h3.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    if (driver != null) ...[
+                      _personDataRow(Icons.person_outline_rounded, 'driver'.tr, driver),
+                      SizedBox(height: 16.h),
+                    ],
+                    if (assistant != null)
+                      _personDataRow(Icons.support_agent_rounded, 'assistant'.tr, assistant),
+                  ],
+                ),
+              ),
+            ],
+            // Stations Progress Section
+            if (stations.isNotEmpty) ...[
+              SizedBox(height: 20.h),
+              Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                gradientColors[0].withOpacity(0.15),
+                                gradientColors[1].withOpacity(0.25),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Icon(Icons.timeline_rounded, color: gradientColors[0], size: 22.sp),
+                        ),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'stations_progress'.tr,
+                          style: AppFonts.h3.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    ...stations.asMap().entries.map((entry) {
+                      final station = entry.value as Map<String, dynamic>? ?? {};
+                      final stationName = station['name']?.toString() ?? 'Station ${entry.key + 1}';
+                      final address = station['address']?.toString() ?? '';
+                      final order = int.tryParse(station['order']?.toString() ?? '${entry.key + 1}') ?? (entry.key + 1);
+                      final arrivalTime = station['arrivalTime']?.toString() ?? '';
+                      final departureTime = station['departureTime']?.toString() ?? '';
+                      final stationStatus = station['status']?.toString() ?? '';
+                      final students = station['students'] as List<dynamic>? ?? [];
+                      final isLast = entry.key == stations.length - 1;
+                      final isCompleted = stationStatus.toLowerCase() == 'completed' || stationStatus.toLowerCase() == 'departed';
+                      final isInProgress = stationStatus.toLowerCase() == 'in_progress' || stationStatus.toLowerCase() == 'arrived';
+                      
+                      Color stationColor = isCompleted 
+                          ? const Color(0xFF10B981) 
+                          : isInProgress 
+                              ? const Color(0xFF3B82F6) 
+                              : AppColors.textSecondary.withOpacity(0.3);
+                      
+                      return _buildStationProgressItem(
+                        order: order,
+                        name: stationName,
+                        address: address,
+                        arrivalTime: arrivalTime,
+                        departureTime: departureTime,
+                        status: stationStatus,
+                        studentsCount: students.length,
+                        color: stationColor,
+                        isLast: isLast,
+                        isCompleted: isCompleted,
+                        isInProgress: isInProgress,
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
+            SizedBox(height: 20.h),
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: _actionButton(
+                    icon: Icons.edit_rounded,
+                    label: 'edit'.tr,
+                    color: const Color(0xFF3B82F6),
+                    onTap: () => _editLine(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _actionButton(
+                    icon: Icons.delete_rounded,
+                    label: 'delete'.tr,
+                    color: const Color(0xFFEF4444),
+                    onTap: id.isNotEmpty ? () => _deleteLine(id) : null,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dataRow(IconData icon, String label, String value) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.blue1.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: AppColors.blue1.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: AppColors.blue1.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(icon, color: AppColors.blue1, size: 18.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: AppFonts.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: AppFonts.bodyLarge.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _whiteInfoChip(IconData icon, String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16.sp, color: Colors.white),
+          SizedBox(width: 6.w),
+          Text(
+            text,
+            style: AppFonts.bodySmall.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                color,
+                color.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 22.sp),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: AppFonts.bodyLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDisplayDate(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    return '${parsed.year.toString().padLeft(4, '0')}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDateTime(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '—';
+    final parsed = DateTime.tryParse(dateStr);
+    if (parsed == null) return dateStr;
+    return '${parsed.year}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')} ${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildStationProgressItem({
+    required int order,
+    required String name,
+    required String address,
+    required String arrivalTime,
+    required String departureTime,
+    required String status,
+    required int studentsCount,
+    required Color color,
+    required bool isLast,
+    required bool isCompleted,
+    required bool isInProgress,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Timeline Column
+        Column(
+          children: [
+            // Station Circle
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  '$order',
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            // Connecting Line
+            if (!isLast)
+              Container(
+                width: 2.w,
+                height: 80.h,
+                decoration: BoxDecoration(
+                  color: isCompleted ? color : color.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(1.r),
+                ),
+              ),
+          ],
+        ),
+        SizedBox(width: 16.w),
+        // Station Info
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 24.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: AppFonts.bodyLarge.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (address.isNotEmpty) ...[
+                            SizedBox(height: 4.h),
+                            Text(
+                              address,
+                              style: AppFonts.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (status.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          status.tr,
+                          style: AppFonts.labelSmall.copyWith(
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Wrap(
+                  spacing: 16.w,
+                  runSpacing: 8.h,
+                  children: [
+                    if (arrivalTime.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 16.sp,
+                            color: isCompleted || isInProgress ? color : AppColors.textSecondary,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'arrival'.tr,
+                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            arrivalTime,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (departureTime.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.schedule_rounded,
+                            size: 16.sp,
+                            color: isCompleted ? color : AppColors.textSecondary,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'departure'.tr,
+                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            departureTime,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (studentsCount > 0)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.people_rounded, size: 16.sp, color: AppColors.textSecondary),
+                          SizedBox(width: 6.w),
+                          Text(
+                            '$studentsCount ${'students'.tr}',
+                            style: AppFonts.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _personDataRow(IconData icon, String label, Map<String, dynamic> person) {
+    final personName = person['name']?.toString() ?? '—';
+    final email = person['email']?.toString() ?? '';
+    final phone = person['phone']?.toString() ?? '';
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.blue1.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: AppColors.blue1.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.blue1.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(icon, color: AppColors.blue1, size: 18.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.only(left: 42.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  personName,
+                  style: AppFonts.bodyLarge.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (email.isNotEmpty) ...[
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      Icon(Icons.email_rounded, size: 14.sp, color: AppColors.textSecondary),
+                      SizedBox(width: 6.w),
+                      Text(
+                        email,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (phone.isNotEmpty) ...[
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      Icon(Icons.phone_rounded, size: 14.sp, color: AppColors.textSecondary),
+                      SizedBox(width: 6.w),
+                      Text(
+                        phone,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editLine() async {
+    final result = await Get.to(() => _LineEditPage(
+      schoolId: widget.schoolId,
+      busId: widget.busId,
+      line: widget.line,
+    ));
+    if (result == true) {
+      widget.onUpdated();
+      Get.back();
+    }
+  }
+
+  Future<void> _deleteLine(String lineId) async {
+    final confirm = await Get.dialog<bool>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 20.sp),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text('delete_line'.tr, style: AppFonts.h4),
+            ),
+          ],
+        ),
+        content: Text('confirm_delete_line'.tr, style: AppFonts.bodyMedium),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('cancel'.tr),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('delete'.tr),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      try {
+        await BusService.deleteLine(widget.schoolId, widget.busId, lineId);
+        widget.onUpdated();
+        Get.back();
+        Get.snackbar('success'.tr, 'line_deleted'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.blue1,
+            colorText: Colors.white);
+      } catch (e) {
+        Get.snackbar('error'.tr, e.toString(),
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white);
+      }
+    }
+  }
+}
+
+class _RouteEditPage extends StatefulWidget {
+  final String schoolId;
+  final String busId;
+  final Map<String, dynamic> route;
+
+  const _RouteEditPage({
+    Key? key,
+    required this.schoolId,
+    required this.busId,
+    required this.route,
+  }) : super(key: key);
+
+  @override
+  State<_RouteEditPage> createState() => _RouteEditPageState();
+}
+
+class _RouteEditPageState extends State<_RouteEditPage> {
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl.text = widget.route['name']?.toString() ?? '';
+    _descCtrl.text = widget.route['description']?.toString() ?? '';
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('edit_route'.tr, style: AppFonts.h3),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0.2,
+      ),
+      body: Container(
+        color: const Color(0xFFF6F7FB),
+        child: ListView(
+          padding: EdgeInsets.all(16.w),
+          children: [
+            _buildTextField(_nameCtrl, 'route_name'.tr, required: true),
+            SizedBox(height: 16.h),
+            _buildTextField(_descCtrl, 'description'.tr, maxLines: 3),
+            SizedBox(height: 24.h),
+            ElevatedButton(
+              onPressed: _loading ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.blue1,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text('save'.tr, style: AppFonts.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {bool required = false, int maxLines = 1}) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          border: InputBorder.none,
+          labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
+        ),
+        style: AppFonts.bodyLarge,
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'required_field'.tr : null : null,
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    if (_nameCtrl.text.trim().isEmpty) {
+      Get.snackbar('error'.tr, 'route_name_required'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white);
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final payload = {
+        'name': _nameCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        'routeId': widget.route['_id'],
+      };
+      await BusService.updateRoute(widget.schoolId, widget.busId, payload);
+      Get.back(result: true);
+    } catch (e) {
+      Get.snackbar('error'.tr, e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+}
+
+class _LineEditPage extends StatefulWidget {
+  final String schoolId;
+  final String busId;
+  final Map<String, dynamic> line;
+
+  const _LineEditPage({
+    Key? key,
+    required this.schoolId,
+    required this.busId,
+    required this.line,
+  }) : super(key: key);
+
+  @override
+  State<_LineEditPage> createState() => _LineEditPageState();
+}
+
+class _LineEditPageState extends State<_LineEditPage> {
+  final _nameCtrl = TextEditingController();
+  final _routeCtrl = TextEditingController();
+  final _tripTypeCtrl = TextEditingController();
+  final _dateCtrl = TextEditingController();
+  final _statusCtrl = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl.text = widget.line['name']?.toString() ?? '';
+    _routeCtrl.text = widget.line['routeName']?.toString() ?? '';
+    _tripTypeCtrl.text = widget.line['tripType']?.toString() ?? '';
+    _dateCtrl.text = _formatDateForEdit(widget.line['date']?.toString());
+    _statusCtrl.text = widget.line['status']?.toString() ?? '';
+  }
+
+  String _formatDateForEdit(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    return '${parsed.year.toString().padLeft(4, '0')}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _routeCtrl.dispose();
+    _tripTypeCtrl.dispose();
+    _dateCtrl.dispose();
+    _statusCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('edit_line'.tr, style: AppFonts.h3),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0.2,
+      ),
+      body: Container(
+        color: const Color(0xFFF6F7FB),
+        child: ListView(
+          padding: EdgeInsets.all(16.w),
+          children: [
+            _buildTextField(_nameCtrl, 'line_name'.tr, required: true),
+            SizedBox(height: 16.h),
+            _buildTextField(_routeCtrl, 'route_name'.tr),
+            SizedBox(height: 16.h),
+            _buildTextField(_tripTypeCtrl, 'trip_type'.tr),
+            SizedBox(height: 16.h),
+            _buildTextField(_dateCtrl, 'date'.tr, onTap: () => _pickDate()),
+            SizedBox(height: 16.h),
+            _buildTextField(_statusCtrl, 'status'.tr),
+            SizedBox(height: 24.h),
+            ElevatedButton(
+              onPressed: _loading ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.blue1,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text('save'.tr, style: AppFonts.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {bool required = false, VoidCallback? onTap}) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        readOnly: onTap != null,
+        onTap: onTap,
+        decoration: InputDecoration(
+          labelText: label,
+          border: InputBorder.none,
+          labelStyle: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary),
+          suffixIcon: onTap != null ? Icon(Icons.calendar_today_rounded, color: AppColors.blue1) : null,
+        ),
+        style: AppFonts.bodyLarge,
+        validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'required_field'.tr : null : null,
+      ),
+    );
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final initial = _dateCtrl.text.isNotEmpty ? DateTime.tryParse(_dateCtrl.text) ?? now : now;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(now.year - 2),
+      lastDate: DateTime(now.year + 2),
+    );
+    if (picked != null) {
+      _dateCtrl.text = '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+    }
+  }
+
+  Future<void> _save() async {
+    if (_nameCtrl.text.trim().isEmpty) {
+      Get.snackbar('error'.tr, 'line_name_required'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white);
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final payload = {
+        'name': _nameCtrl.text.trim(),
+        'routeName': _routeCtrl.text.trim(),
+        'tripType': _tripTypeCtrl.text.trim(),
+        'date': _dateCtrl.text.trim(),
+        'status': _statusCtrl.text.trim(),
+      };
+      await BusService.updateLine(widget.schoolId, widget.busId, widget.line['_id']?.toString() ?? '', payload);
+      Get.back(result: true);
+    } catch (e) {
+      Get.snackbar('error'.tr, e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 }
 
@@ -3083,304 +4268,6 @@ class _StationAttendancePageState extends State<StationAttendancePage> {
         ],
       ),
     );
-  }
-}
-
-class _LineEditPage extends StatefulWidget {
-  final String schoolId;
-  final String busId;
-  final Map<String, dynamic>? line;
-
-  const _LineEditPage({
-    Key? key,
-    required this.schoolId,
-    required this.busId,
-    this.line,
-  }) : super(key: key);
-
-  @override
-  State<_LineEditPage> createState() => _LineEditPageState();
-}
-
-class _LineEditPageState extends State<_LineEditPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _dateController = TextEditingController();
-  final _notesController = TextEditingController();
-  String _status = 'active';
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.line != null) {
-      _dateController.text = widget.line!['date']?.toString() ?? '';
-      _notesController.text = widget.line!['notes']?.toString() ?? '';
-      _status = widget.line!['status']?.toString() ?? 'active';
-    } else {
-      _dateController.text = DateTime.now().toIso8601String().split('T')[0];
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.line == null ? 'add_line'.tr : 'edit_line'.tr, style: AppFonts.h3),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0.5,
-      ),
-      body: Container(
-        color: const Color(0xFFF6F7FB),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildCard([
-                  _buildDatePicker(),
-                  SizedBox(height: 16.h),
-                  _buildStatusDropdown(),
-                  SizedBox(height: 16.h),
-                  _buildTextField(
-                    controller: _notesController,
-                    label: 'notes'.tr,
-                    icon: Icons.note_rounded,
-                    maxLines: 3,
-                  ),
-                ]),
-                SizedBox(height: 24.h),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blue1,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  child: _isLoading
-                      ? SizedBox(height: 20.h, width: 20.h, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('save'.tr, style: AppFonts.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard(List<Widget> children) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildTextField({required TextEditingController controller, required String label, required IconData icon, int maxLines = 1}) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.blue1),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-        filled: true,
-        fillColor: AppColors.itemsBackground,
-      ),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return InkWell(
-      onTap: () async {
-        final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2101),
-        );
-        if (picked != null) {
-          setState(() {
-            _dateController.text = picked.toIso8601String().split('T')[0];
-          });
-        }
-      },
-      child: IgnorePointer(
-        child: _buildTextField(controller: _dateController, label: 'date'.tr, icon: Icons.calendar_today_rounded),
-      ),
-    );
-  }
-
-  Widget _buildStatusDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _status,
-      decoration: InputDecoration(
-        labelText: 'status'.tr,
-        prefixIcon: Icon(Icons.info_outline_rounded, color: AppColors.blue1),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-        filled: true,
-        fillColor: AppColors.itemsBackground,
-      ),
-      items: ['active', 'completed', 'cancelled', 'in_progress']
-          .map((s) => DropdownMenuItem(value: s, child: Text(s.tr)))
-          .toList(),
-      onChanged: (val) => setState(() => _status = val!),
-    );
-  }
-
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    try {
-      final data = {
-        'date': _dateController.text,
-        'status': _status,
-        'notes': _notesController.text,
-        'schoolId': widget.schoolId,
-        'busId': widget.busId,
-      };
-      if (widget.line == null) {
-        await BusService.createLine(widget.schoolId, widget.busId, data);
-        Get.snackbar('success'.tr, 'line_created'.tr, snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.success, colorText: Colors.white);
-      } else {
-        final lineId = widget.line!['_id'] ?? widget.line!['id'];
-        await BusService.updateLine(widget.schoolId, widget.busId, lineId, data);
-        Get.snackbar('success'.tr, 'line_updated'.tr, snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.success, colorText: Colors.white);
-      }
-      Get.back(result: true);
-    } catch (e) {
-      Get.snackbar('error'.tr, e.toString(), snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.error, colorText: Colors.white);
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-}
-
-class _RouteEditPage extends StatefulWidget {
-  final String schoolId;
-  final String busId;
-  final Map<String, dynamic>? route;
-
-  const _RouteEditPage({Key? key, required this.schoolId, required this.busId, this.route}) : super(key: key);
-
-  @override
-  State<_RouteEditPage> createState() => _RouteEditPageState();
-}
-
-class _RouteEditPageState extends State<_RouteEditPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descController = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.route != null) {
-      _nameController.text = widget.route!['name']?.toString() ?? '';
-      _descController.text = widget.route!['description']?.toString() ?? '';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.route == null ? 'add_route'.tr : 'edit_route'.tr, style: AppFonts.h3),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0.5,
-      ),
-      body: Container(
-        color: const Color(0xFFF6F7FB),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildCard([
-                  _buildTextField(controller: _nameController, label: 'route_name'.tr, icon: Icons.label_rounded),
-                  SizedBox(height: 16.h),
-                  _buildTextField(controller: _descController, label: 'description'.tr, icon: Icons.description_rounded, maxLines: 3),
-                ]),
-                SizedBox(height: 24.h),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blue1,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text('save'.tr, style: AppFonts.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard(List<Widget> children) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _buildTextField({required TextEditingController controller, required String label, required IconData icon, int maxLines = 1}) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      validator: (val) => val?.isEmpty == true ? 'required'.tr : null,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.blue1),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-        filled: true,
-        fillColor: AppColors.itemsBackground,
-      ),
-    );
-  }
-
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    try {
-      final data = {
-        'name': _nameController.text,
-        'description': _descController.text,
-        'schoolId': widget.schoolId,
-        'busId': widget.busId,
-      };
-      if (widget.route == null) {
-        await BusService.addRoute(widget.schoolId, widget.busId, data);
-        Get.snackbar('success'.tr, 'route_created'.tr, snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.success, colorText: Colors.white);
-      } else {
-        data['routeId'] = widget.route!['_id'] ?? widget.route!['id'];
-        await BusService.updateRoute(widget.schoolId, widget.busId, data);
-        Get.snackbar('success'.tr, 'route_updated'.tr, snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.success, colorText: Colors.white);
-      }
-      Get.back(result: true);
-    } catch (e) {
-      Get.snackbar('error'.tr, e.toString(), snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.error, colorText: Colors.white);
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 }
 

@@ -178,21 +178,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
         elevation: 0,
         title: Text(
           'notifications'.tr,
-          style: AppFonts.h3.copyWith(
+          style: AppFonts.h4.copyWith(
             color: AppColors.white,
+            fontSize: Responsive.sp(16),
           ),
         ),
         centerTitle: true,
         actions: [
           if (unreadCount > 0)
             IconButton(
-              icon: Text(
-                'mark_all_read'.tr,
-                style: AppFonts.AlmaraiBlack18.copyWith(
-                  color: AppColors.white,
-                  fontSize: Responsive.sp(14),
-                ),
+              icon: Icon(
+                IconlyBroken.tick_square,
+                color: AppColors.white,
+                size: Responsive.sp(24),
               ),
+              tooltip: 'mark_all_read'.tr,
               onPressed: _markAllAsRead,
             ),
         ],
@@ -228,7 +228,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         children: [
           Icon(
             IconlyBroken.notification,
-            size: Responsive.sp(80),
+            size: Responsive.sp(60),
             color: AppColors.grey400,
           ),
           SizedBox(height: Responsive.h(24)),
@@ -274,7 +274,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       onDismissed: (direction) {
         _deleteNotification(notification.id);
       },
-      child: InkWell(
+          child: InkWell(
         onTap: () {
           if (!notification.isRead) {
             _markAsRead(notification.id);
@@ -283,22 +283,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
         },
         borderRadius: BorderRadius.circular(Responsive.r(12)),
         child: Container(
-          padding: Responsive.all(16),
+          padding: Responsive.all(12),
           decoration: BoxDecoration(
-            color: notification.isRead ? AppColors.white : AppColors.blue2,
+            color: notification.isRead ? AppColors.white : AppColors.blue1.withOpacity(0.05),
             borderRadius: BorderRadius.circular(Responsive.r(12)),
             border: Border.all(
               color: notification.isRead
-                  ? AppColors.borderLight
-                  : AppColors.blue1.withOpacity(0.3),
-              width: notification.isRead ? 1 : 1.5,
+                  ? AppColors.grey200
+                  : AppColors.blue1.withOpacity(0.2),
+              width: 1,
             ),
             boxShadow: [
-              BoxShadow(
-                color: AppColors.shadowLight,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
+              if (!notification.isRead)
+                BoxShadow(
+                  color: AppColors.blue1.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
             ],
           ),
           child: Row(
@@ -306,8 +307,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
             children: [
               // Icon
               Container(
-                width: Responsive.w(48),
-                height: Responsive.w(48),
+                width: Responsive.w(36),
+                height: Responsive.w(36),
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.1),
                   shape: BoxShape.circle,
@@ -315,54 +316,61 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 child: Icon(
                   icon,
                   color: iconColor,
-                  size: Responsive.sp(24),
+                  size: Responsive.sp(18),
                 ),
               ),
-              SizedBox(width: Responsive.w(12)),
+              SizedBox(width: Responsive.w(10)),
               // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
                             notification.title,
-                            style: AppFonts.h4.copyWith(
+                            style: AppFonts.bodyLarge.copyWith(
                               color: AppColors.textPrimary,
-                              fontWeight: notification.isRead
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(13),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (!notification.isRead)
+                        SizedBox(width: Responsive.w(8)),
+                        Text(
+                          _formatDateTime(notification.createdAt),
+                          style: AppFonts.caption.copyWith(
+                            color: AppColors.grey400,
+                            fontSize: Responsive.sp(10),
+                          ),
+                        ),
+                        if (!notification.isRead) ...[
+                          SizedBox(width: Responsive.w(6)),
                           Container(
-                            width: Responsive.w(8),
-                            height: Responsive.w(8),
+                            width: Responsive.w(6),
+                            height: Responsive.w(6),
                             decoration: BoxDecoration(
                               color: AppColors.blue1,
                               shape: BoxShape.circle,
                             ),
                           ),
+                        ],
                       ],
                     ),
-                    SizedBox(height: Responsive.h(4)),
+                    SizedBox(height: Responsive.h(2)),
                     Text(
                       notification.message,
-                      style: AppFonts.AlmaraiBlack18.copyWith(
+                      style: AppFonts.bodySmall.copyWith(
                         color: AppColors.textSecondary,
+                        fontSize: Responsive.sp(11),
+                        height: 1.4,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: Responsive.h(8)),
-                    Text(
-                      _formatDateTime(notification.createdAt),
-                      style: AppFonts.caption.copyWith(
-                        color: AppColors.textHint,
-                      ),
                     ),
                   ],
                 ),

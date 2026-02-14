@@ -43,9 +43,12 @@ import '../../models/school_models.dart';
 import '../../models/student_models.dart';
 import '../../views/bus/buses_page.dart';
 import '../../views/bus/bus_details_page.dart';
+import '../../views/bus/line_details_page.dart';
+import '../../models/bus_line_models.dart';
 import '../../views/children/add_child_page.dart';
 import '../../views/children/add_child_steps_page.dart';
 import '../../views/children/child_details_page.dart';
+import '../../views/children/follow_up_page.dart';
 import '../../views/admission/apply_to_schools_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
@@ -242,6 +245,17 @@ class RouteGenerator {
             bus: args['bus'] as Bus?,
           ),
         );
+      case AppRoutes.busLineDetails:
+        final args = settings.arguments as Map<String, dynamic>;
+        return GetPageRoute(
+          settings: settings,
+          page: () => LineDetailsPage(
+            schoolId: args['schoolId'] as String,
+            busId: args['busId'] as String,
+            lineId: args['lineId'] as String,
+            initialLine: args['line'] as BusLine?,
+          ),
+        );
       case AppRoutes.storeProducts:
         return GetPageRoute(
           settings: settings,
@@ -287,6 +301,12 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => ChildDetailsPage(child: args['child'] as Student),
+        );
+      case AppRoutes.followUp:
+        final args = settings.arguments as Map<String, dynamic>;
+        return GetPageRoute(
+          settings: settings,
+          page: () => FollowUpPage(child: args['child'] as Student),
         );
       case AppRoutes.applyToSchools:
         return GetPageRoute(

@@ -11,6 +11,8 @@ import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/global_chatbot_widget.dart';
+import '../../core/controllers/dashboard_controller.dart';
+import '../../models/wallet_models.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({Key? key}) : super(key: key);
@@ -343,15 +345,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
         _userData?['profileImage']?.toString();
 
     return Container(
-      padding: Responsive.all(20),
+      padding: Responsive.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -359,19 +361,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           // Profile Image
           Container(
-            width: Responsive.w(100),
-            height: Responsive.w(100),
+            width: Responsive.w(70),
+            height: Responsive.w(70),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
                 color: AppColors.blue1.withOpacity(0.3),
-                width: 3,
+                width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.blue1.withOpacity(0.2),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: AppColors.blue1.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -379,15 +381,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
               child: avatarUrl != null && avatarUrl.isNotEmpty
                   ? SafeNetworkImage(
                 imageUrl: avatarUrl,
-                width: Responsive.w(100),
-                height: Responsive.w(100),
+                width: Responsive.w(70),
+                height: Responsive.w(70),
                 fit: BoxFit.cover,
                 errorWidget: Container(
                   color: AppColors.blue1,
                   child: Icon(
                     Icons.person_rounded,
                     color: Colors.white,
-                    size: Responsive.sp(50),
+                    size: Responsive.sp(35),
                   ),
                 ),
               )
@@ -396,41 +398,41 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Icon(
                   Icons.person_rounded,
                   color: Colors.white,
-                  size: Responsive.sp(50),
+                  size: Responsive.sp(35),
                 ),
               ),
             ),
           ),
-          SizedBox(height: Responsive.h(16)),
+          SizedBox(height: Responsive.h(10)),
           // User Name
           Text(
             userName,
             style: AppFonts.h3.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
-              fontSize: Responsive.sp(20),
+              fontSize: Responsive.sp(16),
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: Responsive.h(8)),
+          SizedBox(height: Responsive.h(6)),
           // User Email
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.email_rounded,
-                size: Responsive.sp(16),
+                size: Responsive.sp(14),
                 color: AppColors.textSecondary,
               ),
-              SizedBox(width: Responsive.w(6)),
+              SizedBox(width: Responsive.w(4)),
               Flexible(
                 child: Text(
                   userEmail,
                   style: AppFonts.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: Responsive.sp(14),
+                    fontSize: Responsive.sp(12),
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -446,14 +448,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildUserInfoSection() {
     return Container(
-      padding: Responsive.all(20),
+      padding: Responsive.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -464,29 +466,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Row(
             children: [
               Container(
-                padding: Responsive.all(8),
+                padding: Responsive.all(6),
                 decoration: BoxDecoration(
                   color: AppColors.blue1.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
                 ),
                 child: Icon(
                   Icons.person_outline_rounded,
                   color: AppColors.blue1,
-                  size: Responsive.sp(20),
+                  size: Responsive.sp(16),
                 ),
               ),
-              SizedBox(width: Responsive.w(12)),
+              SizedBox(width: Responsive.w(10)),
               Text(
                 'personal_information'.tr,
                 style: AppFonts.h4.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
-                  fontSize: Responsive.sp(16),
+                  fontSize: Responsive.sp(14),
                 ),
               ),
             ],
           ),
-          SizedBox(height: Responsive.h(20)),
+          SizedBox(height: Responsive.h(14)),
 
           // Editable fields when in edit mode
           if (_isEditing) ...[
@@ -511,15 +513,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
               SizedBox(height: Responsive.h(12)),
               _buildInfoRow(
                   'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
-              SizedBox(height: Responsive.h(16)),
+              SizedBox(height: Responsive.h(12)),
+              // Language Change Button
               InkWell(
-                onTap: () => Get.toNamed(AppRoutes.settings),
-                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                onTap: () {
+                  // Toggle language between Arabic and English
+                  final currentLocale = Get.locale?.languageCode ?? 'en';
+                  final newLocale = currentLocale == 'ar' ? const Locale('en', 'US') : const Locale('ar', 'SA');
+                  Get.updateLocale(newLocale);
+                  Get.snackbar(
+                    'success'.tr,
+                    'language_changed'.tr,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: AppColors.blue1,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                  );
+                },
+                borderRadius: BorderRadius.circular(Responsive.r(10)),
                 child: Container(
-                  padding: Responsive.all(16),
+                  padding: Responsive.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.blue1.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
                     border: Border.all(
                       color: AppColors.blue1.withOpacity(0.1),
                       width: 1,
@@ -528,24 +544,33 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.settings_rounded,
+                        Icons.language_rounded,
                         color: AppColors.blue1,
-                        size: Responsive.sp(20),
+                        size: Responsive.sp(18),
                       ),
-                      SizedBox(width: Responsive.w(16)),
+                      SizedBox(width: Responsive.w(12)),
                       Text(
-                        'settings'.tr,
+                        'change_language'.tr,
                         style: AppFonts.bodyMedium.copyWith(
                           color: AppColors.blue1,
                           fontWeight: FontWeight.w600,
-                          fontSize: AppFonts.size14,
+                          fontSize: Responsive.sp(13),
                         ),
                       ),
                       const Spacer(),
+                      Text(
+                        Get.locale?.languageCode == 'ar' ? 'EN' : 'عربي',
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: Responsive.sp(12),
+                        ),
+                      ),
+                      SizedBox(width: Responsive.w(8)),
                       Icon(
                         Icons.arrow_forward_ios_rounded,
                         color: AppColors.blue1,
-                        size: Responsive.sp(16),
+                        size: Responsive.sp(14),
                       ),
                     ],
                   ),
@@ -558,14 +583,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildWalletSection() {
-    final balance = _userData?['walletBalance']?.toString() ?? '0.00';
-    // Use the same gradient design as Home Page
+    // Get wallet from DashboardController
+    final wallet = DashboardController.to.wallet.value;
+    
+    // If no wallet data, don't show the section
+    if (wallet == null) {
+      return const SizedBox.shrink();
+    }
+    
+    final balance = wallet.balance?.toStringAsFixed(2) ?? '0.00';
+    final currency = wallet.currency ?? 'EGP';
+    
+    // Use the same gradient design as Home Page but smaller
     return Container(
       width: double.infinity,
-      padding: Responsive.symmetric(horizontal: 20, vertical: 16),
+      padding: Responsive.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A), // Midnight Dark Blue
-        borderRadius: BorderRadius.circular(Responsive.r(24)),
+        borderRadius: BorderRadius.circular(Responsive.r(16)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -577,9 +612,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.4),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF0F172A).withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -598,17 +633,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     'current_balance'.tr,
                     style: AppFonts.bodySmall.copyWith(
                       color: Colors.white.withOpacity(0.6),
-                      fontSize: Responsive.sp(11),
+                      fontSize: Responsive.sp(10),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: Responsive.h(4)),
+                  SizedBox(height: Responsive.h(3)),
                   Text(
-                    '$balance EGP',
+                    '$balance $currency',
                     style: AppFonts.h1.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: Responsive.sp(24),
+                      fontSize: Responsive.sp(20),
                       height: 1.0,
                     ),
                   ),
@@ -617,26 +652,99 @@ class _UserProfilePageState extends State<UserProfilePage> {
               // Transactions Button
               Material(
                 color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                borderRadius: BorderRadius.circular(Responsive.r(10)),
                 child: InkWell(
                   onTap: () => Get.toNamed(AppRoutes.wallet),
-                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
                   child: Padding(
-                    padding: Responsive.symmetric(horizontal: 10, vertical: 6),
+                    padding: Responsive.symmetric(horizontal: 8, vertical: 5),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(IconlyBroken.document, color: Colors.white, size: Responsive.sp(14)),
-                        SizedBox(width: Responsive.w(6)),
+                        Icon(IconlyBroken.document, color: Colors.white, size: Responsive.sp(12)),
+                        SizedBox(width: Responsive.w(4)),
                         Text(
                           'transactions'.tr,
                           style: AppFonts.bodySmall.copyWith(
                             color: Colors.white,
-                            fontSize: Responsive.sp(11),
+                            fontSize: Responsive.sp(10),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(12)),
+          // Deposit and Withdraw Buttons
+          Row(
+            children: [
+              // Deposit Button
+              Expanded(
+                child: Material(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                  child: InkWell(
+                    onTap: () => Get.toNamed(AppRoutes.walletDeposit),
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                    child: Padding(
+                      padding: Responsive.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_circle_outline_rounded,
+                            color: Colors.white,
+                            size: Responsive.sp(16),
+                          ),
+                          SizedBox(width: Responsive.w(6)),
+                          Text(
+                            'deposit'.tr,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontSize: Responsive.sp(12),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              // Withdraw Button
+              Expanded(
+                child: Material(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                  child: InkWell(
+                    onTap: () => Get.toNamed(AppRoutes.walletWithdraw),
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                    child: Padding(
+                      padding: Responsive.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.remove_circle_outline_rounded,
+                            color: Colors.white,
+                            size: Responsive.sp(16),
+                          ),
+                          SizedBox(width: Responsive.w(6)),
+                          Text(
+                            'withdraw'.tr,
+                            style: AppFonts.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontSize: Responsive.sp(12),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -652,7 +760,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _buildLogoutButton() {
     return Container(
       width: double.infinity,
-      height: Responsive.h(56),
+      height: Responsive.h(48),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -662,7 +770,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFEF4444).withOpacity(0.3),
@@ -675,7 +783,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         color: Colors.transparent,
         child: InkWell(
           onTap: _logout,
-          borderRadius: BorderRadius.circular(Responsive.r(16)),
+          borderRadius: BorderRadius.circular(Responsive.r(12)),
           child: Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -683,15 +791,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 Icon(
                   Icons.logout_rounded,
                   color: Colors.white,
-                  size: AppFonts.size20,
+                  size: Responsive.sp(18),
                 ),
-                SizedBox(width: Responsive.w(8)),
+                SizedBox(width: Responsive.w(6)),
                 Text(
                   'logout'.tr,
                   style: AppFonts.bodyMedium.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: AppFonts.size16,
+                    fontSize: Responsive.sp(14),
                   ),
                 ),
               ],

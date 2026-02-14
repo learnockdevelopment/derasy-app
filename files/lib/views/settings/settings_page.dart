@@ -172,7 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
         backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
+          icon: Icon(Responsive.isRTL ? Icons.arrow_forward : Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
           onPressed: () => Get.back(),
         ),
       ),

@@ -57,8 +57,8 @@ class NotificationDetailsPage extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'notification_details'.tr, // Make sure to add this key or use a fallback
-          style: AppFonts.h3.copyWith(color: Colors.white),
+          'notification_details'.tr, 
+          style: AppFonts.h4.copyWith(color: Colors.white, fontSize: Responsive.sp(16)),
         ),
         centerTitle: true,
         leading: IconButton(

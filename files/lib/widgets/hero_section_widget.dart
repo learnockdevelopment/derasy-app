@@ -11,12 +11,14 @@ class HeroSectionWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
   final String? pageTitle;
   final bool showGreeting;
+  final bool hasUnreadNotifications;
 
   const HeroSectionWidget({
     Key? key,
     this.userData,
     this.pageTitle,
     this.showGreeting = false,
+    this.hasUnreadNotifications = false,
   }) : super(key: key);
 
   @override
@@ -82,9 +84,9 @@ class HeroSectionWidget extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.blue1,
-                  AppColors.blue1.withOpacity(0.8),
-                  AppColors.blue1.withOpacity(0.9),
+                  const Color(0xFF1565C0), // Blue 800
+                  const Color(0xFF1976D2), // Blue 700
+                  const Color(0xFF2196F3), // Blue 500
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -101,7 +103,7 @@ class HeroSectionWidget extends StatelessWidget {
               left: 16, 
               top: (Responsive.isTablet || Responsive.isDesktop) ? 70 : 50, 
               right: 16, 
-              bottom: (Responsive.isTablet || Responsive.isDesktop) ? 20 : 6
+              bottom: (Responsive.isTablet || Responsive.isDesktop) ? 25 : 12
             ),
             child: Center(
               child: ConstrainedBox(
@@ -112,34 +114,54 @@ class HeroSectionWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row: Greeting/Page Name and Icons
                     Row(
                       children: [
                         if (showGreeting) ...[
-                          Icon(
-                            greetingIcon,
-                            color: Colors.white,
-                            size: Responsive.sp(16),
+                          // User Avatar
+                          Container(
+                            width: Responsive.w(36),
+                            height: Responsive.w(36),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.2),
+                            ),
+                            child: Icon(
+                              IconlyBold.profile,
+                              color: Colors.white,
+                              size: Responsive.sp(18),
+                            ),
                           ),
-                          SizedBox(width: Responsive.w(6)),
+                          SizedBox(width: Responsive.w(10)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  greeting,
-                                  style: AppFonts.bodyMedium.copyWith(
-                                    color: Colors.white.withOpacity(0.95),
-                                    fontSize: Responsive.sp(10),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      greetingIcon,
+                                      color: Colors.white70,
+                                      size: Responsive.sp(11),
+                                    ),
+                                    SizedBox(width: Responsive.w(4)),
+                                    Text(
+                                      greeting,
+                                      style: AppFonts.bodyMedium.copyWith(
+                                        color: Colors.white.withOpacity(0.95),
+                                        fontSize: Responsive.sp(10),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                SizedBox(height: Responsive.h(1)),
                                 Text(
                                   userName,
                                   style: AppFonts.h3.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.sp(12), 
+                                    fontSize: Responsive.sp(14), 
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -156,7 +178,7 @@ class HeroSectionWidget extends StatelessWidget {
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: Responsive.sp(14),
+                                  fontSize: Responsive.sp(16),
                                 ),
                               ),
                             ),
@@ -172,63 +194,66 @@ class HeroSectionWidget extends StatelessWidget {
                                 onTap: () {
                                   Get.toNamed(AppRoutes.userProfile);
                                 },
-                                borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                borderRadius: BorderRadius.circular(Responsive.r(16)),
                                 child: Container(
-                                  width: Responsive.w(32),
-                                  height: Responsive.w(32),
+                                  width: Responsive.w(30),
+                                  height: Responsive.w(30),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                                   ),
                                   child: Icon(
-                                    IconlyBroken.setting,
+                                    Icons.settings_rounded,
                                     color: Colors.white,
-                                    size: Responsive.sp(18),
+                                    size: Responsive.sp(16),
                                   ),
                                 ),
                               ),
                             ),
-                            SizedBox(width: Responsive.w(6)),
-                            // Notification Icon from Iconly
+                            SizedBox(width: Responsive.w(8)),
+                            // Notification Icon
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
                                   Get.toNamed(AppRoutes.notifications);
                                 },
-                                borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                borderRadius: BorderRadius.circular(Responsive.r(16)),
                                 child: Container(
-                                  width: Responsive.w(32),
-                                  height: Responsive.w(32),
+                                  width: Responsive.w(30),
+                                  height: Responsive.w(30),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                                   ),
                                   child: Stack(
                                     alignment: Alignment.center,  
                                     children: [
                                       Icon(
-                                        IconlyBroken.notification,
+                                        Icons.notifications_rounded,
                                         color: Colors.white,
-                                        size: Responsive.sp(18),
+                                        size: Responsive.sp(16),
                                       ),
-                                      // Notification badge 
-                                      Positioned(
-                                        right: Responsive.w(6),
-                                        top: Responsive.w(6),
-                                        child: Container(
-                                          width: Responsive.w(6),
-                                          height: Responsive.w(6),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius: BorderRadius.circular(Responsive.r(3)),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 1.0,
+                                      // Notification badge - only show if there are unread notifications
+                                      if (hasUnreadNotifications)
+                                        Positioned(
+                                          right: Responsive.w(8),
+                                          top: Responsive.w(8),
+                                          child: Container(
+                                            width: Responsive.w(6),
+                                            height: Responsive.w(6),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.error,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 1.2,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -249,5 +274,4 @@ class HeroSectionWidget extends StatelessWidget {
     );
   }
 }
-
 

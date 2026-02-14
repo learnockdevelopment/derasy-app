@@ -3,11 +3,52 @@ import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../models/school_models.dart';
 import '../models/school_suggestion_models.dart';
+import '../models/class_teacher_models.dart';
 import 'user_storage_service.dart';
 import 'schools_cache_service.dart';
 
 class SchoolsService {
   static const String _baseUrl = ApiConstants.baseUrl;
+
+  /// Get teachers for a specific class in a school
+  static Future<ClassTeachersResponse> getClassTeachers(
+      String schoolId, String classId) async {
+    try {
+      print('🏫 [SCHOOLS] Getting teachers for school $schoolId, class $classId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw SchoolsException('No authentication token found');
+      }
+
+      final url = '$_baseUrl${ApiConstants.getClassDetailsEndpoint}'
+          .replaceAll('[schoolId]', schoolId)
+          .replaceAll('[classId]', classId);
+      
+      print('🏫 [SCHOOLS] Class Teachers URL: $url');
+
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+
+      print('🏫 [SCHOOLS] Class Teachers status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ClassTeachersResponse.fromJson(jsonData);
+      } else {
+        throw SchoolsException(
+            'Failed to get class teachers. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error getting class teachers: $e');
+      if (e is SchoolsException) rethrow;
+      throw SchoolsException('Network error: ${e.toString()}');
+    }
+  }
 
   /// Get all schools for the current user
   static Future<SchoolsResponse> getAllSchools() async {

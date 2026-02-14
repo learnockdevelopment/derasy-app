@@ -52,6 +52,7 @@ class AppRoutes {
   static const String addChild = '/add-child';
   static const String addChildSteps = '/add-child-steps';
   static const String childDetails = '/child-details';
+  static const String followUp = '/follow-up';
   static const String myStudents = '/my-students';
 
   // Admission Routes
@@ -63,6 +64,7 @@ class AppRoutes {
   static const String buses = '/buses';
   static const String busDetails = '/bus-details';
   static const String busForm = '/bus-form';
+  static const String busLineDetails = '/bus-line-details';
 
   // Store Routes
   static const String store = '/store';

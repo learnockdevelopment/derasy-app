@@ -6,80 +6,76 @@ import 'package:iconly/iconly.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/routes/app_routes.dart';
+import '../models/student_models.dart';
+import 'student_selection_sheet.dart';
 
 class BottomNavBarWidget extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
+  const BottomNavBarWidget({Key? key}) : super(key: key);
 
-  const BottomNavBarWidget({
-    Key? key,
-    required this.currentIndex,
-    required this.onTap,
-  }) : super(key: key);
+  int get _currentIndex {
+    final route = Get.currentRoute;
+    if (route == AppRoutes.home) return 0;
+    if (route == AppRoutes.applications) return 1;
+    if (route == AppRoutes.myStudents) return 2;
+    return 0; // Default to home
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(Responsive.r(35)),
-          topRight: Radius.circular(Responsive.r(35)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        color: Colors.transparent,
       ),
       child: SafeArea(
-        child: Padding(
-          padding: Responsive.symmetric(horizontal: 4, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNavItem(
-                icon: IconlyBroken.home,
-                label: 'home'.tr,
-                index: 0,
-                onTap: () {
-                  if (Get.currentRoute != AppRoutes.home) {
-                    Get.offNamed(AppRoutes.home);
-                  }
-                },
-              ),
-              _buildNavItem(
-                icon: IconlyBroken.profile,
-                label: 'my_students'.tr,
-                index: 1,
-                onTap: () {
-                  if (Get.currentRoute != AppRoutes.myStudents) {
-                    Get.offNamed(AppRoutes.myStudents);
-                  }
-                },
-              ),
-              _buildNavItem(
-                icon: IconlyBroken.document,
-                label: 'applications'.tr,
-                index: 2,
-                onTap: () {
-                  // Navigate to applications page without arguments to show all applications
-                  Get.offNamed(AppRoutes.applications);
-                },
-              ),
-              _buildNavItem(
-                icon: IconlyBroken.bag,
-                label: 'store'.tr,
-                index: 3,
-                onTap: () {
-                  if (Get.currentRoute != AppRoutes.storeProducts) {
-                    Get.offNamed(AppRoutes.storeProducts);
-                  }
-                },
+        child: Container(
+          height: Responsive.h(64), // Reduced height
+          margin: Responsive.symmetric(horizontal: 40, vertical: 10), // Increased margin for smaller width
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(Responsive.r(30)), // Fully rounded
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 5),
               ),
             ],
+          ),
+          child: Padding(
+            padding: Responsive.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  icon: IconlyBold.home, 
+                  label: 'home'.tr,
+                  index: 0,
+                  onTap: () {
+                    if (Get.currentRoute != AppRoutes.home) {
+                      Get.offNamed(AppRoutes.home);
+                    }
+                  },
+                ),
+                _buildNavItem(
+                  icon: IconlyBold.document, 
+                  label: 'applications'.tr,
+                  index: 1,
+                  onTap: () {
+                    Get.offNamed(AppRoutes.applications);
+                  },
+                ),
+                _buildNavItem(
+                  icon: IconlyBold.profile, 
+                  label: 'my_students'.tr,
+                  index: 2,
+                  onTap: () {
+                    if (Get.currentRoute != AppRoutes.myStudents) {
+                      Get.offNamed(AppRoutes.myStudents);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -92,40 +88,42 @@ class BottomNavBarWidget extends StatelessWidget {
     required int index,
     VoidCallback? onTap,
   }) {
-    final isSelected = currentIndex == index;
+    final isSelected = _currentIndex == index;
+    // Simplified item logic for smaller height
     return Expanded(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap ?? () => this.onTap(index),
-          borderRadius: BorderRadius.circular(Responsive.r(12)),
-          child: Container(
-            padding: Responsive.symmetric(horizontal: 2, vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  color: isSelected ? AppColors.blue1 : const Color(0xFF9CA3AF),
-                  size: Responsive.sp(22),
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(Responsive.r(24)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: Responsive.all(isSelected ? 8 : 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.blue1.withOpacity(0.1) : Colors.transparent,
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(height: Responsive.h(4)),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: AppFonts.labelSmall.copyWith(
-                      color: isSelected ? AppColors.blue1 : const Color(0xFF9CA3AF),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      fontSize: Responsive.sp(10),
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: Icon(
+                  icon, 
+                  color: isSelected ? AppColors.blue1 : Colors.black,
+                  size: Responsive.sp(22), 
                 ),
-              ],
-            ),
+              ),
+              // Text is now always visible
+              Text(
+                label,
+                style: AppFonts.labelSmall.copyWith(
+                  color: isSelected ? AppColors.blue1 : Colors.black,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: Responsive.sp(9),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            ],
           ),
         ),
       ),

@@ -363,13 +363,25 @@ class CartItem {
     print('🛒 [CART ITEM MODEL] JSON keys: ${json.keys.toList()}');
     print('🛒 [CART ITEM MODEL] productId: ${json['productId']}');
     print('🛒 [CART ITEM MODEL] product: ${json['product']}');
+    print('🛒 [CART ITEM MODEL] product type: ${json['product'].runtimeType}');
     print('🛒 [CART ITEM MODEL] quantity: ${json['quantity']}');
     print('🛒 [CART ITEM MODEL] price: ${json['price']}');
     print('🛒 [CART ITEM MODEL] subtotal: ${json['subtotal']}');
     
-    final product = json['product'] != null ? Product.fromJson(json['product']) : null;
-    if (product != null) {
-      print('🛒 [CART ITEM MODEL] Product parsed: ${product.titleAr}');
+    // Handle product field - it can be either a Map (full product object) or a String (product ID)
+    Product? product;
+    if (json['product'] != null) {
+      if (json['product'] is Map<String, dynamic>) {
+        product = Product.fromJson(json['product']);
+        print('🛒 [CART ITEM MODEL] Product parsed from object: ${product.titleAr}');
+      } else if (json['product'] is String) {
+        print('🛒 [CART ITEM MODEL] Product is a string ID: ${json['product']}');
+        // Product is just an ID, will be null
+        product = null;
+      } else {
+        print('🛒 [CART ITEM MODEL] Product has unexpected type: ${json['product'].runtimeType}');
+        product = null;
+      }
     } else {
       print('🛒 [CART ITEM MODEL] Product is null');
     }

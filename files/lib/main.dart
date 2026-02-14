@@ -56,9 +56,7 @@ class DerasyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,
-      builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl, // RTL for Arabic
-        child: GetMaterialApp(
+      builder: (context, child) => GetMaterialApp(
           title: 'Derasy',
           translations: AppTranslations(),
           locale: const Locale('ar', 'SA'),
@@ -107,7 +105,6 @@ class DerasyApp extends StatelessWidget {
           initialRoute: AppRoutes.splash,
           debugShowCheckedModeBanner: false,
         ),
-      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../models/bus_models.dart';
+import '../models/bus_line_models.dart';
 import 'user_storage_service.dart';
 
 class BusService {
@@ -214,7 +215,8 @@ class BusService {
   }
 
   // Lines
-  static Future<List<dynamic>> getLines(String schoolId, String busId, {String? date, String? tripType, String? status}) async {
+  static Future<List<BusLine>> getLines(String schoolId, String busId,
+      {String? date, String? tripType, String? status}) async {
     final token = UserStorageService.getAuthToken();
     if (token == null) throw Exception('No authentication token found');
     final params = <String, String>{};
@@ -222,17 +224,25 @@ class BusService {
     if (tripType != null && tripType.isNotEmpty) params['tripType'] = tripType;
     if (status != null && status.isNotEmpty) params['status'] = status;
     final qp = Uri(queryParameters: params).query;
-    final endpoint = ApiConstants.busLinesEndpoint.replaceFirst('[id]', schoolId).replaceFirst('[busId]', busId);
+    final endpoint = ApiConstants.busLinesEndpoint
+        .replaceFirst('[id]', schoolId)
+        .replaceFirst('[busId]', busId);
     final url = '$_baseUrl$endpoint${qp.isNotEmpty ? '?$qp' : ''}';
-    final response = await http.get(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token));
+    final response =
+        await http.get(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token));
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return (json['busLines'] as List?) ?? (json['lines'] as List?) ?? [];
+      final linesList =
+          (json['busLines'] as List?) ?? (json['lines'] as List?) ?? [];
+      return linesList
+          .map((l) => BusLine.fromJson(l as Map<String, dynamic>))
+          .toList();
     }
     throw Exception('Failed to load lines (${response.statusCode})');
   }
 
-  static Future<Map<String, dynamic>> getLine(String schoolId, String busId, String lineId) async {
+  static Future<BusLine> getLine(
+      String schoolId, String busId, String lineId) async {
     final token = UserStorageService.getAuthToken();
     if (token == null) throw Exception('No authentication token found');
     final endpoint = ApiConstants.busLineDetailsEndpoint
@@ -240,26 +250,33 @@ class BusService {
         .replaceFirst('[busId]', busId)
         .replaceFirst('[lineId]', lineId);
     final url = '$_baseUrl$endpoint';
-    final response = await http.get(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token));
+    final response =
+        await http.get(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token));
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return json['busLine'] as Map<String, dynamic>? ?? json;
+      final busLineJson = json['busLine'] as Map<String, dynamic>? ?? json;
+      return BusLine.fromJson(busLineJson);
     }
     throw Exception('Failed to load line (${response.statusCode})');
   }
 
-  static Future<void> createLine(String schoolId, String busId, Map<String, dynamic> data) async {
+  static Future<void> createLine(
+      String schoolId, String busId, Map<String, dynamic> data) async {
     final token = UserStorageService.getAuthToken();
     if (token == null) throw Exception('No authentication token found');
-    final endpoint = ApiConstants.busLinesEndpoint.replaceFirst('[id]', schoolId).replaceFirst('[busId]', busId);
+    final endpoint = ApiConstants.busLinesEndpoint
+        .replaceFirst('[id]', schoolId)
+        .replaceFirst('[busId]', busId);
     final url = '$_baseUrl$endpoint';
-    final response = await http.post(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token), body: jsonEncode(data));
+    final response = await http.post(Uri.parse(url),
+        headers: ApiConstants.getAuthHeaders(token), body: jsonEncode(data));
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to create line (${response.statusCode})');
     }
   }
 
-  static Future<void> updateLine(String schoolId, String busId, String lineId, Map<String, dynamic> data) async {
+  static Future<void> updateLine(String schoolId, String busId, String lineId,
+      Map<String, dynamic> data) async {
     final token = UserStorageService.getAuthToken();
     if (token == null) throw Exception('No authentication token found');
     final endpoint = ApiConstants.busLineDetailsEndpoint
@@ -267,13 +284,15 @@ class BusService {
         .replaceFirst('[busId]', busId)
         .replaceFirst('[lineId]', lineId);
     final url = '$_baseUrl$endpoint';
-    final response = await http.put(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token), body: jsonEncode(data));
+    final response = await http.put(Uri.parse(url),
+        headers: ApiConstants.getAuthHeaders(token), body: jsonEncode(data));
     if (response.statusCode != 200) {
       throw Exception('Failed to update line (${response.statusCode})');
     }
   }
 
-  static Future<void> deleteLine(String schoolId, String busId, String lineId) async {
+  static Future<void> deleteLine(
+      String schoolId, String busId, String lineId) async {
     final token = UserStorageService.getAuthToken();
     if (token == null) throw Exception('No authentication token found');
     final endpoint = ApiConstants.busLineDetailsEndpoint
@@ -281,13 +300,63 @@ class BusService {
         .replaceFirst('[busId]', busId)
         .replaceFirst('[lineId]', lineId);
     final url = '$_baseUrl$endpoint';
-    final response = await http.delete(Uri.parse(url), headers: ApiConstants.getAuthHeaders(token));
+    final response = await http.delete(Uri.parse(url),
+        headers: ApiConstants.getAuthHeaders(token));
     if (response.statusCode != 200) {
       throw Exception('Failed to delete line (${response.statusCode})');
     }
   }
 
-  static Future<Map<String, dynamic>> updateStudentAttendanceAtStation({
+  static Future<BusLine> markStationArrived({
+    required String schoolId,
+    required String busId,
+    required String lineId,
+    required int stationOrder,
+  }) async {
+    final token = UserStorageService.getAuthToken();
+    if (token == null) throw Exception('No authentication token found');
+    final endpoint = ApiConstants.busStationArrivalEndpoint
+        .replaceFirst('[id]', schoolId)
+        .replaceFirst('[busId]', busId)
+        .replaceFirst('[lineId]', lineId)
+        .replaceFirst('[stationOrder]', stationOrder.toString());
+    final url = '$_baseUrl$endpoint';
+    final response = await http.post(Uri.parse(url),
+        headers: ApiConstants.getAuthHeaders(token));
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final busLineJson = json['busLine'] as Map<String, dynamic>? ?? json;
+      return BusLine.fromJson(busLineJson);
+    }
+    throw Exception('Failed to mark station arrival (${response.statusCode})');
+  }
+
+  static Future<BusLine> markStationDeparted({
+    required String schoolId,
+    required String busId,
+    required String lineId,
+    required int stationOrder,
+  }) async {
+    final token = UserStorageService.getAuthToken();
+    if (token == null) throw Exception('No authentication token found');
+    final endpoint = ApiConstants.busStationDepartureEndpoint
+        .replaceFirst('[id]', schoolId)
+        .replaceFirst('[busId]', busId)
+        .replaceFirst('[lineId]', lineId)
+        .replaceFirst('[stationOrder]', stationOrder.toString());
+    final url = '$_baseUrl$endpoint';
+    final response = await http.post(Uri.parse(url),
+        headers: ApiConstants.getAuthHeaders(token));
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final busLineJson = json['busLine'] as Map<String, dynamic>? ?? json;
+      return BusLine.fromJson(busLineJson);
+    }
+    throw Exception(
+        'Failed to mark station departure (${response.statusCode})');
+  }
+
+  static Future<BusLine> updateStudentAttendanceAtStation({
     required String schoolId,
     required String busId,
     required String lineId,
@@ -309,7 +378,9 @@ class BusService {
       'studentId': studentId,
       'attendanceStatus': attendanceStatus,
     };
-    if (attendanceTime != null && attendanceTime.isNotEmpty) payload['attendanceTime'] = attendanceTime;
+    if (attendanceTime != null && attendanceTime.isNotEmpty) {
+      payload['attendanceTime'] = attendanceTime;
+    }
     if (notes != null && notes.isNotEmpty) payload['notes'] = notes;
     final response = await http.post(
       Uri.parse(url),
@@ -317,13 +388,14 @@ class BusService {
       body: jsonEncode(payload),
     );
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final busLineJson = json['busLine'] as Map<String, dynamic>? ?? json;
+      return BusLine.fromJson(busLineJson);
     }
     throw Exception('Failed to update attendance (${response.statusCode})');
   }
 
-  // Bulk update (PUT)
-  static Future<Map<String, dynamic>> bulkUpdateAttendanceAtStation({
+  static Future<BusLine> bulkUpdateAttendanceAtStation({
     required String schoolId,
     required String busId,
     required String lineId,
@@ -345,7 +417,9 @@ class BusService {
       body: jsonEncode(payload),
     );
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final busLineJson = json['busLine'] as Map<String, dynamic>? ?? json;
+      return BusLine.fromJson(busLineJson);
     }
     throw Exception('Failed to update attendance (${response.statusCode})');
   }

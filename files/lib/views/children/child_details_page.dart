@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/utils/responsive_utils.dart' as resp;
 import '../../models/student_models.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/safe_network_image.dart';
@@ -28,7 +29,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
         backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+          icon: Icon(resp.Responsive.isRTL ? Icons.arrow_forward : Icons.arrow_back, color: Colors.white, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -137,98 +138,45 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
             // Compact Action Buttons
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _navigateToApply(),
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 10.h),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.blue1,
-                                AppColors.blue1.withOpacity(0.85),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.blue1.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.school_rounded, size: 16.sp, color: Colors.white),
-                              SizedBox(width: 6.w),
-                              Text(
-                                child.schoolId.id.isNotEmpty ? 'transfer_to_school'.tr : 'apply_to_schools'.tr,
-                                style: AppFonts.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+              child: child.schoolId.id.isNotEmpty
+                  ? Column(
+                      children: [
+                        _buildActionButton(
+                          onTap: () => _navigateToApply(),
+                          icon: Icons.school_rounded,
+                          label: 'transfer_to_school'.tr,
+                          isFullWidth: true,
+                        ),
+                        SizedBox(height: 10.h),
+                        _buildActionButton(
+                          onTap: () => _navigateToFollowUp(),
+                          icon: Icons.history_rounded,
+                          label: 'follow_up'.tr,
+                          isFullWidth: true,
+                          isOutline: true,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            onTap: () => _navigateToApply(),
+                            icon: Icons.school_rounded,
+                            label: 'apply_to_schools'.tr,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _viewApplications(),
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 10.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: AppColors.blue1,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.blue1.withOpacity(0.1),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.assignment_rounded, size: 16.sp, color: AppColors.blue1),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'view_applications'.tr,
-                                style: AppFonts.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                  color: AppColors.blue1,
-                                ),
-                              ),
-                            ],
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: _buildActionButton(
+                            onTap: () => _viewApplications(),
+                            icon: Icons.assignment_rounded,
+                            label: 'view_applications'.tr,
+                            isOutline: true,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
 
             // Information Cards
@@ -425,6 +373,77 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
         'child': widget.child,
       },
     );
+  }
+
+  void _navigateToFollowUp() {
+    Get.toNamed(AppRoutes.followUp, arguments: {
+      'child': widget.child,
+    });
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onTap,
+    required IconData icon,
+    required String label,
+    bool isOutline = false,
+    bool isFullWidth = false,
+  }) {
+    final button = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          width: isFullWidth ? double.infinity : null,
+          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+          decoration: BoxDecoration(
+            gradient: isOutline
+                ? null
+                : LinearGradient(
+                    colors: [
+                      AppColors.blue1,
+                      AppColors.blue1.withOpacity(0.85),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            color: isOutline ? Colors.white : null,
+            borderRadius: BorderRadius.circular(12.r),
+            border: isOutline
+                ? Border.all(
+                    color: AppColors.blue1,
+                    width: 1.5,
+                  )
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.blue1.withOpacity(0.15),
+                blurRadius: isOutline ? 6 : 8,
+                offset: Offset(0, isOutline ? 3 : 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16.sp, color: isOutline ? AppColors.blue1 : Colors.white),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: AppFonts.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12.sp,
+                  color: isOutline ? AppColors.blue1 : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return button;
   }
 }
 

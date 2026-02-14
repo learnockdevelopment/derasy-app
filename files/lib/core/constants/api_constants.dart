@@ -97,6 +97,17 @@ class ApiConstants {
   static const String busLineDetailsEndpoint = '/schools/my/[id]/buses/[busId]/lines/[lineId]';
   static const String busStationAttendanceEndpoint =
       '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/attendance';
+  static const String busStationArrivalEndpoint =
+      '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/arrival';
+  static const String busStationDepartureEndpoint =
+      '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/departure';
+
+  // Schools/Classes Endpoints
+  static const String getClassDetailsEndpoint = '/schools/my/[schoolId]/classes/[classId]';
+
+  // Chat Endpoints
+  static const String chatConversationsEndpoint = '/chat/conversations';
+  static const String chatMessagesEndpoint = '/chat/conversations/[conv_id]/messages';
 
   // Headers
   static Map<String, String> get defaultHeaders => {

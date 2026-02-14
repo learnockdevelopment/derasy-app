@@ -148,9 +148,10 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
     final route = Get.currentRoute;
     if (route == AppRoutes.home) return 0;
     if (route == AppRoutes.myStudents) return 1;
-    if (route == AppRoutes.applications) return 2;
-    if (route == AppRoutes.storeProducts || route == AppRoutes.store) return 3;
-    return 3; // Default to Store
+    if (route == AppRoutes.followUp) return 2;
+    if (route == AppRoutes.applications) return 3;
+    if (route == AppRoutes.storeProducts || route == AppRoutes.store) return 4;
+    return 4; // Default to Store
   }
 
   @override
@@ -159,7 +160,14 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       backgroundColor: Colors.white,
       body: HorizontalSwipeDetector(
         onSwipeRight: () {
-          Get.offNamed(AppRoutes.applications);
+          if (!Responsive.isRTL) {
+            Get.offNamed(AppRoutes.applications);
+          }
+        },
+        onSwipeLeft: () {
+          if (Responsive.isRTL) {
+            Get.offNamed(AppRoutes.applications);
+          }
         },
         child: CustomScrollView(
       slivers: [
@@ -267,10 +275,7 @@ class _StoreProductsPageState extends State<StoreProductsPage> {
       ],
         ),
       ),
-      bottomNavigationBar: BottomNavBarWidget(
-        currentIndex: _getCurrentIndex(),
-        onTap: (index) {},
-      ),
+      bottomNavigationBar: const BottomNavBarWidget(),
       floatingActionButton: DraggableChatbotWidget(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );

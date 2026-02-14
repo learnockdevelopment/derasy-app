@@ -7,6 +7,8 @@ class Responsive {
   static const double mobileBreakpoint = 600;
   static const double tabletBreakpoint = 1024;
 
+  static bool get isRTL => Get.locale?.languageCode == 'ar';
+
   static double get _screenWidth {
     try {
       // Direct ScreenUtil access is safer if Get isn't ready

@@ -300,6 +300,7 @@ class AppColors {
     }
   }
   static const Color cardBackground = white;
+  static const Color itemsBackground = grey50;
 
   // Text Colors
   static Color get textPrimary {

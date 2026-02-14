@@ -7,9 +7,15 @@ import '../core/constants/app_fonts.dart';
 import '../models/student_models.dart';
 import '../services/students_service.dart';
 import 'shimmer_loading.dart';
+import '../core/routes/app_routes.dart';
 
 class StudentSelectionSheet extends StatefulWidget {
-  const StudentSelectionSheet({Key? key}) : super(key: key);
+  final bool onlySchoolStudents;
+
+  const StudentSelectionSheet({
+    Key? key,
+    this.onlySchoolStudents = false,
+  }) : super(key: key);
 
   @override
   State<StudentSelectionSheet> createState() => _StudentSelectionSheetState();
@@ -30,7 +36,11 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
       final response = await StudentsService.getRelatedChildren();
       if (mounted) {
         setState(() {
-          _children = response.success ? response.students : [];
+          List<Student> students = response.success ? response.students : <Student>[];
+          if (widget.onlySchoolStudents) {
+            students = students.where((s) => s.schoolId.id.isNotEmpty).toList();
+          }
+          _children = students;
           _isLoading = false;
         });
       }
@@ -48,6 +58,9 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
@@ -95,11 +108,8 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
           
           Divider(),
           
-          // Content
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.6,
-            ),
+          // Content - Flexible instead of Expanded
+          Flexible(
             child: _isLoading
                 ? _buildLoadingState()
                 : _children.isEmpty
@@ -113,6 +123,39 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                           return _buildStudentItem(_children[index]);
                         },
                       ),
+          ),
+          
+          // Add Student/Application Button (Always Visible)
+          Padding(
+            padding: Responsive.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Get.back(); // Close sheet
+                  Get.toNamed(AppRoutes.addChildSteps);
+                },
+                icon: Icon(
+                  _children.isEmpty ? IconlyBold.document : IconlyBold.profile, 
+                  size: Responsive.sp(20),
+                ),
+                label: Text(
+                  _children.isEmpty ? 'add_new_student'.tr : 'add_student'.tr,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.blue1,
+                  padding: Responsive.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Responsive.r(16)),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -135,27 +178,54 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
   }
 
   Widget _buildEmptyState() {
-    return Padding(
-      padding: Responsive.all(40),
-      child: Column(
-        children: [
-          Icon(
-            IconlyBroken.profile,
-            size: Responsive.sp(64),
-            color: AppColors.grey400,
-          ),
-          SizedBox(height: Responsive.h(16)),
-          Text(
-            'no_children_found'.tr,
-            style: AppFonts.h4.copyWith(color: AppColors.textPrimary),
-          ),
-          SizedBox(height: Responsive.h(8)),
-          Text(
-            'add_child_first_description'.tr,
-            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
+    return Center(
+      child: Padding(
+        padding: Responsive.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+             Container(
+              padding: Responsive.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.blue1.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                IconlyBroken.document,
+                size: Responsive.sp(48),
+                color: AppColors.blue1,
+              ),
+            ),
+            SizedBox(height: Responsive.h(24)),
+            
+            // Main Title
+            Text(
+              'create_smart_profile_title'.tr,
+              textAlign: TextAlign.center,
+              style: AppFonts.h3.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+                height: 1.4,
+              ),
+            ),
+            
+            SizedBox(height: Responsive.h(16)),
+            
+            // Description (Features list)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: Responsive.w(300)),
+              child: Text(
+                'smart_profile_desc'.tr.replaceAll('•', '\n• '), // Format with bullets on new lines for better readability if needed, or keep inline
+                textAlign: TextAlign.center,
+                style: AppFonts.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: Responsive.sp(13),
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -174,7 +244,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
           color: AppColors.grey100.withOpacity(0.5),
           borderRadius: BorderRadius.circular(Responsive.r(16)),
           border: Border.all(color: AppColors.grey200),
-        ),
+          ),
         child: Row(
           children: [
             // Student Avatar

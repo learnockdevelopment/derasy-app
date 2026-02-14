@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../core/controllers/dashboard_controller.dart';
 import '../../models/student_models.dart';
@@ -15,7 +15,7 @@ import '../../services/admission_service.dart';
 import '../../services/schools_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/wallet_service.dart';
-import '../../core/routes/app_routes.dart';
+import '../../core/constants/assets.dart';
 import '../../../widgets/safe_network_image.dart';
 
 class NewAdmissionFlowPage extends StatefulWidget {
@@ -208,11 +208,11 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
         
         // Filter by location
         if (_selectedCity != null) {
-          if (school.location?.city?.toLowerCase() != _selectedCity?.toLowerCase()) {
+          if (school.location?.city.toLowerCase() != _selectedCity?.toLowerCase()) {
             return false;
           }
         }
-        
+
         // Filter by budget
         final fees = school.fees;
         if (fees != null) {
@@ -275,24 +275,22 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
         }
       }
 
-      // Submit applications for each selected school
-      for (final school in _selectedSchools) {
-        try {
-          final request = AdmissionApplyRequest(
-            childId: _selectedChild!.id,
-            schoolId: school.id,
-            applicationType: _studentType == 'new' ? 'new_student' : 'transfer',
-            desiredGrade: _selectedGrade,
-            preferredInterviewSlots: [],
-            notes: _hasHealthIssues ? 'Health Issues: ${_healthIssuesController.text}' : '',
-          );
+      // Submit applications for all selected schools in one batch request
+      try {
+        final selectedSchoolsList = _selectedSchools
+            .map((school) => SelectedSchool.fromSchool(school))
+            .toList();
+            
+        final request = ApplyToSchoolsRequest(
+          childId: _selectedChild!.id,
+          selectedSchools: selectedSchoolsList,
+        );
 
-          await AdmissionService.applyAdmission(request);
-          successCount++;
-        } catch (e) {
-          lastError = e.toString();
-          print('❌ Error applying to ${school.name}: $e');
-        }
+        await AdmissionService.applyToSchools(request);
+        successCount = _selectedSchools.length;
+      } catch (e) {
+        lastError = e.toString();
+        print('❌ Error applying to schools: $e');
       }
 
       if (!mounted) return;
@@ -1177,6 +1175,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
               borderRadius: BorderRadius.circular(Responsive.r(12)),
               child: SafeNetworkImage(
                 imageUrl: school.bannerImage,
+                fallbackAsset: AssetsManager.logo,
                 width: Responsive.w(60),
                 height: Responsive.w(60),
                 fit: BoxFit.cover,
@@ -1232,7 +1231,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
                         Icon(Icons.location_on, size: Responsive.sp(12), color: AppColors.textSecondary),
                         SizedBox(width: Responsive.w(4)),
                         Text(
-                          school.location!.city!,
+                          school.location!.city,
                           style: AppFonts.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                             fontSize: Responsive.sp(11),
@@ -1332,15 +1331,55 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
           
           _buildSummaryCard(
             title: 'selected_schools'.tr,
-            children: _selectedSchools.map((school) {
+            children: _selectedSchools.toList().asMap().entries.map((entry) {
+              final index = entry.key;
+              final school = entry.value;
+              
+              // Preference labels using translation keys
+              String preferenceLabel = '';
+              Color preferenceColor = AppColors.blue1;
+              
+              if (index == 0) {
+                preferenceLabel = 'preference_first'.tr;
+                preferenceColor = AppColors.error; // Red
+              } else if (index == 1) {
+                preferenceLabel = 'preference_second'.tr;
+                preferenceColor = AppColors.success; // Green
+              } else if (index == 2) {
+                preferenceLabel = 'preference_third'.tr;
+                preferenceColor = AppColors.warning; // Yellow
+              }
+              
               return Padding(
                 padding: Responsive.only(bottom: 8),
                 child: Row(
                   children: [
+                    // Preference Order Badge
+                    Container(
+                      width: Responsive.w(32),
+                      height: Responsive.w(32),
+                      decoration: BoxDecoration(
+                        color: preferenceColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(Responsive.r(8)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          preferenceLabel,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: preferenceColor,
+                            fontSize: Responsive.sp(9),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(8)),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(Responsive.r(8)),
                       child: SafeNetworkImage(
                         imageUrl: school.bannerImage,
+                        fallbackAsset: AssetsManager.logo,
                         width: Responsive.w(40),
                         height: Responsive.w(40),
                         fit: BoxFit.cover,
@@ -1357,7 +1396,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
                           ),
                           if (school.location?.city != null)
                             Text(
-                              school.location!.city!,
+                              school.location!.city,
                               style: AppFonts.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                                 fontSize: Responsive.sp(10),

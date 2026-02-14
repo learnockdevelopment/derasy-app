@@ -92,7 +92,7 @@ class _WalletPageState extends State<WalletPage> {
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Responsive.isRTL ? Icons.arrow_forward : Icons.arrow_back),
           onPressed: () => Get.back(),
         ),
         title: Text(

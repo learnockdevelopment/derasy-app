@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../core/constants/assets.dart';
 
-/// Simple network image widget that loads and displays images
-/// Falls back to a placeholder if loading fails
 class SafeNetworkImage extends StatefulWidget {
   final String? imageUrl;
   final double? width;
@@ -12,6 +11,7 @@ class SafeNetworkImage extends StatefulWidget {
   final Widget? placeholder;
   final Widget? errorWidget;
   final BorderRadius? borderRadius;
+  final String? fallbackAsset;
   final Map<String, String>? headers;
 
   const SafeNetworkImage({
@@ -24,6 +24,7 @@ class SafeNetworkImage extends StatefulWidget {
     this.errorWidget,
     this.borderRadius,
     this.headers,
+    this.fallbackAsset,
   }) : super(key: key);
 
   @override
@@ -32,14 +33,12 @@ class SafeNetworkImage extends StatefulWidget {
 
 class _SafeNetworkImageState extends State<SafeNetworkImage> {
   bool _hasError = false;
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     // Reset error state when imageUrl changes
     _hasError = false;
-    _isLoading = true;
   }
 
   @override
@@ -48,7 +47,6 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
     // Reset error state if imageUrl changed
     if (oldWidget.imageUrl != widget.imageUrl) {
       _hasError = false;
-      _isLoading = true;
     }
   }
 
@@ -111,7 +109,6 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 setState(() {
-                  _isLoading = false;
                   _hasError = false; // Clear any previous error state
                 });
               }
@@ -128,7 +125,6 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
             if (mounted && !_hasError) {
               setState(() {
                 _hasError = true;
-                _isLoading = false;
               });
             }
           });
@@ -142,7 +138,6 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
         if (mounted && !_hasError) {
           setState(() {
             _hasError = true;
-            _isLoading = false;
           });
         }
       });
@@ -181,6 +176,23 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
   }
 
   Widget _buildErrorWidget() {
+    if (widget.fallbackAsset != null) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        child: Image.asset(
+          widget.fallbackAsset!,
+          fit: widget.fit,
+          width: widget.width,
+          height: widget.height,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultErrorWidget(),
+        ),
+      );
+    }
+    return _buildDefaultErrorWidget();
+  }
+
+  Widget _buildDefaultErrorWidget() {
     // Calculate icon size safely - ensure it's finite and valid
     double iconSize = 24.0; // Default size
     if (widget.width != null && 
@@ -273,7 +285,7 @@ class SafeSchoolImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final Widget? placeholder;
-  final Widget? errorWidget;
+  final String? fallbackAsset;
 
   const SafeSchoolImage({
     Key? key,
@@ -282,29 +294,13 @@ class SafeSchoolImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.placeholder,
-    this.errorWidget,
+    this.fallbackAsset = AssetsManager.logo,
   }) : super(key: key);
 
-  double _calculateIconSize(double? width, double? height, double ratio) {
-    if (width != null && 
-        height != null && 
-        width > 0 && 
-        height > 0 &&
-        width.isFinite && 
-        height.isFinite) {
-      final smallerDimension = width < height ? width : height;
-      final size = (smallerDimension * ratio).clamp(16.0, 48.0);
-      return size.isFinite ? size : 24.0;
-    }
-    return 24.0;
-  }
 
   @override
   Widget build(BuildContext context) {
-    // Ensure we have valid dimensions for error widget
-    final errorWidth = (width != null && width! > 0 && width!.isFinite) ? width! : 48.0;
-    final errorHeight = (height != null && height! > 0 && height!.isFinite) ? height! : 48.0;
-    
+
     return SafeNetworkImage(
       imageUrl: imageUrl,
       width: width,
@@ -312,22 +308,8 @@ class SafeSchoolImage extends StatelessWidget {
       fit: fit,
       borderRadius: BorderRadius.circular(8.r),
       placeholder: placeholder,
-      errorWidget: errorWidget ??
-          Container(
-            width: errorWidth,
-            height: errorHeight,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6), // Blue color
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.school_rounded,
-                size: _calculateIconSize(errorWidth, errorHeight, 0.6),
-                color: Colors.white,
-              ),
-            ),
-          ),
+      fallbackAsset: fallbackAsset,
+
     );
   }
 }

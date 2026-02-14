@@ -104,7 +104,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.blue1,
         colorText: Colors.white,
+        duration: const Duration(seconds: 2),
       );
+      
+      // Navigate to cart after successful add
+      await Future.delayed(const Duration(milliseconds: 500));
+      Get.toNamed(AppRoutes.storeCart);
     } catch (e) {
       print('🛒 [PRODUCT DETAILS] ❌ Error adding to cart: $e');
       Get.snackbar(
@@ -197,7 +202,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             // Product Images
             if (_product!.images.isNotEmpty)
               SizedBox(
-                height: 300.h,
+                height: 200.h,
                 child: PageView.builder(
                   controller: _imagePageController,
                   itemCount: _product!.images.length,
@@ -217,7 +222,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               )
             else
               Container(
-                height: 300.h,
+                height: 200.h,
                 color: const Color(0xFFF3F4F6),
                 child: Icon(Icons.image_rounded, size: 60.sp, color: const Color(0xFF9CA3AF)),
               ),
@@ -225,7 +230,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             // Product Info
             Container(
               color: Colors.white,
-              padding: EdgeInsets.all(20.w),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -242,7 +247,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               style: AppFonts.h2.copyWith(
                                 color: const Color(0xFF1F2937),
                                 fontWeight: FontWeight.bold,
-                                fontSize: AppFonts.size20,
+                                fontSize: AppFonts.size16,
                               ),
                             ),
                             if (_product!.category != null) ...[
@@ -282,7 +287,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             style: AppFonts.h2.copyWith(
                               color: AppColors.blue1,
                               fontWeight: FontWeight.bold,
-                              fontSize: AppFonts.size24,
+                              fontSize: AppFonts.size18,
                             ),
                           ),
                         ],

@@ -230,10 +230,7 @@ class _SchoolsPageState extends State<SchoolsPage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavBarWidget(
-        currentIndex: 1,
-        onTap: (index) {},
-      ),
+      bottomNavigationBar: const BottomNavBarWidget(),
       floatingActionButton: DraggableChatbotWidget(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
