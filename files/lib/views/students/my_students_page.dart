@@ -479,6 +479,10 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     final educationSystem =
         _schoolEducationSystems[schoolId] ?? child.schoolId.educationSystem;
 
+    final isMale = child.gender.toLowerCase() == 'male' || child.gender == 'ذكر';
+    final studentColor = isMale ? AppColors.blue1 : const Color(0xFFEC407A); // Pink 400 for girls
+    final studentBgColor = studentColor.withOpacity(0.1);
+
     return Container(
         margin: Responsive.only(bottom: 12),
         decoration: BoxDecoration(
@@ -486,7 +490,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
           borderRadius: BorderRadius.circular(Responsive.r(16)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.blue1.withOpacity(0.08),
+              color: studentColor.withOpacity(0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 0,
@@ -510,7 +514,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Responsive.r(20)),
                 border: Border.all(
-                  color: AppColors.blue1.withOpacity(0.1),
+                  color: studentColor.withOpacity(0.15),
                   width: 1,
                 ),
               ),
@@ -556,8 +560,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.blue1,
-                                AppColors.blue1.withOpacity(0.7),
+                                studentColor,
+                                studentColor.withOpacity(0.7),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -565,7 +569,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                             borderRadius: BorderRadius.circular(Responsive.r(12)),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.blue1.withOpacity(0.3),
+                                color: studentColor.withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -602,33 +606,33 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 padding: Responsive.symmetric(
                                     horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.blue2.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(Responsive.r(7)),
-                                  border: Border.all(
-                                    color: AppColors.blue2
-                                        .withOpacity(0.2),
-                                    width: 1,
-                                  ),
+                                    color:
+                                       studentColor.withOpacity(0.1),
+                                   borderRadius: BorderRadius.circular(Responsive.r(7)),
+                                   border: Border.all(
+                                     color: studentColor
+                                         .withOpacity(0.2),
+                                     width: 1,
+                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      IconlyBroken.star,
-                                      color: AppColors.blue2,
-                                      size: Responsive.sp(11),
-                                    ),
-                                    SizedBox(width: Responsive.w(5)),
-                                    Text(
-                                      _translateEducationSystem(
-                                          educationSystem.toString().trim()),
-                                      style: AppFonts.bodySmall.copyWith(
-                                        color: AppColors.blue2,
-                                        fontSize: Responsive.sp(10),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                      Icon(
+                                       IconlyBroken.star,
+                                       color: studentColor,
+                                       size: Responsive.sp(11),
+                                     ),
+                                     SizedBox(width: Responsive.w(5)),
+                                     Text(
+                                       _translateEducationSystem(
+                                           educationSystem.toString().trim()),
+                                       style: AppFonts.bodySmall.copyWith(
+                                         color: studentColor,
+                                         fontSize: Responsive.sp(10),
+                                         fontWeight: FontWeight.w600,
+                                       ),
+                                     ),
                                   ],
                                 ),
                               ),
@@ -640,31 +644,31 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 padding: Responsive.symmetric(
                                     horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
-                                  color: AppColors.blue1.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(Responsive.r(7)),
-                                  border: Border.all(
-                                    color:
-                                        AppColors.blue1.withOpacity(0.2),
-                                    width: 1,
-                                  ),
+                                   color: studentColor.withOpacity(0.1),
+                                   borderRadius: BorderRadius.circular(Responsive.r(7)),
+                                   border: Border.all(
+                                     color:
+                                         studentColor.withOpacity(0.2),
+                                     width: 1,
+                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      IconlyBroken.document,
-                                      color: AppColors.blue1,
-                                      size: Responsive.sp(11),
-                                    ),
-                                    SizedBox(width: Responsive.w(5)),
-                                    Text(
-                                      child.grade.name,
-                                      style: AppFonts.bodySmall.copyWith(
-                                        color: AppColors.blue1,
-                                        fontSize: Responsive.sp(10),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                     Icon(
+                                       IconlyBroken.document,
+                                       color: studentColor,
+                                       size: Responsive.sp(11),
+                                     ),
+                                     SizedBox(width: Responsive.w(5)),
+                                     Text(
+                                       child.grade.name,
+                                       style: AppFonts.bodySmall.copyWith(
+                                         color: studentColor,
+                                         fontSize: Responsive.sp(10),
+                                         fontWeight: FontWeight.w600,
+                                       ),
+                                     ),
                                   ],
                                 ),
                               ),
@@ -705,15 +709,15 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 Container(
                                   padding: Responsive.all(5),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppColors.blue1.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
-                                  ),
-                                  child: Icon(
-                                    Icons.flag_rounded,
-                                    color: AppColors.blue1,
-                                    size: Responsive.sp(13),
-                                  ),
+                                     color:
+                                         studentColor.withOpacity(0.1),
+                                     borderRadius: BorderRadius.circular(Responsive.r(7)),
+                                   ),
+                                   child: Icon(
+                                     Icons.flag_rounded,
+                                     color: studentColor,
+                                     size: Responsive.sp(13),
+                                   ),
                                 ),
                                 SizedBox(width: Responsive.w(8)),
                                 Expanded(
@@ -755,15 +759,15 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                 Container(
                                   padding: Responsive.all(5),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppColors.blue1.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(Responsive.r(7)),
-                                  ),
-                                  child: Icon(
-                                    IconlyBroken.document,
-                                    color: AppColors.blue1,
-                                    size: Responsive.sp(13),
-                                  ),
+                                     color:
+                                         studentColor.withOpacity(0.1),
+                                     borderRadius: BorderRadius.circular(Responsive.r(7)),
+                                   ),
+                                   child: Icon(
+                                     IconlyBroken.document,
+                                     color: studentColor,
+                                     size: Responsive.sp(13),
+                                   ),
                                 ),
                                 SizedBox(width: Responsive.w(8)),
                                 Expanded(
@@ -780,15 +784,15 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         ),
                                       ),
                                       SizedBox(height: Responsive.h(1)),
-                                      Text(
-                                        'enrolled_in_school'
-                                            .tr
-                                            .replaceAll('{school}', schoolName),
-                                        style: AppFonts.bodyMedium.copyWith(
-                                          color: AppColors.blue1,
-                                          fontSize: Responsive.sp(12),
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                       Text(
+                                         'enrolled_in_school'
+                                             .tr
+                                             .replaceAll('{school}', schoolName),
+                                         style: AppFonts.bodyMedium.copyWith(
+                                           color: studentColor,
+                                           fontSize: Responsive.sp(12),
+                                           fontWeight: FontWeight.w600,
+                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),

@@ -232,8 +232,12 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
 
   Widget _buildStudentItem(Student child) {
     final hasArabicName = child.arabicFullName != null && child.arabicFullName!.isNotEmpty;
-    final displayName = hasArabicName ? child.arabicFullName! : child.fullName;
+    final fullName = hasArabicName ? child.arabicFullName! : child.fullName;
+    final firstName = fullName.split(' ').first;
     final schoolName = child.schoolId.name.isNotEmpty ? child.schoolId.name : 'no_school'.tr;
+
+    final isMale = child.gender.toLowerCase() == 'male' || child.gender == 'ذكر';
+    final studentColor = isMale ? AppColors.blue1 : const Color(0xFFEC407A);
 
     return InkWell(
       onTap: () => Get.back(result: child),
@@ -241,9 +245,9 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
       child: Container(
         padding: Responsive.all(12),
         decoration: BoxDecoration(
-          color: AppColors.grey100.withOpacity(0.5),
+          color: studentColor.withOpacity(0.04),
           borderRadius: BorderRadius.circular(Responsive.r(16)),
-          border: Border.all(color: AppColors.grey200),
+          border: Border.all(color: studentColor.withOpacity(0.1)),
           ),
         child: Row(
           children: [
@@ -252,8 +256,9 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
               width: Responsive.w(48),
               height: Responsive.w(48),
               decoration: BoxDecoration(
-                color: AppColors.blue1.withOpacity(0.1),
+                color: studentColor.withOpacity(0.1),
                 shape: BoxShape.circle,
+                border: Border.all(color: studentColor.withOpacity(0.2)),
                 image: (child.profileImage != null || child.avatar != null)
                     ? DecorationImage(
                         image: NetworkImage(child.profileImage ?? child.avatar!),
@@ -264,9 +269,9 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
               child: (child.profileImage == null && child.avatar == null)
                   ? Center(
                       child: Text(
-                        _getInitials(displayName),
+                        _getInitials(firstName),
                         style: AppFonts.h4.copyWith(
-                          color: AppColors.blue1,
+                          color: studentColor,
                           fontWeight: FontWeight.bold,
                           fontSize: Responsive.sp(16),
                         ),
@@ -282,7 +287,7 @@ class _StudentSelectionSheetState extends State<StudentSelectionSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    displayName,
+                    firstName,
                     style: AppFonts.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
