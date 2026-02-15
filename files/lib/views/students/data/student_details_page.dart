@@ -9,10 +9,6 @@ import '../../../core/constants/api_constants.dart';
 import '../../../services/user_storage_service.dart';
 import '../../../widgets/safe_network_image.dart';
 import '../management/edit_student_page.dart';
-import 'guardians/guardians_page.dart';
-import 'pickup_permissions/pickup_permissions_page.dart';
-import 'clinic_records/clinic_records_page.dart';
-import 'student_attendance/student_attendance_page.dart';
 
 class StudentDetailsPage extends StatefulWidget {
   final Student student;
@@ -220,30 +216,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
         'label': 'quick_edit'.tr,
         'color': const Color(0xFF3B82F6),
         'onTap': _editStudent,
-      },
-      {
-        'icon': Icons.family_restroom_rounded,
-        'label': 'quick_guardians'.tr,
-        'color': const Color(0xFF10B981),
-        'onTap': _manageGuardians,
-      },
-      {
-        'icon': Icons.calendar_today_rounded,
-        'label': 'quick_attendance'.tr,
-        'color': const Color(0xFFF59E0B),
-        'onTap': _viewAttendance,
-      },
-      {
-        'icon': Icons.car_rental_rounded,
-        'label': 'quick_pickup'.tr,
-        'color': const Color(0xFF8B5CF6),
-        'onTap': _managePickupPermissions,
-      },
-      {
-        'icon': Icons.local_hospital_rounded,
-        'label': 'quick_clinic'.tr,
-        'color': const Color(0xFFEF4444),
-        'onTap': _viewClinicRecords,
       },
       {
         'icon': Icons.delete_rounded,
@@ -860,117 +832,8 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     }
   }
 
-  void _manageGuardians() async {
-    if (widget.schoolId == null || widget.schoolId!.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'school_id_required_to_manage_guardians'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-      return;
-    }
 
-    try {
-      Get.to(() => GuardiansPage(
-            student: widget.student,
-            schoolId: widget.schoolId!,
-          ));
-    } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_open_guardians_page'.tr + ': ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    }
-  }
 
-  void _viewAttendance() async {
-    if (widget.schoolId == null || widget.schoolId!.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'School ID is required to view attendance',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    try {
-      Get.to(() => StudentAttendancePage(
-            student: widget.student,
-            schoolId: widget.schoolId!,
-          ));
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to open attendance page: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  void _managePickupPermissions() async {
-    if (widget.schoolId == null || widget.schoolId!.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'School ID is required to manage pickup permissions',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    try {
-      Get.to(() => PickupPermissionsPage(
-            student: widget.student,
-            schoolId: widget.schoolId!,
-          ));
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to open pickup permissions page: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  void _viewClinicRecords() async {
-    if (widget.schoolId == null || widget.schoolId!.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'School ID is required to view clinic records',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    try {
-      Get.to(() => ClinicRecordsPage(
-            student: widget.student,
-            schoolId: widget.schoolId!,
-          ));
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to open clinic records page: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-      );
-    }
-  }
 
   void _deleteStudent() async {
     if (widget.schoolId == null || widget.schoolId!.isEmpty) {

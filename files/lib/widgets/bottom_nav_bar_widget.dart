@@ -28,11 +28,15 @@ class BottomNavBarWidget extends StatelessWidget {
       ),
       child: SafeArea(
         child: Container(
-          height: Responsive.h(64), // Reduced height
+          height: Responsive.h(70), // Increased height to prevent overflow
           margin: Responsive.symmetric(horizontal: 40, vertical: 10), // Increased margin for smaller width
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(Responsive.r(30)), // Fully rounded
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),

@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/controllers/dashboard_controller.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../models/admission_models.dart';
 import '../../services/admission_service.dart';
 import '../../services/user_storage_service.dart';
-import '../../core/controllers/dashboard_controller.dart';
 import '../../widgets/shimmer_loading.dart';
 
 class ApplicationDetailsPage extends StatefulWidget {

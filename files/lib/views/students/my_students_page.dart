@@ -15,7 +15,6 @@ import '../../widgets/shimmer_loading.dart';
 import '../../widgets/hero_section_widget.dart';
 import '../../core/controllers/dashboard_controller.dart';
 import '../../widgets/horizontal_swipe_detector.dart';
-import '../../widgets/student_selection_sheet.dart';
 
 class MyStudentsPage extends StatefulWidget { 
   const MyStudentsPage({Key? key}) : super(key: key);
@@ -67,12 +66,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
   void _syncWithController() {
     final controller = DashboardController.to;
-    
-    // Initial sync
     _updateLocalState(controller.relatedChildren, controller.allApplications);
-    
-    // We'll use Obx in the build method for reactivity, 
-    // but we still need to filter when data arrives.
   }
 
   void _updateLocalState(List<Student> students, List<Application> applications) {
@@ -177,36 +171,18 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       body: HorizontalSwipeDetector(
         onSwipeRight: () {
           if (Responsive.isRTL) {
-            // Swipe to Follow Up (index 2)
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const StudentSelectionSheet(onlySchoolStudents: true),
-            ).then((selectedStudent) {
-              if (selectedStudent != null && selectedStudent is Student) {
-                Get.toNamed(AppRoutes.followUp, arguments: {'child': selectedStudent});
-              }
-            });
+            // RTL: Swipe Right -> Next Index (2 -> None)
           } else {
-            Get.offNamed(AppRoutes.home);
+            // LTR: Swipe Right -> Previous Index (2 -> 1)
+            Get.offNamed(AppRoutes.applications);
           }
         },
         onSwipeLeft: () {
           if (Responsive.isRTL) {
-            Get.offNamed(AppRoutes.home);
+            // RTL: Swipe Left -> Previous Index (2 -> 1)
+            Get.offNamed(AppRoutes.applications);
           } else {
-            // Swipe to Follow Up (index 2)
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const StudentSelectionSheet(onlySchoolStudents: true),
-            ).then((selectedStudent) {
-              if (selectedStudent != null && selectedStudent is Student) {
-                Get.toNamed(AppRoutes.followUp, arguments: {'child': selectedStudent});
-              }
-            });
+            // LTR: Swipe Left -> Next Index (2 -> None)
           }
         },
         child: RefreshIndicator(
@@ -236,6 +212,8 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                       userData: _userData,
                       pageTitle: 'my_students'.tr,
                       showGreeting: false,
+                      showFeatures: false,
+                      borderRadius: 20,
                     ),
                   ),
                 ),
@@ -481,7 +459,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
     final isMale = child.gender.toLowerCase() == 'male' || child.gender == 'ذكر';
     final studentColor = isMale ? AppColors.blue1 : const Color(0xFFEC407A); // Pink 400 for girls
-    final studentBgColor = studentColor.withOpacity(0.1);
+    studentColor.withOpacity(0.1);
 
     return Container(
         margin: Responsive.only(bottom: 12),

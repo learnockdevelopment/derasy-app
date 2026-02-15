@@ -3,8 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../models/student_models.dart';
-import '../../../services/students_service.dart';
 import '../../../services/grades_service.dart';
+import '../../../services/students_service.dart';
 import '../../../utils/egyptian_national_id_parser.dart';
 import '../data/student_details_page.dart';
 import '../../../widgets/step_navigation.dart';
@@ -1084,7 +1084,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
               ),
             ),
             items: _grades.isEmpty
-                ? []
+                ? <DropdownMenuItem<String>>[]
                 : _grades.map((grade) {
                     print(
                         '🎓 [DROPDOWN] Creating item for grade: ${grade.name} (ID: ${grade.id})');

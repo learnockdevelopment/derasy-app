@@ -102,9 +102,12 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (Responsive.isRTL)
-                            Padding(
-                              padding: Responsive.only(right: 4),
-                              child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
+                            GestureDetector(
+                              onTap: () => setState(() => _showHint = false),
+                              child: Padding(
+                                padding: Responsive.only(right: 4),
+                                child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
+                              ),
                             ),
                           Text(
                             'need_help_hint'.tr,
@@ -115,9 +118,12 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
                             ),
                           ),
                           if (!Responsive.isRTL)
-                            Padding(
-                              padding: Responsive.only(left: 4),
-                              child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
+                            GestureDetector(
+                              onTap: () => setState(() => _showHint = false),
+                              child: Padding(
+                                padding: Responsive.only(left: 4),
+                                child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
+                              ),
                             ),
                         ],
                       ),

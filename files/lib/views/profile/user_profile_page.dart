@@ -12,7 +12,7 @@ import '../../services/user_profile_service.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../core/controllers/dashboard_controller.dart';
-import '../../models/wallet_models.dart';
+
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({Key? key}) : super(key: key);
@@ -319,10 +319,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
               _buildUserInfoSection(),
               SizedBox(height: Responsive.h(16)),
 
-              // Wallet Section
-              _buildWalletSection(),
-              SizedBox(height: Responsive.h(16)),
-
               // Logout Button
               _buildLogoutButton(),
               SizedBox(height: Responsive.h(32)),
@@ -582,179 +578,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildWalletSection() {
-    // Get wallet from DashboardController
-    final wallet = DashboardController.to.wallet.value;
-    
-    // If no wallet data, don't show the section
-    if (wallet == null) {
-      return const SizedBox.shrink();
-    }
-    
-    final balance = wallet.balance?.toStringAsFixed(2) ?? '0.00';
-    final currency = wallet.currency ?? 'EGP';
-    
-    // Use the same gradient design as Home Page but smaller
-    return Container(
-      width: double.infinity,
-      padding: Responsive.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A), // Midnight Dark Blue
-        borderRadius: BorderRadius.circular(Responsive.r(16)),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0F172A), // Dark Slate
-            const Color(0xFF1E293B), // Slate 800
-            const Color(0xFF334155), // Slate 700
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Balance Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'current_balance'.tr,
-                    style: AppFonts.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: Responsive.sp(10),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(3)),
-                  Text(
-                    '$balance $currency',
-                    style: AppFonts.h1.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: Responsive.sp(20),
-                      height: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-              // Transactions Button
-              Material(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(Responsive.r(10)),
-                child: InkWell(
-                  onTap: () => Get.toNamed(AppRoutes.wallet),
-                  borderRadius: BorderRadius.circular(Responsive.r(10)),
-                  child: Padding(
-                    padding: Responsive.symmetric(horizontal: 8, vertical: 5),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(IconlyBroken.document, color: Colors.white, size: Responsive.sp(12)),
-                        SizedBox(width: Responsive.w(4)),
-                        Text(
-                          'transactions'.tr,
-                          style: AppFonts.bodySmall.copyWith(
-                            color: Colors.white,
-                            fontSize: Responsive.sp(10),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: Responsive.h(12)),
-          // Deposit and Withdraw Buttons
-          Row(
-            children: [
-              // Deposit Button
-              Expanded(
-                child: Material(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(Responsive.r(10)),
-                  child: InkWell(
-                    onTap: () => Get.toNamed(AppRoutes.walletDeposit),
-                    borderRadius: BorderRadius.circular(Responsive.r(10)),
-                    child: Padding(
-                      padding: Responsive.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline_rounded,
-                            color: Colors.white,
-                            size: Responsive.sp(16),
-                          ),
-                          SizedBox(width: Responsive.w(6)),
-                          Text(
-                            'deposit'.tr,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: Colors.white,
-                              fontSize: Responsive.sp(12),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: Responsive.w(10)),
-              // Withdraw Button
-              Expanded(
-                child: Material(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(Responsive.r(10)),
-                  child: InkWell(
-                    onTap: () => Get.toNamed(AppRoutes.walletWithdraw),
-                    borderRadius: BorderRadius.circular(Responsive.r(10)),
-                    child: Padding(
-                      padding: Responsive.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.remove_circle_outline_rounded,
-                            color: Colors.white,
-                            size: Responsive.sp(16),
-                          ),
-                          SizedBox(width: Responsive.w(6)),
-                          Text(
-                            'withdraw'.tr,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: Colors.white,
-                              fontSize: Responsive.sp(12),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+
 
 
   Widget _buildLogoutButton() {

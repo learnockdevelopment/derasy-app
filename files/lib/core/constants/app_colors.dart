@@ -4,8 +4,8 @@ import '../../core/controllers/app_config_controller.dart';
 class AppColors {
 
   // Primary Color Variants
-  static const Color blue1 = Color(0xFF0ea5e9);
-  static const Color blue2 = Color(0xFF00e1b5);
+  static const Color blue1 = Color(0xFF22adf1);
+  static const Color blue2 = Color(0xFF00deb8);
 
   // Selection Colors
   static const Color selectedBlue = Color(0xFF7AC1FF);

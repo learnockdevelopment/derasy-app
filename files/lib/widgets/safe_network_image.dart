@@ -294,7 +294,7 @@ class SafeSchoolImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.placeholder,
-    this.fallbackAsset = AssetsManager.logo,
+    this.fallbackAsset = AssetsManager.login,
   }) : super(key: key);
 
 

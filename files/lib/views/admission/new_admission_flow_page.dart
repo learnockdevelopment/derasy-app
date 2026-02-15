@@ -1175,7 +1175,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
               borderRadius: BorderRadius.circular(Responsive.r(12)),
               child: SafeNetworkImage(
                 imageUrl: school.bannerImage,
-                fallbackAsset: AssetsManager.logo,
+                fallbackAsset: AssetsManager.login,
                 width: Responsive.w(60),
                 height: Responsive.w(60),
                 fit: BoxFit.cover,
@@ -1379,7 +1379,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> {
                       borderRadius: BorderRadius.circular(Responsive.r(8)),
                       child: SafeNetworkImage(
                         imageUrl: school.bannerImage,
-                        fallbackAsset: AssetsManager.logo,
+                        fallbackAsset: AssetsManager.login,
                         width: Responsive.w(40),
                         height: Responsive.w(40),
                         fit: BoxFit.cover,

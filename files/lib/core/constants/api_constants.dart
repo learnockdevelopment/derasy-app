@@ -56,27 +56,19 @@ class ApiConstants {
   static const String updateApplicationStatusEndpoint = '/me/applications/school/my/[id]/status';
 
   // Guardians Endpoints
-  static const String updateStudentGuardiansEndpoint =
-      '/schools/my/[id]/students/[studentId]';
+
 
   // Pickup Permissions Endpoints
-  static const String getPickupPermissionsEndpoint =
-      '/schools/my/[id]/students/[studentId]/pickup-permission';
-  static const String addPickupPermissionEndpoint =
-      '/schools/my/[id]/students/[studentId]/pickup-permission';
+
 
   // Clinic Records Endpoints
-  static const String getStudentClinicRecordsEndpoint =
-      '/schools/my/[id]/clinic/students/[studentId]';
+
 
   // Attendance Endpoints
-  static const String getAllAttendanceEndpoint = '/attendance';
+
 
   // Public Endpoints (No Auth Required)
   static const String appConfigEndpoint = '/public/app-config';
-  static const String createAttendanceEndpoint = '/attendance/create';
-  static const String getAttendanceByChildEndpoint =
-      '/attendance/by-child/[childId]';
 
   // Schools Endpoints
   static const String getAllSchoolsEndpoint = '/schools';
@@ -85,29 +77,13 @@ class ApiConstants {
   static const String chatbotEndpoint = '/chatbot';
 
   // Bus Endpoints
-  static const String getBusesEndpoint = '/schools/my/[id]/buses';
-  static const String getBusDetailsEndpoint = '/schools/my/[id]/buses/[busId]';
-  static const String createBusEndpoint = '/schools/my/[id]/buses';
-  static const String updateBusEndpoint = '/schools/my/[id]/buses/[busId]';
-  static const String deleteBusEndpoint = '/schools/my/[id]/buses/[busId]';
-  static const String busRoutesEndpoint = '/schools/my/[id]/buses/[busId]/routes';
-  static const String busStudentsEndpoint = '/schools/my/[id]/buses/[busId]/students';
-  static const String busLocationEndpoint = '/schools/my/[id]/buses/[busId]/location';
-  static const String busLinesEndpoint = '/schools/my/[id]/buses/[busId]/lines';
-  static const String busLineDetailsEndpoint = '/schools/my/[id]/buses/[busId]/lines/[lineId]';
-  static const String busStationAttendanceEndpoint =
-      '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/attendance';
-  static const String busStationArrivalEndpoint =
-      '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/arrival';
-  static const String busStationDepartureEndpoint =
-      '/schools/my/[id]/buses/[busId]/lines/[lineId]/stations/[stationOrder]/departure';
+
 
   // Schools/Classes Endpoints
-  static const String getClassDetailsEndpoint = '/schools/my/[schoolId]/classes/[classId]';
+
 
   // Chat Endpoints
-  static const String chatConversationsEndpoint = '/chat/conversations';
-  static const String chatMessagesEndpoint = '/chat/conversations/[conv_id]/messages';
+
 
   // Headers
   static Map<String, String> get defaultHeaders => {

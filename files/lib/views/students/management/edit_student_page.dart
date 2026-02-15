@@ -1047,11 +1047,11 @@ class _EditStudentPageState extends State<EditStudentPage> {
               ),
             ),
             items: _grades.isEmpty
-                ? []
+                ? <DropdownMenuItem<String>>[]
                 : _grades.map((grade) {
                     return DropdownMenuItem<String>(
                       value: grade.id,
-                      child: Text(
+                      child: Text( 
                         grade.name,
                         style: AppFonts.bodyMedium.copyWith(
                           color: const Color(0xFF1F2937),

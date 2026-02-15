@@ -147,14 +147,6 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                           label: 'transfer_to_school'.tr,
                           isFullWidth: true,
                         ),
-                        SizedBox(height: 10.h),
-                        _buildActionButton(
-                          onTap: () => _navigateToFollowUp(),
-                          icon: Icons.history_rounded,
-                          label: 'follow_up'.tr,
-                          isFullWidth: true,
-                          isOutline: true,
-                        ),
                       ],
                     )
                   : Row(
@@ -375,11 +367,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     );
   }
 
-  void _navigateToFollowUp() {
-    Get.toNamed(AppRoutes.followUp, arguments: {
-      'child': widget.child,
-    });
-  }
+
 
   Widget _buildActionButton({
     required VoidCallback onTap,

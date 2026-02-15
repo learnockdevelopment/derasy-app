@@ -3,12 +3,9 @@ import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
-import '../core/routes/app_routes.dart';
 import 'safe_network_image.dart';
 import 'shimmer_loading.dart';
 
-/// Reusable top app bar widget that displays user avatar, name, email, and cart icon
-/// Can be used as a SliverAppBar in CustomScrollView
 class TopAppBarWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
   final bool showLoading;
@@ -97,37 +94,6 @@ class TopAppBarWidget extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                           ],
-                        ),
-                      ),
-                      // Cart Icon (only shown when showCart is true)
-                      if (showCart)
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                            onTap: () {
-                              // Prevent double navigation
-                              if (Get.currentRoute != AppRoutes.storeCart) {
-                                Get.toNamed(AppRoutes.storeCart);
-                              }
-                            },
-                          borderRadius: BorderRadius.circular(Responsive.r(12)),
-                          child: Container(
-                            padding: Responsive.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(Responsive.r(12)),
-                            ),
-                            child: Stack(
-                              children: [
-                                Icon(
-                                  Icons.shopping_cart_rounded,
-                                  color: Colors.white,
-                                  size: Responsive.sp(24),
-                                ),
-                                // Badge for cart items count (optional - can be added later)
-                              ],
-                            ),
-                          ),
                         ),
                       ),
                     ],

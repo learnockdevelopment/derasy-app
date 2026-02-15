@@ -3,340 +3,113 @@ import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../models/school_models.dart';
 import '../models/school_suggestion_models.dart';
-import '../models/class_teacher_models.dart';
 import 'user_storage_service.dart';
-import 'schools_cache_service.dart';
+
+
 
 class SchoolsService {
   static const String _baseUrl = ApiConstants.baseUrl;
 
-  /// Get teachers for a specific class in a school
-  static Future<ClassTeachersResponse> getClassTeachers(
-      String schoolId, String classId) async {
-    try {
-      print('🏫 [SCHOOLS] Getting teachers for school $schoolId, class $classId');
-
-      final token = UserStorageService.getAuthToken();
-      if (token == null) {
-        throw SchoolsException('No authentication token found');
-      }
-
-      final url = '$_baseUrl${ApiConstants.getClassDetailsEndpoint}'
-          .replaceAll('[schoolId]', schoolId)
-          .replaceAll('[classId]', classId);
-      
-      print('🏫 [SCHOOLS] Class Teachers URL: $url');
-
-      final headers = ApiConstants.getAuthHeaders(token);
-
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
-
-      print('🏫 [SCHOOLS] Class Teachers status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return ClassTeachersResponse.fromJson(jsonData);
-      } else {
-        throw SchoolsException(
-            'Failed to get class teachers. Status: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('🏫 [SCHOOLS] Error getting class teachers: $e');
-      if (e is SchoolsException) rethrow;
-      throw SchoolsException('Network error: ${e.toString()}');
-    }
-  }
-
-  /// Get all schools for the current user
+  // Get all schools with optional pagination/filtering (though API seems to return all or list)
   static Future<SchoolsResponse> getAllSchools() async {
     try {
-      print('🏫 [SCHOOLS] Getting all schools for user');
-
-      // Check cache first
-      final cachedSchools = SchoolsCacheService.getCachedSchools();
-      if (cachedSchools != null) {
-        print(
-            '🏫 [SCHOOLS] Returning cached schools (${cachedSchools.length} schools)');
-        return SchoolsResponse(
-          success: true,
-          message: 'Schools loaded from cache',
-          schools: cachedSchools,
-        );
-      }
-
-      // Get stored token
       final token = UserStorageService.getAuthToken();
-      if (token == null) {
-        throw SchoolsException('No authentication token found');
-      }
-
+      final headers = ApiConstants.getHeaders(token: token);
       final url = '$_baseUrl${ApiConstants.getAllSchoolsEndpoint}';
-      print('🏫 [SCHOOLS] URL: $url');
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      print('🏫 [SCHOOLS] Headers: $headers');
-
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
-
+      
+      print('🏫 [SCHOOLS] Fetching all schools: $url');
+      
+      final response = await http.get(Uri.parse(url), headers: headers);
+      
       print('🏫 [SCHOOLS] Response status: ${response.statusCode}');
-      print('🏫 [SCHOOLS] Response body: ${response.body}');
-
+      
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        
-        // Handle case where API returns a list directly instead of an object
-        SchoolsResponse schoolsResponse;
-        if (jsonData is List) {
-          // API returned a list directly
-          print('🏫 [SCHOOLS] API returned list directly, converting to response format');
-          schoolsResponse = SchoolsResponse(
-            success: true,
-            message: 'Schools loaded successfully',
-            schools: jsonData
-                .map((school) => school is Map<String, dynamic>
-                    ? School.fromJson(school)
-                    : null)
-                .where((school) => school != null)
-                .cast<School>()
-                .toList(),
-          );
-        } else if (jsonData is Map<String, dynamic>) {
-          // API returned an object with schools array
-          schoolsResponse = SchoolsResponse.fromJson(jsonData);
-        } else {
-          throw SchoolsException('Unexpected response format from server');
-        }
-
-        // Cache the schools data
-        if (schoolsResponse.schools.isNotEmpty) {
-          SchoolsCacheService.cacheSchools(schoolsResponse.schools);
-        }
-
-        return schoolsResponse;
-      } else if (response.statusCode == 403) {
-        final jsonData = json.decode(response.body);
-        final error = SchoolsError.fromJson(jsonData);
-        throw SchoolsException('Unauthorized access: ${error.message}',
-            error: error);
-      } else if (response.statusCode == 500) {
-        // Try to return cached data as fallback for server errors
-        final cachedSchools = SchoolsCacheService.getCachedSchools();
-        if (cachedSchools != null && cachedSchools.isNotEmpty) {
-          print('🏫 [SCHOOLS] Server error 500, returning cached schools as fallback');
-          return SchoolsResponse(
-            success: true,
-            message: 'Schools loaded from cache (server temporarily unavailable)',
-            schools: cachedSchools,
-          );
-        }
-        
-        final jsonData = json.decode(response.body);
-        final error = SchoolsError.fromJson(jsonData);
-        throw SchoolsException('Server error: ${error.message}', error: error);
+        final json = jsonDecode(response.body);
+        return SchoolsResponse.fromJson(json);
       } else {
-        throw SchoolsException(
-            'Failed to get schools. Status: ${response.statusCode}');
+        throw SchoolsException('Failed to load schools: ${response.statusCode}');
       }
     } catch (e) {
-      print('🏫 [SCHOOLS] Error getting schools: $e');
+      print('🏫 [SCHOOLS] Error: $e');
+      throw SchoolsException('Network error: $e');
+    }
+  }
+
+  // Get single school by ID
+  static Future<School> getSchoolById(String id) async {
+    try {
+      final token = UserStorageService.getAuthToken();
+      final headers = ApiConstants.getHeaders(token: token);
+      // Assuming endpoint is /schools/[id]
+      final url = '$_baseUrl${ApiConstants.getAllSchoolsEndpoint}/$id';
       
-      // If it's a network/server error, try to return cached data as fallback
-      if (e is SchoolsException && e.message.contains('Server error')) {
-        final cachedSchools = SchoolsCacheService.getCachedSchools();
-        if (cachedSchools != null && cachedSchools.isNotEmpty) {
-          print('🏫 [SCHOOLS] Returning cached schools as fallback after error');
-          return SchoolsResponse(
-            success: true,
-            message: 'Schools loaded from cache (server temporarily unavailable)',
-            schools: cachedSchools,
-          );
+      print('🏫 [SCHOOLS] Fetching school details: $url');
+      
+      final response = await http.get(Uri.parse(url), headers: headers);
+      
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json is Map<String, dynamic>) {
+           // Check if wrapped in 'school' or 'data'
+           if (json.containsKey('school')) {
+             return School.fromJson(json['school']);
+           } else if (json.containsKey('data')) {
+             return School.fromJson(json['data']);
+           }
+           // Or direct object
+           return School.fromJson(json);
         }
+        throw SchoolsException('Invalid response format');
+      } else {
+        throw SchoolsException('Failed to load school details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error: $e');
+      throw SchoolsException('Network error: $e');
+    }
+  }
+
+  // Suggest schools based on preferences (Mock implementation or client-side filter)
+  static Future<SchoolSuggestionResponse> suggestThree(SchoolSuggestionRequest request) async {
+    try {
+      // Since no dedicated endpoint exists in ApiConstants, perform client-side filtering
+      print('🏫 [SCHOOLS] Suggesting schools based on preferences...');
+      
+      var filtered = request.schools;
+      final prefs = request.preferences;
+
+      // Filter by Type
+      if (prefs.type != null && prefs.type!.isNotEmpty) {
+        filtered = filtered.where((s) => s.type?.toLowerCase() == prefs.type!.toLowerCase()).toList();
       }
       
-      if (e is SchoolsException) {
-        rethrow;
-      } else {
-        throw SchoolsException('Network error: ${e.toString()}');
-      }
-    }
-  }
-
-  /// Get a single school by ID
-  static Future<School> getSchoolById(String schoolId) async {
-    try {
-      print('🏫 [SCHOOLS] Getting school by ID: $schoolId');
-
-      // Get stored token
-      final token = UserStorageService.getAuthToken();
-      if (token == null) {
-        throw SchoolsException('No authentication token found');
+      // Filter by Language
+      if (prefs.language != null && prefs.language!.isNotEmpty) {
+        filtered = filtered.where((s) => s.languages.any((l) => l.toLowerCase().contains(prefs.language!.toLowerCase()))).toList();
       }
 
-      final url = '$_baseUrl/schools/my/$schoolId';
-      print('🏫 [SCHOOLS] Get school URL: $url');
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
-
-      print('🏫 [SCHOOLS] Get school response status: ${response.statusCode}');
-      print('🏫 [SCHOOLS] Get school response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        if (jsonData is Map<String, dynamic>) {
-          // Handle response with "school" wrapper
-          if (jsonData.containsKey('school')) {
-            return School.fromJson(jsonData['school']);
-          }
-          // Handle direct school object
-          return School.fromJson(jsonData);
-        } else {
-          throw SchoolsException('Unexpected response format from server');
-        }
-      } else if (response.statusCode == 403) {
-        final jsonData = json.decode(response.body);
-        final error = SchoolsError.fromJson(jsonData);
-        throw SchoolsException('Unauthorized access: ${error.message}',
-            error: error);
-      } else if (response.statusCode == 404) {
-        throw SchoolsException('School not found');
-      } else {
-        throw SchoolsException(
-            'Failed to get school. Status: ${response.statusCode}');
+      // Filter by max fee
+      if (prefs.maxFee != null) {
+        filtered = filtered.where((s) {
+           if (s.feesRange != null) return s.feesRange!.min <= prefs.maxFee!;
+           if (s.admissionFee != null) return s.admissionFee!.amount <= prefs.maxFee!;
+           return true; // Keep if no fee info
+        }).toList();
       }
+
+      // Take top 3
+      final top3 = filtered.take(3).toList();
+      final ids = top3.map((s) => s.id).toList();
+
+      return SchoolSuggestionResponse(
+        message: 'Here are the best matches based on your criteria.',
+        suggestedIds: ids,
+        markdown: '### Top Recommendations\n\n' + top3.map((s) => '- **${s.name}**\n  Loc: ${s.location?.city ?? "Unknown"}\n  Type: ${s.type ?? "N/A"}').join('\n'),
+      );
+
     } catch (e) {
-      print('🏫 [SCHOOLS] Error getting school by ID: $e');
-      if (e is SchoolsException) {
-        rethrow;
-      } else {
-        throw SchoolsException('Network error: ${e.toString()}');
-      }
-    }
-  }
-
-  /// Search schools by query
-  static Future<SchoolsResponse> searchSchools(String query) async {
-    try {
-      print('🏫 [SCHOOLS] Searching schools with query: $query');
-
-      // Get stored token
-      final token = UserStorageService.getAuthToken();
-      if (token == null) {
-        throw SchoolsException('No authentication token found');
-      }
-
-      final url =
-          '$_baseUrl${ApiConstants.getAllSchoolsEndpoint}?search=$query';
-      print('🏫 [SCHOOLS] Search URL: $url');
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
-
-      print('🏫 [SCHOOLS] Search response status: ${response.statusCode}');
-      print('🏫 [SCHOOLS] Search response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return SchoolsResponse.fromJson(jsonData);
-      } else if (response.statusCode == 403) {
-        final jsonData = json.decode(response.body);
-        final error = SchoolsError.fromJson(jsonData);
-        throw SchoolsException('Unauthorized access: ${error.message}',
-            error: error);
-      } else if (response.statusCode == 500) {
-        final jsonData = json.decode(response.body);
-        final error = SchoolsError.fromJson(jsonData);
-        throw SchoolsException('Server error: ${error.message}', error: error);
-      } else {
-        throw SchoolsException(
-            'Failed to search schools. Status: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('🏫 [SCHOOLS] Error searching schools: $e');
-      if (e is SchoolsException) {
-        rethrow;
-      } else {
-        throw SchoolsException('Network error: ${e.toString()}');
-      }
-    }
-  }
-
-  /// Get school suggestions based on AI analysis
-  static Future<SchoolSuggestionResponse> suggestThree(
-      SchoolSuggestionRequest request) async {
-    try {
-      print('🏫 [SCHOOLS] Getting AI suggestions');
-
-      // Get stored token
-      final token = UserStorageService.getAuthToken();
-      if (token == null) {
-        throw SchoolsException('No authentication token found');
-      }
-
-      // Hardcoded endpoint for now per requirements, or we can use constant
-      // Assuming endpoint is /api/schools/suggest-three
-      final url = '$_baseUrl/schools/suggest-three';
-      print('🏫 [SCHOOLS] Suggest URL: $url');
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      final body = json.encode(request.toJson());
-      // print('🏫 [SCHOOLS] Suggest Body: $body'); // Debug only, might be large
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: body,
-      ).timeout(const Duration(seconds: 30));
-
-      print('🏫 [SCHOOLS] Suggest response status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return SchoolSuggestionResponse.fromJson(jsonData);
-      } else if (response.statusCode == 429) {
-        throw SchoolsException('AI Assistant is busy, please try again later.');
-      } else if (response.statusCode == 403) {
-        throw SchoolsException('Unauthorized access');
-      } else {
-        throw SchoolsException(
-            'Failed to get suggestions. Status: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('🏫 [SCHOOLS] Error getting suggestions: $e');
-      if (e is SchoolsException) {
-        rethrow;
-      } else {
-        throw SchoolsException('Network error: ${e.toString()}');
-      }
+      print('🏫 [SCHOOLS] Error suggesting schools: $e');
+      throw SchoolsException('Failed to suggest schools: $e');
     }
   }
 }
-
