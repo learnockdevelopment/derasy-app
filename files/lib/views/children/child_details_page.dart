@@ -29,7 +29,7 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
         backgroundColor: AppColors.blue1,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(resp.Responsive.isRTL ? Icons.arrow_forward : Icons.arrow_back, color: Colors.white, size: 24.sp),
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -135,16 +135,42 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
               ),
             ),
 
-            // Compact Action Buttons
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: child.schoolId.id.isNotEmpty
                   ? Column(
                       children: [
+                        // Removed transfer button, show school name prominently
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.blue1.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: AppColors.blue1.withOpacity(0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.school_rounded, color: AppColors.blue1, size: 20.sp),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('enrolled_at'.tr, style: TextStyle(color: Colors.grey[600], fontSize: 10.sp, fontWeight: FontWeight.normal)),
+                                    Text(child.schoolId.name, style: TextStyle(color: AppColors.blue1, fontSize: 13.sp, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 10.h),
                         _buildActionButton(
-                          onTap: () => _navigateToApply(),
-                          icon: Icons.school_rounded,
-                          label: 'transfer_to_school'.tr,
+                          onTap: () => _viewApplications(),
+                          icon: Icons.assignment_rounded,
+                          label: 'view_applications'.tr,
+                          isOutline: true,
                           isFullWidth: true,
                         ),
                       ],
@@ -181,6 +207,8 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                     title: 'personal_information'.tr,
                     children: [
                       _buildInfoRow('full_name'.tr, child.fullName),
+                      if (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
+                        _buildInfoRow('arabic_name'.tr, child.arabicFullName!),
                       if (child.gender.isNotEmpty)
                         _buildInfoRow('gender'.tr, child.gender.toUpperCase()),
                       if (child.birthDate.isNotEmpty)

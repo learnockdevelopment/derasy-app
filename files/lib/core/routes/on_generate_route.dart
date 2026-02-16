@@ -21,7 +21,7 @@ import '../../models/student_models.dart';
 import '../../views/children/add_child_page.dart';
 import '../../views/children/add_child_steps_page.dart';
 import '../../views/children/child_details_page.dart';
-import '../../views/admission/apply_to_schools_page.dart';
+import '../../views/admission/new_admission_flow_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
 import 'app_routes.dart';
@@ -137,7 +137,7 @@ class RouteGenerator {
       case AppRoutes.applyToSchools:
         return GetPageRoute(
           settings: settings,
-          page: () => const ApplyToSchoolsPage(),
+          page: () => const NewAdmissionFlowPage(),
         );
       case AppRoutes.applications:
         final args = settings.arguments as Map<String, dynamic>?;

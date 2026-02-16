@@ -2,6 +2,7 @@ class AssetsManager {
   // png
   static const String logo = 'assets/png/logo.png';
   static const String login = 'assets/png/login.png';
+  static const String student = 'assets/png/student.png';
 
 
   // svg

@@ -12,7 +12,6 @@ import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
 import '../../core/controllers/dashboard_controller.dart';
-import '../../widgets/student_selection_sheet.dart';
 import '../../widgets/horizontal_swipe_detector.dart';
 
 class ApplicationsPage extends StatefulWidget {
@@ -225,19 +224,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       colorText: Colors.white,
                     );
                   } else {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const StudentSelectionSheet(),
-                    ).then((selectedStudent) {
-                      if (selectedStudent != null && selectedStudent is Student) {
-                        Get.toNamed(
-                          AppRoutes.applyToSchools,
-                          arguments: {'child': selectedStudent},
-                        );
-                      }
-                    });
+                    // Go directly to admission flow
+                    Get.toNamed(AppRoutes.applyToSchools);
                   }
                 },
                 backgroundColor: AppColors.blue1,
@@ -545,14 +533,39 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               children: [
                 Icon(IconlyLight.calendar, size: Responsive.sp(14), color: AppColors.textSecondary),
                 SizedBox(width: Responsive.w(8)),
-                Text(
-                  '${'submitted_date'.tr}: ${_formatDate(submittedDate)}',
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: Responsive.sp(11),
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    '${'submitted_date'.tr}: ${_formatDate(submittedDate)}',
+                    style: AppFonts.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: Responsive.sp(11),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+                // Transfer Button for Ended Status
+                if (applications.any((app) => app.status.toLowerCase() == 'ended'))
+                  TextButton.icon(
+                    onPressed: () {
+                      Get.toNamed(
+                        AppRoutes.applyToSchools,
+                        arguments: {
+                          'child': firstApp.child,
+                          'isTransfer': true,
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.swap_horiz_rounded, size: Responsive.sp(14)),
+                    label: Text('transfer'.tr),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF8B5CF6),
+                      padding: Responsive.symmetric(horizontal: 8, vertical: 4),
+                      textStyle: AppFonts.bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: Responsive.sp(10),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

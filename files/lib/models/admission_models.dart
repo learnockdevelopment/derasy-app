@@ -1,6 +1,85 @@
 import 'student_models.dart';
 import 'school_models.dart';
 
+// Suggestion Models
+class SchoolSuggestionRequest {
+  final Map<String, dynamic> child;
+  final List<Map<String, dynamic>> schools;
+  final SuggestionPreferences preferences;
+
+  SchoolSuggestionRequest({
+    required this.child,
+    required this.schools,
+    required this.preferences,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'child': child,
+      'schools': schools,
+      'preferences': preferences.toJson(),
+    };
+  }
+}
+
+class SuggestionPreferences {
+  final double? minFee;
+  final double? maxFee;
+  final double? busFeeMax;
+  final String? zone;
+  final String? type;
+  final String? coed;
+  final String? language;
+
+  SuggestionPreferences({
+    this.minFee,
+    this.maxFee,
+    this.busFeeMax,
+    this.zone,
+    this.type,
+    this.coed,
+    this.language,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (minFee != null) 'minFee': minFee,
+      if (maxFee != null) 'maxFee': maxFee,
+      if (busFeeMax != null) 'busFeeMax': busFeeMax,
+      if (zone != null) 'zone': zone,
+      if (type != null) 'type': type,
+      if (coed != null) 'coed': coed,
+      if (language != null) 'language': language,
+    };
+  }
+}
+
+class SchoolSuggestionResponse {
+  final String message;
+  final String? markdown;
+  final String? html;
+  final List<String> suggestedIds;
+
+  SchoolSuggestionResponse({
+    required this.message,
+    this.markdown,
+    this.html,
+    required this.suggestedIds,
+  });
+
+  factory SchoolSuggestionResponse.fromJson(Map<String, dynamic> json) {
+    return SchoolSuggestionResponse(
+      message: json['message']?.toString() ?? '',
+      markdown: json['markdown']?.toString(),
+      html: json['html']?.toString(),
+      suggestedIds: (json['suggestedIds'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+    );
+  }
+}
+
 // Application Models
 
 // Interview Information
@@ -260,12 +339,14 @@ class SchoolApplicationInfo {
   final String name;
   final String? nameAr;
   final String? address;
+  final String? educationSystem;
 
   SchoolApplicationInfo({
     required this.id,
     required this.name,
     this.nameAr,
     this.address,
+    this.educationSystem,
   });
 
   factory SchoolApplicationInfo.fromJson(Map<String, dynamic> json) {
@@ -274,6 +355,7 @@ class SchoolApplicationInfo {
       name: json['name']?.toString() ?? json['nameAr']?.toString() ?? '',
       nameAr: json['nameAr']?.toString(),
       address: json['address']?.toString(),
+      educationSystem: json['educationSystem']?.toString(),
     );
   }
 
@@ -283,6 +365,7 @@ class SchoolApplicationInfo {
       'name': name,
       'nameAr': nameAr,
       'address': address,
+      if (educationSystem != null) 'educationSystem': educationSystem,
     };
   }
 }
@@ -368,19 +451,45 @@ class TimeRange {
 }
 
 // Request Models
+class ViewSchoolsRequest {
+  final Map<String, dynamic> child;
+  final Map<String, dynamic> filters;
+
+  ViewSchoolsRequest({
+    required this.child,
+    required this.filters,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'child': child,
+      'filters': filters,
+    };
+  }
+}
+
 class ApplyToSchoolsRequest {
   final String childId;
   final List<SelectedSchool> selectedSchools;
+  final Map<String, dynamic>? filters;
+  final AIAssessmentReport? aiAssessment;
 
   ApplyToSchoolsRequest({
     required this.childId,
     required this.selectedSchools,
+    this.filters,
+    this.aiAssessment,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'childId': childId,
       'selectedSchools': selectedSchools.map((school) => school.toJson()).toList(),
+      if (filters != null) 'filters': filters,
+      if (aiAssessment != null) 'aiAssessment': {
+        'report': aiAssessment!.report,
+        'score': aiAssessment!.score,
+      },
     };
   }
 }
@@ -447,14 +556,17 @@ class SelectedSchool {
 
 class AdmissionFee {
   final double amount;
+  final String currency;
 
   AdmissionFee({
     required this.amount,
+    this.currency = 'EGP',
   });
 
   Map<String, dynamic> toJson() {
     return {
       'amount': amount,
+      'currency': currency,
     };
   }
 }
@@ -571,4 +683,59 @@ class AdmissionException implements Exception {
   String toString() => message;
 }
 
+// AI Assessment Models
+class AIAssessmentRequest {
+  final String message;
+  final Map<String, dynamic> context;
+  final List<dynamic> history;
 
+  AIAssessmentRequest({
+    required this.message,
+    required this.context,
+    required this.history,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'context': context,
+      'history': history,
+    };
+  }
+}
+
+class AIAssessmentResponse {
+  final String? reply;
+  final AIAssessmentReport? assessment;
+
+  AIAssessmentResponse({
+    this.reply,
+    this.assessment,
+  });
+
+  factory AIAssessmentResponse.fromJson(Map<String, dynamic> json) {
+    return AIAssessmentResponse(
+      reply: json['reply']?.toString(),
+      assessment: json['assessment'] != null
+          ? AIAssessmentReport.fromJson(json['assessment'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class AIAssessmentReport {
+  final String report;
+  final int score;
+
+  AIAssessmentReport({
+    required this.report,
+    required this.score,
+  });
+
+  factory AIAssessmentReport.fromJson(Map<String, dynamic> json) {
+    return AIAssessmentReport(
+      report: json['report']?.toString() ?? '',
+      score: (json['score'] as num?)?.toInt() ?? 0,
+    );
+  }
+}

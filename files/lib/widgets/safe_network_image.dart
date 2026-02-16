@@ -263,13 +263,10 @@ class SafeAvatarImage extends StatelessWidget {
           height: size,
           fit: BoxFit.cover,
           errorWidget: Container(
-            color: const Color(0xFF3B82F6), // Blue color
-            child: Icon(
-              Icons.person_rounded,
-              size: (size * 0.6).clamp(16.0, 48.0).isFinite 
-                  ? (size * 0.6).clamp(16.0, 48.0) 
-                  : 24.0,
-              color: Colors.white,
+            color: Colors.white,
+            child: Image.asset(
+              AssetsManager.student,
+              fit: BoxFit.cover,
             ),
           ),
         ),

@@ -95,7 +95,7 @@ class HeroSectionWidget extends StatelessWidget {
                             end: Alignment.bottomRight,
                           ),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.0),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
@@ -133,7 +133,7 @@ class HeroSectionWidget extends StatelessWidget {
                               displayTitle,
                               style: AppFonts.h3.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w800,
                                 fontSize: Responsive.sp(18),
                                 letterSpacing: -0.5,
                               ),
@@ -314,7 +314,7 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
                       borderRadius: BorderRadius.circular(Responsive.r(24)),
                       border: Border.all(
                         color: Colors.white.withOpacity(0.2),
-                        width: 1.5,
+                        width: 1.0,
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -348,7 +348,7 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
                                 features[featureIndex]['title'],
                                 style: AppFonts.bodyMedium.copyWith(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: Responsive.sp(14),
                                   letterSpacing: -0.3,
                                 ),

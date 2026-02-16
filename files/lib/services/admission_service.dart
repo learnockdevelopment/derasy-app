@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import '../core/constants/api_constants.dart';
 import '../models/admission_models.dart';
+import '../models/lookup_models.dart';
+import '../models/education_system_models.dart';
+import '../models/school_models.dart';
 import 'user_storage_service.dart';
 
 class AdmissionService {
@@ -32,13 +35,24 @@ class AdmissionService {
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
       print('🎓 [ADMISSION] Response body: ${response.body}');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
         return ApplyToSchoolsResponse.fromJson(responseData);
       } else if (response.statusCode == 400) {
-        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
-        throw AdmissionException(
-            errorData['message']?.toString() ?? 'Bad request', 400);
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        final message = responseData['message']?.toString() ?? 'Bad request';
+        
+        // Check for details to provide better error message
+        if (responseData['details'] != null) {
+           final details = responseData['details'];
+           if (details['requiredAmount'] != null && details['currentBalance'] != null) {
+              final required = details['requiredAmount'];
+              final available = details['currentBalance'];
+              throw AdmissionException('$message\nRequired: $required, Available: $available', 400);
+           }
+        }
+        
+        throw AdmissionException(message, 400);
       } else if (response.statusCode == 401) {
         throw AdmissionException('Unauthorized: User is not a parent', 401);
       } else if (response.statusCode == 403) {
@@ -595,6 +609,281 @@ class AdmissionService {
       }
     }
   }
+  /// Get general lookups for admission form
+  static Future<LookupsResponse> getLookups() async {
+    try {
+      print('🎓 [ADMISSION] Getting lookups');
+      
+      final url = _baseUrl + ApiConstants.getLookupsEndpoint;
+      // Lookups are public, but we can send token if available (optional)
+      final token = UserStorageService.getAuthToken();
+      final headers = ApiConstants.getHeaders(token: token);
+
+      print('🎓 [ADMISSION] URL: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      // buffer log to avoid truncation for large responses
+      // print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return LookupsResponse.fromJson(responseData);
+      } else {
+        throw AdmissionException(
+            'Failed to load lookups',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error getting lookups: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get education systems hierarchy
+  static Future<EducationSystemsResponse> getEducationSystems() async {
+    try {
+      print('🎓 [ADMISSION] Getting education systems');
+      
+      final url = _baseUrl + ApiConstants.getEducationSystemsEndpoint;
+      final token = UserStorageService.getAuthToken();
+      final headers = ApiConstants.getHeaders(token: token);
+
+      print('🎓 [ADMISSION] URL: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      // print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return EducationSystemsResponse.fromJson(responseData);
+      } else {
+        throw AdmissionException(
+            'Failed to load education systems',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error getting education systems: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get filtered schools (POST)
+  static Future<List<School>> viewSchools(ViewSchoolsRequest request) async {
+    try {
+      print('🎓 [ADMISSION] Viewing schools with filters (POST)');
+      
+      final url = _baseUrl + ApiConstants.viewSchoolsEndpoint;
+      final token = UserStorageService.getAuthToken();
+      final headers = ApiConstants.getHeaders(token: token);
+
+      print('🎓 [ADMISSION] URL: $url');
+      print('🎓 [ADMISSION] Body: ${jsonEncode(request.toJson())}');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()), // Use toJson method
+      ).timeout(const Duration(seconds: 30));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        List<dynamic> list;
+        if (responseData is List) {
+           list = responseData;
+        } else if (responseData is Map && responseData['schools'] is List) {
+           list = responseData['schools'];
+        } else {
+           list = [];
+        }
+        
+        return list.map((e) => School.fromJson(e)).toList();
+      } else {
+         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+         throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to load schools',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error viewing schools: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Get schools with filters
+  static Future<List<School>> getSchools({
+    String? governorateId,
+    String? administrationId,
+    String? educationSystemId,
+    String? stageId,
+    String? gradeId,
+    String? gender,
+    double? maxFee,
+  }) async {
+    try {
+      print('🎓 [ADMISSION] Getting schools with filters');
+
+      String url = _baseUrl + ApiConstants.getAllSchoolsEndpoint;
+      Map<String, String> queryParams = {};
+      if (governorateId != null) queryParams['governorate'] = governorateId;
+      if (administrationId != null) queryParams['administration'] = administrationId;
+      if (educationSystemId != null) queryParams['educationSystem'] = educationSystemId;
+      if (stageId != null) queryParams['stage'] = stageId;
+      if (gradeId != null) queryParams['grade'] = gradeId;
+      if (gender != null) queryParams['gender'] = gender;
+      if (maxFee != null) queryParams['maxFee'] = maxFee.toString();
+
+      if (queryParams.isNotEmpty) {
+        url += '?' + Uri(queryParameters: queryParams).query;
+      }
+
+      print('🎓 [ADMISSION] URL: $url');
+      
+      // Lookups are public, but we can send token if available (optional)
+      final token = UserStorageService.getAuthToken(); 
+      final headers = ApiConstants.getHeaders(token: token);
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        // Ensure responseData is a list or contains a list
+        List<dynamic> list;
+        if (responseData is List) {
+           list = responseData;
+        } else if (responseData is Map && responseData['schools'] is List) {
+           list = responseData['schools'];
+        } else {
+           list = [];
+        }
+        
+        return list.map((e) => School.fromJson(e)).toList();
+      } else {
+        throw AdmissionException(
+            'Failed to load schools',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error getting schools: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  static Future<SchoolSuggestionResponse> suggestThreeSchools(
+      SchoolSuggestionRequest request) async {
+    try {
+      print('🎓 [ADMISSION] Getting AI school suggestions');
+      
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.suggestThreeEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('🎓 [ADMISSION] URL: $url');
+      print('🎓 [ADMISSION] Body: ${jsonEncode(request.toJson())}');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      ).timeout(const Duration(seconds: 60)); // Long timeout for AI
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return SchoolSuggestionResponse.fromJson(responseData);
+      } else if (response.statusCode == 429) {
+         throw AdmissionException('AI service is busy, please try again later', 429);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'Failed to get suggestions',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error getting suggestions: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
+
+  static Future<AIAssessmentResponse> performAIAssessment(
+      AIAssessmentRequest request) async {
+    try {
+      print('🎓 [ADMISSION] Performing AI assessment');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw AdmissionException('No authentication token found');
+      }
+
+      final url = _baseUrl + ApiConstants.aiAssessmentEndpoint;
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      ).timeout(const Duration(seconds: 60));
+
+      print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return AIAssessmentResponse.fromJson(responseData);
+      } else {
+        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AdmissionException(
+            errorData['message']?.toString() ?? 'AI assessment failed',
+            response.statusCode);
+      }
+    } catch (e) {
+      print('🎓 [ADMISSION] Error performing AI assessment: $e');
+      if (e is AdmissionException) {
+        rethrow;
+      } else {
+        throw AdmissionException('Network error: ${e.toString()}');
+      }
+    }
+  }
 }
-
-

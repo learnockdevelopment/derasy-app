@@ -40,7 +40,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   bool _isSubmitting = false;
   String _schoolSearchQuery = '';
   bool _showResults = false;
-  
+
   // Selection for final submission
   final Set<School> _selectedSchools = {};
   bool _isFormVisible = false;
@@ -241,24 +241,21 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
         }
       }
 
-      // Now submit applications for each selected school
-      for (final school in _selectedSchools) {
-        try {
-          final request = AdmissionApplyRequest(
-            childId: _selectedChild!.id,
-            schoolId: school.id,
-            applicationType: _applicationType,
-            desiredGrade: _selectedGrade,
-            preferredInterviewSlots: _preferredInterviewSlots,
-            notes: _notesController.text.trim(),
-          );
+      // Now submit applications (Batch Request)
+      try {
+        final request = ApplyToSchoolsRequest(
+          childId: _selectedChild!.id,
+          selectedSchools: _selectedSchools
+              .map((school) => SelectedSchool.fromSchool(school))
+              .toList(),
+        );
 
-          await AdmissionService.applyAdmission(request);
-          successCount++;
-        } catch (e) {
-          lastError = e.toString();
-          print('❌ [APPLY] Error applying to ${school.name}: $e');
-        }
+        final response = await AdmissionService.applyToSchools(request);
+        successCount = response.applications.length;
+        print('✅ [APPLY] Batch application successful: ${response.message}');
+      } catch (e) {
+        lastError = e.toString();
+        print('❌ [APPLY] Error applying to schools: $e');
       }
 
       if (!mounted) return;

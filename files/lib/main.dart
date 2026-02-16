@@ -83,7 +83,7 @@ class DerasyApp extends StatelessWidget {
             fontFamily: AppFonts.Almarai,
             useMaterial3: true,
             scaffoldBackgroundColor: AppColors.background,
-            textTheme: TextTheme(
+            textTheme: TextTheme( 
               displayLarge: AppFonts.AlmaraiBold64,
               displayMedium: AppFonts.AlmaraiBold56,
               displaySmall: AppFonts.AlmaraiBold48,

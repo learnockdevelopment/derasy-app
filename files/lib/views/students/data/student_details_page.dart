@@ -9,6 +9,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../services/user_storage_service.dart';
 import '../../../widgets/safe_network_image.dart';
 import '../management/edit_student_page.dart';
+import '../../../core/routes/app_routes.dart';
 
 class StudentDetailsPage extends StatefulWidget {
   final Student student;
@@ -208,6 +209,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
 
   Widget _buildQuickActionsSection() {
     final isAdminOrModerator = UserStorageService.isAdminOrModerator();
+    final isEnrolled = widget.student.status.toLowerCase() == 'ended';
     
     final actions = [
       if (isAdminOrModerator)
@@ -216,6 +218,13 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
         'label': 'quick_edit'.tr,
         'color': const Color(0xFF3B82F6),
         'onTap': _editStudent,
+      },
+      if (isEnrolled)
+      {
+        'icon': Icons.swap_horiz_rounded,
+        'label': 'transfer'.tr,
+        'color': const Color(0xFF8B5CF6),
+        'onTap': _transferStudent,
       },
       {
         'icon': Icons.delete_rounded,
@@ -938,6 +947,17 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: const Color(0xFF3B82F6),
       colorText: Colors.white,
+    );
+  }
+
+  void _transferStudent() {
+    // Navigate to admission flow with isTransfer flag
+    Get.toNamed(
+      AppRoutes.applyToSchools,
+      arguments: {
+        'child': widget.student,
+        'isTransfer': true,
+      },
     );
   }
 }

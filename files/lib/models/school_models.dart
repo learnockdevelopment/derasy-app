@@ -4,6 +4,7 @@ class School {
   final String? shortName;
   final String? slug;
   final String? type;
+  final String? gender;
   final String? educationSystem;
   final bool approved;
   final SchoolOwnership ownership;
@@ -42,6 +43,7 @@ class School {
     this.shortName,
     this.slug,
     required this.type,
+    this.gender,
     this.educationSystem,
     required this.approved,
     required this.ownership,
@@ -89,6 +91,7 @@ class School {
         shortName: json['shortName'],
         slug: json['slug'],
         type: json['type'] ?? '',
+        gender: json['gender'],
         educationSystem: json['educationSystem'],
         approved: json['approved'] is bool
             ? json['approved']

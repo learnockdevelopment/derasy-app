@@ -1,6 +1,6 @@
 class ApiConstants {
   // API Configuration
-  static const String baseUrl = 'https://www.derasy.com/api';
+  static const String baseUrl = 'http://192.168.1.4:3000/api';
   static const String apiKey = 'external_key_123';
   static const String apiKeyHeader = 'x-api-key';
   static const String authorizationHeader = 'Authorization';
@@ -54,24 +54,14 @@ class ApiConstants {
   static const String getSingleApplicationEndpoint = '/me/applications/school/my';
   static const String addApplicationEventEndpoint = '/me/applications/school/my/[id]/events';
   static const String updateApplicationStatusEndpoint = '/me/applications/school/my/[id]/status';
-
-  // Guardians Endpoints
-
-
-  // Pickup Permissions Endpoints
-
-
-  // Clinic Records Endpoints
-
-
-  // Attendance Endpoints
-
-
-  // Public Endpoints (No Auth Required)
   static const String appConfigEndpoint = '/public/app-config';
+  static const String getLookupsEndpoint = '/public/lookups';
+  static const String getEducationSystemsEndpoint = '/public/education-systems';
 
-  // Schools Endpoints
   static const String getAllSchoolsEndpoint = '/schools';
+  static const String viewSchoolsEndpoint = '/schools/view';
+  static const String suggestThreeEndpoint = '/schools/suggest-three';
+  static const String aiAssessmentEndpoint = '/admission/ai-assessment';
 
   // Chatbot Endpoints
   static const String chatbotEndpoint = '/chatbot';
