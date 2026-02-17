@@ -184,12 +184,6 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
           IconlyLight.calendar,
         ),
       ],
-      onTap: () {
-        final id = school['_id'] ?? school['id'];
-        if (id != null) {
-          Get.to(() => SchoolDetailsPage(schoolId: id.toString()));
-        }
-      },
     );
   }
 }
