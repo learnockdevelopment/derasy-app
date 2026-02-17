@@ -5,6 +5,7 @@ import '../core/constants/app_fonts.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'dart:async';
+import '../core/routes/app_routes.dart';
 
 class HeroSectionWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
@@ -51,125 +52,106 @@ class HeroSectionWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.blue1, AppColors.blue2],
+          colors: [
+            const Color(0xFF1E3A8A), // Deep Navy Blue
+            const Color(0xFF2563EB), // Primary Blue
+            const Color(0xFF3B82F6), // Bright Blue
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          stops: const [0.0, 0.6, 1.0],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(Responsive.r(borderRadius)),
           bottomRight: Radius.circular(Responsive.r(borderRadius)),
         ),
       ),
-      child: Stack(
-        children: [
-          // Decorative Elements
-          Positioned(
-            top: -Responsive.h(50),
-            right: -Responsive.w(50),
-            child: Container(
-              width: Responsive.w(150),
-              height: Responsive.w(150),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: Responsive.symmetric(horizontal: 20),
-              child: Column(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: Responsive.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Profile & Actions
+              Row(
                 children: [
-                   SizedBox(height: Responsive.h(10)),
-                  // User Profile Row
-                  Row(
-                    children: [
-                      Container(
-                        width: Responsive.w(50),
-                        height: Responsive.w(50),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.05)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                  // Sleek Profile Image/Icon
+                  Container(
+                    width: Responsive.w(42),
+                    height: Responsive.w(42),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.15),
+                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.2),
+                    ),
+                    child: Center(
+                      child: Icon(IconlyBold.profile, color: Colors.white, size: Responsive.sp(20)),
+                    ),
+                  ),
+                  SizedBox(width: Responsive.w(16)),
+                  
+                  // Welcome Text
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showGreeting)
+                          Text(
+                            greeting,
+                            style: AppFonts.bodySmall.copyWith(
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w600,
+                              fontSize: Responsive.sp(11),
+                            ),
                           ),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(IconlyBold.profile, color: Colors.white, size: Responsive.sp(24)),
-                        ),
-                      ),
-                      SizedBox(width: Responsive.w(15)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (showGreeting)
-                              Row(
-                                children: [
-                                  Text(
-                                    greeting,
-                                    style: AppFonts.bodySmall.copyWith(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: Responsive.sp(11),
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  SizedBox(width: 4),
-                                  Icon(greetingIcon, color: Colors.amber, size: Responsive.sp(14)),
-                                ],
-                              ),
-                            Text(
-                              displayTitle,
-                              style: AppFonts.h3.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: Responsive.sp(18),
-                                letterSpacing: -0.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (actions != null) ...actions!
-                      else ...[
-                         _HeaderAction(
-                          icon: Icons.notifications_none_rounded,
-                          onTap: () {},
+                        Text(
+                          displayTitle,
+                          style: AppFonts.h3.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: Responsive.sp(18),
+                            letterSpacing: -0.4,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                  if (showFeatures) ...[
-                    SizedBox(height: Responsive.h(15)),
-                    const FeatureRotator(moreWhite: true),
-                  ] else if (subtitle != null) ...[
-                    SizedBox(height: Responsive.h(10)),
-                    Padding(
-                      padding: EdgeInsets.only(left: Responsive.w(60)),
-                      child: Text(
-                        subtitle!,
-                        style: AppFonts.bodySmall.copyWith(color: Colors.white.withOpacity(0.9)),
-                      ),
+                  
+                  // Action Buttons
+                  if (actions != null) ...actions!
+                  else ...[
+                    _HeaderAction(
+                      icon: IconlyLight.notification,
+                      onTap: () => Get.toNamed(AppRoutes.notifications),
+                    ),
+                    _HeaderAction(
+                      icon: IconlyLight.setting,
+                      onTap: () => Get.toNamed(AppRoutes.userProfile),
                     ),
                   ],
                 ],
               ),
-            ),
+
+              // Content Section
+              if (showFeatures) ...[
+                SizedBox(height: Responsive.h(18)),
+                const FeatureRotator(moreWhite: true),
+              ] else if (subtitle != null) ...[
+                SizedBox(height: Responsive.h(8)),
+                Text(
+                  subtitle!,
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -183,16 +165,19 @@ class _HeaderAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: Responsive.symmetric(horizontal: 5),
-        padding: Responsive.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(Responsive.r(12)),
+    return Container(
+      margin: Responsive.symmetric(horizontal: 4),
+      child: Material(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(Responsive.r(14)),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(Responsive.r(14)),
+          child: Padding(
+            padding: Responsive.all(8),
+            child: Icon(icon, color: Colors.white, size: Responsive.sp(18)),
+          ),
         ),
-        child: Icon(icon, color: Colors.white, size: Responsive.sp(20)),
       ),
     );
   }
@@ -208,7 +193,7 @@ class FeatureRotator extends StatefulWidget {
 
 class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  late Timer _timer;
+  late Timer? _timer;
   late PageController _pageController;
 
   List<Map<String, dynamic>> get _features => [
@@ -216,33 +201,34 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
           'title': 'admission_portal'.tr,
           'subtitle': 'apply_now_hint'.tr,
           'icon': IconlyBold.document,
-          'color': AppColors.blue200,
+          'cta': 'apply_now'.tr,
+          'route': AppRoutes.applyToSchools,
         },
         {
           'title': 'hero_feature_1_title'.tr, 
           'subtitle': 'hero_feature_1_desc'.tr,
           'icon': IconlyBold.discovery,
-          'color': AppColors.blue200,
+          'cta': 'explore'.tr,
+          'route': AppRoutes.myStudents,
         },
         {
           'title': 'hero_feature_2_title'.tr,
           'subtitle': 'hero_feature_2_desc'.tr,
           'icon': IconlyBold.activity,
-          'color': AppColors.blue200,
-        },
-        {
-          'title': 'hero_feature_3_title'.tr,
-          'subtitle': 'hero_feature_3_desc'.tr,  
-          'icon': IconlyBold.time_circle, 
-          'color': AppColors.blue200,
+          'cta': 'view_stats'.tr,
+          'route': AppRoutes.applications,
         },
       ];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.9);
-    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+    _pageController = PageController(viewportFraction: 1.0);
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_currentIndex < _features.length - 1) {
         _currentIndex++;
       } else {
@@ -251,8 +237,8 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
       if (_pageController.hasClients) {
         _pageController.animateToPage(
           _currentIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.fastOutSlowIn,
         );
       }
     });
@@ -260,7 +246,7 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -271,7 +257,7 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
     return Column(
       children: [
         SizedBox(
-          height: Responsive.h(110),
+          height: Responsive.h(85),
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -281,115 +267,94 @@ class _FeatureRotatorState extends State<FeatureRotator> with TickerProviderStat
             },
             itemCount: features.length,
             itemBuilder: (context, index) {
-              final featureIndex = index % features.length;
-              return AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, child) {
-                  double value = 1.0;
-                  if (_pageController.position.haveDimensions) {
-                    value = _pageController.page! - index;
-                    value = (1 - (value.abs() * 0.15)).clamp(0.85, 1.0);
-                  } else {
-                    value = index == 0 ? 1.0 : 0.85;
-                  }
-
-                  return Transform.scale(
-                    scale: value,
-                    child: child,
-                  );
-                },
-                child: Padding(
-                  padding: Responsive.symmetric(horizontal: 4),
-                  child: Container(
-                    padding: Responsive.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.blue2.withOpacity(0.95),
-                          AppColors.blue1.withOpacity(0.95),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(Responsive.r(24)),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 25,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: Responsive.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                          ),
-                          child: Icon(
-                            features[featureIndex]['icon'],
-                            color: Colors.white,
-                            size: Responsive.sp(22),
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(15)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                features[featureIndex]['title'],
-                                style: AppFonts.bodyMedium.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: Responsive.sp(14),
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                              SizedBox(height: Responsive.h(2)),
-                              Text(
-                                features[featureIndex]['subtitle'],
-                                style: AppFonts.bodySmall.copyWith(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: Responsive.sp(11),
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.1,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+              final feature = features[index];
+              return Container(
+                margin: Responsive.symmetric(horizontal: 2),
+                padding: Responsive.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(Responsive.r(24)),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1.0,
                   ),
+                ),
+                child: Row(
+                  children: [
+                    // Icon Container
+                    Container(
+                      padding: Responsive.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(Responsive.r(16)),
+                      ),
+                      child: Icon(
+                        feature['icon'],
+                        color: Colors.white,
+                        size: Responsive.sp(24),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(15)),
+                    
+                    // Text Content
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            feature['title'],
+                            style: AppFonts.bodyLarge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: Responsive.sp(15),
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          SizedBox(height: Responsive.h(2)),
+                          Text(
+                            feature['subtitle'],
+                            style: AppFonts.bodySmall.copyWith(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: Responsive.sp(11),
+                              fontWeight: FontWeight.w500,
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
           ),
         ),
-        SizedBox(height: Responsive.h(8)),
+        SizedBox(height: Responsive.h(12)),
+        
+        // Modern Indicators
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(features.length, (index) {
+            final double width = _currentIndex == index ? Responsive.w(20) : Responsive.w(6);
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 400),
               margin: Responsive.symmetric(horizontal: 3),
-              width: _currentIndex == index ? Responsive.w(15) : Responsive.w(5),
-              height: Responsive.h(4),
+              width: width,
+              height: Responsive.h(6),
               decoration: BoxDecoration(
                 color: _currentIndex == index
                     ? Colors.white
                     : Colors.white.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(Responsive.r(3)),
+                boxShadow: _currentIndex == index ? [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.4),
+                    blurRadius: 4,
+                  )
+                ] : null,
               ),
             );
           }),

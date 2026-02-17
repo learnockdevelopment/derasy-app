@@ -37,6 +37,18 @@ class School {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  static String? _parseString(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    if (value is Map) {
+      return value['name']?.toString() ?? 
+             value['nameAr']?.toString() ?? 
+             value['nameEn']?.toString() ?? 
+             value['_id']?.toString();
+    }
+    return value.toString();
+  }
+
   School({
     required this.id,
     required this.name,
@@ -86,13 +98,17 @@ class School {
       print('🏫 [SCHOOL JSON] Ownership value: ${json['ownership']}');
 
       return School(
-        id: json['_id'] ?? '',
-        name: json['name'] ?? '',
-        shortName: json['shortName'],
-        slug: json['slug'],
-        type: json['type'] ?? '',
-        gender: json['gender'],
-        educationSystem: json['educationSystem'],
+        id: _parseString(json['_id']) ?? '',
+        name: _parseString(json['name']) ?? '',
+        shortName: _parseString(json['shortName']),
+        slug: _parseString(json['slug']),
+        type: _parseString(json['type']) ?? '',
+        gender: _parseString(json['gender']),
+        educationSystem: json['educationSystem'] is Map
+            ? json['educationSystem']['_id']?.toString()
+            : json['educationSystemId'] is Map
+                ? json['educationSystemId']['_id']?.toString()
+                : (json['educationSystem'] ?? json['educationSystemId'])?.toString(),
         approved: json['approved'] is bool
             ? json['approved']
             : (json['approved'] == 'true' || json['approved'] == true),
@@ -236,7 +252,7 @@ class SchoolOwnership {
 
   factory SchoolOwnership.fromJson(Map<String, dynamic> json) {
     return SchoolOwnership(
-      owner: json['owner'],
+      owner: School._parseString(json['owner']),
       moderators: (json['moderators'] as List<dynamic>?)
               ?.map((mod) {
                 // Handle both string IDs and full moderator objects
@@ -481,14 +497,14 @@ class SchoolLocation {
 
   factory SchoolLocation.fromJson(Map<String, dynamic> json) {
     return SchoolLocation(
-      governorate: json['governorate'] ?? '',
-      city: json['city'] ?? '',
-      district: json['district'],
-      educationalAdministration: json['educationalAdministration'],
-      mainPhone: json['mainPhone'],
-      secondaryPhone: json['secondaryPhone'],
-      officialEmail: json['officialEmail'],
-      website: json['website'],
+      governorate: School._parseString(json['governorate']) ?? '',
+      city: School._parseString(json['city']) ?? '',
+      district: School._parseString(json['district']),
+      educationalAdministration: School._parseString(json['educationalAdministration']),
+      mainPhone: json['mainPhone']?.toString(),
+      secondaryPhone: json['secondaryPhone']?.toString(),
+      officialEmail: json['officialEmail']?.toString(), 
+      website: json['website']?.toString(),
       socialMedia: json['socialMedia'] != null
           ? Map<String, String>.from(json['socialMedia'])
           : null,

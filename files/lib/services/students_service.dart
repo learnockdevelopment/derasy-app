@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:derasy/core/controllers/localization_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../core/constants/api_constants.dart';
@@ -322,10 +323,9 @@ class StudentsService {
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 60)); // Increased timeout
 
       print('👶 [CHILDREN] Response status: ${response.statusCode}');
-      print('👶 [CHILDREN] Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         try {
@@ -352,9 +352,6 @@ class StudentsService {
           throw StudentsException('Failed to parse response: $e');
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        // Handle unauthorized - logout and navigate to login
-        // await AuthErrorHandler.handleIfUnauthorized(response.statusCode);
-        
         try {
           final errorData = jsonDecode(response.body) as Map<String, dynamic>;
           throw StudentsException('Unauthorized: ${errorData['message']}');
@@ -373,6 +370,8 @@ class StudentsService {
       print('👶 [CHILDREN] Error getting children: $e');
       if (e is StudentsException) {
         rethrow;
+      } else if (e is http.ClientException) {
+        throw StudentsException('connection_lost_retry'.tr);
       } else {
         throw StudentsException('Network error: ${e.toString()}');
       }

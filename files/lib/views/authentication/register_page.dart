@@ -16,6 +16,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/user_storage_service.dart';
 import 'dart:io' show Platform;
+import '../../widgets/loading_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -1266,7 +1267,11 @@ class _RegisterPageState extends State<RegisterPage>
                 ],
               ),
             ),
-          ))
+          )),
+          if (_isLoading)
+            const Positioned.fill(
+              child: LoadingPage(),
+            ),
         ])));
   }
 }

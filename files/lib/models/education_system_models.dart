@@ -20,27 +20,21 @@ class EducationSystem {
   final String name;
   final String type;
   final List<Track> tracks;
-  final List<Stage> stages;
 
   EducationSystem({
     required this.id,
     required this.name,
     required this.type,
     required this.tracks,
-    required this.stages,
   });
 
   factory EducationSystem.fromJson(Map<String, dynamic> json) {
     return EducationSystem(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       type: json['type']?.toString() ?? '',
       tracks: (json['tracks'] as List?)
               ?.map((e) => Track.fromJson(e))
-              .toList() ??
-          [],
-      stages: (json['stages'] as List?)
-              ?.map((e) => Stage.fromJson(e))
               .toList() ??
           [],
     );
@@ -50,13 +44,18 @@ class EducationSystem {
 class Track {
   final String id;
   final String name;
+  final List<Stage> stages;
 
-  Track({required this.id, required this.name});
+  Track({required this.id, required this.name, required this.stages});
 
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name']?.toString() ?? '',
+      stages: (json['stages'] as List?)
+              ?.map((e) => Stage.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }
@@ -70,7 +69,7 @@ class Stage {
 
   factory Stage.fromJson(Map<String, dynamic> json) {
     return Stage(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       grades: (json['grades'] as List?)
               ?.map((e) => Grade.fromJson(e))
@@ -88,7 +87,7 @@ class Grade {
 
   factory Grade.fromJson(Map<String, dynamic> json) {
     return Grade(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name']?.toString() ?? '',
     );
   }

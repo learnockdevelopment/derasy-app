@@ -24,6 +24,9 @@ import '../../views/children/child_details_page.dart';
 import '../../views/admission/new_admission_flow_page.dart';
 import '../../views/admission/applications_page.dart';
 import '../../views/admission/application_details_page.dart';
+import '../../views/sales/my_schools_page.dart';
+import '../../views/sales/sales_home_page.dart';
+import '../../views/sales/sales_onboarding_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -152,6 +155,21 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const ApplicationDetailsPage(),
+        );
+      case AppRoutes.salesHome:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const SalesHomePage(),
+        );
+      case AppRoutes.salesOnboarding:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const SalesOnboardingPage(),
+        );
+      case AppRoutes.mySchools:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const MySchoolsPage(),
         );
       default:
         return errorRoute();

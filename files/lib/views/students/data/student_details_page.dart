@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../models/student_models.dart';
 import '../../../services/students_service.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../services/user_storage_service.dart';
 import '../../../widgets/safe_network_image.dart';
@@ -487,66 +486,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     );
   }
 
-  Widget _buildAdditionalActionsSection() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.more_horiz_rounded,
-                color: const Color(0xFF6B7280),
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Additional Actions',
-                style: AppFonts.h3.copyWith(
-                  color: const Color(0xFF1F2937),
-                  fontWeight: FontWeight.bold,
-                  
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          _buildActionTile(
-            icon: Icons.assessment_rounded,
-            title: 'View All Reports',
-            subtitle: 'Academic and attendance reports',
-            onTap: _viewAllReports,
-          ),
-          SizedBox(height: 12.h),
-          _buildActionTile(
-            icon: Icons.history_rounded,
-            title: 'View History',
-            subtitle: 'Student activity and changes',
-            onTap: _viewHistory,
-          ),
-          SizedBox(height: 12.h),
-          _buildActionTile(
-            icon: Icons.settings_rounded,
-            title: 'Student Settings',
-            subtitle: 'Configure student preferences',
-            onTap: _openSettings,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildInfoRow(String label, String value, IconData icon) {
     return Container(
@@ -597,74 +536,6 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     );
   }
 
-  Widget _buildActionTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF3B82F6),
-                size: 20.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppFonts.bodyMedium.copyWith(
-                      color: const Color(0xFF1F2937),
-                      fontWeight: FontWeight.w600,
-                      
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle,
-                    style: AppFonts.labelSmall.copyWith(
-                      color: const Color(0xFF6B7280),
-                      
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: const Color(0xFF6B7280),
-              size: 16.sp,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String? _getStudentImageUrl(Student student) {
     // Safely extract image URL, handling null values properly
     String? imageUrl;
@@ -678,8 +549,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     // Try avatar field - convert to string if needed
     final avatar = student.avatar;
     if (avatar != null) {
-      final avatarStr = avatar is String ? avatar : avatar.toString();
-      if (avatarStr.trim().isNotEmpty && avatarStr.trim().toLowerCase() != 'null') {
+      final String avatarStr;
+      avatarStr = avatar;
+          if (avatarStr.trim().isNotEmpty && avatarStr.trim().toLowerCase() != 'null') {
         final trimmed = avatarStr.trim();
         debugPrint('🎓 [STUDENT DETAILS IMAGE] Checking avatar URL: $trimmed');
         if (_isValidImageUrl(trimmed)) {
@@ -695,8 +567,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     if (imageUrl == null || imageUrl.isEmpty) {
       final profileImage = student.profileImage;
       if (profileImage != null) {
-        final profileImageStr = profileImage is String ? profileImage : profileImage.toString();
-        if (profileImageStr.trim().isNotEmpty && profileImageStr.trim().toLowerCase() != 'null') {
+        final String profileImageStr;
+        profileImageStr = profileImage;
+              if (profileImageStr.trim().isNotEmpty && profileImageStr.trim().toLowerCase() != 'null') {
           final trimmed = profileImageStr.trim();
           debugPrint('🎓 [STUDENT DETAILS IMAGE] Checking profileImage URL: $trimmed');
           if (_isValidImageUrl(trimmed)) {
@@ -713,8 +586,9 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     if (imageUrl == null || imageUrl.isEmpty) {
       final image = student.image;
       if (image != null) {
-        final imageStr = image is String ? image : image.toString();
-        if (imageStr.trim().isNotEmpty && imageStr.trim().toLowerCase() != 'null') {
+        final String imageStr;
+        imageStr = image;
+              if (imageStr.trim().isNotEmpty && imageStr.trim().toLowerCase() != 'null') {
           final trimmed = imageStr.trim();
           debugPrint('🎓 [STUDENT DETAILS IMAGE] Checking image URL: $trimmed');
           if (_isValidImageUrl(trimmed)) {
@@ -920,38 +794,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     );
   }
 
-  void _viewAllReports() {
-    Get.snackbar(
-      'Info',
-      'View reports functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-    );
-  }
-
-  void _viewHistory() {
-    Get.snackbar(
-      'Info',
-      'View history functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-    );
-  }
-
-  void _openSettings() {
-    Get.snackbar(
-      'Info',
-      'Settings functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-    );
-  }
-
   void _transferStudent() {
-    // Navigate to admission flow with isTransfer flag
     Get.toNamed(
       AppRoutes.applyToSchools,
       arguments: {

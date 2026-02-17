@@ -22,6 +22,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../widgets/loading_page.dart';
 
 extension NumberFormatting on num {
   String toLocaleString() => NumberFormat.decimalPattern().format(this);
@@ -41,10 +42,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   List<Student> _relatedChildren = [];
   LookupData? _lookups;
   List<EducationSystem> _educationSystems = [];
-  List<School> _allSchools = [];
   String? _selectedChildId;
   EducationSystem? _selectedSystem;
-  Track? _selectedTrack;
+  Track? _selectedTrack; 
   Stage? _selectedStage;
   Grade? _selectedGrade;
   
@@ -63,7 +63,8 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   Student? get _selectedStudent => _relatedChildren.firstWhereOrNull((s) => s.id == _selectedChildId);
   List<School> _filteredSchools = [];
   bool _isLoadingSchools = false;
-  final Set<String> _selectedSchoolIds = {};
+  final Map<String, School> _selectedSchoolsMap = {};
+  Set<String> get _selectedSchoolIds => _selectedSchoolsMap.keys.toSet();
   int _matchingSchoolsCount = 0;
   late AnimationController _aiProgressController;
   late AnimationController _loadingController;
@@ -74,7 +75,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   @override
   void initState() {
     super.initState();
-    _aiProgressController = AnimationController(vsync: this, duration: Duration(seconds: 2));
+    _aiProgressController = AnimationController(vsync: this, duration: Duration(seconds: 5));
     _aiProgressController.addListener(() {
       setState(() => _aiProgress = _aiProgressController.value * 100);
     });
@@ -121,8 +122,6 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
           
           _isLoadingData = false;
         });
-        // Fetch schools separately to not block basic lookups
-        _fetchAllSchools();
       }
     } catch (e) {
       if (mounted) {
@@ -132,45 +131,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
     }
   }
 
-  Future<void> _fetchAllSchools() async {
-    try {
-      final schools = await AdmissionService.getSchools();
-      if (mounted) {
-        setState(() {
-          _allSchools = schools;
-        });
-        _updateMatchingCount();
-      }
-    } catch (e) {
-      print('Error fetching all schools: $e');
-    }
-  }
-
   void _updateMatchingCount() {
-    if (_allSchools.isEmpty) return;
-
-    final count = _allSchools.where((school) {
-      if (_selectedSystem != null) {
-        final schoolSysId = school.educationSystem;
-        if (schoolSysId != _selectedSystem!.id) return false;
-      }
-      if (_selectedGovernorate != null) {
-        if (school.location?.governorate != _selectedGovernorate!.nameAr) return false;
-      }
-      if (_genderPolicy != null && _genderPolicy != 'Mixed') {
-        final schoolGender = school.gender ?? 'Mixed';
-        if (schoolGender != 'Mixed' && schoolGender != _genderPolicy) return false;
-      }
-      
-      // Fee filtering
-      final schoolMin = school.feesRange?.min ?? 0.0;
-      final schoolMax = school.feesRange?.max ?? 0.0;
-      if (schoolMax > 0 && (schoolMax < _feeRange.start || schoolMin > _feeRange.end)) return false;
-
-      return true;
-    }).length;
-
-    if (mounted) setState(() => _matchingSchoolsCount = count);
+    // Just trigger a quiet fetch of schools to get the count from the filtered API
+    _fetchSchools(isQuiet: true);
   }
 
   // --- Step Logic ---
@@ -185,6 +148,16 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
     } else if (_currentStep == 2) {
        if (_selectedSystem == null) {
           CustomSnackbar.showError('select_education_system'.tr);
+          return;
+       }
+       
+       if (_selectedGovernorate == null) {
+          CustomSnackbar.showError('select_governorate'.tr);
+          return;
+       }
+
+       if (_selectedAdministration == null) {
+          CustomSnackbar.showError('select_city'.tr);
           return;
        }
        
@@ -213,8 +186,24 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   }
 
 
-  Future<void> _fetchSchools() async {
-    if (mounted) setState(() => _isLoadingSchools = true);
+
+  double _calculateAgeInOctober(String? birthDate) {
+    if (birthDate == null) return 0;
+    try {
+      final now = DateTime.now();
+      // Target Date is Oct 1st of the current year (or next if already past)
+      DateTime targetDate = DateTime(now.year, 10, 1);
+      
+      final birth = DateTime.parse(birthDate);
+      final difference = targetDate.difference(birth).inDays;
+      return difference / 365.25;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<void> _fetchSchools({bool isQuiet = false}) async {
+    if (!isQuiet && mounted) setState(() => _isLoadingSchools = true);
     try {
       final child = _relatedChildren.firstWhereOrNull((c) => c.id == _selectedChildId);
       if (child == null) {
@@ -222,27 +211,23 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
          return;
       }
 
-      // Format birthDate properly if needed, assuming API handles string yyyy-MM-dd
-      String birthDateStr = child.birthDate;
-      try {
-        final date = DateTime.parse(child.birthDate);
-        birthDateStr = DateFormat('yyyy-MM-dd').format(date);
-      } catch (_) {}
-
       final request = ViewSchoolsRequest(
-        child: {
-          'birthDate': birthDateStr,
-          'gender': child.gender,
-        },
+        child: child.toJson(),
         filters: {
           'system': _selectedSystem?.id,
+          'track': _selectedTrack?.id,
           'grade': _selectedGrade?.id,
-          'stage': _selectedStage?.id, // Optional but good to send if available
+          'stage': _selectedStage?.id,
           'governorate': _selectedGovernorate?.nameAr,
-          'administration': _selectedAdministration?.id,
+          'city': _selectedAdministration?.id,
           'minFees': _feeRange.start,
           'maxFees': _feeRange.end,
-          'genderPolicy': _genderPolicy,
+          'genderPolicy': _genderPolicy, 
+          'specialNeeds': _specialNeeds ?? 'none',
+          'userLocation': _userLocation != null ? {
+            'lat': _userLocation!.latitude,
+            'lng': _userLocation!.longitude
+          } : null,
         },
       );
 
@@ -251,13 +236,14 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       if (mounted) {
         setState(() {
           _filteredSchools = schools;
+          _matchingSchoolsCount = schools.length;
           _isLoadingSchools = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingSchools = false);
-        CustomSnackbar.showError(e.toString());
+        if (!isQuiet) CustomSnackbar.showError(e.toString());
       }
     }
   }
@@ -307,7 +293,28 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                  matchedGovName = Responsive.isRTL ? match.nameAr : match.nameEn;
                  setState(() {
                    _selectedGovernorate = match;
-                   _selectedAdministration = null;
+                   
+                   // Try to match city/administration too
+                   Administration? matchedAdmin;
+                   if (_lookups!.locations.administrations.containsKey(match.id)) {
+                     final possibleCities = [
+                       p.locality,
+                       p.subLocality,
+                       p.subAdministrativeArea,
+                       p.thoroughfare
+                     ].whereType<String>().toList();
+
+                     for (var city in possibleCities) {
+                        if (matchedAdmin != null) break;
+                        matchedAdmin = _lookups!.locations.administrations[match.id]!.firstWhereOrNull((a) =>
+                           a.nameEn.toLowerCase().contains(city.toLowerCase()) ||
+                           a.nameAr.toLowerCase().contains(city.toLowerCase()) ||
+                           city.toLowerCase().contains(a.nameEn.toLowerCase()) ||
+                           city.toLowerCase().contains(a.nameAr.toLowerCase())
+                        );
+                     }
+                   }
+                   _selectedAdministration = matchedAdmin;
                    _updateMatchingCount();
                  });
               }
@@ -324,7 +331,11 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
         });
         
         if (matchedGovName != null) {
-           CustomSnackbar.showSuccess('location_set_to'.trParams({'name': matchedGovName}));
+           String msg = 'location_set_to'.trParams({'name': matchedGovName});
+           if (_selectedAdministration != null) {
+             msg += ' - ${Responsive.isRTL ? _selectedAdministration!.nameAr : _selectedAdministration!.nameEn}';
+           }
+           CustomSnackbar.showSuccess(msg);
         } else {
            CustomSnackbar.showSuccess('location_determined'.tr);
         }
@@ -388,13 +399,6 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
         'type': s.type,
       }).toList();
 
-      final childMap = {
-        'id': child.id,
-        'name': child.fullName,
-        'birthDate': child.birthDate,
-        'gender': child.gender,
-      };
-
       final prefs = SuggestionPreferences(
         minFee: _feeRange.start,
         maxFee: _feeRange.end,
@@ -403,7 +407,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       );
 
       final request = SchoolSuggestionRequest(
-        child: childMap,
+        child: child.toJson(),
         schools: simpleSchools,
         preferences: prefs,
       );
@@ -411,7 +415,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       final response = await AdmissionService.suggestThreeSchools(request);
       
       if (_aiProgressController.isAnimating) {
-        await Future.delayed(Duration(milliseconds: (2000 * (1 - _aiProgressController.value)).toInt()));
+        await Future.delayed(Duration(milliseconds: (5000 * (1 - _aiProgressController.value)).toInt()));
       }
 
       if (mounted) {
@@ -433,27 +437,32 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
     if (mounted) setState(() => _isStepLoading = true);
     
     try {
-      final selectedSchoolsList = _selectedSchoolIds.map((id) {
-        // Find in all possible lists
-        School? found;
-        found = _filteredSchools.firstWhereOrNull((s) => s.id == id);
-        found ??= _allSchools.firstWhereOrNull((s) => s.id == id);
-        if (found == null) throw Exception('School not found');
+      final child = _relatedChildren.firstWhereOrNull((c) => c.id == _selectedChildId);
+      if (child == null) return;
+
+      final selectedSchoolsList = _selectedSchoolsMap.values.map((found) {
         return SelectedSchool.fromSchool(found);
       }).toList();
 
       final request = ApplyToSchoolsRequest(
-        childId: _selectedChildId!,
+        childId: _selectedChildId!, 
         selectedSchools: selectedSchoolsList,
+        paymentMethod: 'wallet',
         filters: {
-          'system': _selectedSystem?.id,
-          'track': _selectedTrack?.id,
-          'stage': _selectedStage?.id,
-          'grade': _selectedGrade?.id,
-          'genderPolicy': _genderPolicy,
-          'governorate': _selectedGovernorate?.nameAr,
+          'system': _selectedSystem?.id ?? '',
+          'track': _selectedTrack?.id ?? '',
+          'stage': _selectedStage?.id ?? '',
+          'grade': _selectedGrade?.id ?? '',
+          'genderPolicy': _genderPolicy ?? 'Mixed',
+          'governorate': _selectedGovernorate?.nameAr ?? '',
+          'city': _selectedAdministration?.id ?? '',
           'minFees': _feeRange.start,
           'maxFees': _feeRange.end,
+          'specialNeeds': _specialNeeds ?? 'none',
+          'userLocation': _userLocation != null ? {
+            'lat': _userLocation!.latitude,
+            'lng': _userLocation!.longitude
+          } : null,
         },
         aiAssessment: _assessmentReport,
       );
@@ -527,10 +536,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   @override
   Widget build(BuildContext context) {
     if (_isLoadingData) {
-      return Scaffold(
-        backgroundColor: Color(0xFFFDFBF7),
-        body: _buildModernLoadingState(isOverlay: false),
-      );
+      return const LoadingPage();
     }
 
     return Stack(
@@ -568,44 +574,15 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   }
 
   Widget _buildStepLoadingOverlay() {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-      child: Container(
-        color: Colors.white.withOpacity(0.7),
-        child: _buildModernLoadingState(isOverlay: true),
+    return Material(
+      color: Colors.transparent,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: const LoadingPage(),
       ),
     );
   }
 
-  Widget _buildModernLoadingState({bool isOverlay = false}) {
-     return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-             ScaleTransition(
-               scale: _loadingAnimation,
-               child: Container(
-                 width: 80.w, height: 80.w,
-                 padding: EdgeInsets.all(16),
-                 decoration: BoxDecoration(
-                   color: Colors.white,
-                   shape: BoxShape.circle,
-                   boxShadow: [
-                     BoxShadow(color: AppColors.blue1.withOpacity(0.2), blurRadius: 20, spreadRadius: 5),
-                   ]
-                 ),
-                 child: Image.asset(AssetsManager.login),
-               ),
-             ),
-             SizedBox(height: 32.h),
-             Text(
-               isOverlay ? 'loading_preparing_results'.tr : 'loading'.tr,
-               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: AppColors.blue1),
-             ),
-          ],
-        ),
-      );
-  }
 
   Widget _buildHeader() {
     return Container(
@@ -777,6 +754,8 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
        birthDateStr = child.birthDate;
     }
 
+    final isSelected = _selectedChildId == child.id;
+
     return InkWell(
       onTap: () {
         setState(() => _selectedChildId = child.id);
@@ -790,7 +769,10 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.grey[100]!),
+          border: Border.all(
+            color: isSelected ? AppColors.blue1 : Colors.grey[200]!,
+            width: isSelected ? 2 : 1,
+          ),
           boxShadow: [
              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8)),
           ],
@@ -808,9 +790,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 child: Container(
                   decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                   child: ClipOval(
-                    child: (child.profileImage?.isNotEmpty ?? false)
-                      ? Image.network(child.profileImage!, fit: BoxFit.cover, errorBuilder: (c,e,s) => Image.asset(AssetsManager.student, fit: BoxFit.cover))
-                      : Image.asset(AssetsManager.student, fit: BoxFit.cover),
+                  child: Center(
+                    child: Icon(IconlyBold.profile, color: AppColors.blue1, size: 30.w),
+                  ),
                   ),
                 ),
              ),
@@ -846,7 +828,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
         decoration: BoxDecoration(
           color: Colors.grey[50],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
+          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -878,13 +860,12 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
           Container(
             padding: EdgeInsets.all(2),
             decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.blue1.withOpacity(0.2), width: 2)),
-            child: SafeNetworkImage(
-              imageUrl: child.profileImage, 
-              width: 56, height: 56, 
-              borderRadius: BorderRadius.circular(28), 
-              fit: BoxFit.cover, 
-              fallbackAsset: AssetsManager.student,
-              placeholder: Image.asset(AssetsManager.student, fit: BoxFit.cover),
+            child: Container(
+              width: 56, height: 56,
+              decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              child: Center(
+                child: Icon(IconlyBold.profile, color: AppColors.blue1, size: 28),
+              ),
             ),
           ),
           SizedBox(width: 16.w),
@@ -935,7 +916,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
 
     // Prepare lists
     final tracks = _selectedSystem?.tracks ?? [];
-    final stages = _selectedSystem?.stages ?? [];
+    final stages = _selectedTrack?.stages ?? [];
     final grades = _selectedStage?.grades ?? [];
     
     final cities = (_selectedGovernorate != null && _lookups != null && _lookups!.locations.administrations.containsKey(_selectedGovernorate!.id))
@@ -961,9 +942,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
               _buildDropdownSection('education_system'.tr, 
                  DropdownButtonFormField<EducationSystem>(
                    value: _selectedSystem,
-                   hint: Text('select_education_system'.tr, style: TextStyle(fontSize: 11.sp)),
-                   style: TextStyle(fontSize: 11.sp, color: Colors.black87),
-                   items: _educationSystems.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 11.sp)))).toList(),
+                   hint: Text('select_education_system'.tr, style: TextStyle(fontSize: 13.sp)),
+                   style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                   items: _educationSystems.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 13.sp)))).toList(),
                    onChanged: (val) { if (mounted) setState(() { _selectedSystem = val; _selectedTrack = null; _selectedStage = null; _selectedGrade = null; _updateMatchingCount(); }); },
                    decoration: _inputDeco(),
                    borderRadius: BorderRadius.circular(12),
@@ -976,10 +957,10 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 DropdownButtonFormField<Track>(
                   key: ValueKey('track_${_selectedSystem?.id}'),
                   value: _selectedTrack,
-                  hint: Text(tracks.isEmpty ? 'no_tracks_available'.tr : 'select_track'.tr, style: TextStyle(fontSize: 11.sp)),
-                  style: TextStyle(fontSize: 11.sp, color: Colors.black87),
-                  items: tracks.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 11.sp)))).toList(),
-                   onChanged: tracks.isEmpty ? null : (val) { if (mounted) setState(() { _selectedTrack = val; _updateMatchingCount(); }); },
+                  hint: Text(tracks.isEmpty ? 'no_tracks_available'.tr : 'select_track'.tr, style: TextStyle(fontSize: 13.sp)),
+                  style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                  items: tracks.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 13.sp)))).toList(),
+                   onChanged: tracks.isEmpty ? null : (val) { if (mounted) setState(() { _selectedTrack = val; _selectedStage = null; _selectedGrade = null; _updateMatchingCount(); }); },
                   decoration: _inputDeco(),
                   borderRadius: BorderRadius.circular(12),
                   elevation: 8,
@@ -991,9 +972,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 DropdownButtonFormField<Stage>(
                   key: ValueKey('stage_${_selectedSystem?.id}'),
                   value: _selectedStage,
-                  style: TextStyle(fontSize: 11.sp, color: Colors.black87),
-                  hint: Text(stages.isEmpty ? 'no_stages_available'.tr : 'select_stage'.tr, style: TextStyle(fontSize: 11.sp)),
-                  items: stages.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 11.sp)))).toList(),
+                  style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                  hint: Text(stages.isEmpty ? 'no_stages_available'.tr : 'select_stage'.tr, style: TextStyle(fontSize: 13.sp)),
+                  items: stages.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 13.sp)))).toList(),
                    onChanged: stages.isEmpty ? null : (val) { if (mounted) setState(() { _selectedStage = val; _selectedGrade = null; _updateMatchingCount(); }); },
                   decoration: _inputDeco(),
                   borderRadius: BorderRadius.circular(12),
@@ -1006,9 +987,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 DropdownButtonFormField<Grade>(
                   key: ValueKey('grade_${_selectedStage?.id}'),
                   value: _selectedGrade,
-                  style: TextStyle(fontSize: 11.sp, color: Colors.black87),
-                  hint: Text(grades.isEmpty ? 'select_stage_first'.tr : 'select_grade'.tr, style: TextStyle(fontSize: 11.sp)),
-                  items: grades.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 11.sp)))).toList(),
+                  style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                  hint: Text(grades.isEmpty ? 'select_stage_first'.tr : 'select_grade'.tr, style: TextStyle(fontSize: 13.sp)),
+                  items: grades.map((e) => DropdownMenuItem(value: e, child: Text(e.name, style: TextStyle(fontSize: 13.sp)))).toList(),
                    onChanged: grades.isEmpty ? null : (val) { if (mounted) setState(() { _selectedGrade = val; _updateMatchingCount(); }); },
                   decoration: _inputDeco(),
                   borderRadius: BorderRadius.circular(12),
@@ -1032,8 +1013,8 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 _buildDropdownSection('governorate'.tr,
                    DropdownButtonFormField<Governorate>(
                      value: _selectedGovernorate,
-                     hint: Text('select_governorate'.tr, style: TextStyle(fontSize: 11.sp)),
-                     items: _lookups!.locations.governorates.map((e) => DropdownMenuItem(value: e, child: Text(Responsive.isRTL ? e.nameAr : e.nameEn, style: TextStyle(fontSize: 11.sp)))).toList(),
+                     hint: Text('select_governorate'.tr, style: TextStyle(fontSize: 13.sp)),
+                     items: _lookups!.locations.governorates.map((e) => DropdownMenuItem(value: e, child: Text(Responsive.isRTL ? e.nameAr : e.nameEn, style: TextStyle(fontSize: 13.sp)))).toList(),
                      onChanged: (v) { if (mounted) setState(() { _selectedGovernorate = v; _selectedAdministration = null; _updateMatchingCount(); }); },
                      decoration: _inputDeco(),
                      borderRadius: BorderRadius.circular(12),
@@ -1044,8 +1025,8 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                      DropdownButtonFormField<Administration>(
                        key: ValueKey('city_${_selectedGovernorate?.id}'),
                        value: _selectedAdministration,
-                       hint: Text(cities.isEmpty ? 'select_gov_first'.tr : 'select_city'.tr, style: TextStyle(fontSize: 11.sp)),
-                       items: cities.map((e) => DropdownMenuItem(value: e, child: Text(Responsive.isRTL ? e.nameAr : e.nameEn, style: TextStyle(fontSize: 11.sp)))).toList(),
+                       hint: Text(cities.isEmpty ? 'select_gov_first'.tr : 'select_city'.tr, style: TextStyle(fontSize: 13.sp)),
+                       items: cities.map((e) => DropdownMenuItem(value: e, child: Text(Responsive.isRTL ? e.nameAr : e.nameEn, style: TextStyle(fontSize: 13.sp)))).toList(),
                        onChanged: cities.isEmpty ? null : (v) { if (mounted) setState(() { _selectedAdministration = v; _updateMatchingCount(); }); },
                        decoration: _inputDeco(),
                        borderRadius: BorderRadius.circular(12),
@@ -1090,9 +1071,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
               _buildChoiceSection(
                 label: 'gender_policy'.tr,
                 choices: [
-                  {'id': 'mixed', 'label': 'mixed'.tr},
-                  {'id': 'boys', 'label': 'boys'.tr},
-                  {'id': 'girls', 'label': 'girls'.tr},
+                  {'id': 'Mixed', 'label': 'mixed'.tr},
+                  {'id': 'Boys', 'label': 'boys'.tr},
+                  {'id': 'Girls', 'label': 'girls'.tr},
                 ],
                 selectedId: _genderPolicy,
                 onSelected: (id) => setState(() { _genderPolicy = id; _updateMatchingCount(); }),
@@ -1137,7 +1118,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.grey[100]!),
+        border: Border.all(color: Colors.grey[200]!),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8))],
       ),
       child: Column(
@@ -1163,30 +1144,38 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
 
 
 
-  Widget _buildChoiceSection({required String label, required List<Map<String, String>> choices, required String? selectedId, required Function(String) onSelected}) {
+  Widget _buildChoiceSection({required String label, required List<Map<String, String>> choices, required String? selectedId, required Function(String?) onSelected}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: Colors.grey[700])),
+        Text(label, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.grey[800])),
         SizedBox(height: 12.h),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 12,
+          runSpacing: 12,
           children: choices.map((c) {
             final isSelected = selectedId == c['id'];
             return InkWell(
-              onTap: () => onSelected(c['id']!),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              onTap: () {
+                if (isSelected) {
+                   onSelected(null); // Unselect if already selected
+                } else {
+                   onSelected(c['id']!);
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.blue1 : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isSelected ? AppColors.blue1 : Colors.grey[200]!),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: isSelected ? AppColors.blue1 : Colors.grey[300]!, width: isSelected ? 2 : 1),
+                  boxShadow: isSelected ? [BoxShadow(color: AppColors.blue1.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))] : null,
                 ),
                 child: Text(
                   c['label']!,
-                  style: TextStyle(color: isSelected ? Colors.white : Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 12.sp),
+                  style: TextStyle(color: isSelected ? Colors.white : Colors.grey[700], fontWeight: FontWeight.bold, fontSize: 13.sp),
                 ),
               ),
             );
@@ -1215,23 +1204,23 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   InputDecoration _inputDeco() {
     return InputDecoration(
       filled: true,
-      fillColor: Colors.white, // Modern white background
-      hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[400]),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: Colors.grey[50], // Slightly off-white for depth
+      hintStyle: TextStyle(fontSize: 13.sp, color: Colors.grey[400]),
+      contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey[200]!), // Subtle border
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey[200]!),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: Colors.grey[200]!), 
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.blue1, width: 1.5), // Highlight on focus
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppColors.blue1, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: Colors.red[300]!),
       ),
     );
@@ -1248,6 +1237,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       ],
     ));
 
+    final child = _relatedChildren.firstWhereOrNull((c) => c.id == _selectedChildId);
     final suggestedIds = _aiSuggestion?.suggestedIds ?? [];
     List<School> displayList = _filteredSchools.where((s) => 
       s.name.toLowerCase().contains(_schoolSearchQuery.toLowerCase())
@@ -1262,204 +1252,527 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       });
     }
 
-    return Padding(
-       padding: EdgeInsets.symmetric(horizontal: 20.w),
-       child: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-            Text('available_schools'.tr, style: AppFonts.h3.copyWith(fontWeight: FontWeight.w900, color: Color(0xFF111827))),
-            SizedBox(height: 16.h),
+    return SingleChildScrollView(
+       child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               if (child != null) ...[
+                 _buildApplicantHeader(child),
+                 SizedBox(height: 24.h),
+               ],
 
-            // Search Bar
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[100]!),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4))],
-              ),
-              child: TextField(
-                onChanged: (v) { if (mounted) setState(() => _schoolSearchQuery = v); },
-                decoration: InputDecoration(
-                  hintText: 'search_school_name'.tr,
-                  hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[400]), // Smaller hint text
-                  prefixIcon: Icon(IconlyLight.search, color: Colors.grey, size: 20),
-                  suffixIcon: Container(
-                    margin: EdgeInsets.all(8),
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.indigo[50], borderRadius: BorderRadius.circular(10)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('${displayList.length}', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
-              ),
-            ),
-            SizedBox(height: 20.h),
+               // Search & Suggest Bar
+               Container(
+                 padding: EdgeInsets.all(12),
+                 decoration: BoxDecoration(
+                   color: Colors.white,
+                   borderRadius: BorderRadius.circular(24),
+                   border: Border.all(color: Colors.grey[200]!),
+                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8))],
+                 ),
+                 child: Column(
+                   children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: TextField(
+                          onChanged: (v) { if (mounted) setState(() => _schoolSearchQuery = v); },
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+                          decoration: InputDecoration(
+                            hintText: 'search_school_name'.tr,
+                            hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[400]),
+                            prefixIcon: Icon(IconlyLight.search, color: Colors.grey, size: 20),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: _isAnalyzing ? null : _analyzeWithAI,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                height: 50.h,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)]),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(color: Color(0xFF4F46E5).withOpacity(0.2), blurRadius: 10, offset: Offset(0, 4))
+                                  ],
+                                ),
+                                child: Center(
+                                  child: _isAnalyzing
+                                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                                          SizedBox(width: 8),
+                                          Text('get_derasay_opinion'.tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13.sp)),
+                                        ],
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Container(
+                            height: 50.h,
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo[50],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${displayList.length} ${'schools'.tr}',
+                                style: TextStyle(color: Colors.indigo[700], fontWeight: FontWeight.w900, fontSize: 12.sp),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                   ],
+                 ),
+               ),
+               
+               SizedBox(height: 24.h),
 
-            // Derasay Opinion Button
-            if (_aiSuggestion == null && !_isAnalyzing)
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
-              child: InkWell(
-                onTap: _analyzeWithAI,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [Color(0xFF6B46C1), Color(0xFF805AD5)]),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Color(0xFF6B46C1).withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))],
+               // List
+               if (displayList.isEmpty)
+                 Center(child: Padding(
+                   padding: const EdgeInsets.all(40.0),
+                   child: Column(
+                     children: [
+                       Icon(IconlyLight.info_square, size: 60, color: Colors.grey[300]),
+                       SizedBox(height: 16),
+                       Text('no_schools_found'.tr, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)),
+                     ],
+                   ),
+                 ))
+                else
+                  ListView.builder(
+                     shrinkWrap: true,
+                     physics: NeverScrollableScrollPhysics(),
+                     itemCount: displayList.length,
+                     itemBuilder: (context, index) {
+                       final school = displayList[index];
+                       final isSuggested = suggestedIds.contains(school.id);
+                       final suggestion = isSuggested ? _aiSuggestion?.suggestions.firstWhereOrNull((s) => s.id == school.id) : null;
+                       
+                       return Padding(
+                         padding: EdgeInsets.only(bottom: 20.h),
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+                             _buildSchoolCard(school, isSuggested),
+                             if (suggestion?.reason != null) ...[
+                               SizedBox(height: 12.h),
+                               Container(
+                                 width: double.infinity,
+                                 margin: EdgeInsets.symmetric(horizontal: 12.w),
+                                 padding: EdgeInsets.all(16),
+                                 decoration: BoxDecoration(
+                                   color: Colors.indigo[50]!.withOpacity(0.6),
+                                   borderRadius: BorderRadius.only(
+                                     bottomLeft: Radius.circular(24),
+                                     bottomRight: Radius.circular(24),
+                                     topLeft: Radius.circular(4),
+                                     topRight: Radius.circular(4),
+                                   ),
+                                   border: Border.all(color: Colors.indigo[200]!.withOpacity(0.5)),
+                                 ),
+                                 child: Row(
+                                   children: [
+                                     Container(
+                                       padding: EdgeInsets.all(8),
+                                       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                       child: Icon(Icons.auto_awesome, color: Colors.indigo, size: 16),
+                                     ),
+                                     SizedBox(width: 12.w),
+                                     Expanded(
+                                       child: Column(
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           Text('ai_recommendation'.tr, style: TextStyle(fontWeight: FontWeight.w900, color: Colors.indigo[800], fontSize: 11.sp)),
+                                           SizedBox(height: 4),
+                                           Text(
+                                             suggestion!.reason,
+                                             style: TextStyle(fontSize: 12.sp, color: Colors.indigo[700], fontWeight: FontWeight.w500, height: 1.4),
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                   ],
+                                 ),
+                               ),
+                             ],
+                           ],
+                         ),
+                       );
+                     },
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(IconlyBold.star, color: Colors.white, size: 22),
-                      SizedBox(width: 8.w),
-                      Text('get_derasay_opinion'.tr, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14.sp)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // List
-            if (displayList.isEmpty)
-              Center(child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text('no_schools_found'.tr, style: TextStyle(color: Colors.grey)),
-              ))
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: displayList.length,
-                separatorBuilder: (_,__) => SizedBox(height: 16.h),
-                itemBuilder: (context, index) {
-                  final school = displayList[index];
-                  return _buildSchoolCard(school, suggestedIds.contains(school.id));
-                },
-              ),
-         ],
+                 
+               SizedBox(height: 100.h),
+            ],
+          ),
        ),
     );
   }
 
-  Widget _buildSchoolCard(School school, bool isSuggested) {
-    final isSelected = _selectedSchoolIds.contains(school.id);
-    return InkWell(
-      onTap: () {
-        setState(() {
-          if (isSelected) _selectedSchoolIds.remove(school.id);
-          else {
-            if (_selectedSchoolIds.length >= 3) {
-               CustomSnackbar.showError('max_schools_limit'.tr);
-               return;
-            }
-            _selectedSchoolIds.add(school.id);
-          }
-        });
-      },
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? AppColors.blue1 : (isSuggested ? Colors.indigo[100]! : Colors.grey[100]!),
-            width: isSelected ? 2 : (isSuggested ? 2 : 1),
+  Widget _buildApplicantHeader(Student child) {
+    final age = _calculateAgeInOctober(child.birthDate);
+    final isTransfer = child.schoolId.id.isNotEmpty || child.studentStatus.isEnrolled;
+
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8))],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: -20, top: -20,
+            child: Container(
+              width: 100, height: 100,
+              decoration: BoxDecoration(color: Colors.indigo[50]!.withOpacity(0.4), shape: BoxShape.circle),
+            ),
           ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: Offset(0, 8)),
-            if (isSelected) BoxShadow(color: AppColors.blue1.withOpacity(0.1), blurRadius: 10),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Column(
             children: [
-              // Logo
-              Container(
-                width: 60, height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[50]!),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: SafeNetworkImage(imageUrl: school.bannerImage, fit: BoxFit.contain, placeholder: Icon(Icons.school, color: Colors.grey[200])),
-                ),
+              Row(
+                children: [
+                  // Profile Image
+                  Container(
+                    width: 70.w, height: 70.w,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10)],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: (child.avatar ?? '').isNotEmpty 
+                        ? SafeNetworkImage(imageUrl: child.avatar!, fit: BoxFit.cover)
+                        : Center(child: Icon(IconlyBold.profile, color: Colors.indigo[200], size: 30)),
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                         Text(
+                           child.arabicFullName ?? child.fullName,
+                           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18.sp, color: Color(0xFF111827), letterSpacing: -0.5),
+                         ),
+                         SizedBox(height: 6),
+                         Row(
+                           children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey[200]!)),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      child.nationalId.isNotEmpty ? '${child.nationalId.substring(0, 4)}... (موثق)' : 'no_national_id'.tr,
+                                      style: TextStyle(fontSize: 10.sp, color: Colors.grey[500], fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isTransfer ? Colors.amber[50] : Color(0xFFECFDF5),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: isTransfer ? Colors.amber[100]! : Color(0xFFD1FAE5)),
+                                ),
+                                child: Text(
+                                  isTransfer ? 'transfer_request'.tr : 'new_admission'.tr,
+                                  style: TextStyle(fontSize: 10.sp, color: isTransfer ? Colors.amber[800] : Color(0xFF047857), fontWeight: FontWeight.w900),
+                                ),
+                              ),
+                           ],
+                         )
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 16.w),
-              // Data
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(
-                           school.name, 
-                           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.sp, color: Color(0xFF111827))
-                        )),
-                        if (isSelected)
-                           Icon(Icons.check_circle, color: AppColors.blue1, size: 22)
-                        else if (isSuggested)
-                           Icon(Icons.stars, color: Colors.amber, size: 20),
-                      ],
-                    ),
-                    SizedBox(height: 6.h),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on, size: 12, color: Colors.grey[400]),
-                        SizedBox(width: 4.w),
-                        Text(
-                          '${school.location?.city ?? ''}',
-                          style: TextStyle(fontSize: 10.sp, color: Colors.grey[500], fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Wrap(
-                      spacing: 4, runSpacing: 4,
-                      children: [
-                         if (school.type != null) 
-                           _miniBadge(school.type!),
-                         _miniBadge(school.gender ?? 'mixed'.tr),
-                      ],
-                    ),
-                  ],
-                ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  _headerStatCard(
+                    label: 'estimated_age'.tr,
+                    value: age.toStringAsFixed(1),
+                    unit: 'years'.tr,
+                    color: Color(0xFF111827),
+                  ),
+                  SizedBox(width: 12.w),
+                  _headerStatCard(
+                    label: 'target_grade'.tr,
+                    value: _selectedGrade?.name ?? child.grade.name,
+                    unit: '',
+                    color: Color(0xFF111827),
+                    isHighlight: true,
+                  ),
+                ],
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerStatCard({required String label, required String value, required String unit, required Color color, bool isHighlight = false}) {
+    return Expanded(
+      child: Container(
+        height: 75.h,
+        padding: EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10, offset: Offset(0, 4))],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(label, style: TextStyle(color: Colors.grey[400], fontSize: 8.sp, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+            SizedBox(height: 4),
+            Text(
+              value,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: isHighlight ? Color(0xFF818CF8) : Colors.white, fontSize: isHighlight ? 12.sp : 18.sp, fontWeight: FontWeight.w900),
+            ),
+            if (unit.isNotEmpty)
+              Text(unit, style: TextStyle(color: Color(0xFF818CF8), fontSize: 8.sp, fontWeight: FontWeight.bold)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _miniBadge(String text) {
+  Widget _buildSchoolCard(School school, bool isSuggested) {
+    final isSelected = _selectedSchoolIds.contains(school.id);
+    final suggestion = isSuggested ? _aiSuggestion?.suggestions.firstWhereOrNull((s) => s.id == school.id) : null;
+    final suggestScore = suggestion?.score;
+
+    return InkWell(
+      onTap: () {
+        if (mounted) {
+          setState(() {
+            if (isSelected) {
+              _selectedSchoolsMap.remove(school.id);
+            } else {
+              if (_selectedSchoolIds.length >= 3) {
+                 CustomSnackbar.showError('max_schools_limit'.tr);
+                 return;
+              }
+              _selectedSchoolsMap[school.id] = school;
+            }
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(24),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Color(0xFFF5F3FF) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isSelected ? AppColors.blue1 : Colors.grey[100]!,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected 
+                ? AppColors.blue1.withOpacity(0.12) 
+                : Colors.black.withOpacity(0.04),
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image
+                Hero(
+                  tag: 'school_img_${school.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: SafeSchoolImage(
+                      imageUrl: school.bannerImage,
+                      width: 100.w,
+                      height: 100.w,
+                      fit: BoxFit.cover,
+                      fallbackAsset: AssetsManager.login,
+                      placeholder: Container(
+                        color: Colors.grey[50], 
+                        child: Icon(Icons.school_rounded, color: Colors.grey[200], size: 40)
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                // Data
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (isSuggested) 
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [BoxShadow(color: Color(0xFF6366F1).withOpacity(0.2), blurRadius: 4)],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Colors.white, size: 10),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    suggestScore != null ? '${'ai_match'.tr} $suggestScore%' : 'ai_best_match'.tr, 
+                                    style: TextStyle(color: Colors.white, fontSize: 8.sp, fontWeight: FontWeight.w900, letterSpacing: 0.5)
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (isSelected)
+                             Container(
+                               padding: EdgeInsets.all(4),
+                               decoration: BoxDecoration(color: AppColors.blue1, shape: BoxShape.circle),
+                               child: Icon(Icons.check, color: Colors.white, size: 12),
+                             ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                         school.name, 
+                         maxLines: 1, overflow: TextOverflow.ellipsis,
+                         style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.sp, color: Color(0xFF111827), letterSpacing: -0.3)
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          Icon(IconlyLight.location, size: 10, color: Colors.grey[400]),
+                          SizedBox(width: 4.w),
+                          Expanded(
+                            child: Text(
+                              '${school.location?.city ?? ''}, ${school.location?.governorate ?? ''}',
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 9.sp, color: Colors.grey[500], fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      // Info Row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                             if (school.type != null) 
+                               _miniBadge(school.type!, isIndigo: true),
+                             SizedBox(width: 6),
+                             _miniBadge(school.gender ?? 'mixed'.tr, isGender: true),
+                            
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            // Expanded details row
+            if (school.educationSystem != null || school.religionType != null || school.mainTeachingLanguage != null) ...[
+              Divider(height: 32, color: Colors.grey[100]),
+              Row(
+                children: [
+                  if (school.educationSystem != null) 
+                    _detailItem(Icons.book_outlined, school.educationSystem!),
+                  if (school.religionType != null) 
+                    _detailItem(Icons.mosque_outlined, school.religionType!),
+                  if (school.mainTeachingLanguage != null)
+                    _detailItem(Icons.translate, school.mainTeachingLanguage!),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailItem(IconData icon, String text) {
+    return Expanded(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.grey[400]),
+          SizedBox(width: 4),
+          Flexible(child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10.sp, color: Colors.grey[600], fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniBadge(String text, {bool isIndigo = false, bool isPrice = false, bool isGender = false}) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(6)),
-      child: Text(text, style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.bold, color: Color(0xFF6B7280))),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isPrice ? Color(0xFFECFDF5) : (isGender ? Colors.orange[50] : (isIndigo ? Colors.indigo[50] : Color(0xFFF3F4F6))), 
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isPrice ? Color(0xFFD1FAE5) : (isGender ? Colors.orange[100]! : (isIndigo ? Colors.indigo[100]! : Colors.transparent)), 
+          width: 0.5
+        ),
+      ),
+      child: Text(
+        text, 
+        style: TextStyle(
+          fontSize: 9.sp, 
+          fontWeight: FontWeight.w800, 
+          color: isPrice ? Color(0xFF047857) : (isGender ? Colors.orange[700] : (isIndigo ? Colors.indigo[700] : Color(0xFF4B5563))),
+        ),
+      ),
     );
   }
 
 
 
   Widget _buildReviewStep() {
-    final Map<String, School> uniqueMap = {};
-    for (var s in _allSchools) { if (_selectedSchoolIds.contains(s.id)) uniqueMap[s.id] = s; }
-    for (var s in _filteredSchools) { if (_selectedSchoolIds.contains(s.id)) uniqueMap[s.id] = s; }
-    final selectedSchools = uniqueMap.values.toList();
+    final selectedSchools = _selectedSchoolsMap.values.toList();
     
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1494,17 +1807,20 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                 decoration: BoxDecoration(
                    color: Colors.white,
                    borderRadius: BorderRadius.circular(16),
-                   border: Border.all(color: Colors.grey[100]!),
+                   border: Border.all(color: Colors.grey[200]!),
                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(color: Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(10)),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: SafeNetworkImage(imageUrl: school.bannerImage, fit: BoxFit.contain, placeholder: Icon(Icons.school, size: 20, color: Colors.grey[400])),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SafeSchoolImage(
+                        imageUrl: school.bannerImage, 
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover, 
+                        fallbackAsset: AssetsManager.login,
+                        placeholder: Icon(Icons.school, size: 20, color: Colors.grey[400])
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -1517,7 +1833,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                     )),
                     IconButton(
                       icon: Icon(Icons.close, color: Colors.red[300], size: 18),
-                      onPressed: () => setState(() => _selectedSchoolIds.remove(school.id)),
+                      onPressed: () => setState(() => _selectedSchoolsMap.remove(school.id)),
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.red[50],
                         padding: EdgeInsets.zero,
@@ -1583,73 +1899,211 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   // --- Overlays ---
   
   Widget _buildAIOverlay() {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(color: Colors.black.withOpacity(0.5)),
-          ),
-        ),
-        Center(
-          child: Container(
-            width: 260.w,
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 60, height: 60,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                       CircularProgressIndicator(strokeWidth: 3, color: Colors.purple),
-                       Icon(IconlyBold.discovery, color: Colors.purple, size: 24),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Text('ai_analyzing'.tr, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                SizedBox(height: 8.h),
-                Text('ai_analyzing_desc'.tr, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11.sp)),
-                SizedBox(height: 24.h),
-                 _buildProgressItem('analyzing_profile'.tr, _aiProgress > 20, small: true),
-                 _buildProgressItem('searching_schools'.tr, _aiProgress > 50, small: true),
-                 _buildProgressItem('generating_recommendations'.tr, _aiProgress > 80, small: true),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressItem(String text, bool active, {bool small = false}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: small ? 4.h : 8.h),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
         children: [
-          Icon(
-             active ? Icons.check_circle : Icons.circle_outlined, 
-             color: active ? Colors.green : Colors.grey[300],
-             size: small ? 16 : 20,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(color: Color(0xFF1E1B4B).withOpacity(0.3)), // Deep indigo tint
+            ),
           ),
-          SizedBox(width: 8.w),
-          Text(text, style: TextStyle(
-             color: active ? Colors.black87 : Colors.grey, 
-             fontWeight: active ? FontWeight.bold : FontWeight.normal,
-             fontSize: small ? 12.sp : 14.sp,
-          )),
+          Center(
+            child: Container(
+              width: 320.w,
+              margin: EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 40,
+                    offset: Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Premium Gradient Header
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF4F46E5), Color(0xFF9333EA)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 70.w,
+                          height: 70.w,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                          ),
+                          child: Center(
+                            child: AnimatedBuilder(
+                              animation: _loadingAnimation,
+                              builder: (context, child) {
+                                return Transform.rotate(
+                                  angle: _loadingAnimation.value * 2 * 3.14,
+                                  child: Icon(IconlyBold.discovery, color: Colors.white, size: 32.sp),
+                                );
+                              }
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        Text(
+                          'ai_analyzing'.tr,
+                          style: TextStyle(
+                            color: Colors.white, 
+                            fontWeight: FontWeight.w900, 
+                            fontSize: 18.sp,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
+                    child: Column(
+                      children: [
+                        Text(
+                          'ai_analyzing_desc'.tr,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            height: 1.5,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 32.h),
+                        
+                        // Sleek Progress Bar
+                        Stack(
+                          children: [
+                            Container(
+                              height: 8.h,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 500),
+                              height: 8.h,
+                              width: 272.w * (_aiProgress / 100),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF4F46E5), Color(0xFF9333EA)],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0xFF4F46E5).withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 32.h),
+                        
+                        // Status List
+                        _buildAiStatusItem(
+                          'analyzing_profile'.tr,
+                          _aiProgress > 20,
+                          _aiProgress > 0 && _aiProgress <= 20,
+                        ),
+                        _buildAiStatusItem(
+                          'searching_schools'.tr,
+                          _aiProgress > 50,
+                          _aiProgress > 20 && _aiProgress <= 50,
+                        ),
+                        _buildAiStatusItem(
+                          'generating_recommendations'.tr,
+                          _aiProgress > 80,
+                          _aiProgress > 50 && _aiProgress <= 80,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildAiStatusItem(String text, bool completed, bool isCurrent) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 28.w,
+            height: 28.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: completed ? Colors.green[50] : (isCurrent ? Color(0xFF4F46E5).withOpacity(0.1) : Colors.grey[50]),
+            ),
+            child: Center(
+              child: isCurrent 
+                ? SizedBox(width: 14.w, height: 14.w, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF4F46E5)))
+                : Icon(
+                    completed ? Icons.check_rounded : Icons.circle_outlined,
+                    color: completed ? Colors.green : Colors.grey[300],
+                    size: 16.sp,
+                  ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: completed || isCurrent ? Colors.black87 : Colors.grey[400],
+                fontWeight: completed || isCurrent ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13.sp,
+              ),
+            ),
+          ),
+          if (completed)
+            Text(
+              'DONE',
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+
 
 
   // --- Bottom Bar ---
@@ -1709,7 +2163,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   }
   Widget _buildAIAssessmentStep() {
     return _AIAssessmentStepView(
-      child: _selectedStudent!,
+      child: _relatedChildren.firstWhere((c) => c.id == _selectedChildId!),
       onComplete: (report) {
         if (mounted) {
           setState(() {
@@ -1842,13 +2296,14 @@ class _AIAssessmentStepViewState extends State<_AIAssessmentStepView> {
                  Expanded(
                    child: TextField(
                      controller: _textController,
-                     decoration: InputDecoration(
-                       hintText: 'type_your_answer'.tr,
-                       filled: true,
-                       fillColor: Colors.grey[100],
-                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                     ),
+                      decoration: InputDecoration(
+                        hintText: 'type_your_answer'.tr,
+                        hintStyle: TextStyle(fontSize: 11.sp, color: Colors.grey[400]),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
                      onSubmitted: (v) {
                        _sendMessage(v);
                        _textController.clear();
@@ -1903,7 +2358,7 @@ class _AIAssessmentStepViewState extends State<_AIAssessmentStepView> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey[100]!),
       ),
-      child: ListView.builder(
+      child: ListView.builder( 
         itemCount: _messages.length + (_isAnalyzing ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _messages.length) {

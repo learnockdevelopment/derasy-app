@@ -40,15 +40,15 @@ class AdmissionService {
         return ApplyToSchoolsResponse.fromJson(responseData);
       } else if (response.statusCode == 400) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-        final message = responseData['message']?.toString() ?? 'Bad request';
+        final message = responseData['message']?.toString() ?? 'bad_request'.tr;
         
-        // Check for details to provide better error message
+        // Handle specific 400 cases from backend (Age, Period, Active Apps, Balance)
         if (responseData['details'] != null) {
            final details = responseData['details'];
            if (details['requiredAmount'] != null && details['currentBalance'] != null) {
               final required = details['requiredAmount'];
               final available = details['currentBalance'];
-              throw AdmissionException('$message\nRequired: $required, Available: $available', 400);
+              throw AdmissionException('$message\n${'required'.tr}: $required, ${'available'.tr}: $available', 400);
            }
         }
         

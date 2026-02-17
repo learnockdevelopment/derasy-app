@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 import '../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
@@ -6,8 +7,6 @@ import 'package:iconly/iconly.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/routes/app_routes.dart';
-import '../models/student_models.dart';
-import 'student_selection_sheet.dart';
 
 class BottomNavBarWidget extends StatelessWidget {
   const BottomNavBarWidget({Key? key}) : super(key: key);
@@ -22,63 +21,77 @@ class BottomNavBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-      ),
-      child: SafeArea(
+    return SafeArea(
+      bottom: true,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          Responsive.w(24),
+          0,
+          Responsive.w(24),
+          Responsive.h(12),
+        ),
         child: Container(
-          height: Responsive.h(70), // Increased height to prevent overflow
-          margin: Responsive.symmetric(horizontal: 40, vertical: 10), // Increased margin for smaller width
+          height: Responsive.h(70),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(Responsive.r(30)), // Fully rounded
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.2),
-              width: 1,
-            ),
+            borderRadius: BorderRadius.circular(Responsive.r(40)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 5),
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: Padding(
-            padding: Responsive.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(
-                  icon: IconlyBold.home, 
-                  label: 'home'.tr,
-                  index: 0,
-                  onTap: () {
-                    if (Get.currentRoute != AppRoutes.home) {
-                      Get.offNamed(AppRoutes.home);
-                    }
-                  },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Responsive.r(40)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25), // High iPhone-style blur
+              child: Container(
+                padding: Responsive.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.4), // Low opacity glass
+                  borderRadius: BorderRadius.circular(Responsive.r(40)),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1.5,
+                  ),
                 ),
-                _buildNavItem(
-                  icon: IconlyBold.document, 
-                  label: 'applications'.tr,
-                  index: 1,
-                  onTap: () {
-                    Get.offNamed(AppRoutes.applications);
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildNavItem(
+                      icon: IconlyBold.home,
+                      label: 'home'.tr,
+                      index: 0,
+                      onTap: () {
+                        if (Get.currentRoute != AppRoutes.home) {
+                          Get.offNamed(AppRoutes.home);
+                        }
+                      },
+                    ),
+                    _buildNavItem(
+                      icon: IconlyBold.document,
+                      label: 'applications'.tr,
+                      index: 1,
+                      onTap: () {
+                        if (Get.currentRoute != AppRoutes.applications) {
+                          Get.offNamed(AppRoutes.applications);
+                        }
+                      },
+                    ),
+                    _buildNavItem(
+                      icon: IconlyBold.profile,
+                      label: 'my_students'.tr,
+                      index: 2,
+                      onTap: () {
+                        if (Get.currentRoute != AppRoutes.myStudents) {
+                          Get.offNamed(AppRoutes.myStudents);
+                        }
+                      },
+                    ),
+                  ],
                 ),
-                _buildNavItem(
-                  icon: IconlyBold.profile, 
-                  label: 'my_students'.tr,
-                  index: 2,
-                  onTap: () {
-                    if (Get.currentRoute != AppRoutes.myStudents) {
-                      Get.offNamed(AppRoutes.myStudents);
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -93,40 +106,43 @@ class BottomNavBarWidget extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     final isSelected = _currentIndex == index;
-    // Simplified item logic for smaller height
+    const activeColor = Color(0xFF000000); // Bold Black
+    final inactiveColor = const Color(0xFF000000).withOpacity(0.45);
+
     return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(Responsive.r(24)),
+      child: InkWell(
+        onTap: onTap,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: Responsive.all(isSelected ? 8 : 6),
+                duration: const Duration(milliseconds: 300),
+                padding: Responsive.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.blue1.withOpacity(0.1) : Colors.transparent,
-                  shape: BoxShape.circle,
+                  color: isSelected ? Colors.black.withOpacity(0.06) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(Responsive.r(20)),
                 ),
                 child: Icon(
                   icon, 
-                  color: isSelected ? AppColors.blue1 : Colors.black,
+                  color: isSelected ? activeColor : inactiveColor,
                   size: Responsive.sp(22), 
                 ),
               ),
-              // Text is now always visible
+              SizedBox(height: Responsive.h(4)),
               Text(
                 label,
                 style: AppFonts.labelSmall.copyWith(
-                  color: isSelected ? AppColors.blue1 : Colors.black,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: Responsive.sp(9),
+                  color: isSelected ? activeColor : inactiveColor,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                  fontSize: Responsive.sp(10),
+                  letterSpacing: -0.2,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
+              ),
             ],
           ),
         ),
@@ -134,5 +150,3 @@ class BottomNavBarWidget extends StatelessWidget {
     );
   }
 }
-
-

@@ -112,9 +112,14 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           print('🔍 Login check: $isLoggedIn');
 
           if (isLoggedIn) {
-            // User is logged in - go to home
-            print('📱 User logged in - navigating to home');
-            Get.offNamed<void>(AppRoutes.home);
+            // User is logged in - check role
+            if (UserStorageService.isSales()) {
+              print('📱 Sales user logged in - navigating to sales home');
+              Get.offNamed(AppRoutes.salesHome);
+            } else {
+              print('📱 Regular user logged in - navigating to home');
+              Get.offNamed(AppRoutes.home);
+            }
           } else {
             // User not logged in - go to login
             print('📱 User not logged in - navigating to login');

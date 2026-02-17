@@ -94,6 +94,13 @@ class UserStorageService {
     return role == 'school_admin' || role == 'admin' || isSchoolOwner() || isSchoolModerator();
   }
 
+  static bool isSales() {
+    final user = getCurrentUser();
+    if (user == null) return false;
+    final role = user.role.toLowerCase();
+    return role == 'sales';
+  }
+
   static bool isAdminOrModerator() {
     return isSchoolAdmin() || isSchoolOwner() || isSchoolModerator();
   }

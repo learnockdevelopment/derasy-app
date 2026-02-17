@@ -19,6 +19,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:io' show Platform;
+import '../../widgets/loading_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key); 
@@ -338,10 +339,10 @@ class _LoginPageState extends State<LoginPage>
 
       if (!mounted) return;
 
-      // Check user role - only allow student or parent
+      // Check user role
       final userRole = loginResponse.user.role.toLowerCase();
       
-      if (userRole != 'student' && userRole != 'parent') {
+      if (userRole != 'student' && userRole != 'parent' && userRole != 'sales') {
         // Role not allowed
         setState(() {
           _isLoading = false;
@@ -349,7 +350,7 @@ class _LoginPageState extends State<LoginPage>
         
         Get.snackbar(
           'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
+          'unauthorized_role'.tr,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
           colorText: Colors.white,
@@ -380,15 +381,21 @@ class _LoginPageState extends State<LoginPage>
         duration: const Duration(seconds: 2),
       );
 
-      // Trigger pre-fetching of all data
-      try {
-        DashboardController.to.refreshAll();
-      } catch (e) {
-        print('📊 [LOGIN] Error triggering pre-fetch: $e');
+      // Trigger pre-fetching of all data if not sales
+      if (userRole != 'sales') {
+        try {
+          DashboardController.to.refreshAll();
+        } catch (e) {
+          print('📊 [LOGIN] Error triggering pre-fetch: $e');
+        }
       }
 
-      // Navigate to home
-      Get.offNamed<void>(AppRoutes.home);
+      // Navigate based on role
+      if (userRole == 'sales') {
+        Get.offNamed(AppRoutes.salesHome);
+      } else {
+        Get.offNamed(AppRoutes.home);
+      }
       
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -1025,16 +1032,7 @@ class _LoginPageState extends State<LoginPage>
                                         borderRadius: BorderRadius.circular(Responsive.r(12)),
                                       ),
                                     ),
-                                    child: _isLoading
-                                        ? SizedBox(
-                                            height: Responsive.w(24),
-                                            width: Responsive.w(24),
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: Responsive.w(2),
-                                            ),
-                                          )
-                                        : Text(
+                                    child: Text(
                                             'login'.tr,
                                             style: AppFonts.AlmaraiBold16.copyWith(
                                               color: Colors.white,
@@ -1322,6 +1320,10 @@ class _LoginPageState extends State<LoginPage>
           },
         ),
       ),
+      if (_isLoading)
+        const Positioned.fill(
+          child: LoadingPage(),
+        ),
     ],
     ),
     );

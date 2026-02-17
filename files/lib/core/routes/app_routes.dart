@@ -35,5 +35,10 @@ class AppRoutes {
   static const String applyToSchools = '/apply-to-schools';
   static const String applications = '/applications';
   static const String applicationDetails = '/application-details';
+
+  // Sales Routes
+  static const String salesHome = '/sales-home';
+  static const String salesOnboarding = '/sales-onboarding';
+  static const String mySchools = '/my-schools';
 }
 

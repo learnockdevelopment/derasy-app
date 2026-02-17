@@ -24,6 +24,12 @@ class Student {
   final String? nationality;
   final String? passport;
   final Map<String, dynamic>? specialNeeds;
+  final Map<String, dynamic>? healthStatus;
+  final StudentStatusData? studentStatusData;
+  final String? religion;
+  final String? birthPlace;
+  final String? currentSchool;
+  final ActiveApplicationMinimal? activeApplication;
 
   Student({
     required this.id,
@@ -51,6 +57,12 @@ class Student {
     this.nationality,
     this.passport,
     this.specialNeeds,
+    this.healthStatus,
+    this.studentStatusData,
+    this.religion,
+    this.birthPlace,
+    this.currentSchool,
+    this.activeApplication,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -105,6 +117,18 @@ class Student {
       specialNeeds: json['specialNeeds'] is Map<String, dynamic>
           ? Map<String, dynamic>.from(json['specialNeeds'])
           : null,
+      healthStatus: json['healthStatus'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(json['healthStatus'])
+          : null,
+      studentStatusData: json['studentStatus'] != null && json['studentStatus'] is Map
+          ? StudentStatusData.fromJson(json['studentStatus'] as Map<String, dynamic>)
+          : null,
+      religion: _parseStringField(json['religion']),
+      birthPlace: _parseStringField(json['birthPlace']),
+      currentSchool: _parseStringField(json['currentSchool']),
+      activeApplication: json['activeApplication'] != null && json['activeApplication'] is Map
+          ? ActiveApplicationMinimal.fromJson(json['activeApplication'] as Map<String, dynamic>)
+          : null,
     );
   }
  
@@ -132,6 +156,13 @@ class Student {
       'grade': grade.toJson(),
       'section': section.toJson(),
       'moodleUser': moodleUser?.toJson(),
+      'specialNeeds': specialNeeds,
+      'healthStatus': healthStatus,
+      'studentStatus': studentStatusData?.toJson(),
+      'religion': religion,
+      'birthPlace': birthPlace,
+      'currentSchool': currentSchool,
+      'activeApplication': activeApplication?.toJson(),
     };
   }
 
@@ -217,10 +248,75 @@ class Student {
   }
 }
 
+class ActiveApplicationMinimal {
+  final String id;
+  final String schoolId;
+  final String schoolName;
+  final String status;
+  final DateTime? createdAt;
+
+  ActiveApplicationMinimal({
+    required this.id,
+    required this.schoolId,
+    required this.schoolName,
+    required this.status,
+    this.createdAt,
+  });
+
+  factory ActiveApplicationMinimal.fromJson(Map<String, dynamic> json) {
+    return ActiveApplicationMinimal(
+      id: json['_id'] ?? '',
+      schoolId: (json['school'] is Map) 
+          ? (json['school']['_id'] ?? '') 
+          : (json['school']?.toString() ?? ''),
+      schoolName: (json['school'] is Map) 
+          ? (json['school']['name'] ?? '') 
+          : '',
+      status: json['status'] ?? 'pending',
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'school': {
+        '_id': schoolId,
+        'name': schoolName,
+      },
+      'status': status,
+      'createdAt': createdAt?.toIso8601String(),
+    };
+  }
+}
+
+class StudentStatusData {
+  final String status;
+  final DateTime? statusDate;
+
+  StudentStatusData({required this.status, this.statusDate});
+
+  factory StudentStatusData.fromJson(Map<String, dynamic> json) {
+    return StudentStatusData(
+      status: json['status']?.toString() ?? '',
+      statusDate: json['statusDate'] != null ? DateTime.tryParse(json['statusDate'].toString()) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'statusDate': statusDate?.toIso8601String(),
+    };
+  }
+}
+
 class StudentStatus {
   final String status;
 
   StudentStatus({required this.status});
+
+  bool get isEnrolled => status.toLowerCase() == 'enrolled' || status.toLowerCase() == 'active';
 
   factory StudentStatus.fromJson(Map<String, dynamic> json) {
     return StudentStatus(

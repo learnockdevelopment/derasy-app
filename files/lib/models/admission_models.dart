@@ -1,4 +1,3 @@
-import 'student_models.dart';
 import 'school_models.dart';
 
 // Suggestion Models
@@ -54,17 +53,35 @@ class SuggestionPreferences {
   }
 }
 
+class SchoolSuggestion {
+  final String id;
+  final String reason;
+  final int score;
+
+  SchoolSuggestion({required this.id, required this.reason, this.score = 0});
+
+  factory SchoolSuggestion.fromJson(Map<String, dynamic> json) {
+    return SchoolSuggestion(
+      id: json['_id'] ?? json['id'] ?? '',
+      reason: json['reason']?.toString() ?? '',
+      score: (json['score'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
 class SchoolSuggestionResponse {
   final String message;
   final String? markdown;
   final String? html;
   final List<String> suggestedIds;
+  final List<SchoolSuggestion> suggestions;
 
   SchoolSuggestionResponse({
     required this.message,
     this.markdown,
     this.html,
     required this.suggestedIds,
+    this.suggestions = const [],
   });
 
   factory SchoolSuggestionResponse.fromJson(Map<String, dynamic> json) {
@@ -76,6 +93,10 @@ class SchoolSuggestionResponse {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      suggestions: (json['suggestions'] as List?)
+              ?.map((e) => SchoolSuggestion.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <SchoolSuggestion>[],
     );
   }
 }
@@ -211,6 +232,7 @@ class Application {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final AIAssessmentReport? aiAssessment;
 
   Application({
     required this.id,
@@ -227,6 +249,7 @@ class Application {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.aiAssessment,
   });
 
   factory Application.fromJson(Map<String, dynamic> json) {
@@ -273,6 +296,9 @@ class Application {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : DateTime.now(),
+      aiAssessment: json['aiAssessment'] != null && json['aiAssessment'] is Map
+          ? AIAssessmentReport.fromJson(json['aiAssessment'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -292,6 +318,7 @@ class Application {
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      if (aiAssessment != null) 'aiAssessment': aiAssessment!.toJson(),
     };
   }
 }
@@ -302,6 +329,7 @@ class ChildApplicationInfo {
   final String? arabicFullName;
   final DateTime? birthDate;
   final String? gender;
+  final String? currentSchool;
 
   ChildApplicationInfo({
     required this.id,
@@ -309,6 +337,7 @@ class ChildApplicationInfo {
     this.arabicFullName,
     this.birthDate,
     this.gender,
+    this.currentSchool,
   });
 
   factory ChildApplicationInfo.fromJson(Map<String, dynamic> json) {
@@ -320,6 +349,7 @@ class ChildApplicationInfo {
           ? DateTime.parse(json['birthDate'])
           : null,
       gender: json['gender']?.toString(),
+      currentSchool: json['currentSchool']?.toString(),
     );
   }
 
@@ -330,6 +360,7 @@ class ChildApplicationInfo {
       if (arabicFullName != null) 'arabicFullName': arabicFullName,
       'birthDate': birthDate?.toIso8601String(),
       'gender': gender,
+      'currentSchool': currentSchool,
     };
   }
 }
@@ -472,12 +503,14 @@ class ApplyToSchoolsRequest {
   final String childId;
   final List<SelectedSchool> selectedSchools;
   final Map<String, dynamic>? filters;
+  final String paymentMethod;
   final AIAssessmentReport? aiAssessment;
 
   ApplyToSchoolsRequest({
     required this.childId,
     required this.selectedSchools,
     this.filters,
+    this.paymentMethod = 'wallet',
     this.aiAssessment,
   });
 
@@ -486,6 +519,7 @@ class ApplyToSchoolsRequest {
       'childId': childId,
       'selectedSchools': selectedSchools.map((school) => school.toJson()).toList(),
       if (filters != null) 'filters': filters,
+      'paymentMethod': paymentMethod,
       if (aiAssessment != null) 'aiAssessment': {
         'report': aiAssessment!.report,
         'score': aiAssessment!.score,
@@ -737,5 +771,12 @@ class AIAssessmentReport {
       report: json['report']?.toString() ?? '',
       score: (json['score'] as num?)?.toInt() ?? 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'report': report,
+      'score': score,
+    };
   }
 }

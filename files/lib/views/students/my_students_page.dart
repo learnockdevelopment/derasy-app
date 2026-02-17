@@ -168,150 +168,106 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: HorizontalSwipeDetector(
-        onSwipeRight: () {
-          if (Responsive.isRTL) {
-            // RTL: Swipe Right -> Next Index (2 -> None)
-          } else {
-            // LTR: Swipe Right -> Previous Index (2 -> 1)
-            Get.offNamed(AppRoutes.applications);
-          }
-        },
-        onSwipeLeft: () {
-          if (Responsive.isRTL) {
-            // RTL: Swipe Left -> Previous Index (2 -> 1)
-            Get.offNamed(AppRoutes.applications);
-          } else {
-            // LTR: Swipe Left -> Next Index (2 -> None)
-          }
-        },
-        child: RefreshIndicator(
-          onRefresh: _onRefresh,
-          color: AppColors.blue1,
-          child: Obx(() {
-            final controller = DashboardController.to;
-            final isLoading = controller.isLoading;
-            
-            // Local state is now synced via listeners in initState
-            // to avoid calling setState() during build.
+      body: Stack(
+        children: [
+          HorizontalSwipeDetector(
+            onSwipeRight: () {
+              if (Responsive.isRTL) {
+                // RTL: Swipe Right -> Next Index (2 -> None)
+              } else {
+                // LTR: Swipe Right -> Previous Index (2 -> 1)
+                Get.offNamed(AppRoutes.applications);
+              }
+            },
+            onSwipeLeft: () {
+              if (Responsive.isRTL) {
+                // RTL: Swipe Left -> Previous Index (2 -> 1)
+                Get.offNamed(AppRoutes.applications);
+              } else {
+                // LTR: Swipe Left -> Next Index (2 -> None)
+              }
+            },
+            child: RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppColors.blue1,
+              child: Obx(() {
+                final controller = DashboardController.to;
+                final isLoading = controller.isLoading;
+                
+                // Local state is now synced via listeners in initState
+                // to avoid calling setState() during build.
 
-            return CustomScrollView(
-              slivers: [
-                // Hero Section with dynamic height
-                SliverAppBar(
-                  expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
-                  floating: false,
-                  pinned: true,
-                  automaticallyImplyLeading: false,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  toolbarHeight: 0,
-                  collapsedHeight: Responsive.h(45),
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: HeroSectionWidget(
-                      userData: _userData,
-                      pageTitle: 'my_students'.tr,
-                      showGreeting: false,
-                      showFeatures: false,
-                      borderRadius: 20,
-                    ),
-                  ),
-                ),
-
-                if (controller.isTakingLong && isLoading)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: Responsive.symmetric(horizontal: 16, vertical: 12),
-                      child: Container(
-                        padding: Responsive.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(Responsive.r(12)),
-                          border: Border.all(color: AppColors.warning.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: Responsive.sp(20)),
-                            SizedBox(width: Responsive.w(12)),
-                            Expanded(
-                              child: Text(
-                                'slow_connection_message'.tr,
-                                style: AppFonts.bodySmall.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
+                return CustomScrollView(
+                  slivers: [
+                    // Hero Section with dynamic height
+                    SliverAppBar(
+                      expandedHeight: Responsive.h(Responsive.isTablet || Responsive.isDesktop ? 140 : 80),
+                      floating: false,
+                      pinned: true,
+                      automaticallyImplyLeading: false,
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      toolbarHeight: 0,
+                      collapsedHeight: Responsive.h(45),
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: HeroSectionWidget(
+                          userData: _userData,
+                          pageTitle: 'my_students'.tr,
+                          showGreeting: false,
+                          showFeatures: false,
+                          borderRadius: 20,
                         ),
                       ),
                     ),
-                  ),
 
-                if (controller.isTimeout && !isLoading && _filteredChildren.isEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: Responsive.symmetric(horizontal: 16, vertical: 12),
-                      child: InkWell(
-                        onTap: () => controller.refreshAll(),
-                        child: Container(
+                    if (controller.isTakingLong && isLoading)
+                      SliverToBoxAdapter(
+                        child: Padding(
                           padding: Responsive.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                            border: Border.all(color: AppColors.error.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.refresh_rounded, color: AppColors.error, size: Responsive.sp(20)),
-                              SizedBox(width: Responsive.w(8)),
-                              Text(
-                                'retry_loading'.tr,
-                                style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                          child: Container(
+                            padding: Responsive.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(Responsive.r(12)),
+                              border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.wifi_off_rounded, color: AppColors.warning, size: Responsive.sp(20)),
+                                SizedBox(width: Responsive.w(12)),
+                                Expanded(
+                                  child: Text(
+                                    'slow_connection_message'.tr,
+                                    style: AppFonts.bodySmall.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: Responsive.all(16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(Responsive.r(16)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.blue1.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
+                    if (controller.isTimeout && !isLoading && _filteredChildren.isEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                           child: InkWell(
-                            onTap: _navigateToAddChild,
-                            borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            child: Padding(
-                              padding: Responsive.all(16),
+                            onTap: () => controller.refreshAll(),
+                            child: Container(
+                              padding: Responsive.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                              ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(IconlyBold.plus, color: Colors.white, size: Responsive.sp(20)),
-                                  SizedBox(width: Responsive.w(12)),
+                                  Icon(Icons.refresh_rounded, color: AppColors.error, size: Responsive.sp(20)),
+                                  SizedBox(width: Responsive.w(8)),
                                   Text(
-                                    'add_student'.tr,
-                                    style: AppFonts.bodyLarge.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.sp(14),
-                                    ),
+                                    'retry_loading'.tr,
+                                    style: AppFonts.bodySmall.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -319,48 +275,104 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           ),
                         ),
                       ),
-                    ),
-                  ),
 
-                SliverToBoxAdapter(child: SizedBox(height: Responsive.h(4))),
-                // Students List
-                isLoading && _filteredChildren.isEmpty
-                    ? SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            return Padding(
-                              padding: Responsive.symmetric(horizontal: 16),
-                              child: const ShimmerListTile(),
-                            );
-                          },
-                          childCount: 10,
-                        ),
-                      )
-                    : _filteredChildren.isEmpty
-                        ? SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: _buildEmptyState(),
-                          )
-                        : SliverPadding(
-                            padding: Responsive.symmetric(horizontal: 16),
-                            sliver: SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  return _buildStudentListItem(
-                                      _filteredChildren[index], index);
-                                },
-                                childCount: _filteredChildren.length,
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: Responsive.all(16),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(Responsive.r(16)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.blue1.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _navigateToAddChild,
+                                borderRadius: BorderRadius.circular(Responsive.r(16)),
+                                child: Padding(
+                                  padding: Responsive.all(16),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(IconlyBold.plus, color: Colors.white, size: Responsive.sp(20)),
+                                      SizedBox(width: Responsive.w(12)),
+                                      Text(
+                                        'add_student'.tr,
+                                        style: AppFonts.bodyLarge.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: Responsive.sp(14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                SliverToBoxAdapter(
-                    child: SizedBox(height: Responsive.h(100))), // Space for FABs
-              ],
-            );
-          }),
-        ),
+                        ),
+                      ),
+
+                    SliverToBoxAdapter(child: SizedBox(height: Responsive.h(4))),
+                    // Students List
+                    isLoading && _filteredChildren.isEmpty
+                        ? SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return Padding(
+                                  padding: Responsive.symmetric(horizontal: 16),
+                                  child: const ShimmerListTile(),
+                                );
+                              },
+                              childCount: 10,
+                            ),
+                          )
+                        : _filteredChildren.isEmpty
+                            ? SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: _buildEmptyState(),
+                              )
+                            : SliverPadding(
+                                padding: Responsive.symmetric(horizontal: 16),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      return _buildStudentListItem(
+                                          _filteredChildren[index], index);
+                                    },
+                                    childCount: _filteredChildren.length,
+                                  ),
+                                ),
+                              ),
+                    SliverToBoxAdapter(
+                        child: SizedBox(height: Responsive.h(110))), // Space for floating navbar
+                  ],
+                );
+              }),
+            ),
+          ),
+          
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: const BottomNavBarWidget(),
+          ),
+        ],
       ),
-      bottomNavigationBar: const BottomNavBarWidget(),
+      extendBody: true,
+      bottomNavigationBar: null,
     );
   }
 

@@ -160,48 +160,59 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: _filterChildId == null 
-        ? HorizontalSwipeDetector(
-          onSwipeRight: () {
-            if (Responsive.isRTL) {
-              // RTL: Swipe Right -> Next Index (1 -> 2)
-              Get.offNamed(AppRoutes.myStudents);
-            } else {
-              // LTR: Swipe Right -> Previous Index (1 -> 0)
-              Get.offNamed(AppRoutes.home);
-            }
-          },
-          onSwipeLeft: () {
-            if (Responsive.isRTL) {
-              // RTL: Swipe Left -> Previous Index (1 -> 0)
-              Get.offNamed(AppRoutes.home);
-            } else {
-              // LTR: Swipe Left -> Next Index (1 -> 2)
-              Get.offNamed(AppRoutes.myStudents);
-            }
-          },
-          child: RefreshIndicator(
-            onRefresh: _onRefresh,
-            color: AppColors.blue1,
-            child: Obx(() {
-              final controller = DashboardController.to;
-              final isLoading = controller.isLoading;
-              return _buildBodyContent(controller, isLoading);
-            }),
-          ),
-        )
-      : RefreshIndicator(
-          onRefresh: _onRefresh,
-          color: AppColors.blue1,
-          child: Obx(() {
-            final controller = DashboardController.to;
-            final isLoading = controller.isLoading;
-            return _buildBodyContent(controller, isLoading);
-          }),
-        ),
-      bottomNavigationBar: _filterChildId == null
-          ? const BottomNavBarWidget()
-          : null,
+      body: Stack(
+        children: [
+          _filterChildId == null 
+            ? HorizontalSwipeDetector(
+              onSwipeRight: () {
+                if (Responsive.isRTL) {
+                  // RTL: Swipe Right -> Next Index (1 -> 2)
+                  Get.offNamed(AppRoutes.myStudents);
+                } else {
+                  // LTR: Swipe Right -> Previous Index (1 -> 0)
+                  Get.offNamed(AppRoutes.home);
+                }
+              },
+              onSwipeLeft: () {
+                if (Responsive.isRTL) {
+                  // RTL: Swipe Left -> Previous Index (1 -> 0)
+                  Get.offNamed(AppRoutes.home);
+                } else {
+                  // LTR: Swipe Left -> Next Index (1 -> 2)
+                  Get.offNamed(AppRoutes.myStudents);
+                }
+              },
+              child: RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: AppColors.blue1,
+                child: Obx(() {
+                  final controller = DashboardController.to;
+                  final isLoading = controller.isLoading;
+                  return _buildBodyContent(controller, isLoading);
+                }),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppColors.blue1,
+              child: Obx(() {
+                final controller = DashboardController.to;
+                final isLoading = controller.isLoading;
+                return _buildBodyContent(controller, isLoading);
+              }),
+            ),
+          
+          if (_filterChildId == null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: const BottomNavBarWidget(),
+            ),
+        ],
+      ),
+      extendBody: true,
+      bottomNavigationBar: null,
       floatingActionButton: Obx(() {
         final controller = DashboardController.to;
         final hasActiveApp = controller.allApplications.any((app) {
@@ -341,7 +352,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             ),
           ),
         
-        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(80))), // Bottom padding
+        SliverToBoxAdapter(child: SizedBox(height: Responsive.h(110))), // Bottom padding
       ],
     );
   }
