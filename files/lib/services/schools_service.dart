@@ -41,7 +41,7 @@ class SchoolsService {
       final token = UserStorageService.getAuthToken();
       final headers = ApiConstants.getHeaders(token: token);
       // Assuming endpoint is /schools/[id]
-      final url = '$_baseUrl${ApiConstants.getAllSchoolsEndpoint}/$id';
+      final url = '$_baseUrl${ApiConstants.getAllSchoolsEndpoint}/my/$id';
       
       print('🏫 [SCHOOLS] Fetching school details: $url');
       
@@ -65,6 +65,53 @@ class SchoolsService {
       }
     } catch (e) {
       print('🏫 [SCHOOLS] Error: $e');
+      throw SchoolsException('Network error: $e');
+    }
+  }
+
+  // Get lookups (school types, governorates, etc.)
+  static Future<Map<String, dynamic>> getLookups() async {
+    try {
+      final token = UserStorageService.getAuthToken();
+      final url = '$_baseUrl${ApiConstants.getLookupsEndpoint}';
+      
+      final response = await http.get(
+        Uri.parse(url),
+        headers: ApiConstants.getHeaders(token: token),
+      );
+      
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw SchoolsException('Failed to load lookups');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error fetching lookups: $e');
+      throw SchoolsException('Network error: $e');
+    }
+  }
+
+  // Get education systems for onboarding
+  static Future<List<dynamic>> getEducationSystems() async {
+    try {
+      final token = UserStorageService.getAuthToken();
+      final url = '$_baseUrl${ApiConstants.getEducationSystemsEndpoint}';
+      
+      final response = await http.get(
+        Uri.parse(url),
+        headers: ApiConstants.getHeaders(token: token),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) return data;
+        if (data is Map && data.containsKey('systems')) return data['systems'];
+        return [];
+      } else {
+        throw SchoolsException('Failed to load education systems');
+      }
+    } catch (e) {
+      print('🏫 [SCHOOLS] Error fetching systems: $e');
       throw SchoolsException('Network error: $e');
     }
   }

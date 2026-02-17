@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../services/sales_service.dart';
 import '../../widgets/loading_page.dart';
 import '../../widgets/school_card_widget.dart';
+import 'school_details_page.dart';
 
 class MySchoolsPage extends StatefulWidget {
   const MySchoolsPage({Key? key}) : super(key: key);
@@ -28,10 +30,10 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
 
   Future<void> _fetchSchools() async {
     try {
-      final schools = await SalesService.getSalesSchools();
+      final allSchools = await SalesService.getSalesSchools();
       if (mounted) {
         setState(() {
-          _schools = schools;
+          _schools = allSchools;
           _isLoading = false;
         });
       }
@@ -119,11 +121,15 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
   }
 
   Widget _buildSchoolCard(Map<String, dynamic> school) {
+    bool isApproved = school['approved'] == true;
+    final schoolId = school['id']?.toString() ?? school['_id']?.toString() ?? '';
+    
     return SchoolCardWidget(
       name: school['name'] ?? 'Unknown School',
       coverUrl: school['coverUrl'],
       logoUrl: school['logoUrl'],
       type: school['type'] ?? 'School',
+      onTap: schoolId.isNotEmpty ? () => Get.toNamed(AppRoutes.schoolDetails, arguments: schoolId) : null,
       statusBadge: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -143,15 +149,15 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: school['approved'] == true ? Colors.green : Colors.orange,
+                color: isApproved ? Colors.green : Colors.orange,
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(width: 6),
             Text(
-              school['approved'] == true ? 'Active' : 'Pending',
+              isApproved ? 'active'.tr : 'not_active'.tr,
               style: AppFonts.AlmaraiBold12.copyWith(
-                color: school['approved'] == true ? Colors.green : Colors.orange,
+                color: isApproved ? Colors.green : Colors.orange,
               ),
             ),
           ],
@@ -179,7 +185,10 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
         ),
       ],
       onTap: () {
-        // Navigation logic if needed
+        final id = school['_id'] ?? school['id'];
+        if (id != null) {
+          Get.to(() => SchoolDetailsPage(schoolId: id.toString()));
+        }
       },
     );
   }

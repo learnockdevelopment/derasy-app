@@ -1,3 +1,21 @@
+import 'dart:ui';
+
+class SchoolFacility {
+  final String id;
+  final String name;
+  final String icon;
+
+  SchoolFacility({required this.id, required this.name, required this.icon});
+
+  factory SchoolFacility.fromJson(Map<String, dynamic> json) {
+    return SchoolFacility(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      name: (json['name'] ?? '').toString(),
+      icon: (json['icon'] ?? '').toString(),
+    );
+  }
+}
+
 class School {
   final String id;
   final String name;
@@ -11,7 +29,7 @@ class School {
   final SchoolVisibilitySettings? visibilitySettings;
   final List<SchoolBranch> branches;
   final List<String> gradesOffered;
-  final Map<String, dynamic> ageRequirement;
+  final Map<String, dynamic> ageRequirement; 
   final String? bannerImage;
   final List<String> languages;
   final String? mainTeachingLanguage;
@@ -34,6 +52,8 @@ class School {
   final SchoolMobileApps? mobileApps;
   final SchoolMoodleDb? moodleDb;
   final SchoolAcademicYear? academicYear;
+  final List<SchoolFacility>? facilities;
+  final Map<String, dynamic>? workingHours;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -85,18 +105,14 @@ class School {
     this.mobileApps,
     this.moodleDb,
     this.academicYear,
+    this.facilities,
+    this.workingHours,
     this.createdAt,
     this.updatedAt,
   });
 
   factory School.fromJson(Map<String, dynamic> json) {
     try {
-      // Debug logging to identify the issue
-      print('🏫 [SCHOOL JSON] Parsing school: ${json['name']}');
-      print(
-          '🏫 [SCHOOL JSON] Ownership type: ${json['ownership'].runtimeType}');
-      print('🏫 [SCHOOL JSON] Ownership value: ${json['ownership']}');
-
       return School(
         id: _parseString(json['_id']) ?? '',
         name: _parseString(json['name']) ?? '',
@@ -212,6 +228,16 @@ class School {
                 json['academicYear'] is Map<String, dynamic>
             ? SchoolAcademicYear.fromJson(json['academicYear'])
             : null,
+        facilities: (json['facilities'] as List<dynamic>?)?.map((f) {
+          if (f is Map<String, dynamic>) {
+            return SchoolFacility.fromJson(f);
+          } else {
+            return SchoolFacility(id: f.toString(), name: f.toString(), icon: f.toString());
+          }
+        }).toList(),
+        workingHours: json['workingHours'] is Map<String, dynamic>
+            ? Map<String, dynamic>.from(json['workingHours'])
+            : null,
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'])
             : null,
@@ -221,8 +247,6 @@ class School {
       );
     } catch (e) {
       print('🏫 [SCHOOL JSON] Error parsing school: $e');
-      print('🏫 [SCHOOL JSON] Problematic JSON: $json');
-      // Return a minimal school object to prevent app crash
       return School(
         id: json['_id'] ?? 'unknown',
         name: json['name'] ?? 'Unknown School',
@@ -245,20 +269,19 @@ class School {
 }
 
 class SchoolOwnership {
-  final String? owner;
+  final SchoolOwner? owner;
   final List<SchoolModerator> moderators;
 
   SchoolOwnership({this.owner, required this.moderators});
 
   factory SchoolOwnership.fromJson(Map<String, dynamic> json) {
     return SchoolOwnership(
-      owner: School._parseString(json['owner']),
+      owner: json['owner'] != null && json['owner'] is Map<String, dynamic>
+          ? SchoolOwner.fromJson(json['owner'])
+          : null,
       moderators: (json['moderators'] as List<dynamic>?)
               ?.map((mod) {
-                // Handle both string IDs and full moderator objects
-                if (mod is String) {
-                  return SchoolModerator(id: mod, email: '');
-                } else if (mod is Map<String, dynamic>) {
+                if (mod is Map<String, dynamic>) {
                   return SchoolModerator.fromJson(mod);
                 }
                 return null;
@@ -271,16 +294,48 @@ class SchoolOwnership {
   }
 }
 
+class SchoolOwner {
+  final String id;
+  final String name;
+  final String email;
+  final String? phone;
+
+  SchoolOwner({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.phone,
+  });
+
+  factory SchoolOwner.fromJson(Map<String, dynamic> json) {
+    return SchoolOwner(
+      id: json['_id'] ?? json['id'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      phone: json['phone']?.toString(),
+    );
+  }
+}
+
 class SchoolModerator {
   final String id;
+  final String name;
   final String email;
+  final String? phone;
 
-  SchoolModerator({required this.id, required this.email});
+  SchoolModerator({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.phone,
+  });
 
   factory SchoolModerator.fromJson(Map<String, dynamic> json) {
     return SchoolModerator(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
+      name: json['name'] ?? '',
       email: json['email'] ?? '',
+      phone: json['phone']?.toString(),
     );
   }
 }
@@ -481,6 +536,9 @@ class SchoolLocation {
   final String? secondaryPhone;
   final String? officialEmail;
   final String? website;
+  final String? address;
+  final double? latitude;
+  final double? longitude;
   final Map<String, String>? socialMedia;
 
   SchoolLocation({
@@ -492,6 +550,9 @@ class SchoolLocation {
     this.secondaryPhone,
     this.officialEmail,
     this.website,
+    this.address,
+    this.latitude,
+    this.longitude,
     this.socialMedia,
   });
 
@@ -505,6 +566,9 @@ class SchoolLocation {
       secondaryPhone: json['secondaryPhone']?.toString(),
       officialEmail: json['officialEmail']?.toString(), 
       website: json['website']?.toString(),
+      address: (json['address'] ?? json['detailedAddress'])?.toString(),
+      latitude: json['coordinates']?['lat'] != null ? double.tryParse(json['coordinates']!['lat'].toString()) : null,
+      longitude: json['coordinates']?['lng'] != null ? double.tryParse(json['coordinates']!['lng'].toString()) : null,
       socialMedia: json['socialMedia'] != null
           ? Map<String, String>.from(json['socialMedia'])
           : null,
@@ -919,9 +983,7 @@ class SchoolsResponse {
 
   factory SchoolsResponse.fromJson(dynamic json) {
     try {
-      // Handle case where API returns a list directly
       if (json is List) {
-        print('🏫 [SCHOOLS RESPONSE] API returned list directly with ${json.length} schools');
         return SchoolsResponse(
           success: true,
           message: 'Schools loaded successfully',
@@ -935,28 +997,23 @@ class SchoolsResponse {
         );
       }
       
-      // Handle case where API returns an object
       if (json is Map<String, dynamic>) {
-      print(
-          '🏫 [SCHOOLS RESPONSE] Parsing response with ${json['schools']?.length ?? 0} schools');
-      return SchoolsResponse(
-        success: json['success'] ?? true,
-        message: json['message'] ?? '',
-        schools: (json['schools'] as List<dynamic>?)
-                ?.map((school) => school is Map<String, dynamic>
-                    ? School.fromJson(school)
-                    : null)
-                .where((school) => school != null)
-                .cast<School>()
-                .toList() ??
-            [],
-      );
+        return SchoolsResponse(
+          success: json['success'] ?? true,
+          message: json['message'] ?? '',
+          schools: (json['schools'] as List<dynamic>?)
+                  ?.map((school) => school is Map<String, dynamic>
+                      ? School.fromJson(school)
+                      : null)
+                  .where((school) => school != null)
+                  .cast<School>()
+                  .toList() ??
+              [],
+        );
       }
       
       throw Exception('Unexpected JSON format: ${json.runtimeType}');
     } catch (e) {
-      print('🏫 [SCHOOLS RESPONSE] Error parsing schools response: $e');
-      print('🏫 [SCHOOLS RESPONSE] Problematic JSON: $json');
       return SchoolsResponse(
         success: false,
         message: 'Error parsing schools data: $e',
@@ -989,4 +1046,3 @@ class SchoolsException implements Exception {
   @override
   String toString() => 'SchoolsException: $message';
 }
-

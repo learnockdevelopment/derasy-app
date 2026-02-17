@@ -27,10 +27,10 @@ class _SalesHomePageState extends State<SalesHomePage> {
 
   Future<void> _loadData() async {
     try {
-      final schools = await SalesService.getSalesSchools();
+      final allSchools = await SalesService.getSalesSchools();
       if (mounted) {
         setState(() {
-          _totalSchools = schools.length;
+          _totalSchools = allSchools.length;
           _isLoading = false;
         });
       }
@@ -159,8 +159,32 @@ class _SalesHomePageState extends State<SalesHomePage> {
         ),
       ),
       actions: [
+        // Language Toggle Button
+        Center(
+          child: InkWell(
+            onTap: () {
+              final currentLocale = Get.locale?.languageCode ?? 'ar';
+              final newLocale = currentLocale == 'ar' ? const Locale('en') : const Locale('ar');
+              Get.updateLocale(newLocale);
+            },
+            borderRadius: BorderRadius.circular(50),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+              ),
+              child: Text(
+                Get.locale?.languageCode == 'ar' ? 'EN' : 'AR',
+                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.only(right: 12, left: 12),
           child: Center(
             child: InkWell(
               onTap: () async {

@@ -4,7 +4,7 @@ import '../../services/admission_service.dart';
 import '../../services/students_service.dart';
 import '../../models/admission_models.dart';
 import '../../models/student_models.dart';
-
+import '../../services/user_storage_service.dart';
 
 class DashboardController extends GetxController {
   static DashboardController get to => Get.find();
@@ -40,6 +40,13 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // Don't call parent APIs if user is sales
+    if (UserStorageService.isSales()) {
+      print('📊 [DASHBOARD] Sales role detected - skipping parent API calls');
+      return;
+    }
+    
     _loadFromCache();
     refreshAll();
   }

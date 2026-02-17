@@ -139,18 +139,23 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         });
 
         if (response.correct) {
-          // Save user data and token
+          // Save user data and token (fallback to parent if role unknown)
           await UserStorageService.saveCurrentUser(
             User(
               id: '',
               name: '',
               email: _email,
-              role: 'parent',
+              role: 'parent', // Verification usually comes from public registration
             ),
             response.token,
           );
 
-          Get.offAllNamed<void>(AppRoutes.home);
+          // Navigate based on role
+          if (UserStorageService.isSales()) {
+            Get.offAllNamed(AppRoutes.salesHome);
+          } else {
+            Get.offAllNamed(AppRoutes.home);
+          }
           Get.snackbar(
             'success'.tr,
             response.message,

@@ -27,6 +27,7 @@ import '../../views/admission/application_details_page.dart';
 import '../../views/sales/my_schools_page.dart';
 import '../../views/sales/sales_home_page.dart';
 import '../../views/sales/sales_onboarding_page.dart';
+import '../../views/sales/school_details_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -170,6 +171,12 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const MySchoolsPage(),
+        );
+      case AppRoutes.schoolDetails:
+        final schoolId = settings.arguments as String;
+        return GetPageRoute(
+          settings: settings,
+          page: () => SchoolDetailsPage(schoolId: schoolId),
         );
       default:
         return errorRoute();

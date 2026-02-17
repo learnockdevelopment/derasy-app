@@ -40,5 +40,6 @@ class AppRoutes {
   static const String salesHome = '/sales-home';
   static const String salesOnboarding = '/sales-onboarding';
   static const String mySchools = '/my-schools';
+  static const String schoolDetails = '/school-details';
 }
 
