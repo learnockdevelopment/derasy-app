@@ -88,7 +88,7 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
                           ),
                         ],
                       ),
-                      child: Image.asset(AssetsManager.logo, fit: BoxFit.contain),
+                      child: Image.asset(AssetsManager.login, fit: BoxFit.contain),
                     ),
                   ),
                 ],
