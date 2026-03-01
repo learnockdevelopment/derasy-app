@@ -519,100 +519,100 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-  Future<void> _handleAppleLogin() async {
-    try {
-        setState(() {
-        _isLoading = true;
-      });
-
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final identityToken = credential.identityToken;
-
-      if (identityToken == null) {
-          throw AuthException('Failed to get Apple Identity Token', 0);
-      }
-
-      // Prepare user object for first-time login as per mobile auth documentation
-      Map<String, dynamic>? userObj;
-      if (credential.givenName != null || credential.familyName != null || credential.email != null) {
-        userObj = {
-          'name': {
-            'firstName': credential.givenName ?? '',
-            'lastName': credential.familyName ?? '',
-          },
-          'email': credential.email,
-        };
-      }
-
-      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
-
-       if (!mounted) return;
-
-      // Check user role - only allow student or parent
-      final userRole = loginResponse.user.role.toLowerCase();
-
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
-
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
-      }
-
-      // Save user data and token
-      await UserStorageService.saveCurrentUser(
-        loginResponse.user,
-        loginResponse.token,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success message
-      Get.snackbar(
-        'login_success'.tr,
-        loginResponse.message.isNotEmpty
-            ? loginResponse.message
-            : 'welcome_back_message'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.blue1,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
-      
-        // Navigate to home
-      Get.offNamed<void>(AppRoutes.home);
-
-    } catch (e) {
-        if (!mounted) return;
-        setState(() {
-        _isLoading = false;
-      });
-      print('Apple Sign In Error: $e');
-       Get.snackbar(
-        'error'.tr,
-        'apple_login_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-    }
-  }
+  // Future<void> _handleAppleLogin() async {
+  //   try {
+  //       setState(() {
+  //       _isLoading = true;
+  //     });
+  //
+  //     final credential = await SignInWithApple.getAppleIDCredential(
+  //       scopes: [
+  //         AppleIDAuthorizationScopes.email,
+  //         AppleIDAuthorizationScopes.fullName,
+  //       ],
+  //     );
+  //
+  //     final identityToken = credential.identityToken;
+  //
+  //     if (identityToken == null) {
+  //         throw AuthException('Failed to get Apple Identity Token', 0);
+  //     }
+  //
+  //     // Prepare user object for first-time login as per mobile auth documentation
+  //     Map<String, dynamic>? userObj;
+  //     if (credential.givenName != null || credential.familyName != null || credential.email != null) {
+  //       userObj = {
+  //         'name': {
+  //           'firstName': credential.givenName ?? '',
+  //           'lastName': credential.familyName ?? '',
+  //         },
+  //         'email': credential.email,
+  //       };
+  //     }
+  //
+  //     final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
+  //
+  //      if (!mounted) return;
+  //
+  //     // Check user role - only allow student or parent
+  //     final userRole = loginResponse.user.role.toLowerCase();
+  //
+  //     if (userRole != 'student' && userRole != 'parent') {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //
+  //       Get.snackbar(
+  //         'login_failed'.tr,
+  //         'only_student_or_parent_allowed'.tr,
+  //         snackPosition: SnackPosition.BOTTOM,
+  //         backgroundColor: AppColors.error,
+  //         colorText: Colors.white,
+  //         duration: const Duration(seconds: 3),
+  //       );
+  //       return;
+  //     }
+  //
+  //     // Save user data and token
+  //     await UserStorageService.saveCurrentUser(
+  //       loginResponse.user,
+  //       loginResponse.token,
+  //     );
+  //
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //
+  //     // Show success message
+  //     Get.snackbar(
+  //       'login_success'.tr,
+  //       loginResponse.message.isNotEmpty
+  //           ? loginResponse.message
+  //           : 'welcome_back_message'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: AppColors.blue1,
+  //       colorText: Colors.white,
+  //       duration: const Duration(seconds: 2),
+  //     );
+  //
+  //       // Navigate to home
+  //     Get.offNamed<void>(AppRoutes.home);
+  //
+  //   } catch (e) {
+  //       if (!mounted) return;
+  //       setState(() {
+  //       _isLoading = false;
+  //     });
+  //     print('Apple Sign In Error: $e');
+  //      Get.snackbar(
+  //       'error'.tr,
+  //       'apple_login_failed'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //        backgroundColor: AppColors.error,
+  //       colorText: Colors.white,
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -1224,41 +1224,41 @@ class _RegisterPageState extends State<RegisterPage>
                           ),
                           
                            // Social Login Buttons
-                          if (Platform.isIOS) ...[
-                           SizedBox(height: Responsive.h(16)),
-                            SizedBox(
-                              height: Responsive.h(50),
-                               child: OutlinedButton(
-                                onPressed: _isLoading ? null : _handleAppleLogin,
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  side: BorderSide(color: Colors.black),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SvgPicture.asset(
-                                      AssetsManager.appleSvg,
-                                      width: Responsive.w(24),
-                                      height: Responsive.w(24),
-                                       colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                    ),
-                                    SizedBox(width: Responsive.w(12)),
-                                    Text(
-                                      'continue_with_apple'.tr,
-                                      style: AppFonts.AlmaraiMedium14.copyWith(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+                          // if (Platform.isIOS) ...[
+                          //  SizedBox(height: Responsive.h(16)),
+                          //   SizedBox(
+                          //     height: Responsive.h(50),
+                          //      child: OutlinedButton(
+                          //       onPressed: _isLoading ? null : _handleAppleLogin,
+                          //       style: OutlinedButton.styleFrom(
+                          //         backgroundColor: Colors.black,
+                          //         side: BorderSide(color: Colors.black),
+                          //         shape: RoundedRectangleBorder(
+                          //           borderRadius: BorderRadius.circular(Responsive.r(12)),
+                          //         ),
+                          //         padding: EdgeInsets.zero,
+                          //       ),
+                          //       child: Row(
+                          //         mainAxisAlignment: MainAxisAlignment.center,
+                          //         children: [
+                          //           SvgPicture.asset(
+                          //             AssetsManager.appleSvg,
+                          //             width: Responsive.w(24),
+                          //             height: Responsive.w(24),
+                          //              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          //           ),
+                          //           SizedBox(width: Responsive.w(12)),
+                          //           Text(
+                          //             'continue_with_apple'.tr,
+                          //             style: AppFonts.AlmaraiMedium14.copyWith(
+                          //               color: Colors.white,
+                          //             ),
+                          //           ),
+                          //         ],
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ],
                           SizedBox(height: Responsive.h(20)),
                         ],
                       ),

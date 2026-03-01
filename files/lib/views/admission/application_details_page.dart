@@ -9,6 +9,7 @@ import '../../models/admission_models.dart';
 import '../../services/admission_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../widgets/shimmer_loading.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 class ApplicationDetailsPage extends StatefulWidget {
   const ApplicationDetailsPage({Key? key}) : super(key: key);
@@ -111,9 +112,18 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return Obx(() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
+    final textPrimary = isDark ? Colors.white : const Color(0xFF1E293B);
+    final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
+    final surfaceBg = isDark ? const Color(0xFF0F172A).withOpacity(0.5) : const Color(0xFFF8FAFC);
+
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: scaffoldBg,
         appBar: AppBar(
           backgroundColor: AppColors.blue1,
           elevation: 0,
@@ -145,7 +155,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
 
     if (_application == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: scaffoldBg,
         appBar: AppBar(
           backgroundColor: AppColors.blue1,
           elevation: 0,
@@ -158,7 +168,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           child: Text(
             'application_not_found'.tr,
             style: AppFonts.h4.copyWith(
-              color: AppColors.textSecondary,
+              color: textSecondary,
               fontSize: Responsive.sp(14),
             ),
           ),
@@ -171,7 +181,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     final statusColor = _getStatusColor(app.status, isPaid);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         backgroundColor: statusColor,
         elevation: 0,
@@ -261,12 +271,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   icon: Icons.school_rounded,
                   iconColor: const Color(0xFF6366F1),
                   title: 'school_information'.tr,
+                  cardBg: cardBg, borderColor: borderColor,
+                  textPrimary: textPrimary,
                   children: [
                     _buildInfoRow(
                       icon: Icons.business,
                       label: 'school_name'.tr,
                       value: app.school.name,
                       isHighlight: true,
+                      cardBg: cardBg, borderColor: borderColor,
+                      textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                     ),
                     if (app.school.address != null) ...[
                       SizedBox(height: Responsive.h(8)),
@@ -274,6 +288,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                         icon: Icons.location_on,
                         label: 'address'.tr,
                         value: app.school.address!,
+                        cardBg: cardBg, borderColor: borderColor,
+                        textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                       ),
                     ],
                   ],
@@ -285,12 +301,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   icon: Icons.child_care_rounded,
                   iconColor: const Color(0xFF10B981),
                   title: 'student_information'.tr,
+                  cardBg: cardBg, borderColor: borderColor,
+                  textPrimary: textPrimary,
                   children: [
                     _buildInfoRow(
                       icon: Icons.person,
                       label: 'full_name'.tr,
                       value: app.child.arabicFullName ?? app.child.fullName,
                       isHighlight: true,
+                      cardBg: cardBg, borderColor: borderColor,
+                      textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                     ),
                     if (app.child.birthDate != null) ...[
                       SizedBox(height: Responsive.h(8)),
@@ -298,6 +318,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                         icon: Icons.cake,
                         label: 'birth_date'.tr,
                         value: _formatDate(app.child.birthDate!),
+                        cardBg: cardBg, borderColor: borderColor,
+                        textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                       ),
                     ],
                     if (app.child.gender != null) ...[
@@ -306,6 +328,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                         icon: Icons.wc,
                         label: 'gender'.tr,
                         value: app.child.gender!.toLowerCase() == 'male' ? 'male'.tr : 'female'.tr,
+                        cardBg: cardBg, borderColor: borderColor,
+                        textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                       ),
                     ],
                   ],
@@ -316,24 +340,18 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 if (app.payment != null)
                   _buildInfoCard(
                     icon: Icons.payments_rounded,
-                    iconColor: app.payment!.isPaid
-                        ? AppColors.success
-                        : AppColors.warning,
+                    iconColor: app.payment!.isPaid ? AppColors.success : AppColors.warning,
                     title: 'payment_information'.tr,
+                    cardBg: cardBg, borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: [
                       Container(
                         padding: Responsive.all(10),
                         decoration: BoxDecoration(
-                          color: (app.payment!.isPaid
-                                  ? AppColors.success
-                                  : AppColors.warning)
-                              .withOpacity(0.1),
+                          color: (app.payment!.isPaid ? AppColors.success : AppColors.warning).withOpacity(isDark ? 0.15 : 0.1),
                           borderRadius: BorderRadius.circular(Responsive.r(10)),
                           border: Border.all(
-                            color: (app.payment!.isPaid
-                                    ? AppColors.success
-                                    : AppColors.warning)
-                                .withOpacity(0.3),
+                            color: (app.payment!.isPaid ? AppColors.success : AppColors.warning).withOpacity(0.3),
                             width: 1.5,
                           ),
                         ),
@@ -342,15 +360,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                             Container(
                               padding: Responsive.all(6),
                               decoration: BoxDecoration(
-                                color: app.payment!.isPaid
-                                    ? AppColors.success
-                                    : AppColors.warning,
+                                color: app.payment!.isPaid ? AppColors.success : AppColors.warning,
                                 borderRadius: BorderRadius.circular(Responsive.r(8)),
                               ),
                               child: Icon(
-                                app.payment!.isPaid
-                                    ? Icons.check_circle
-                                    : Icons.pending,
+                                app.payment!.isPaid ? Icons.check_circle : Icons.pending,
                                 color: Colors.white,
                                 size: Responsive.sp(16),
                               ),
@@ -363,9 +377,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   Text(
                                     app.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
                                     style: AppFonts.h4.copyWith(
-                                      color: app.payment!.isPaid
-                                          ? AppColors.success
-                                          : AppColors.warning,
+                                      color: app.payment!.isPaid ? AppColors.success : AppColors.warning,
                                       fontWeight: FontWeight.bold,
                                       fontSize: Responsive.sp(13),
                                     ),
@@ -374,7 +386,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                                   Text(
                                     '${app.payment!.amount} ${'egp'.tr}',
                                     style: AppFonts.bodyMedium.copyWith(
-                                      color: AppColors.textPrimary,
+                                      color: textPrimary,
                                       fontSize: Responsive.sp(13),
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -394,66 +406,54 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   icon: Icons.info_outline_rounded,
                   iconColor: AppColors.blue1,
                   title: 'application_details_title'.tr,
+                  cardBg: cardBg, borderColor: borderColor,
+                  textPrimary: textPrimary,
                   children: [
                     _buildInfoRow(
                       icon: Icons.fingerprint,
                       label: 'application_id_label'.tr,
                       value: app.id,
                       copyable: true,
+                      cardBg: cardBg, borderColor: borderColor,
+                      textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                     ),
                     SizedBox(height: Responsive.h(8)),
                     _buildInfoRow(
                       icon: Icons.calendar_today,
                       label: 'submitted_date'.tr,
                       value: _formatDate(app.submittedAt ?? app.createdAt),
+                      cardBg: cardBg, borderColor: borderColor,
+                      textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                     ),
                     SizedBox(height: Responsive.h(8)),
                     _buildInfoRow(
                       icon: Icons.update,
                       label: 'last_updated'.tr,
                       value: _formatDate(app.updatedAt),
+                      cardBg: cardBg, borderColor: borderColor,
+                      textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
                     ),
                     if (app.notes != null && app.notes!.isNotEmpty) ...[
                       SizedBox(height: Responsive.h(8)),
                       Container(
                         padding: Responsive.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.grey100,
+                          color: surfaceBg,
                           borderRadius: BorderRadius.circular(Responsive.r(10)),
-                          border: Border.all(
-                            color: AppColors.borderLight,
-                            width: 1,
-                          ),
+                          border: Border.all(color: borderColor, width: 1),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.note,
-                              size: Responsive.sp(14),
-                              color: AppColors.textSecondary,
-                            ),
+                            Icon(Icons.note, size: Responsive.sp(14), color: textSecondary),
                             SizedBox(width: Responsive.w(10)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'notes'.tr,
-                                    style: AppFonts.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontSize: Responsive.sp(10),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                  Text('notes'.tr, style: AppFonts.bodySmall.copyWith(color: textSecondary, fontSize: Responsive.sp(10), fontWeight: FontWeight.w500)),
                                   SizedBox(height: Responsive.h(3)),
-                                  Text(
-                                    app.notes!,
-                                    style: AppFonts.bodyMedium.copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontSize: Responsive.sp(12),
-                                    ),
-                                  ),
+                                  Text(app.notes!, style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontSize: Responsive.sp(12))),
                                 ],
                               ),
                             ),
@@ -464,76 +464,46 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   ],
                 ),
                 
-                // Confirmed Interview (if exists)
+                // Confirmed Interview
                 if (app.interview?.date != null) ...[
                   SizedBox(height: Responsive.h(10)),
                   _buildInfoCard(
                     icon: Icons.event_available_rounded,
                     iconColor: AppColors.success,
                     title: 'interview_scheduled'.tr,
+                    cardBg: cardBg, borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: [
                       Container(
                         padding: Responsive.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.05),
+                          color: AppColors.success.withOpacity(isDark ? 0.12 : 0.05),
                           borderRadius: BorderRadius.circular(Responsive.r(10)),
-                          border: Border.all(
-                            color: AppColors.success.withOpacity(0.2),
-                            width: 1,
-                          ),
+                          border: Border.all(color: AppColors.success.withOpacity(0.2), width: 1),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Icon(Icons.calendar_today, size: Responsive.sp(14), color: AppColors.success),
-                                SizedBox(width: Responsive.w(8)),
-                                Text(
-                                  _formatDate(app.interview!.date!),
-                                  style: AppFonts.bodyMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.sp(13),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            Row(children: [
+                              Icon(Icons.calendar_today, size: Responsive.sp(14), color: AppColors.success),
+                              SizedBox(width: Responsive.w(8)),
+                              Text(_formatDate(app.interview!.date!), style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontWeight: FontWeight.bold, fontSize: Responsive.sp(13))),
+                            ]),
                             if (app.interview!.time?.isNotEmpty ?? false) ...[
                               SizedBox(height: Responsive.h(8)),
-                              Row(
-                                children: [
-                                  Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
-                                  SizedBox(width: Responsive.w(8)),
-                                  Expanded(
-                                    child: Text(
-                                      _formatTimeDisplay(app.interview!.time),
-                                      style: AppFonts.bodyMedium.copyWith(
-                                        color: AppColors.textPrimary,
-                                        fontSize: Responsive.sp(12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              Row(children: [
+                                Icon(Icons.access_time, size: Responsive.sp(14), color: AppColors.success),
+                                SizedBox(width: Responsive.w(8)),
+                                Expanded(child: Text(_formatTimeDisplay(app.interview!.time), style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontSize: Responsive.sp(12)))),
+                              ]),
                             ],
                             if (app.interview!.location != null) ...[
                               SizedBox(height: Responsive.h(8)),
-                              Row(
-                                children: [
-                                  Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
-                                  SizedBox(width: Responsive.w(8)),
-                                  Expanded(
-                                    child: Text(
-                                      app.interview!.location!,
-                                      style: AppFonts.bodyMedium.copyWith(
-                                        color: AppColors.textPrimary,
-                                        fontSize: Responsive.sp(12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              Row(children: [
+                                Icon(Icons.location_on, size: Responsive.sp(14), color: AppColors.success),
+                                SizedBox(width: Responsive.w(8)),
+                                Expanded(child: Text(app.interview!.location!, style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontSize: Responsive.sp(12)))),
+                              ]),
                             ],
                           ],
                         ),
@@ -549,8 +519,10 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     icon: Icons.event_rounded,
                     iconColor: const Color(0xFFF59E0B),
                     title: 'preferred_interview_slots'.tr,
+                    cardBg: cardBg, borderColor: borderColor,
+                    textPrimary: textPrimary,
                     children: app.preferredInterviewSlots
-                        .map((slot) => _buildInterviewSlot(slot))
+                        .map((slot) => _buildInterviewSlot(slot, surfaceBg: surfaceBg, borderColor: borderColor, textPrimary: textPrimary, textSecondary: textSecondary))
                         .toList(),
                   ),
                 ],
@@ -558,7 +530,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 // Events Timeline
                 if (app.events.isNotEmpty) ...[
                   SizedBox(height: Responsive.h(10)),
-                  _buildEventsTimeline(app.events),
+                  _buildEventsTimeline(app.events, cardBg: cardBg, borderColor: borderColor, textPrimary: textPrimary, textSecondary: textSecondary),
                 ],
     
                 // Admin Actions
@@ -571,6 +543,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         ),
       ),
     );
+    });
   }
 
   Widget _buildInfoCard({
@@ -578,16 +551,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     required Color iconColor,
     required String title,
     required List<Widget> children,
+    required Color cardBg,
+    required Color borderColor,
+    required Color textPrimary,
   }) {
     return Container(
       padding: Responsive.all(12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(Responsive.r(12)),
-        border: Border.all(
-          color: AppColors.borderLight,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -614,7 +587,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 child: Text(
                   title,
                   style: AppFonts.h4.copyWith(
-                    color: AppColors.textPrimary,
+                    color: textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: Responsive.sp(14),
                   ),
@@ -633,6 +606,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     required IconData icon,
     required String label,
     required String value,
+    required Color cardBg,
+    required Color borderColor,
+    required Color textPrimary,
+    required Color textSecondary,
+    required Color surfaceBg,
     Color? valueColor,
     bool copyable = false,
     bool isHighlight = false,
@@ -640,17 +618,11 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     return Container(
       padding: Responsive.all(8),
       decoration: BoxDecoration(
-        color: isHighlight ? AppColors.grey100 : AppColors.white,
+        color: isHighlight ? surfaceBg : cardBg,
         borderRadius: BorderRadius.circular(Responsive.r(8)),
         border: isHighlight
-            ? Border.all(
-                color: AppColors.blue1.withOpacity(0.3),
-                width: 1.5,
-              )
-            : Border.all(
-                color: AppColors.borderLight,
-                width: 1,
-              ),
+            ? Border.all(color: AppColors.blue1.withOpacity(0.3), width: 1.5)
+            : Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         children: [
@@ -670,7 +642,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 Text(
                   label,
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: textSecondary,
                     fontSize: Responsive.sp(10),
                     fontWeight: FontWeight.w500,
                   ),
@@ -682,10 +654,8 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                       child: Text(
                         value,
                         style: AppFonts.bodyMedium.copyWith(
-                          color: valueColor ?? AppColors.textPrimary,
-                          fontWeight: isHighlight
-                              ? FontWeight.bold
-                              : FontWeight.w600,
+                          color: valueColor ?? textPrimary,
+                          fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
                           fontSize: isHighlight ? Responsive.sp(13) : Responsive.sp(12),
                         ),
                       ),
@@ -712,11 +682,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                               color: AppColors.blue1.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(Responsive.r(6)),
                             ),
-                            child: Icon(
-                              Icons.copy,
-                              size: Responsive.sp(12),
-                              color: AppColors.blue1,
-                            ),
+                            child: Icon(Icons.copy, size: Responsive.sp(12), color: AppColors.blue1),
                           ),
                         ),
                       ),
@@ -730,17 +696,17 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     );
   }
 
-  Widget _buildInterviewSlot(InterviewSlot slot) {
+  Widget _buildInterviewSlot(InterviewSlot slot, {
+    required Color surfaceBg, required Color borderColor,
+    required Color textPrimary, required Color textSecondary,
+  }) {
     return Container(
       margin: Responsive.only(bottom: 8),
       padding: Responsive.all(10),
       decoration: BoxDecoration(
-        color: AppColors.grey100,
+        color: surfaceBg,
         borderRadius: BorderRadius.circular(Responsive.r(10)),
-        border: Border.all(
-          color: AppColors.borderLight,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         children: [
@@ -750,11 +716,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               color: const Color(0xFFF59E0B).withOpacity(0.1),
               borderRadius: BorderRadius.circular(Responsive.r(8)),
             ),
-            child: Icon(
-              Icons.calendar_today,
-              size: Responsive.sp(14),
-              color: const Color(0xFFF59E0B),
-            ),
+            child: Icon(Icons.calendar_today, size: Responsive.sp(14), color: const Color(0xFFF59E0B)),
           ),
           SizedBox(width: Responsive.w(10)),
           Expanded(
@@ -763,27 +725,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               children: [
                 Text(
                   _formatDate(slot.date),
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: Responsive.sp(12),
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontSize: Responsive.sp(12), fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: Responsive.h(3)),
                 Row(
                   children: [
-                    Icon(
-                      Icons.access_time,
-                      size: Responsive.sp(11),
-                      color: AppColors.textSecondary,
-                    ),
+                    Icon(Icons.access_time, size: Responsive.sp(11), color: textSecondary),
                     SizedBox(width: Responsive.w(5)),
                     Text(
                       '${_getWeekdayKey(slot.date.weekday).tr.toUpperCase()} - ${_formatTimeDisplay("${slot.timeRange.from} - ${slot.timeRange.to}")}',
-                      style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: Responsive.sp(10),
-                      ),
+                      style: AppFonts.bodySmall.copyWith(color: textSecondary, fontSize: Responsive.sp(10)),
                     ),
                   ],
                 ),
@@ -814,11 +765,16 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     }
   }
 
-  Widget _buildEventsTimeline(List<ApplicationEvent> events) {
+  Widget _buildEventsTimeline(List<ApplicationEvent> events, {
+    required Color cardBg, required Color borderColor,
+    required Color textPrimary, required Color textSecondary,
+  }) {
     return _buildInfoCard(
       icon: Icons.history_rounded,
       iconColor: AppColors.blue1,
       title: 'events_timeline'.tr,
+      cardBg: cardBg, borderColor: borderColor,
+      textPrimary: textPrimary,
       children: [
         ListView.separated(
           shrinkWrap: true,
@@ -826,15 +782,17 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
           itemCount: events.length,
           separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
           itemBuilder: (context, index) {
-            final event = events[events.length - 1 - index]; // Show latest first
-            return _buildEventItem(event);
+            final event = events[events.length - 1 - index];
+            return _buildEventItem(event, textPrimary: textPrimary, textSecondary: textSecondary);
           },
         ),
       ],
     );
   }
 
-  Widget _buildEventItem(ApplicationEvent event) {
+  Widget _buildEventItem(ApplicationEvent event, {
+    required Color textPrimary, required Color textSecondary,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -866,7 +824,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     child: Text(
                       event.title.tr,
                       style: AppFonts.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
+                        color: textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: Responsive.sp(12),
                       ),
@@ -875,7 +833,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   Text(
                     _formatDate(event.date),
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: textSecondary,
                       fontSize: Responsive.sp(10),
                     ),
                   ),
@@ -886,7 +844,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 Text(
                   event.description!.tr,
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: textSecondary,
                     fontSize: Responsive.sp(11),
                   ),
                 ),
@@ -896,7 +854,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 Text(
                   '${'created_by'.tr}: ${event.createdBy!.name}',
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary.withOpacity(0.7),
+                    color: textSecondary.withOpacity(0.7),
                     fontSize: Responsive.sp(9),
                     fontStyle: FontStyle.italic,
                   ),
@@ -986,7 +944,9 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
   }
 
   Widget _buildAdminActions() {
-    if (!UserStorageService.isSchoolAdmin()) return const SizedBox.shrink();
+    if (!UserStorageService.isSchoolAdmin()) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       children: [
@@ -994,6 +954,9 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
         _buildInfoCard(
           icon: Icons.admin_panel_settings_rounded,
           iconColor: AppColors.blue1,
+          borderColor: AppColors.blue1,
+          cardBg: Colors.white,              // ✅ added
+          textPrimary: Colors.black87,       // ✅ added
           title: 'admin_actions'.tr,
           children: [
             Row(

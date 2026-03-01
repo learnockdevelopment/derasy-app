@@ -53,7 +53,7 @@ class ChatbotException implements Exception {
 }
 
 class ChatbotService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
 
   /// Send a message to the chatbot
   static Future<ChatbotResponse> sendMessage(

@@ -19,6 +19,7 @@ import '../../services/user_storage_service.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/school_preferences_wizard.dart';
 import '../../../widgets/safe_network_image.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 class ApplyToSchoolsPage extends StatefulWidget {
   const ApplyToSchoolsPage({Key? key}) : super(key: key);
@@ -218,7 +219,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
       if (_selectedGrade != null && _selectedGrade!.isNotEmpty) {
         try {
           print('📝 [APPLY] Updating child desiredGrade to: $_selectedGrade');
-          final updateUrl = '${ApiConstants.baseUrl}${ApiConstants.getRelatedChildrenEndpoint}/${_selectedChild!.id}';
+          final updateUrl = '${ApiConstants.parentBaseUrl}${ApiConstants.getRelatedChildrenEndpoint}/${_selectedChild!.id}';
           final token = UserStorageService.getAuthToken();
           
           if (token != null) {
@@ -310,12 +311,20 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return Obx(() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : AppColors.background;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : AppColors.grey200;
+    final textPrimary = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondary = isDark ? Colors.white60 : AppColors.textSecondary;
+
     // Determine if it's a transfer or new application
     final isTransfer = _selectedChild?.schoolId.id.isNotEmpty == true;
     final title = isTransfer ? 'transfer_to_school'.tr : 'apply_to_school'.tr;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(title, style: AppFonts.h4.copyWith(color: Colors.white, fontSize: Responsive.sp(16))),
         backgroundColor: AppColors.blue1,
@@ -326,13 +335,13 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: _isLoadingSchools 
+      body: _isLoadingSchools
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                _buildStudentHeader(),
+                _buildStudentHeader(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
                 Expanded(
-                  child: _showResults ? _buildResultsView() : _buildWizardView(),
+                  child: _showResults ? _buildResultsView(isDark: isDark, cardBg: cardBg, borderColor: borderColor, textPrimary: textPrimary, textSecondary: textSecondary) : _buildWizardView(),
                 ),
               ],
             ),
@@ -340,7 +349,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
           ? Container(
               padding: Responsive.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardBg,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -397,14 +406,22 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
             )
           : null,
     );
+    });
   }
 
-  Widget _buildStudentHeader() {
+  Widget _buildStudentHeader({
+    bool isDark = false,
+    Color? textPrimary,
+    Color? textSecondary,
+  }) {
     if (_selectedChild == null) return const SizedBox.shrink();
+    final tp = textPrimary ?? AppColors.textPrimary;
+    final ts = textSecondary ?? AppColors.textSecondary;
+    final headerBg = isDark ? AppColors.blue1.withOpacity(0.12) : AppColors.blue1.withOpacity(0.05);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      color: AppColors.blue1.withOpacity(0.05),
+      color: headerBg,
       child: Row(
         children: [
           Container(
@@ -422,14 +439,14 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
               children: [
                 Text(
                   _selectedChild!.arabicFullName ?? _selectedChild!.fullName,
-                  style: AppFonts.h4.copyWith(color: AppColors.textPrimary, fontSize: Responsive.sp(14)),
+                  style: AppFonts.h4.copyWith(color: tp, fontSize: Responsive.sp(14)),
                 ),
                 if (_selectedChild!.schoolId.id.isNotEmpty)
                   Padding(
                     padding: EdgeInsets.only(top: 2.h),
                     child: Text(
                       '${'current_school_colon'.tr} ${_selectedChild!.schoolId.name}',
-                      style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: Responsive.sp(11)),
+                      style: AppFonts.bodySmall.copyWith(color: ts, fontSize: Responsive.sp(11)),
                     ),
                   ),
               ],
@@ -447,9 +464,20 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
     );
   }
 
-  Widget _buildResultsView() {
+  Widget _buildResultsView({
+    bool isDark = false,
+    Color? cardBg,
+    Color? borderColor,
+    Color? textPrimary,
+    Color? textSecondary,
+  }) {
+    final tp = textPrimary ?? AppColors.textPrimary;
+    final ts = textSecondary ?? AppColors.textSecondary;
+    final cb = cardBg ?? Colors.white;
+    final bc = borderColor ?? const Color(0xFFE2E8F0);
+
     if (_isFormVisible && _selectedSchools.isNotEmpty) {
-      return _buildAdmissionForm();
+      return _buildAdmissionForm(isDark: isDark, cardBg: cb, borderColor: bc, textPrimary: tp, textSecondary: ts);
     }
 
     // Separate schools into suggested and others
@@ -723,7 +751,18 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
   }
 
 
-  Widget _buildAdmissionForm() {
+  Widget _buildAdmissionForm({
+    bool isDark = false,
+    Color? cardBg,
+    Color? borderColor,
+    Color? textPrimary,
+    Color? textSecondary,
+  }) {
+    final tp = textPrimary ?? AppColors.textPrimary;
+    final ts = textSecondary ?? AppColors.textSecondary;
+    final cb = cardBg ?? Colors.white;
+    final bc = borderColor ?? AppColors.grey200;
+
     return SingleChildScrollView(
       padding: Responsive.all(20),
       child: Center(
@@ -738,56 +777,52 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 children: [
                   IconButton(
                     onPressed: () => setState(() => _isFormVisible = false),
-                    icon: const Icon(Icons.arrow_back),
+                    icon: Icon(Icons.arrow_back, color: tp),
                   ),
                   Text(
                     'admission_details'.tr,
-                    style: AppFonts.h3.copyWith(color: AppColors.textPrimary),
+                    style: AppFonts.h3.copyWith(color: tp),
                   ),
                 ],
               ),
               SizedBox(height: Responsive.h(20)),
-              
               // School Info Card
               Column(
                 children: _selectedSchools.map((school) => Container(
-                margin: EdgeInsets.only(bottom: 8.h),
-                padding: Responsive.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  border: Border.all(color: AppColors.grey200),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(Responsive.r(8)),
-                      child: SafeNetworkImage(
-                        imageUrl: school.bannerImage,
-                        width: Responsive.w(32),
-                        height: Responsive.w(32),
-                        fit: BoxFit.cover,
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  padding: Responsive.all(10),
+                  decoration: BoxDecoration(
+                    color: cb,
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                    border: Border.all(color: bc),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(Responsive.r(8)),
+                        child: SafeNetworkImage(
+                          imageUrl: school.bannerImage,
+                          width: Responsive.w(32),
+                          height: Responsive.w(32),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: Responsive.w(12)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            school.name,
-                            style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12)),
-                          ),
-                          Text(
-                            school.location?.city ?? '',
-                            style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: Responsive.sp(10)),
-                          ),
-                        ],
+                      SizedBox(width: Responsive.w(12)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(school.name, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12), color: tp)),
+                            Text(
+                              school.location?.city ?? '',
+                              style: AppFonts.bodySmall.copyWith(color: ts, fontSize: Responsive.sp(10)),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              )).toList(),
+                    ],
+                  ),
+                )).toList(),
               ),
               SizedBox(height: Responsive.h(20)),
     

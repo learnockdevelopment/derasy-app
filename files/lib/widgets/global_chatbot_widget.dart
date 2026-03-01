@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
-import '../../core/constants/app_fonts.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../core/constants/app_fonts.dart';
 
 class DraggableChatbotWidget extends StatefulWidget {
   final Offset? initialPosition;
@@ -67,73 +68,65 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
       clipBehavior: Clip.none,
       children: [
         // Hint Bubble
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: _showHint ? 1.0 : 0.0),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            if (value == 0 && !_showHint) return const SizedBox.shrink();
-            return Positioned(
-              right: Responsive.isRTL ? null : Responsive.w(70),
-              left: Responsive.isRTL ? Responsive.w(70) : null,
-              bottom: Responsive.h(12),
-              child: Opacity(
-                opacity: value.clamp(0.0, 1.0),
-                child: ScaleTransition(
-                  scale: _pulseAnimation,
-                  child: Transform.scale(
-                    scale: value,
-                    alignment: Responsive.isRTL ? Alignment.centerLeft : Alignment.centerRight,
-                    child: Container(
-                      padding: Responsive.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(Responsive.r(20)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                        border: Border.all(color: AppColors.blue1.withOpacity(0.1)),
+        if (_showHint)
+          Positioned(
+            right: Responsive.isRTL ? null : Responsive.w(70),
+            left: Responsive.isRTL ? Responsive.w(70) : null,
+            bottom: Responsive.h(12),
+            child: AnimatedOpacity(
+              opacity: _showHint ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: AnimatedScale(
+                scale: _showHint ? 1.0 : 0.6,
+                duration: const Duration(milliseconds: 300),
+                alignment: Responsive.isRTL ? Alignment.centerLeft : Alignment.centerRight,
+                child: Container(
+                  padding: Responsive.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(Responsive.r(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(AppConfigController.to.isDarkMode ? 0.2 : 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (Responsive.isRTL)
-                            GestureDetector(
-                              onTap: () => setState(() => _showHint = false),
-                              child: Padding(
-                                padding: Responsive.only(right: 4),
-                                child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
-                              ),
-                            ),
-                          Text(
-                            'need_help_hint'.tr,
-                            style: AppFonts.bodySmall.copyWith(
-                              color: AppColors.blue1,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(11),
-                            ),
+                    ],
+                    border: Border.all(color: AppConfigController.to.isDarkMode ? Colors.white.withOpacity(0.1) : AppColors.blue1.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (Responsive.isRTL)
+                        GestureDetector(
+                          onTap: () => setState(() => _showHint = false),
+                          child: Padding(
+                            padding: Responsive.only(right: 4),
+                            child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
                           ),
-                          if (!Responsive.isRTL)
-                            GestureDetector(
-                              onTap: () => setState(() => _showHint = false),
-                              child: Padding(
-                                padding: Responsive.only(left: 4),
-                                child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
-                              ),
-                            ),
-                        ],
+                        ),
+                      Text(
+                        'need_help_hint'.tr,
+                        style: AppFonts.bodySmall.copyWith(
+                          color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.blue1,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(11),
+                        ),
                       ),
-                    ),
+                      if (!Responsive.isRTL)
+                        GestureDetector(
+                          onTap: () => setState(() => _showHint = false),
+                          child: Padding(
+                            padding: Responsive.only(left: 4),
+                            child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
 
         // Main Button with Icon Pulse
         ScaleTransition(
@@ -145,7 +138,7 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
             builder: (context, value, child) {
               return Transform.scale(
                 scale: value,
-                child: FloatingActionButton(
+                child: FloatingActionButton.small(
                   heroTag: widget.heroTag ?? 'chatbot_fab',
                   onPressed: () {
                     setState(() => _showHint = false);
@@ -156,7 +149,7 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
                   child: Icon(
                     IconlyBold.chat,
                     color: Colors.white,
-                    size: Responsive.sp(24),
+                    size: Responsive.sp(14),
                   ),
                 ),
               );

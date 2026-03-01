@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,7 +11,10 @@ import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/global_chatbot_widget.dart';
-import '../../core/controllers/dashboard_controller.dart';
+import 'package:local_auth/local_auth.dart';
+import '../../services/auth_service.dart';
+import '../../models/auth_models.dart';
+import 'package:flutter/services.dart';
 
 
 class UserProfilePage extends StatefulWidget {
@@ -31,6 +34,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
+  // Biometrics
+  bool _biometricEnabled = false;
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _isSupportingBiometrics = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +52,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
         _loadUserData();
       }
     });
+    _checkBiometricSupport();
+    _loadBiometricStatus();
+  }
+
+  Future<void> _checkBiometricSupport() async {
+    try {
+      final isSupported = await auth.isDeviceSupported();
+      final canCheck = await auth.canCheckBiometrics;
+      if (mounted) {
+        setState(() {
+          _isSupportingBiometrics = isSupported && canCheck;
+        });
+      }
+    } catch (e) {
+      print('Biometric support check failed: $e');
+    }
+  }
+
+  void _loadBiometricStatus() {
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = UserStorageService.isBiometricEnabled();
+      });
+    }
   }
 
   @override
@@ -266,6 +298,116 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  Future<void> _toggleBiometric(bool value) async {
+    if (value) {
+      if (!_isSupportingBiometrics) {
+         Get.snackbar('error'.tr, 'biometric_not_supported'.tr,
+             snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+         return;
+      }
+      
+      final password = await _showPasswordConfirmationDialog();
+      if (password != null && password.isNotEmpty) {
+        try {
+           final user = await UserStorageService.getUserData();
+           final email = user?['email']; 
+           if (email == null) {
+              Get.snackbar('error'.tr, 'User email not found',
+                  snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+              return;
+           }
+
+            Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+            
+            try {
+               await AuthService.login(LoginRequest(email: email, password: password));
+               Get.back(); // close loading
+
+                final bool didAuthenticate = await auth.authenticate(
+                    localizedReason: 'scan_fingerprint'.tr,
+                    options: const AuthenticationOptions(stickyAuth: true),
+                );
+                
+                if (didAuthenticate) {
+                    await UserStorageService.saveBiometricCredentials(email, password);
+                    if (mounted) {
+                        setState(() {
+                            _biometricEnabled = true;
+                        });
+                    }
+                     Get.snackbar('success'.tr, 'biometric_enabled_success'.tr,
+                         snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+                } else {
+                     Get.snackbar('error'.tr, 'biometric_error'.tr,
+                         snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+                }
+
+            } catch (e) {
+               Get.back(); // close loading
+               Get.snackbar('error'.tr, 'invalid_credentials'.tr,
+                   snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+            }
+        } catch (e) {
+             if (Get.isDialogOpen ?? false) Get.back();
+             Get.snackbar('error'.tr, 'Unexpected error: $e',
+                 snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+        }
+      }
+    } else {
+      await UserStorageService.setBiometricEnabled(false);
+      if (mounted) {
+        setState(() {
+            _biometricEnabled = false;
+        });
+      }
+      Get.snackbar('success'.tr, 'biometric_disabled_success'.tr,
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+    }
+  }
+
+  Future<String?> _showPasswordConfirmationDialog() {
+    final controller = TextEditingController();
+    return Get.dialog<String>(
+      AlertDialog(
+        backgroundColor: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        title: Text('secure_your_account'.tr, style: AppFonts.h4.copyWith(color: AppConfigController.to.isDarkMode ? Colors.white : Colors.black)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('confirm_password_for_biometric'.tr, style: AppFonts.bodySmall.copyWith(color: AppConfigController.to.isDarkMode ? Colors.grey : Colors.black87)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              style: AppFonts.bodyMedium.copyWith(color: AppConfigController.to.isDarkMode ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                hintText: 'password'.tr,
+                hintStyle: TextStyle(color: AppConfigController.to.isDarkMode ? Colors.grey : Colors.grey.shade600),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppConfigController.to.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey.shade300)
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.blue1)
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('cancel'.tr, style: TextStyle(color: AppConfigController.to.isDarkMode ? Colors.grey : Colors.grey.shade600)),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: controller.text),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.blue1),
+            child: Text('confirm'.tr, style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _logout() async {
     try {
       await UserStorageService.clearUserData();
@@ -287,52 +429,69 @@ class _UserProfilePageState extends State<UserProfilePage> {
     print('👤 [USER PROFILE] Profile page build() method called');
     print('👤 [USER PROFILE] _userData is null: ${_userData == null}');
     print('👤 [USER PROFILE] ===========================================');
-    return Scaffold(
-      backgroundColor: AppColors.grey200,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue1,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
-          onPressed: () => Get.back(),
+    
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final bgColor = isDark ? const Color(0xFF0F172A) : AppColors.grey200;
+      final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+      final textColor = isDark ? Colors.white : AppColors.textPrimary;
+      final textSecondaryColor = isDark ? Colors.grey.shade400 : AppColors.textSecondary;
+      final borderColor = isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFE5E7EB);
+      
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
         ),
-        title: Text(
-          'profile'.tr,
-          style: AppFonts.h3.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: Responsive.sp(18),
+        child: Scaffold(
+          backgroundColor: bgColor,
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            backgroundColor: AppColors.blue1,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white, size: Responsive.sp(24)),
+              onPressed: () => Get.back(),
+            ),
+            title: Text(
+              'profile'.tr,
+              style: AppFonts.h3.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: Responsive.sp(18),
+              ),
+            ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: Responsive.all(16),
-          child: Column(
-            children: [
-              // User Profile Card with Image, Name, Email
-              _buildProfileCard(),
-              SizedBox(height: Responsive.h(16)),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: Responsive.all(16),
+              child: Column(
+                children: [
+                  // User Profile Card with Image, Name, Email
+                  _buildProfileCard(cardColor, textColor, textSecondaryColor),
+                  SizedBox(height: Responsive.h(16)),
 
-              // User Information Section
-              _buildUserInfoSection(),
-              SizedBox(height: Responsive.h(16)),
+                  // User Information Section
+                  _buildUserInfoSection(cardColor, textColor, textSecondaryColor, borderColor, isDark),
+                  SizedBox(height: Responsive.h(16)),
 
-              // Logout Button
-              _buildLogoutButton(),
-              SizedBox(height: Responsive.h(32)),
-            ],
+                  // Logout Button
+                  _buildLogoutButton(),
+                  SizedBox(height: Responsive.h(32)),
+                ],
+              ),
+            ),
           ),
+          floatingActionButton: DraggableChatbotWidget(),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         ),
-      ),
-      floatingActionButton: DraggableChatbotWidget(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
+      );
+    });
   }
 
 
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(Color cardColor, Color textColor, Color textSecondaryColor) {
     final userName = _userData?['name'] ??
         _userData?['fullName'] ??
         'user'.tr;
@@ -343,7 +502,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Container(
       padding: Responsive.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
@@ -404,7 +563,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Text(
             userName,
             style: AppFonts.h3.copyWith(
-              color: AppColors.textPrimary,
+              color: textColor,
               fontWeight: FontWeight.bold,
               fontSize: Responsive.sp(16),
             ),
@@ -427,7 +586,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Text(
                   userEmail,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: textSecondaryColor,
                     fontSize: Responsive.sp(12),
                   ),
                   textAlign: TextAlign.center,
@@ -442,11 +601,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildUserInfoSection() {
+  Widget _buildUserInfoSection(Color cardColor, Color textColor, Color textSecondaryColor, Color borderColor, bool isDark) {
     return Container(
       padding: Responsive.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(Responsive.r(12)),
         boxShadow: [
           BoxShadow(
@@ -477,7 +636,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               Text(
                 'personal_information'.tr,
                 style: AppFonts.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: textColor,
                   fontWeight: FontWeight.bold,
                   fontSize: Responsive.sp(14),
                 ),
@@ -544,7 +703,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         color: AppColors.blue1,
                         size: Responsive.sp(18),
                       ),
-                      SizedBox(width: Responsive.w(12)),
+                      SizedBox(width: Responsive.w(12)), 
                       Text(
                         'change_language'.tr,
                         style: AppFonts.bodyMedium.copyWith(
@@ -569,9 +728,53 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         size: Responsive.sp(14),
                       ),
                     ],
-                  ),
+                  ), 
                 ),
               ),
+              SizedBox(height: Responsive.h(12)),
+              // Dark Mode Toggle
+              Container(
+                padding: Responsive.all(8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                  border: Border.all(
+                    color: borderColor,
+                    width: 1,
+                  ),
+                ),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('dark_mode'.tr, style: AppFonts.bodyMedium.copyWith(color: textColor)),
+                  value: isDark,
+                  onChanged: (val) => AppConfigController.to.toggleTheme(),
+                  activeColor: AppColors.blue1,
+                  secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: AppColors.blue1),
+                ),
+              ),
+              if (_isSupportingBiometrics) ...[
+                SizedBox(height: Responsive.h(12)),
+                // Biometrics Toggle
+                Container(
+                  padding: Responsive.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
+                    border: Border.all(
+                      color: borderColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('biometric_login'.tr, style: AppFonts.bodyMedium.copyWith(color: textColor)),
+                    value: _biometricEnabled,
+                    onChanged: _toggleBiometric,
+                    activeColor: AppColors.blue1,
+                    secondary: Icon(Icons.fingerprint, color: AppColors.blue1),
+                  ),
+                ),
+              ],
             ],
         ],
       ),
@@ -638,14 +841,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
     if (value.isEmpty || value == 'N/A' || value == 'null') {
       return const SizedBox.shrink();
     }
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       margin: Responsive.only(bottom: 16),
       padding: Responsive.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(Responsive.r(12)),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFE5E7EB),
           width: 1,
         ),
       ),
@@ -653,7 +857,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         children: [
           Icon(
             icon,
-            color: const Color(0xFF6B7280),
+            color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
             size: Responsive.sp(20),
           ),
           SizedBox(width: Responsive.w(16)),
@@ -664,7 +868,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 Text(
                   label,
                   style: AppFonts.labelSmall.copyWith(
-                    color: const Color(0xFF6B7280),
+                    color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
                     fontSize: AppFonts.size12,
                   ),
@@ -673,7 +877,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 Text(
                   value,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: const Color(0xFF1F2937),
+                    color: isDark ? Colors.white : const Color(0xFF1F2937),
                     fontWeight: FontWeight.w600,
                     fontSize: AppFonts.size14,
                   ),
@@ -689,6 +893,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildEditableField(String label, TextEditingController controller,
       IconData icon) {
+    final isDark = AppConfigController.to.isDarkMode;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -696,14 +901,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
           children: [
             Icon(
               icon,
-              color: const Color(0xFF6B7280),
+              color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
               size: AppFonts.size18,
             ),
             SizedBox(width: Responsive.w(8)),
             Text(
               label,
               style: AppFonts.bodyMedium.copyWith(
-                color: const Color(0xFF6B7280),
+                color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
                 fontWeight: FontWeight.w500,
                 fontSize: AppFonts.size14,
               ),
@@ -714,22 +919,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
         TextFormField(
           controller: controller,
           style: AppFonts.bodyMedium.copyWith(
-            color: const Color(0xFF1F2937),
+            color: isDark ? Colors.white : const Color(0xFF1F2937),
             fontSize: AppFonts.size16,
           ),
           decoration: InputDecoration(
             hintText: 'enter_label'.tr.replaceAll('{label}', label),
             hintStyle: AppFonts.bodyMedium.copyWith(
-              color: const Color(0xFF9CA3AF),
+              color: isDark ? Colors.grey.shade600 : const Color(0xFF9CA3AF),
               fontSize: AppFonts.size16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(Responsive.r(12)),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFE5E7EB)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(Responsive.r(12)),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFE5E7EB)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -801,6 +1006,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildAvatarField() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -808,14 +1014,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
           children: [
             Icon(
               Icons.image_rounded,
-              color: const Color(0xFF6B7280),
+              color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
               size: AppFonts.size18,
             ),
             SizedBox(width: Responsive.w(8)),
             Text(
               'profile_picture'.tr,
               style: AppFonts.bodyMedium.copyWith(
-                color: const Color(0xFF6B7280),
+                color: isDark ? Colors.grey.shade400 : const Color(0xFF6B7280),
                 fontWeight: FontWeight.w500,
                 fontSize: AppFonts.size14,
               ),
@@ -830,12 +1036,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
             height: Responsive.h(120),
             decoration: BoxDecoration(
               border: Border.all(
-                color: const Color(0xFFE5E7EB),
+                color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFFE5E7EB),
                 width: 2,
                 style: BorderStyle.solid,
               ),
               borderRadius: BorderRadius.circular(Responsive.r(12)),
-              color: const Color(0xFFF9FAFB),
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB),
             ),
             child: _selectedImage != null
                 ? ClipRRect(

@@ -23,6 +23,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../widgets/loading_page.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 extension NumberFormatting on num {
   String toLocaleString() => NumberFormat.decimalPattern().format(this);
@@ -539,17 +540,21 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       return const LoadingPage();
     }
 
+    return Obx(() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFFDFBF7);
+    final headerTextColor = isDark ? Colors.white : Colors.black87;
+    final stepperBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB);
+    final stepperBorder = isDark ? Colors.white.withOpacity(0.08) : Colors.grey.shade100;
+
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Color(0xFFFDFBF7),
+          backgroundColor: scaffoldBg,
           body: SafeArea(
             child: Column(
               children: [
-                // Header (Stepper is inside header now)
-                _buildHeader(),
-                
-                // Content
+                _buildHeader(isDark: isDark, headerTextColor: headerTextColor, stepperBg: stepperBg, stepperBorder: stepperBorder),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.only(bottom: 100),
@@ -561,16 +566,13 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
           ),
           bottomNavigationBar: _buildBottomBar(),
         ),
-        
-        // AI Overlay
         if (_isAnalyzing)
           _buildAIOverlay(),
-
-        // Step Loading Overlay
         if (_isStepLoading)
           _buildStepLoadingOverlay(),
       ],
     );
+    });
   }
 
   Widget _buildStepLoadingOverlay() {
@@ -584,7 +586,13 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
   }
 
 
-  Widget _buildHeader() {
+  Widget _buildHeader({
+    bool isDark = false,
+    Color? headerTextColor,
+    Color? stepperBg,
+    Color? stepperBorder,
+  }) {
+    final textColor = headerTextColor ?? Colors.black87;
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 0),
       child: Column(
@@ -593,7 +601,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+                icon: Icon(Icons.arrow_back_ios, size: 20, color: textColor),
                 onPressed: () {
                   if (_currentStep > 1) {
                     setState(() => _currentStep--);
@@ -606,18 +614,24 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
               ),
               Text(
                 'submit_new_admission'.tr,
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16.sp, color: Colors.black87),
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16.sp, color: textColor),
               ),
-              SizedBox(width: 20), // Balance the back button
+              SizedBox(width: 20),
             ],
           ),
-          _buildStepper(),
+          _buildStepper(isDark: isDark, stepperBg: stepperBg, stepperBorder: stepperBorder),
         ],
       ),
     );
   }
 
-  Widget _buildStepper() {
+  Widget _buildStepper({
+    bool isDark = false,
+    Color? stepperBg,
+    Color? stepperBorder,
+  }) {
+    final bg = stepperBg ?? const Color(0xFFF9FAFB);
+    final border = stepperBorder ?? Colors.grey.shade100;
     final steps = [
       {'id': 1, 'label': 'student'.tr},
       {'id': 2, 'label': 'preferences'.tr},
@@ -630,9 +644,9 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
       margin: EdgeInsets.symmetric(vertical: 20.h),
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFFF9FAFB),
+        color: bg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[100]!),
+        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -656,18 +670,18 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                       duration: const Duration(milliseconds: 300),
                       width: 32, height: 32,
                       decoration: BoxDecoration(
-                        color: isActive ? AppColors.blue1 : (isCompleted ? Colors.green : Colors.white),
+                        color: isActive ? AppColors.blue1 : (isCompleted ? Colors.green : (isDark ? const Color(0xFF334155) : Colors.white)),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isActive ? AppColors.blue1 : (isCompleted ? Colors.green : Colors.grey[300]!), 
+                          color: isActive ? AppColors.blue1 : (isCompleted ? Colors.green : (isDark ? Colors.white24 : Colors.grey.shade300)),
                           width: 2
                         ),
                         boxShadow: isActive ? [BoxShadow(color: AppColors.blue1.withOpacity(0.2), blurRadius: 8, offset: Offset(0, 4))] : null,
                       ),
                       child: Center(
-                        child: isCompleted 
+                        child: isCompleted
                           ? Icon(Icons.check, color: Colors.white, size: 16)
-                          : Text('${idx + 1}', style: TextStyle(color: isActive ? Colors.white : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.bold)),
+                          : Text('${idx + 1}', style: TextStyle(color: isActive ? Colors.white : (isDark ? Colors.white54 : Colors.grey.shade500), fontSize: 13, fontWeight: FontWeight.bold)),
                       ),
                     ),
                     SizedBox(height: 6),
@@ -676,7 +690,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                       style: TextStyle(
                         fontSize: 9.sp,
                         fontWeight: isActive ? FontWeight.w900 : FontWeight.w500,
-                        color: isActive ? AppColors.blue1 : Colors.grey[500],
+                        color: isActive ? AppColors.blue1 : (isDark ? Colors.white38 : Colors.grey.shade500),
                       ),
                     ),
                   ],
@@ -687,7 +701,7 @@ class _NewAdmissionFlowPageState extends State<NewAdmissionFlowPage> with Ticker
                     margin: EdgeInsets.only(bottom: 18, left: 8, right: 8),
                     height: 2,
                     decoration: BoxDecoration(
-                      color: isCompleted ? Colors.green : Colors.grey[200],
+                      color: isCompleted ? Colors.green : (isDark ? Colors.white12 : Colors.grey.shade200),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

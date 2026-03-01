@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 class ShimmerLoading extends StatelessWidget {
   final Widget child;
@@ -40,18 +41,21 @@ class ShimmerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       width: width,
       height: height ?? Responsive.h(100),
       margin: margin,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(12)),
       ),
       child: ShimmerLoading(
+        baseColor: isDark ? const Color(0xFF334155) : null,
+        highlightColor: isDark ? const Color(0xFF475569) : null,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: isDark ? const Color(0xFF334155) : Colors.grey[300],
             borderRadius: BorderRadius.circular(borderRadius ?? Responsive.r(12)),
           ),
         ),
@@ -74,17 +78,20 @@ class ShimmerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       padding: padding ?? Responsive.all(16),
       child: Row(
         children: [
           if (hasAvatar) ...[
             ShimmerLoading(
+              baseColor: isDark ? const Color(0xFF334155) : null,
+              highlightColor: isDark ? const Color(0xFF475569) : null,
               child: Container(
                 width: Responsive.w(50),
                 height: Responsive.h(50),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: isDark ? const Color(0xFF334155) : Colors.grey[300],
                   borderRadius: BorderRadius.circular(Responsive.r(25)),
                 ),
               ),
@@ -96,11 +103,13 @@ class ShimmerListTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ShimmerLoading(
+                  baseColor: isDark ? const Color(0xFF334155) : null,
+                  highlightColor: isDark ? const Color(0xFF475569) : null,
                   child: Container(
                     height: Responsive.h(16),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: isDark ? const Color(0xFF334155) : Colors.grey[300],
                       borderRadius: BorderRadius.circular(Responsive.r(8)),
                     ),
                   ),
@@ -108,11 +117,13 @@ class ShimmerListTile extends StatelessWidget {
                 if (hasSubtitle) ...[
                   SizedBox(height: Responsive.h(8)),
                   ShimmerLoading(
+                    baseColor: isDark ? const Color(0xFF334155) : null,
+                    highlightColor: isDark ? const Color(0xFF475569) : null,
                     child: Container(
                       height: Responsive.h(12),
                       width: Responsive.w(200),
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: isDark ? const Color(0xFF334155) : Colors.grey[300],
                         borderRadius: BorderRadius.circular(Responsive.r(6)),
                       ),
                     ),
@@ -174,6 +185,7 @@ class ShimmerActionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -186,10 +198,12 @@ class ShimmerActionGrid extends StatelessWidget {
       itemCount: itemCount,
       itemBuilder: (context, index) {
         return ShimmerLoading(
+          baseColor: isDark ? const Color(0xFF334155) : null,
+          highlightColor: isDark ? const Color(0xFF475569) : null,
           child: Container(
             padding: Responsive.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: isDark ? const Color(0xFF334155) : Colors.grey[300],
               borderRadius: BorderRadius.circular(Responsive.r(16)),
             ),
             child: Column(
@@ -199,7 +213,7 @@ class ShimmerActionGrid extends StatelessWidget {
                   width: Responsive.w(48),
                   height: Responsive.h(48),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: isDark ? const Color(0xFF475569) : Colors.grey[400],
                     borderRadius: BorderRadius.circular(Responsive.r(12)),
                   ),
                 ),
@@ -208,7 +222,7 @@ class ShimmerActionGrid extends StatelessWidget {
                   height: Responsive.h(14),
                   width: Responsive.w(80),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: isDark ? const Color(0xFF475569) : Colors.grey[400],
                     borderRadius: BorderRadius.circular(Responsive.r(7)),
                   ),
                 ),
@@ -217,7 +231,7 @@ class ShimmerActionGrid extends StatelessWidget {
                   height: Responsive.h(11),
                   width: Responsive.w(60),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: isDark ? const Color(0xFF475569) : Colors.grey[400],
                     borderRadius: BorderRadius.circular(Responsive.r(5)),
                   ),
                 ),

@@ -4,16 +4,15 @@ import '../core/constants/api_constants.dart';
 import '../models/app_config_models.dart';
 
 class AppConfigService {
-  static const String _baseUrl = ApiConstants.baseUrl;
-
   /// Get public app configuration from API
   static Future<AppConfigResponse> getAppConfig() async {
     try {
+      final url = '${ApiConstants.parentBaseUrl}${ApiConstants.appConfigEndpoint}';
       print('🔧 [APP CONFIG] Fetching app configuration...');
-      print('🔧 [APP CONFIG] URL: $_baseUrl${ApiConstants.appConfigEndpoint}');
+      print('🔧 [APP CONFIG] URL: $url');
 
       final response = await http.get(
-        Uri.parse('$_baseUrl${ApiConstants.appConfigEndpoint}'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

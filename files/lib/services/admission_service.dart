@@ -9,7 +9,27 @@ import '../models/school_models.dart';
 import 'user_storage_service.dart';
 
 class AdmissionService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
+
+  /// Helper to handle 403 errors and HTML redirects globally
+  // static Future<bool> _handleResponse(http.Response response) async {
+  //   final body = response.body.trim();
+    
+  //   if (response.statusCode == 403 || response.statusCode == 401) {
+  //     print('🔒 [ADMISSION] Unauthorized ( ${response.statusCode} ) - Triggering Logout');
+  //     await AuthErrorHandler.handle403Error();
+  //     return true;
+  //   }
+
+  //   if (body.startsWith('<!DOCTYPE html>') || body.startsWith('<html')) {
+  //      print('⚠️ [ADMISSION] Received HTML response - Likely session expired or wrong route.');
+  //      await AuthErrorHandler.handle403Error();
+  //      return true;
+  //   }
+
+  //   return false;
+  // }
+
   static Future<ApplyToSchoolsResponse> applyToSchools(
       ApplyToSchoolsRequest request) async {
     try {
@@ -33,7 +53,8 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+      
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -53,17 +74,6 @@ class AdmissionService {
         }
         
         throw AdmissionException(message, 400);
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized: User is not a parent', 401);
-      } else if (response.statusCode == 403) {
-        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
-        throw AdmissionException(
-            errorData['message']?.toString() ?? 'Unauthorized', 403);
-      } else if (response.statusCode == 409) {
-        final errorData = jsonDecode(response.body) as Map<String, dynamic>;
-        throw AdmissionException(
-            errorData['message']?.toString() ?? 'Duplicate application exists',
-            409);
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(
@@ -104,12 +114,11 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       if (response.statusCode == 200) {
         return;
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized', 401);
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(
@@ -150,7 +159,8 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -168,8 +178,6 @@ class AdmissionService {
         }
         
         throw AdmissionException(message, 400);
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized', 401);
       } else {
         throw AdmissionException(
             responseData['message']?.toString() ?? 'Failed to apply',
@@ -209,7 +217,8 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -218,8 +227,6 @@ class AdmissionService {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(
             errorData['message']?.toString() ?? 'Bad request', 400);
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized: User is not a parent', 401);
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(
@@ -257,13 +264,12 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         return ApplicationsResponse.fromJson(responseData);
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized', 401);
       } else {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(
@@ -302,13 +308,12 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
-      print('🎓 [ADMISSION] Response body: ${response.body}');
+
+      // if (await _handleResponse(response)) throw AdmissionException('Session Expired');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
         return Application.fromJson(responseData);
-      } else if (response.statusCode == 401) {
-        throw AdmissionException('Unauthorized', 401);
       } else if (response.statusCode == 404) {
         final errorData = jsonDecode(response.body) as Map<String, dynamic>;
         throw AdmissionException(

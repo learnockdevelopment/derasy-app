@@ -5,13 +5,14 @@ import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
-import 'package:collection/collection.dart';
-
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
+import '../../services/auth_service.dart';
 import '../../services/sales_service.dart';
 import '../../services/schools_service.dart';
 import '../../widgets/loading_page.dart';
+import '../../core/controllers/app_config_controller.dart';
+import '../../core/constants/app_fonts.dart';
 
 class SalesOnboardingPage extends StatefulWidget {
   const SalesOnboardingPage({super.key});
@@ -48,13 +49,11 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
   final TextEditingController _ownerNameController = TextEditingController();
   final TextEditingController _ownerEmailController = TextEditingController();
   final TextEditingController _ownerPhoneController = TextEditingController();
-  final TextEditingController _ownerPasswordController = TextEditingController();
 
   // Step 7: Moderator Data
   final TextEditingController _modNameController = TextEditingController();
   final TextEditingController _modEmailController = TextEditingController();
   final TextEditingController _modPhoneController = TextEditingController();
-  final TextEditingController _modPasswordController = TextEditingController();
 
   // Step 8: Site Setup
   final TextEditingController _primaryColorController = TextEditingController(text: '#1e40af');
@@ -113,29 +112,31 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
       final response = await SchoolsService.getLookups();
       final data = response['data'] ?? response;
 
-      setState(() {
-        if (data.containsKey('schoolTypes')) _schoolTypes = data['schoolTypes'];
-        if (data.containsKey('genderPolicies')) _genderPolicies = data['genderPolicies'];
-        if (data.containsKey('religionTypes')) _religionTypes = data['religionTypes'];
-        if (data.containsKey('specialNeedsTypes')) _specialNeedsTypes = data['specialNeedsTypes'];
-        if (data.containsKey('facilities')) _apiFacilities = data['facilities'];
-        
-        if (data.containsKey('locations')) {
-          final locations = data['locations'];
-          _governorates = locations['governorates'] ?? [];
-          _administrationsMap = locations['administrations'] ?? {};
-        }
+      if (mounted) {
+        setState(() {
+          if (data.containsKey('schoolTypes')) _schoolTypes = data['schoolTypes'];
+          if (data.containsKey('genderPolicies')) _genderPolicies = data['genderPolicies'];
+          if (data.containsKey('religionTypes')) _religionTypes = data['religionTypes'];
+          if (data.containsKey('specialNeedsTypes')) _specialNeedsTypes = data['specialNeedsTypes'];
+          if (data.containsKey('facilities')) _apiFacilities = data['facilities'];
+          
+          if (data.containsKey('locations')) {
+            final locations = data['locations'];
+            _governorates = locations['governorates'] ?? [];
+            _administrationsMap = locations['administrations'] ?? {};
+          }
 
-        // Initialize first values if available
-        if (_selectedType == 'private' && _schoolTypes.isNotEmpty) _selectedType = _schoolTypes[0]['id']?.toString();
-        if (_selectedGenderPolicy == 'mixed' && _genderPolicies.isNotEmpty) _selectedGenderPolicy = _genderPolicies[0]['id']?.toString();
-        if (_selectedReligionType == 'muslim' && _religionTypes.isNotEmpty) _selectedReligionType = _religionTypes[0]['id']?.toString();
-        if (_selectedSpecialNeedsType == 'none' && _specialNeedsTypes.isNotEmpty) _selectedSpecialNeedsType = _specialNeedsTypes[0]['id']?.toString();
-      });
+          // Initialize first values if available
+          if (_selectedType == 'private' && _schoolTypes.isNotEmpty) _selectedType = _schoolTypes[0]['id']?.toString();
+          if (_selectedGenderPolicy == 'mixed' && _genderPolicies.isNotEmpty) _selectedGenderPolicy = _genderPolicies[0]['id']?.toString();
+          if (_selectedReligionType == 'muslim' && _religionTypes.isNotEmpty) _selectedReligionType = _religionTypes[0]['id']?.toString();
+          if (_selectedSpecialNeedsType == 'none' && _specialNeedsTypes.isNotEmpty) _selectedSpecialNeedsType = _specialNeedsTypes[0]['id']?.toString();
+        });
+      }
     } catch (e) {
       print('Error fetching lookups: $e');
     } finally {
-      setState(() => _isLoadingLookups = false);
+      if (mounted) setState(() => _isLoadingLookups = false);
     }
   }
 
@@ -143,23 +144,25 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     setState(() => _isLoadingSystems = true);
     try {
       final systems = await SchoolsService.getEducationSystems();
-      setState(() {
-        _systems = systems;
-        if (_systems.isNotEmpty) {
-          // Initialize first system if nothing selected
-          if (_selectedEducationSystemId == null) {
-            _selectedEducationSystemId = _systems[0]['id']?.toString() ?? _systems[0]['_id']?.toString();
-            if (_systems[0]['tracks'] != null && (_systems[0]['tracks'] as List).isNotEmpty) {
-              _tracks = _systems[0]['tracks'];
-              _selectedEducationTrackId = _tracks[0]['id']?.toString() ?? _tracks[0]['_id']?.toString();
+      if (mounted) {
+        setState(() {
+          _systems = systems;
+          if (_systems.isNotEmpty) {
+            // Initialize first system if nothing selected
+            if (_selectedEducationSystemId == null) {
+              _selectedEducationSystemId = _systems[0]['id']?.toString() ?? _systems[0]['_id']?.toString();
+              if (_systems[0]['tracks'] != null && (_systems[0]['tracks'] as List).isNotEmpty) {
+                _tracks = _systems[0]['tracks'];
+                _selectedEducationTrackId = _tracks[0]['id']?.toString() ?? _tracks[0]['_id']?.toString();
+              }
             }
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       print('Error fetching systems: $e');
     } finally {
-      setState(() => _isLoadingSystems = false);
+      if (mounted) setState(() => _isLoadingSystems = false);
     }
   }
 
@@ -190,15 +193,17 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     setState(() => _isLoading = true);
     try {
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        _latController.text = position.latitude.toString();
-        _lngController.text = position.longitude.toString();
-      });
-      Get.snackbar('success'.tr, 'Location fetched successfully.', backgroundColor: Colors.green, colorText: Colors.white);
+      if (mounted) {
+        setState(() {
+          _latController.text = position.latitude.toString();
+          _lngController.text = position.longitude.toString();
+        });
+        Get.snackbar('success'.tr, 'Location fetched successfully.', backgroundColor: Colors.green, colorText: Colors.white);
+      }
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString(), backgroundColor: Colors.red, colorText: Colors.white);
+      if (mounted) Get.snackbar('error'.tr, e.toString(), backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -228,13 +233,11 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
       case 5: // Owner Data
         return _ownerNameController.text.isNotEmpty &&
                emailRegex.hasMatch(_ownerEmailController.text) &&
-               _ownerPhoneController.text.isNotEmpty &&
-               _ownerPasswordController.text.isNotEmpty;
+               _ownerPhoneController.text.isNotEmpty;
       case 6: // Moderator Data
         return _modNameController.text.isNotEmpty &&
                emailRegex.hasMatch(_modEmailController.text) &&
-               _modPhoneController.text.isNotEmpty &&
-               _modPasswordController.text.isNotEmpty;
+               _modPhoneController.text.isNotEmpty;
       case 7: // Review
         return true;
       default:
@@ -242,13 +245,32 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     }
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     setState(() => _showErrors = true);
     if (!_isCurrentStepValid()) return;
-    
+
+    // Additional Collision Checks for Owner/Admin
+    if (_currentStep == 5) { // Owner step
+       setState(() => _isLoading = true);
+       final isColliding = await _checkCollision(_ownerEmailController.text, _ownerPhoneController.text);
+       if (mounted) setState(() => _isLoading = false);
+       if (isColliding) {
+          Get.snackbar('collision'.tr, 'email_or_phone_already_exists'.tr, backgroundColor: Colors.red, colorText: Colors.white);
+          return;
+       }
+    } else if (_currentStep == 6) { // Moderator step
+       setState(() => _isLoading = true);
+       final isColliding = await _checkCollision(_modEmailController.text, _modPhoneController.text);
+       if (mounted) setState(() => _isLoading = false);
+       if (isColliding) {
+          Get.snackbar('collision'.tr, 'email_or_phone_already_exists'.tr, backgroundColor: Colors.red, colorText: Colors.white);
+          return;
+       }
+    }
+
     setState(() => _showErrors = false);
     if (_currentStep < _totalSteps - 1) {
-      setState(() => _currentStep++);
+      if (mounted) setState(() => _currentStep++);
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 300),
@@ -257,6 +279,17 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     } else {
       _submitForm();
     }
+  }
+
+  Future<bool> _checkCollision(String email, String phone) async {
+     try {
+        final emailCollision = await AuthService.checkUserCollision(email: email);
+        if (emailCollision) return true;
+        final phoneCollision = await AuthService.checkUserCollision(phone: phone);
+        return phoneCollision;
+     } catch (e) {
+        return false;
+     }
   }
 
   void _previousStep() {
@@ -329,13 +362,11 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
           'name': _ownerNameController.text,
           'email': _ownerEmailController.text,
           'phone': _ownerPhoneController.text,
-          'password': _ownerPasswordController.text,
         },
         'moderatorData': {
           'name': _modNameController.text,
           'email': _modEmailController.text,
           'phone': _modPhoneController.text,
-          'password': _modPasswordController.text,
         },
         'configData': {
           'siteSetup': {
@@ -373,67 +404,107 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
         snackPosition: SnackPosition.TOP,
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const LoadingPage();
     bool isRtl = Get.locale?.languageCode == 'ar';
     
-    return PopScope(
-      canPop: _currentStep == 0,
-      onPopInvoked: (didPop) {
-        if (didPop) return;
-        _previousStep();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          title: Text('onboard_new_school'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          foregroundColor: Colors.black,
-          leading: IconButton(
-            icon: Icon(isRtl ? Icons.arrow_back_ios : Icons.arrow_forward_ios, size: 18),
-            onPressed: () {
-              if (_currentStep > 0) {
-                _previousStep(); 
-              } else {
-                Get.back();
-              }
-            },
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final scaffoldColor = Theme.of(context).scaffoldBackgroundColor;
+      final surfaceColor = Theme.of(context).colorScheme.surface;
+      final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
+      return PopScope(
+        canPop: _currentStep == 0,
+        onPopInvoked: (didPop) {
+          if (didPop) return;
+          _previousStep();
+        },
+        child: Stack(
+          children: [
+            Scaffold(
+              backgroundColor: scaffoldColor,
+          appBar: AppBar(
+            title: Text('onboard_new_school'.tr, 
+                style: AppFonts.AlmaraiBold18.copyWith(color: onSurfaceColor)),
+            centerTitle: true,
+            backgroundColor: surfaceColor,
+            elevation: 0,
+            foregroundColor: onSurfaceColor,
+            leading: IconButton(
+              icon: Icon(isRtl ? Icons.arrow_back_ios : Icons.arrow_forward_ios, size: 18),
+              onPressed: () {
+                if (_currentStep > 0) {
+                  _previousStep(); 
+                } else {
+                  Get.back();
+                }
+              },
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round_rounded),
+                onPressed: () => AppConfigController.to.toggleTheme(),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: Column(
+            children: [
+              _buildModernStepIndicator(isDark, surfaceColor, onSurfaceColor),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _fadeIn(0, child: _buildStepSchoolData(isDark)),
+                    _fadeIn(0, child: _buildStepAcademicSettings(isDark)),
+                    _fadeIn(0, child: _buildStepFinancialData(isDark)),
+                    _fadeIn(0, child: _buildStepWorkingHours(isDark)),
+                    _fadeIn(0, child: _buildStepFacilities(isDark)),
+                    _fadeIn(0, child: _buildStepOwnerData(isDark)),
+                    _fadeIn(0, child: _buildStepModeratorData(isDark)),
+                    _fadeIn(0, child: _buildStepReview(isDark)),
+                  ],
+                ),
+              ),
+              _buildNavigationButtons(surfaceColor, onSurfaceColor),
+            ],
           ),
         ),
-        body: Column(
-          children: [
-            _buildModernStepIndicator(),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildStepSchoolData(),
-                  _buildStepAcademicSettings(),
-                  _buildStepFinancialData(),
-                  _buildStepWorkingHours(),
-                  _buildStepFacilities(),
-                  _buildStepOwnerData(),
-                  _buildStepModeratorData(),
-                  _buildStepReview(),
-                ],
-              ),
-            ),
-            _buildNavigationButtons(),
-          ],
-        ),
-      ),
+        if (_isLoading)
+          const Positioned.fill(
+            child: LoadingPage(),
+          ),
+      ],
+    ),
+  );
+});
+}
+
+  Widget _fadeIn(int index, {required Widget child}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 10 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 
-  Widget _buildModernStepIndicator() {
+  Widget _buildModernStepIndicator(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     final List<String> stepNames = [
       'school'.tr,
       'academic_settings'.tr,
@@ -447,9 +518,9 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black12, width: 0.5)),
       ),
       child: Column(
         children: [
@@ -465,19 +536,17 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                       width: 28.w,
                       height: 28.w,
                       decoration: BoxDecoration(
-                        color: isActive ? AppColors.blue1 : (isCompleted ? Colors.green : Colors.grey[200]),
+                        color: isActive ? AppColors.salesAccent : (isCompleted ? Colors.green : (isDark ? Colors.white12 : Colors.grey[200])),
                         shape: BoxShape.circle,
-                        boxShadow: isActive ? [BoxShadow(color: AppColors.blue1.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
+                        boxShadow: isActive ? [BoxShadow(color: AppColors.salesAccent.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
                       ),
                       child: Center(
                         child: isCompleted
                             ? const Icon(Icons.check, color: Colors.white, size: 16)
                             : Text(
                                 (index + 1).toString(),
-                                style: TextStyle(
-                                  color: isActive ? Colors.white : Colors.grey[600],
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                style: AppFonts.AlmaraiBold12.copyWith(
+                                  color: isActive ? Colors.white : (isDark ? Colors.white54 : Colors.grey[600]),
                                 ),
                               ),
                       ),
@@ -486,7 +555,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                       Expanded(
                         child: Container(
                           height: 2,
-                          color: index < _currentStep ? Colors.green : Colors.grey[200],
+                          color: index < _currentStep ? Colors.green : (isDark ? Colors.white12 : Colors.grey[200]),
                           margin: EdgeInsets.symmetric(horizontal: 4.w),
                         ),
                       ),
@@ -501,11 +570,11 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             children: [
               Text(
                 '${'Step'.tr} ${_currentStep + 1} / $_totalSteps',
-                style: TextStyle(color: Colors.grey[500], fontSize: 10, fontWeight: FontWeight.bold),
+                style: AppFonts.AlmaraiBold10.copyWith(color: isDark ? Colors.white38 : Colors.grey[500]),
               ),
               Text(
                 stepNames[_currentStep],
-                style: TextStyle(color: AppColors.blue1, fontSize: 13, fontWeight: FontWeight.bold),
+                style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
               ),
             ],
           ),
@@ -514,12 +583,12 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildNavigationButtons() {
+  Widget _buildNavigationButtons(Color surfaceColor, Color onSurfaceColor) {
     return Container(
       padding: EdgeInsets.all(24.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        color: surfaceColor,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -5))],
       ),
       child: Row(
         children: [
@@ -527,12 +596,12 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _previousStep,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  side: BorderSide(color: AppColors.blue1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: Text('previous'.tr, style: TextStyle(color: AppColors.blue1, fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                side: BorderSide(color: AppColors.salesAccent),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text('previous'.tr, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.salesAccent)),
               ),
             ),
           if (_currentStep > 0) SizedBox(width: 16.w),
@@ -541,9 +610,9 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _nextStep,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.blue1,
+                backgroundColor: AppColors.salesAccent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.blue1.withOpacity(0.35),
+                disabledBackgroundColor: AppColors.salesAccent.withOpacity(0.35),
                 disabledForegroundColor: Colors.white.withOpacity(0.7),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -551,7 +620,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
               ),
               child: _isLoading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text(_currentStep == _totalSteps - 1 ? 'submit'.tr : 'next'.tr, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(_currentStep == _totalSteps - 1 ? 'submit'.tr : 'next'.tr, style: AppFonts.AlmaraiBold14),
             ),
           ),
         ],
@@ -561,21 +630,21 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
   // --- Step Content Widgets ---
 
-  Widget _buildStepSchoolData() {
+  Widget _buildStepSchoolData(bool isDark) {
     bool isRtl = Get.locale?.languageCode == 'ar';
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('school_information'.tr, 'school_step_desc'.tr),
+          _buildStepHeader('school_information'.tr, 'school_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           _buildTextField(_schoolNameArController, 'school_name_ar'.tr, IconlyLight.edit, isRtl: true),
           _buildTextField(_schoolNameEnController, 'school_name_en'.tr, IconlyLight.edit),
           _buildTextField(_shortNameController, 'short_name'.tr, IconlyLight.ticket_star),
           
           _buildSectionTitle('school_type'.tr),
-          _buildTypeSelector(),
+          _buildTypeSelector(isDark),
           
           _buildSectionTitle('admission_policies'.tr),
           _buildEnhancedDropdown(
@@ -668,13 +737,13 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
               Expanded(child: _buildTextField(_lngController, 'longitude'.tr, IconlyLight.discovery, keyboardType: TextInputType.number, hintText: 'longitude_hint'.tr)),
             ],
           ),
-          _buildGetLocationButton(),
+          _buildGetLocationButton(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildGetLocationButton() {
+  Widget _buildGetLocationButton(bool isDark) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: InkWell(
@@ -683,18 +752,18 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
           decoration: BoxDecoration(
-            color: AppColors.blue1.withOpacity(0.05),
+            color: AppColors.salesAccent.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.blue1.withOpacity(0.2)),
+            border: Border.all(color: AppColors.salesAccent.withOpacity(0.2)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(IconlyLight.location, color: AppColors.blue1, size: 20),
+              const Icon(IconlyLight.location, color: AppColors.salesAccent, size: 20),
               SizedBox(width: 8.w),
               Text(
                 'get_current_location'.tr,
-                style: const TextStyle(color: AppColors.blue1, fontWeight: FontWeight.bold, fontSize: 13),
+                style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
               ),
             ],
           ),
@@ -703,7 +772,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildStepAcademicSettings() {
+  Widget _buildStepAcademicSettings(bool isDark) {
     if (_selectedEducationSystemId == null) {
       return Center(
         child: Column(
@@ -736,7 +805,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('academic_settings'.tr, 'academic_step_desc'.tr),
+          _buildStepHeader('academic_settings'.tr, 'academic_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           
           if (stages.isEmpty)
@@ -751,15 +820,15 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
               return Container(
                 margin: EdgeInsets.only(bottom: 12.h),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isStageActive ? AppColors.blue1 : Colors.grey[200]!),
+                  border: Border.all(color: isStageActive ? AppColors.salesAccent : (isDark ? Colors.white12 : Colors.grey[200]!)),
                 ),
                 child: CheckboxListTile(
-                  title: Text(stageName, style: TextStyle(fontWeight: FontWeight.bold, color: isStageActive ? AppColors.blue1 : Colors.black87)),
-                  subtitle: Text('total_grades'.trParams({'count': gradeCount.toString()})),
+                  title: Text(stageName, style: AppFonts.AlmaraiBold14.copyWith(color: isStageActive ? AppColors.salesAccent : Theme.of(context).colorScheme.onSurface)),
+                  subtitle: Text('total_grades'.trParams({'count': gradeCount.toString()}), style: AppFonts.AlmaraiRegular12.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                   value: isStageActive,
-                  activeColor: AppColors.blue1,
+                  activeColor: AppColors.salesAccent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   onChanged: (val) {
                     setState(() {
@@ -775,7 +844,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             }).toList(),
             
           SizedBox(height: 32.h),
-          _buildInfoBox('customize_academic_info'.tr),
+          _buildInfoBox('customize_academic_info'.tr, isDark),
         ],
       ),
     );
@@ -793,31 +862,31 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildInfoBox(String message) {
+  Widget _buildInfoBox(String message, bool isDark) {
     return Container(
       padding: EdgeInsets.all(16.h),
       decoration: BoxDecoration(
-        color: AppColors.blue1.withOpacity(0.05),
+        color: AppColors.salesAccent.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blue1.withOpacity(0.1)),
+        border: Border.all(color: AppColors.salesAccent.withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          Icon(IconlyLight.info_square, color: AppColors.blue1, size: 20),
+          const Icon(IconlyLight.info_square, color: AppColors.salesAccent, size: 20),
           SizedBox(width: 12.w),
-          Expanded(child: Text(message, style: TextStyle(fontSize: 11, color: AppColors.blue1, fontWeight: FontWeight.w500))),
+          Expanded(child: Text(message, style: AppFonts.AlmaraiMedium12.copyWith(color: AppColors.salesAccent))),
         ],
       ),
     );
   }
 
-  Widget _buildStepFinancialData() {
+  Widget _buildStepFinancialData(bool isDark) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('financial_data'.tr, 'financial_step_desc'.tr),
+          _buildStepHeader('financial_data'.tr, 'financial_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           _buildTextField(_admissionFeeController, 'admission_fees'.tr, IconlyLight.wallet, keyboardType: TextInputType.number),
           _buildTextField(_registrationFeesController, 'registration'.tr, IconlyLight.document, keyboardType: TextInputType.number),
@@ -836,27 +905,27 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildStepWorkingHours() {
+  Widget _buildStepWorkingHours(bool isDark) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('working_hours'.tr, 'working_hours_step_desc'.tr),
+          _buildStepHeader('working_hours'.tr, 'working_hours_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           ..._workingDays.keys.map((day) {
             bool isActive = _workingDays[day]!;
             return Container(
               margin: EdgeInsets.only(bottom: 8.h),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isActive ? AppColors.blue1 : Colors.grey[200]!),
+                border: Border.all(color: isActive ? AppColors.salesAccent : (isDark ? Colors.white12 : Colors.grey[200]!)),
               ),
               child: CheckboxListTile(
-                title: Text(day.tr, style: TextStyle(fontWeight: FontWeight.bold, color: isActive ? AppColors.blue1 : Colors.black87)),
+                title: Text(day.tr, style: AppFonts.AlmaraiBold14.copyWith(color: isActive ? AppColors.salesAccent : Theme.of(context).colorScheme.onSurface)),
                 value: isActive,
-                activeColor: AppColors.blue1,
+                activeColor: AppColors.salesAccent,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onChanged: (val) => setState(() => _workingDays[day] = val!),
               ),
@@ -867,7 +936,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildStepFacilities() {
+  Widget _buildStepFacilities(bool isDark) {
     final List<Map<String, dynamic>> defaultFacilities = [
       {'id': 'swimming_pool', 'name': 'swimming_pool', 'icon': Icons.pool, 'color': Colors.blue},
       {'id': 'library', 'name': 'library', 'icon': Icons.library_books, 'color': Colors.brown},
@@ -887,7 +956,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('facilities'.tr, 'facilities_step_desc'.tr),
+          _buildStepHeader('facilities'.tr, 'facilities_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           GridView.builder(
             shrinkWrap: true,
@@ -945,10 +1014,10 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? facilityColor.withOpacity(0.08) : Colors.white,
+                    color: isSelected ? facilityColor.withOpacity(0.08) : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isSelected ? facilityColor : Colors.grey[200]!, width: isSelected ? 2 : 1),
-                    boxShadow: isSelected ? [BoxShadow(color: facilityColor.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4))] : [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+                    border: Border.all(color: isSelected ? facilityColor : (isDark ? Colors.white12 : Colors.grey[200]!), width: isSelected ? 2 : 1),
+                    boxShadow: isSelected ? [BoxShadow(color: facilityColor.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4))] : null,
                   ),
                   child: Stack(
                     children: [
@@ -977,53 +1046,51 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             },
           ),
           SizedBox(height: 24.h),
-          _buildInfoBox('facilities_step_info'.tr),
+          _buildInfoBox('facilities_step_info'.tr, isDark),
         ],
       ),
     );
   }
 
-  Widget _buildStepOwnerData() {
+  Widget _buildStepOwnerData(bool isDark) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('owner_information'.tr, 'owner_step_desc'.tr),
+          _buildStepHeader('owner_information'.tr, 'owner_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
-          _buildTextField(_ownerNameController, 'full_name'.tr, IconlyLight.user),
-          _buildTextField(_ownerEmailController, 'email'.tr, IconlyLight.message, keyboardType: TextInputType.emailAddress),
-          _buildTextField(_ownerPhoneController, 'phone'.tr, IconlyLight.call, keyboardType: TextInputType.phone, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
-          _buildTextField(_ownerPasswordController, 'password'.tr, IconlyLight.lock, obscureText: true),
+          _buildTextField(_ownerNameController, 'full_name'.tr, IconlyLight.user, isDark: isDark),
+          _buildTextField(_ownerEmailController, 'email'.tr, IconlyLight.message, keyboardType: TextInputType.emailAddress, isDark: isDark),
+          _buildTextField(_ownerPhoneController, 'phone'.tr, IconlyLight.call, keyboardType: TextInputType.phone, inputFormatters: [FilteringTextInputFormatter.digitsOnly], isDark: isDark),
         ],
       ),
     );
   }
 
-  Widget _buildStepModeratorData() {
+  Widget _buildStepModeratorData(bool isDark) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('accounts'.tr, 'accounts_step_desc'.tr),
+          _buildStepHeader('accounts'.tr, 'accounts_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
-          _buildTextField(_modNameController, 'full_name'.tr, IconlyLight.user),
-          _buildTextField(_modEmailController, 'email'.tr, IconlyLight.message, keyboardType: TextInputType.emailAddress),
-          _buildTextField(_modPhoneController, 'phone'.tr, IconlyLight.call, keyboardType: TextInputType.phone, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
-          _buildTextField(_modPasswordController, 'password'.tr, IconlyLight.lock, obscureText: true),
+          _buildTextField(_modNameController, 'full_name'.tr, IconlyLight.user, isDark: isDark),
+          _buildTextField(_modEmailController, 'email'.tr, IconlyLight.message, keyboardType: TextInputType.emailAddress, isDark: isDark),
+          _buildTextField(_modPhoneController, 'phone'.tr, IconlyLight.call, keyboardType: TextInputType.phone, inputFormatters: [FilteringTextInputFormatter.digitsOnly], isDark: isDark),
         ],
       ),
     );
   }
 
-  Widget _buildStepReview() {
+  Widget _buildStepReview(bool isDark) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStepHeader('review_and_submit'.tr, 'review_step_desc'.tr),
+          _buildStepHeader('review_and_submit'.tr, 'review_step_desc'.tr, isDark),
           SizedBox(height: 24.h),
           _buildReviewCard('school'.tr, [
             {'label': 'school_name_ar'.tr, 'value': _schoolNameArController.text},
@@ -1034,28 +1101,28 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
             {'label': 'administration'.tr, 'value': _selectedAdministration ?? _administrationController.text},
             {'label': 'detailed_address'.tr, 'value': _detailedAddressController.text},
             {'label': 'coordinates'.tr, 'value': '${_latController.text}, ${_lngController.text}'},
-          ]),
+          ], isDark),
           _buildReviewCard('admission_policies'.tr, [
             {'label': 'gender_policy_label'.tr, 'value': _selectedGenderPolicy?.tr},
             {'label': 'religion_policy_label'.tr, 'value': _selectedReligionType?.tr},
             {'label': 'special_needs_policy_label'.tr, 'value': _selectedSpecialNeedsType?.tr},
-          ]),
+          ], isDark),
           _buildReviewCard('financial_data'.tr, [
             {'label': 'admission_fees'.tr, 'value': _admissionFeeController.text},
             {'label': 'registration_fees'.tr, 'value': _registrationFeesController.text},
             {'label': 'uniform_fees'.tr, 'value': _uniformFeesController.text},
             {'label': 'bus_fees'.tr, 'value': '${_busFeesMinController.text} - ${_busFeesMaxController.text}'},
-          ]),
+          ], isDark),
           _buildReviewCard('owner'.tr, [
             {'label': 'full_name'.tr, 'value': _ownerNameController.text},
             {'label': 'email'.tr, 'value': _ownerEmailController.text},
             {'label': 'phone'.tr, 'value': _ownerPhoneController.text},
-          ]),
+          ], isDark),
           _buildReviewCard('moderator'.tr, [
             {'label': 'full_name'.tr, 'value': _modNameController.text},
             {'label': 'email'.tr, 'value': _modEmailController.text},
             {'label': 'phone'.tr, 'value': _modPhoneController.text},
-          ]),
+          ], isDark),
           
           Container(
             padding: EdgeInsets.all(16.h),
@@ -1084,13 +1151,13 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
   // --- Helper UI Components ---
 
-  Widget _buildStepHeader(String title, String subtitle) {
+  Widget _buildStepHeader(String title, String subtitle, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(title, style: AppFonts.AlmaraiBold22.copyWith(color: Theme.of(context).colorScheme.onSurface)),
         SizedBox(height: 4.h),
-        Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+        Text(subtitle, style: AppFonts.AlmaraiRegular12.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
       ],
     );
   }
@@ -1098,11 +1165,11 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: EdgeInsets.only(top: 24.h, bottom: 12.h),
-      child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      child: Text(title, style: AppFonts.AlmaraiBold14.copyWith(color: Theme.of(context).colorScheme.onSurface)),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool obscureText = false, TextInputType? keyboardType, bool isRtl = false, int maxLines = 1, String? hintText, List<TextInputFormatter>? inputFormatters}) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool obscureText = false, TextInputType? keyboardType, bool isRtl = false, int maxLines = 1, String? hintText, List<TextInputFormatter>? inputFormatters, bool isDark = false}) {
     final bool isEmail = keyboardType == TextInputType.emailAddress;
     final bool isEmpty = controller.text.trim().isEmpty;
     final bool isValidEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(controller.text);
@@ -1110,7 +1177,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     final bool showGreen = isEmail ? isValidEmail : !isEmpty;
     final bool showRed = _showErrors && (isEmail ? !isValidEmail : isEmpty);
     
-    final Color borderColor = showRed ? Colors.red : (showGreen ? Colors.green : Colors.grey[200]!);
+    final Color borderColor = showRed ? Colors.red : (showGreen ? Colors.green : (isDark ? Colors.white12 : Colors.grey[200]!));
 
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
@@ -1122,40 +1189,40 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
         inputFormatters: inputFormatters,
         textAlign: isRtl ? TextAlign.right : TextAlign.left,
         onChanged: (_) => setState(() {}),
-        style: TextStyle(fontSize: 14.sp),
+        style: AppFonts.AlmaraiRegular14.copyWith(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
-          labelStyle: TextStyle(color: showRed ? Colors.red[300] : Colors.grey[600], fontSize: 13.sp),
-          hintStyle: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
-          prefixIcon: Icon(icon, color: showRed ? Colors.red[300] : (showGreen ? Colors.green : AppColors.blue1), size: 18),
+          labelStyle: AppFonts.AlmaraiRegular12.copyWith(color: showRed ? Colors.red[300] : (isDark ? Colors.white38 : Colors.grey[600])),
+          hintStyle: AppFonts.AlmaraiRegular12.copyWith(color: isDark ? Colors.white24 : Colors.grey[300]),
+          prefixIcon: Icon(icon, color: showRed ? Colors.red[300] : (showGreen ? Colors.green : AppColors.salesAccent), size: 18),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: showRed ? Colors.red : (showGreen ? Colors.green : AppColors.blue1), width: 2)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: showRed ? Colors.red : (showGreen ? Colors.green : AppColors.salesAccent), width: 2)),
           filled: true,
-          fillColor: showRed ? Colors.red.withOpacity(0.01) : (showGreen ? Colors.green.withOpacity(0.01) : Colors.white),
+          fillColor: showRed ? Colors.red.withOpacity(0.01) : (showGreen ? Colors.green.withOpacity(0.01) : Theme.of(context).colorScheme.surface),
         ),
       ),
     );
   }
 
-  Widget _buildEnhancedDropdown(String label, String? value, List<String> items, Function(String?) onChanged, {List<String>? itemsLabels, IconData? icon, String? hintText}) {
+  Widget _buildEnhancedDropdown(String label, String? value, List<String> items, Function(String?) onChanged, {List<String>? itemsLabels, IconData? icon, String? hintText, bool isDark = false}) {
     final bool isEmpty = value == null || value.isEmpty;
-    final Color borderColor = isEmpty ? Colors.red.withOpacity(0.5) : Colors.green.withOpacity(0.5);
+    final Color borderColor = isEmpty ? Colors.red.withOpacity(0.5) : (isDark ? Colors.white12 : Colors.green.withOpacity(0.5));
 
     return Padding(
       padding: EdgeInsets.only(bottom: 20.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: isEmpty ? Colors.red[300] : Colors.grey[700])),
+          Text(label, style: AppFonts.AlmaraiBold12.copyWith(color: isEmpty ? Colors.red[300] : (isDark ? Colors.white54 : Colors.grey[700]))),
           SizedBox(height: 8.h),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: isEmpty ? Colors.red.withOpacity(0.05) : Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                BoxShadow(color: isEmpty ? Colors.red.withOpacity(0.05) : (isDark ? Colors.black26 : Colors.black.withOpacity(0.03)), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
             child: DropdownButtonFormField<String>(
@@ -1164,25 +1231,25 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                 onChanged(val);
                 setState(() {}); // Force visual update
               },
-              hint: hintText != null ? Text(hintText, style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)) : null,
-              icon: Icon(IconlyLight.arrow_down_2, size: 18, color: isEmpty ? Colors.red[300] : AppColors.blue1),
+              hint: hintText != null ? Text(hintText, style: AppFonts.AlmaraiRegular12.copyWith(color: isDark ? Colors.white24 : Colors.grey[400])) : null,
+              icon: Icon(IconlyLight.arrow_down_2, size: 18, color: isEmpty ? Colors.red[300] : AppColors.salesAccent),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                prefixIcon: Icon(icon ?? IconlyLight.category, color: isEmpty ? Colors.red[300] : AppColors.blue1, size: 20),
+                prefixIcon: Icon(icon ?? IconlyLight.category, color: isEmpty ? Colors.red[300] : AppColors.salesAccent, size: 20),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isEmpty ? Colors.red : Colors.green, width: 2)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isEmpty ? Colors.red : AppColors.salesAccent, width: 2)),
                 filled: true,
                 fillColor: isEmpty ? Colors.red.withOpacity(0.01) : Colors.green.withOpacity(0.01),
               ),
-              dropdownColor: Colors.white,
+              dropdownColor: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               items: List.generate(items.length, (index) {
                 return DropdownMenuItem(
                   value: items[index],
                   child: Text(
                     itemsLabels != null ? itemsLabels[index] : items[index].tr,
-                    style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                    style: AppFonts.AlmaraiRegular12.copyWith(color: Theme.of(context).colorScheme.onSurface),
                   ),
                 );
               }),
@@ -1193,7 +1260,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildTypeSelector() {
+  Widget _buildTypeSelector(bool isDark) {
     if (_isLoadingLookups && _schoolTypes.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -1208,7 +1275,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
     bool isAr = Get.locale?.languageCode == 'ar';
 
-    return Container(
+    return SizedBox(
       height: 90.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -1239,9 +1306,9 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
               width: 100.w,
               margin: EdgeInsets.only(right: 12.w),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.blue1.withOpacity(0.05) : Colors.white,
+                color: isSelected ? AppColors.salesAccent.withOpacity(0.05) : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isSelected ? AppColors.blue1 : Colors.grey[200]!, width: 1.5),
+                border: Border.all(color: isSelected ? AppColors.salesAccent : (isDark ? Colors.white12 : Colors.grey[200]!), width: 1.5),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1249,10 +1316,10 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.blue1 : Colors.grey[100],
+                      color: isSelected ? AppColors.salesAccent : (isDark ? Colors.white12 : Colors.grey[100]),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(iconData, color: isSelected ? Colors.white : Colors.grey[400], size: 20),
+                    child: Icon(iconData, color: isSelected ? Colors.white : (isDark ? Colors.white38 : Colors.grey[400]), size: 20),
                   ),
                   SizedBox(height: 8.h),
                   Padding(
@@ -1262,7 +1329,7 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 10.sp, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? AppColors.blue1 : Colors.grey[600]),
+                      style: AppFonts.AlmaraiBold10.copyWith(color: isSelected ? AppColors.salesAccent : (isDark ? Colors.white54 : Colors.grey[600])),
                     ),
                   ),
                 ],
@@ -1274,24 +1341,50 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     );
   }
 
-  Widget _buildReviewCard(String title, List<Map<String, String?>> details) {
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _schoolNameArController.dispose();
+    _schoolNameEnController.dispose();
+    _shortNameController.dispose();
+    _detailedAddressController.dispose();
+    _administrationController.dispose();
+    _latController.dispose();
+    _lngController.dispose();
+    _admissionFeeController.dispose();
+    _registrationFeesController.dispose();
+    _uniformFeesController.dispose();
+    _busFeesMinController.dispose();
+    _busFeesMaxController.dispose();
+    _ownerNameController.dispose();
+    _ownerEmailController.dispose();
+    _ownerPhoneController.dispose();
+    _modNameController.dispose();
+    _modEmailController.dispose();
+    _modPhoneController.dispose();
+    _primaryColorController.dispose();
+    _secondaryColorController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildReviewCard(String title, List<Map<String, String?>> details, bool isDark) {
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.h),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey[200]!)),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(color: AppColors.blue1, fontWeight: FontWeight.bold, fontSize: 14)),
-          const Divider(),
+          Text(title, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.salesAccent)),
+          Divider(color: isDark ? Colors.white10 : Colors.black12),
           ...details.map((d) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(d['label']!, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                Text(d['value'] ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                Text(d['label']!, style: AppFonts.AlmaraiRegular12.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
+                Text(d['value'] ?? 'N/A', style: AppFonts.AlmaraiBold12.copyWith(color: Theme.of(context).colorScheme.onSurface)),
               ],
             ),
           )).toList(),

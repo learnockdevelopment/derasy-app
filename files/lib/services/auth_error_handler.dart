@@ -6,10 +6,8 @@ class AuthErrorHandler {
   /// Handle 403 Unauthorized errors by logging out and navigating to login
   /// Handle 403 Unauthorized errors by logging out and navigating to login
   static Future<void> handle403Error() async {
-    print('🔒 [AUTH] 403 Unauthorized detected - PREVENTING logout for debugging');
+    print('🔒 [AUTH] 403 Unauthorized detected - Logging out user');
     
-    // TEMPORARILY DISABLED FOR DEBUGGING
-    /*
     // Clear user data and token
     await UserStorageService.logout();
     
@@ -18,23 +16,22 @@ class AuthErrorHandler {
     
     // Show error message to user
     Get.snackbar(
-      'session_expired'.tr,
-      'please_login_again'.tr,
+      'Session Expired',
+      'Please login again',
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
     );
-    */
   }
   
-  /// Check if error is 403 and handle it
-  static Future<bool> handleIfUnauthorized(int statusCode) async {
-    // TEMPORARILY DISABLED CHECK
-    /*
-    if (statusCode == 403 || statusCode == 401) {
+  /// Check if error is 403 or HTML and handle it
+  static Future<bool> handleIfUnauthorized(int statusCode, {String? body}) async {
+    final isHtml = body != null && (body.trim().startsWith('<!DOCTYPE html>') || body.trim().startsWith('<html'));
+    
+    if (statusCode == 403 || statusCode == 401 || isHtml) {
+      if (isHtml) print('⚠️ [AUTH] HTML response detected - redirecting to login');
       await handle403Error();
       return true;
     }
-    */
     return false;
   }
 }

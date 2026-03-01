@@ -8,21 +8,17 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/assets.dart';
 import '../../core/constants/countries.dart';
-import '../../core/routes/app_routes.dart';
+import '../../core/routes/app_routes.dart'; 
 import '../../core/controllers/app_config_controller.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
 import '../../core/controllers/dashboard_controller.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:io' show Platform;
 import '../../widgets/loading_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key); 
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -38,7 +34,8 @@ class _LoginPageState extends State<LoginPage>
   bool _isLoading = false;
   bool _isPhoneLogin = true;
   Offset _chatButtonPosition = Offset(0, 0);
-  CountryCode _selectedCountryCode = CountryCode(name: 'Egypt', code: 'EG', dialCode: '+20');
+  CountryCode _selectedCountryCode =
+      CountryCode(name: 'Egypt', code: 'EG', dialCode: '+20');
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -50,15 +47,15 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   void initState() {
-    super.initState();  
- 
+    super.initState();
+
     // Initialize animations
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>( 
+    _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
@@ -76,12 +73,13 @@ class _LoginPageState extends State<LoginPage>
 
     _animationController.forward();
     _checkBiometrics();
-    
+
     // Set initial chat button position after frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final size = MediaQuery.of(context).size;
       setState(() {
-        _chatButtonPosition = Offset(size.width - Responsive.w(80), size.height - Responsive.h(110));
+        _chatButtonPosition = Offset(
+            size.width - Responsive.w(80), size.height - Responsive.h(110));
       });
     });
   }
@@ -117,7 +115,8 @@ class _LoginPageState extends State<LoginPage>
   void _showModernCountryPicker(BuildContext context) {
     final TextEditingController searchController = TextEditingController();
     List<Country> filteredCountries = Countries.countries;
-    Country? selectedCountry = Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG');
+    Country? selectedCountry =
+        Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG');
 
     showModalBottomSheet(
       context: context,
@@ -151,7 +150,8 @@ class _LoginPageState extends State<LoginPage>
                   padding: Responsive.all(16),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: AppColors.grey200, width: Responsive.w(1)),
+                      bottom: BorderSide(
+                          color: AppColors.grey200, width: Responsive.w(1)),
                     ),
                   ),
                   child: Row(
@@ -192,7 +192,8 @@ class _LoginPageState extends State<LoginPage>
                           ),
                           suffixIcon: value.text.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                                  icon: Icon(Icons.clear,
+                                      color: AppColors.textSecondary),
                                   onPressed: () {
                                     searchController.clear();
                                     filterCountries('');
@@ -202,7 +203,8 @@ class _LoginPageState extends State<LoginPage>
                           filled: true,
                           fillColor: AppColors.grey50,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                            borderRadius:
+                                BorderRadius.circular(Responsive.r(12)),
                             borderSide: BorderSide.none,
                           ),
                           contentPadding: Responsive.symmetric(
@@ -222,7 +224,8 @@ class _LoginPageState extends State<LoginPage>
                     itemBuilder: (context, index) {
                       final country = filteredCountries[index];
                       final isSelected = selectedCountry.code == country.code;
-                      final primary = AppConfigController.to.primaryColorAsColor;
+                      final primary =
+                          AppConfigController.to.primaryColorAsColor;
 
                       return InkWell(
                         onTap: () {
@@ -240,13 +243,20 @@ class _LoginPageState extends State<LoginPage>
                         borderRadius: BorderRadius.circular(Responsive.r(12)),
                         child: Container(
                           margin: EdgeInsets.only(bottom: Responsive.h(4)),
-                          padding: Responsive.symmetric(horizontal: 12, vertical: 8),
+                          padding:
+                              Responsive.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(Responsive.r(10)),
+                            color: isSelected
+                                ? primary.withOpacity(0.1)
+                                : Colors.transparent,
+                            borderRadius:
+                                BorderRadius.circular(Responsive.r(10)),
                             border: isSelected
-                                ? Border.all(color: primary, width: Responsive.w(1.5))
-                                : Border.all(color: AppColors.grey200, width: Responsive.w(1)),
+                                ? Border.all(
+                                    color: primary, width: Responsive.w(1.5))
+                                : Border.all(
+                                    color: AppColors.grey200,
+                                    width: Responsive.w(1)),
                           ),
                           child: Row(
                             children: [
@@ -264,7 +274,8 @@ class _LoginPageState extends State<LoginPage>
                                 child: Center(
                                   child: Text(
                                     country.flag,
-                                    style: TextStyle(fontSize: Responsive.sp(20)),
+                                    style:
+                                        TextStyle(fontSize: Responsive.sp(20)),
                                   ),
                                 ),
                               ),
@@ -275,7 +286,8 @@ class _LoginPageState extends State<LoginPage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _getTranslatedCountryName(country.code, country.name),
+                                      _getTranslatedCountryName(
+                                          country.code, country.name),
                                       style: AppFonts.AlmaraiMedium12.copyWith(
                                         color: AppColors.textPrimary,
                                       ),
@@ -324,10 +336,10 @@ class _LoginPageState extends State<LoginPage>
     try {
       // Get email or phone based on login type
       // Note: API expects email field, so we use the entered value (email or phone)
-      final String email = _isPhoneLogin 
-          ? _phoneController.text.trim() 
+      final String email = _isPhoneLogin
+          ? _phoneController.text.trim()
           : _emailController.text.trim();
-      
+
       // Create login request
       final loginRequest = LoginRequest(
         email: email,
@@ -341,13 +353,15 @@ class _LoginPageState extends State<LoginPage>
 
       // Check user role
       final userRole = loginResponse.user.role.toLowerCase();
-      
-      if (userRole != 'student' && userRole != 'parent' && userRole != 'sales') {
+
+      if (userRole != 'student' &&
+          userRole != 'parent' &&
+          userRole != 'sales') {
         // Role not allowed
         setState(() {
           _isLoading = false;
         });
-        
+
         Get.snackbar(
           'login_failed'.tr,
           'unauthorized_role'.tr,
@@ -372,8 +386,8 @@ class _LoginPageState extends State<LoginPage>
       // Show success message
       Get.snackbar(
         'login_success'.tr,
-        loginResponse.message.isNotEmpty 
-            ? loginResponse.message 
+        loginResponse.message.isNotEmpty
+            ? loginResponse.message
             : 'welcome_back_message'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.blue1,
@@ -396,10 +410,9 @@ class _LoginPageState extends State<LoginPage>
       } else {
         Get.offNamed(AppRoutes.home);
       }
-      
     } on AuthException catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -421,7 +434,7 @@ class _LoginPageState extends State<LoginPage>
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -437,7 +450,6 @@ class _LoginPageState extends State<LoginPage>
       );
     }
   }
-
 
   Future<void> _checkBiometrics() async {
     try {
@@ -464,7 +476,8 @@ class _LoginPageState extends State<LoginPage>
         final creds = UserStorageService.getBiometricCredentials();
         if (creds != null) {
           setState(() {
-            _isPhoneLogin = false; // Force email mode to use the stored email/username
+            _isPhoneLogin =
+                false; // Force email mode to use the stored email/username
             _emailController.text = creds['email']!;
             _passwordController.text = creds['password']!;
           });
@@ -472,549 +485,683 @@ class _LoginPageState extends State<LoginPage>
         }
       }
     } catch (e) {
-      Get.snackbar('error'.tr, 'biometric_error'.tr, 
-          snackPosition: SnackPosition.BOTTOM, 
-          backgroundColor: AppColors.error, 
+      Get.snackbar('error'.tr, 'biometric_error'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
           colorText: Colors.white);
     }
   }
 
+  // Future<void> _handleGoogleLogin() async {
+  //   try {
+  //     setState(() {
+  //       _isLoading = true;
+  //     });
 
+  //     final GoogleSignIn googleSignIn = GoogleSignIn(
+  //       serverClientId: '121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com',
+  //       scopes: ['email', 'profile'],
+  //     );
+  //     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-  Future<void> _handleGoogleLogin() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
+  //     if (googleUser == null) {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //       return;
+  //     }
 
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser.authentication;
+  //     final String? idToken = googleAuth.idToken;
 
-      if (googleUser == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+  //     if (idToken == null) {
+  //       throw AuthException('Failed to get Google ID token', 0);
+  //     }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
+  //     final loginResponse = await AuthService.loginWithGoogle(idToken);
 
-      if (idToken == null) {
-        throw AuthException('Failed to get Google ID token', 0);
-      }
+  //     if (!mounted) return;
 
-      final loginResponse = await AuthService.loginWithGoogle(idToken);
+  //     final userRole = loginResponse.user.role.toLowerCase();
 
-      if (!mounted) return;
+  //     if (userRole != 'student' && userRole != 'parent') {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
 
-      final userRole = loginResponse.user.role.toLowerCase();
+  //       Get.snackbar(
+  //         'login_failed'.tr,
+  //         'only_student_or_parent_allowed'.tr,
+  //         snackPosition: SnackPosition.BOTTOM,
+  //         backgroundColor: AppColors.error,
+  //         colorText: Colors.white,
+  //         duration: const Duration(seconds: 3),
+  //       );
+  //       return;
+  //     }
 
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
+  //     await UserStorageService.saveCurrentUser(
+  //       loginResponse.user,
+  //       loginResponse.token,
+  //     );
 
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
-      }
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
 
-      await UserStorageService.saveCurrentUser(
-        loginResponse.user,
-        loginResponse.token,
-      );
+  //     Get.snackbar(
+  //       'login_success'.tr,
+  //       loginResponse.message.isNotEmpty
+  //           ? loginResponse.message
+  //           : 'welcome_back_message'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: AppColors.blue1,
+  //       colorText: Colors.white,
+  //       duration: const Duration(seconds: 2),
+  //     );
 
-      setState(() {
-        _isLoading = false;
-      });
+  //     try {
+  //       DashboardController.to.refreshAll();
+  //     } catch (e) {
+  //       print('📊 [LOGIN] Error triggering pre-fetch: $e');
+  //     }
 
-      Get.snackbar(
-        'login_success'.tr,
-        loginResponse.message.isNotEmpty
-            ? loginResponse.message
-            : 'welcome_back_message'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.blue1,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+  //     Get.offNamed<void>(AppRoutes.home);
+  //   } catch (e) {
+  //     if (!mounted) return;
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //     print('Google Sign In Error: $e');
+  //     Get.snackbar(
+  //       'error'.tr,
+  //       'google_login_failed'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: AppColors.error,
+  //       colorText: Colors.white,
+  //     );
+  //   }
+  // }
 
-      try {
-        DashboardController.to.refreshAll();
-      } catch (e) {
-        print('📊 [LOGIN] Error triggering pre-fetch: $e');
-      }
-
-      Get.offNamed<void>(AppRoutes.home);
-
-    } catch (e) {
-      if (!mounted) return;
-        setState(() {
-        _isLoading = false;
-      });
-      print('Google Sign In Error: $e');
-      Get.snackbar(
-        'error'.tr,
-        'google_login_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  Future<void> _handleAppleLogin() async {
-    try {
-        setState(() {
-        _isLoading = true;
-      });
-
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      final identityToken = credential.identityToken;
-
-      if (identityToken == null) {
-          throw AuthException('Failed to get Apple Identity Token', 0);
-      }
-
-      // Prepare user object for first-time login as per mobile auth documentation
-      Map<String, dynamic>? userObj;
-      if (credential.givenName != null || credential.familyName != null || credential.email != null) {
-        userObj = {
-          'name': {
-            'firstName': credential.givenName ?? '',
-            'lastName': credential.familyName ?? '',
-          },
-          'email': credential.email,
-        };
-      }
-
-      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
-
-       if (!mounted) return;
-
-      final userRole = loginResponse.user.role.toLowerCase();
-
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
-
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
-      }
-
-      await UserStorageService.saveCurrentUser(
-        loginResponse.user,
-        loginResponse.token,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      Get.snackbar(
-        'login_success'.tr,
-        loginResponse.message.isNotEmpty
-            ? loginResponse.message
-            : 'welcome_back_message'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.blue1,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
-      
-      Get.offNamed<void>(AppRoutes.home);
-
-    } catch (e) {
-        if (!mounted) return;
-        setState(() {
-        _isLoading = false;
-      });
-      print('Apple Sign In Error: $e');
-       Get.snackbar(
-        'error'.tr,
-        'apple_login_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-    }
-  }
+  // Future<void> _handleAppleLogin() async {
+  //   try {
+  //       setState(() {
+  //       _isLoading = true;
+  //     });
+  //
+  //     final credential = await SignInWithApple.getAppleIDCredential(
+  //       scopes: [
+  //         AppleIDAuthorizationScopes.email,
+  //         AppleIDAuthorizationScopes.fullName,
+  //       ],
+  //     );
+  //
+  //     final identityToken = credential.identityToken;
+  //
+  //     if (identityToken == null) {
+  //         throw AuthException('Failed to get Apple Identity Token', 0);
+  //     }
+  //
+  //     // Prepare user object for first-time login as per mobile auth documentation
+  //     Map<String, dynamic>? userObj;
+  //     if (credential.givenName != null || credential.familyName != null || credential.email != null) {
+  //       userObj = {
+  //         'name': {
+  //           'firstName': credential.givenName ?? '',
+  //           'lastName': credential.familyName ?? '',
+  //         },
+  //         'email': credential.email,
+  //       };
+  //     }
+  //
+  //     final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
+  //
+  //      if (!mounted) return;
+  //
+  //     final userRole = loginResponse.user.role.toLowerCase();
+  //
+  //     if (userRole != 'student' && userRole != 'parent') {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //
+  //       Get.snackbar(
+  //         'login_failed'.tr,
+  //         'only_student_or_parent_allowed'.tr,
+  //         snackPosition: SnackPosition.BOTTOM,
+  //         backgroundColor: AppColors.error,
+  //         colorText: Colors.white,
+  //         duration: const Duration(seconds: 3),
+  //       );
+  //       return;
+  //     }
+  //
+  //     await UserStorageService.saveCurrentUser(
+  //       loginResponse.user,
+  //       loginResponse.token,
+  //     );
+  //
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //
+  //     Get.snackbar(
+  //       'login_success'.tr,
+  //       loginResponse.message.isNotEmpty
+  //           ? loginResponse.message
+  //           : 'welcome_back_message'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: AppColors.blue1,
+  //       colorText: Colors.white,
+  //       duration: const Duration(seconds: 2),
+  //     );
+  //
+  //     Get.offNamed<void>(AppRoutes.home);
+  //
+  //   } catch (e) {
+  //       if (!mounted) return;
+  //       setState(() {
+  //       _isLoading = false;
+  //     });
+  //     print('Apple Sign In Error: $e');
+  //      Get.snackbar(
+  //       'error'.tr,
+  //       'apple_login_failed'.tr,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //        backgroundColor: AppColors.error,
+  //       colorText: Colors.white,
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    final primary = AppConfigController.to.primaryColorAsColor;
+    final config = AppConfigController.to;
+    final primary = config.primaryColorAsColor;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                // Top Bar with Back Button and Language Selector
-                Padding(
-                  padding: Responsive.symmetric(horizontal: 16, vertical: 6),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // Language Button (toggle)
-                      InkWell(
-                        borderRadius: BorderRadius.circular(Responsive.r(6)),
-                        onTap: () {
-                          final isAr = Get.locale?.languageCode == 'ar';
-                          Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
-                          setState(() {});
-                        },
-                        child: Padding(
-                          padding: Responsive.symmetric(horizontal: 6, vertical: 4),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.language,
-                                color: primary,
-                                size: Responsive.sp(18),
-                              ),
-                              SizedBox(width: Responsive.w(3)),
-                              Text(
-                                (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
-                                style: AppFonts.AlmaraiMedium12.copyWith(
-                                  color: primary,
-                                ),
-                              ),
-                            ],
-                          ),
+    return Obx(() {
+      final isDark = config.isDarkMode;
+      final scaffoldBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+      final textColor = isDark ? Colors.white : AppColors.textPrimary;
+      final secondaryTextColor =
+          isDark ? Colors.white70 : AppColors.textSecondary;
+      final fieldFillColor =
+          isDark ? const Color(0xFF1E293B) : AppColors.grey50;
+      final borderColor = isDark ? Colors.white24 : AppColors.grey300;
+
+      return Scaffold(
+        backgroundColor: scaffoldBg,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  // Top Bar
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isDark ? Colors.white12 : AppColors.grey200,
+                          width: 1,
                         ),
                       ),
-                    ],
+                    ),
+                    padding: Responsive.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // Theme Toggle Button
+                        IconButton(
+                          onPressed: () => config.toggleTheme(),
+                          icon: Icon(
+                            isDark ? Icons.light_mode : Icons.dark_mode,
+                            color: isDark ? Colors.white70 : AppColors.textSecondary,
+                            size: Responsive.sp(20),
+                          ),
+                        ),
+                        SizedBox(width: Responsive.w(8)),
+                        // Language Button (toggle)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(Responsive.r(6)),
+                          onTap: () {
+                            final isAr = Get.locale?.languageCode == 'ar';
+                            Get.updateLocale(isAr
+                                ? const Locale('en', 'US')
+                                : const Locale('ar', 'SA'));
+                            setState(() {});
+                          },
+                          child: Padding(
+                            padding: Responsive.symmetric(
+                                horizontal: 6, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.language,
+                                  color: isDark ? Colors.white70 : AppColors.textSecondary,
+                                  size: Responsive.sp(18),
+                                ),
+                                SizedBox(width: Responsive.w(3)),
+                                Text(
+                                  (Get.locale?.languageCode == 'ar')
+                                      ? 'English'
+                                      : 'العربية',
+                                  style: AppFonts.AlmaraiMedium12.copyWith(
+                                    color: isDark ? Colors.white70 : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // Main Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Padding(
-                      padding: Responsive.symmetric(horizontal: 24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            SizedBox(height: Responsive.h(20)),
+                  // Main Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Padding(
+                        padding: Responsive.symmetric(horizontal: 24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              SizedBox(height: Responsive.h(20)),
 
-                            // Logo
-                            FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: Image.asset(
-                                AssetsManager.login,
-                                width: Responsive.w(90),
-                                height: Responsive.w(90),
-                                fit: BoxFit.contain,
+                              // Logo
+                              FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: Image.asset(
+                                  AssetsManager.login,
+                                  width: Responsive.w(90),
+                                  height: Responsive.w(90),
+                                  fit: BoxFit.contain,
+                                ),
                               ),
-                            ),
 
-                            SizedBox(height: Responsive.h(20)),
+                              SizedBox(height: Responsive.h(20)),
 
-                            // Title
-                            FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'login'.tr,
-                                    style: AppFonts.AlmaraiBold20.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),  
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  SizedBox(height: Responsive.h(6)),
-                                  Text(
-                                    'sign_in_to_continue'.tr,
-                                    style: AppFonts.AlmaraiRegular12.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            SizedBox(height: Responsive.h(24)),
-                            SlideTransition(
-                              position: _slideAnimation,
-                              child: FadeTransition(
+                              // Title
+                              FadeTransition(
                                 opacity: _fadeAnimation,
                                 child: Column(
-                                  children: [ 
-                                    if (_isPhoneLogin)
-                                      // Phone Field with Flag and Country Code
-                                      TextFormField(
-                                        controller: _phoneController,
-                                        keyboardType: TextInputType.phone,
-                                        style: AppFonts.AlmaraiRegular14,
-                                        decoration: InputDecoration(
-                                          labelText: 'phone_number'.tr,
-                                          labelStyle: AppFonts.AlmaraiRegular14.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
-                                          hintText: 'enter_your_phone'.tr,
-                                          hintStyle: AppFonts.AlmaraiRegular12.copyWith(
-                                            color: AppColors.grey400,
-                                          ),
-                                          prefixIcon: GestureDetector(
-                                            onTap: () {
-                                              _showModernCountryPicker(context);
-                                            },
-                                            child: Container(
-                                              padding: Responsive.symmetric(horizontal: 12),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  // Flag - using emoji from Countries
-                                                  Container(
-                                                    width: Responsive.w(28),
-                                                    height: Responsive.w(28),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(
-                                                        color: AppColors.grey200,
-                                                        width: Responsive.w(1),
+                                  children: [
+                                    Text(
+                                      'login'.tr,
+                                      style: AppFonts.AlmaraiBold20.copyWith(
+                                        color: textColor,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: Responsive.h(6)),
+                                    Text(
+                                      'sign_in_to_continue'.tr,
+                                      style: AppFonts.AlmaraiRegular12.copyWith(
+                                        color: secondaryTextColor,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(height: Responsive.h(24)),
+
+                          
+
+                              SizedBox(height: Responsive.h(24)),
+                              SlideTransition(
+                                position: _slideAnimation,
+                                child: FadeTransition(
+                                  opacity: _fadeAnimation,
+                                  child: Column(
+                                    children: [
+                                      if (_isPhoneLogin)
+                                        // Phone Field with Flag and Country Code
+                                        TextFormField(
+                                          controller: _phoneController,
+                                          keyboardType: TextInputType.phone,
+                                          style: AppFonts.AlmaraiRegular14
+                                              .copyWith(color: textColor),
+                                          decoration: InputDecoration(
+                                            labelText: 'phone_number'.tr,
+                                            labelStyle: AppFonts
+                                                .AlmaraiRegular14.copyWith(
+                                              color: secondaryTextColor,
+                                            ),
+                                            hintText: 'enter_your_phone'.tr,
+                                            hintStyle: AppFonts.AlmaraiRegular12
+                                                .copyWith(
+                                              color: isDark
+                                                  ? Colors.white38
+                                                  : AppColors.grey400,
+                                            ),
+                                            prefixIcon: GestureDetector(
+                                              onTap: () {
+                                                _showModernCountryPicker(
+                                                    context);
+                                              },
+                                              child: Container(
+                                                padding: Responsive.symmetric(
+                                                    horizontal: 12),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                     // Flag - using emoji from Countries
+                                                    Text(
+                                                      Countries.getCountryByCode(
+                                                              _selectedCountryCode
+                                                                      .code ??
+                                                                  'EG')
+                                                          .flag,
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              Responsive.sp(
+                                                                  22)),
+                                                    ),
+                                                    SizedBox(
+                                                        width: Responsive.w(8)),
+                                                    // Country Code
+                                                    Text(
+                                                      _selectedCountryCode
+                                                              .dialCode ??
+                                                          '+20',
+                                                      style: AppFonts
+                                                              .AlmaraiRegular14
+                                                          .copyWith(
+                                                        color: textColor,
                                                       ),
                                                     ),
-                                                    child: Center(
-                                                      child: Text(
-                                                        Countries.getCountryByCode(_selectedCountryCode.code ?? 'EG').flag,
-                                                        style: TextStyle(fontSize: Responsive.sp(20)),
-                                                      ),
+                                                    SizedBox(
+                                                        width: Responsive.w(8)),
+                                                    // Separator
+                                                    Container(
+                                                      width: Responsive.w(1),
+                                                      height: Responsive.h(20),
+                                                      color: AppColors.grey300,
                                                     ),
-                                                  ),
-                                                  SizedBox(width: Responsive.w(8)),
-                                                  // Country Code
-                                                  Text(
-                                                    _selectedCountryCode.dialCode ?? '+20',
-                                                    style: AppFonts.AlmaraiRegular14.copyWith(
-                                                      color: AppColors.textPrimary,
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: Responsive.w(8)),
-                                                  // Separator
-                                                  Container(
-                                                    width: Responsive.w(1),
-                                                    height: Responsive.h(20),
-                                                    color: AppColors.grey300,
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                                             ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: borderColor),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: borderColor),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                color: primary,
+                                                width: Responsive.w(2),
+                                              ),
+                                            ),
+                                            errorBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: AppColors.error),
+                                            ),
+                                            focusedErrorBorder:
+                                                OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                color: AppColors.error,
+                                                width: Responsive.w(2),
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor: fieldFillColor,
+                                            contentPadding:
+                                                Responsive.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
                                           ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.grey300),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.grey300),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'phone_required'.tr;
+                                            }
+                                            if (!_isValidPhone(value)) {
+                                              return 'enter_valid_phone'.tr;
+                                            }
+                                            return null;
+                                          },
+                                        )
+                                      else
+                                        // Email Field
+                                        TextFormField(
+                                          controller: _emailController,
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          style: AppFonts.AlmaraiRegular14
+                                              .copyWith(color: textColor),
+                                          decoration: InputDecoration(
+                                            labelText: 'email'.tr,
+                                            labelStyle: AppFonts
+                                                .AlmaraiRegular14.copyWith(
+                                              color: secondaryTextColor,
+                                            ),
+                                            hintText: 'enter_your_email'.tr,
+                                            hintStyle: AppFonts.AlmaraiRegular12
+                                                .copyWith(
+                                              color: isDark
+                                                  ? Colors.white38
+                                                  : AppColors.grey400,
+                                            ),
+                                            prefixIcon: Icon(
+                                              Icons.email_outlined,
                                               color: primary,
-                                              width: Responsive.w(2),
+                                              size: Responsive.sp(20),
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: borderColor),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: borderColor),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                color: primary,
+                                                width: Responsive.w(2),
+                                              ),
+                                            ),
+                                            errorBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                  color: AppColors.error),
+                                            ),
+                                            focusedErrorBorder:
+                                                OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      Responsive.r(12)),
+                                              borderSide: BorderSide(
+                                                color: AppColors.error,
+                                                width: Responsive.w(2),
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor: fieldFillColor,
+                                            contentPadding:
+                                                Responsive.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
                                             ),
                                           ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.error),
-                                          ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                              color: AppColors.error,
-                                              width: Responsive.w(2),
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor: AppColors.grey50,
-                                          contentPadding: Responsive.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'email_required'.tr;
+                                            }
+                                            if (!_isValidEmail(value)) {
+                                              return 'enter_valid_email'.tr;
+                                            }
+                                            return null;
+                                          },
                                         ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'phone_required'.tr;
-                                          }
-                                          if (!_isValidPhone(value)) {
-                                            return 'enter_valid_phone'.tr;
-                                          }
-                                          return null;
-                                        },
-                                      )
-                                    else
-                                       // Email Field
+                                      SizedBox(height: Responsive.h(12)),
+
+                                      // Password Field
                                       TextFormField(
-                                        controller: _emailController,
-                                        keyboardType: TextInputType.emailAddress,
-                                        style: AppFonts.AlmaraiRegular14,
+                                        controller: _passwordController,
+                                        obscureText: !_isPasswordVisible,
+                                        style:
+                                            AppFonts.AlmaraiRegular14.copyWith(
+                                                color: textColor),
                                         decoration: InputDecoration(
-                                          labelText: 'email'.tr,
-                                          labelStyle: AppFonts.AlmaraiRegular14.copyWith(
-                                            color: AppColors.textSecondary,
+                                          labelText: 'password'.tr,
+                                          labelStyle: AppFonts.AlmaraiRegular14
+                                              .copyWith(
+                                            color: secondaryTextColor,
                                           ),
-                                          hintText: 'enter_your_email'.tr,
-                                          hintStyle: AppFonts.AlmaraiRegular12.copyWith(
-                                            color: AppColors.grey400,
+                                          hintText: 'password_placeholder'.tr,
+                                          hintStyle: AppFonts.AlmaraiRegular12
+                                              .copyWith(
+                                            color: isDark
+                                                ? Colors.white38
+                                                : AppColors.grey400,
                                           ),
                                           prefixIcon: Icon(
-                                            Icons.email_outlined,
+                                            Icons.lock_outlined,
                                             color: primary,
                                             size: Responsive.sp(20),
                                           ),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(
+                                              _isPasswordVisible
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
+                                              color: primary,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _isPasswordVisible =
+                                                    !_isPasswordVisible;
+                                              });
+                                            },
+                                          ),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.grey300),
+                                            borderRadius: BorderRadius.circular(
+                                                Responsive.r(12)),
+                                            borderSide:
+                                                BorderSide(color: borderColor),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.grey300),
+                                            borderRadius: BorderRadius.circular(
+                                                Responsive.r(12)),
+                                            borderSide:
+                                                BorderSide(color: borderColor),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderRadius: BorderRadius.circular(
+                                                Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: primary,
                                               width: Responsive.w(2),
                                             ),
                                           ),
                                           errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.error),
+                                            borderRadius: BorderRadius.circular(
+                                                Responsive.r(12)),
+                                            borderSide: BorderSide(
+                                                color: AppColors.error),
                                           ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                          focusedErrorBorder:
+                                              OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                Responsive.r(12)),
                                             borderSide: BorderSide(
                                               color: AppColors.error,
                                               width: Responsive.w(2),
                                             ),
                                           ),
                                           filled: true,
-                                          fillColor: AppColors.grey50,
+                                          fillColor: fieldFillColor,
                                           contentPadding: Responsive.symmetric(
                                             horizontal: 16,
-                                            vertical: 12,
+                                            vertical: 16,
                                           ),
                                         ),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
-                                            return 'email_required'.tr;
-                                          }
-                                          if (!_isValidEmail(value)) {
-                                            return 'enter_valid_email'.tr;
+                                            return 'password_required'.tr;
                                           }
                                           return null;
                                         },
                                       ),
-                                    SizedBox(height: Responsive.h(12)),
+                                      SizedBox(height: Responsive.h(6)),
 
-                                // Password Field
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: !_isPasswordVisible,
-                                  style: AppFonts.AlmaraiRegular14,
-                                  decoration: InputDecoration(
-                                    labelText: 'password'.tr,
-                                    labelStyle: AppFonts.AlmaraiRegular14.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    hintText: 'password_placeholder'.tr,
-                                    hintStyle: AppFonts.AlmaraiRegular12.copyWith(
-                                      color: AppColors.grey400,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.lock_outlined,
-                                      color: primary,
-                                      size: Responsive.sp(20),
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _isPasswordVisible
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                        color: primary,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isPasswordVisible = !_isPasswordVisible;
-                                        });
-                                      },
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      borderSide: BorderSide(color: AppColors.grey300),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      borderSide: BorderSide(color: AppColors.grey300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      borderSide: BorderSide(
-                                        color: primary,
-                                        width: Responsive.w(2),
-                                      ),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      borderSide: BorderSide(color: AppColors.error),
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      borderSide: BorderSide(
-                                        color: AppColors.error,
-                                        width: Responsive.w(2),
-                                      ),
-                                    ),
-                                    filled: true,
-                                    fillColor: AppColors.grey50,
-                                    contentPadding: Responsive.symmetric(
-                                      horizontal: 16,
-                                      vertical: 16,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'password_required'.tr;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: Responsive.h(6)),
+                                      if (_canCheckBiometric) ...[
+                                        SizedBox(height: Responsive.h(20)),
+                                        InkWell(
+                                          onTap: _triggerBiometric,
+                                          borderRadius:
+                                              BorderRadius.circular(50),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.blue1
+                                                  .withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color: AppColors.blue1
+                                                      .withOpacity(0.3)),
+                                            ),
+                                            child: Icon(
+                                              Icons.fingerprint,
+                                              size: 40,
+                                              color: AppColors.blue1,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'biometric_login'.tr,
+                                          style: TextStyle(
+                                            color: AppColors.blue1,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                              SizedBox(height: Responsive.h(24)),
 
-                                SizedBox(height: Responsive.h(12)),
-
-                                // Login Button
-                                SizedBox(
+                                          // Login Button at Top
+                              FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: SizedBox(
                                   width: double.infinity,
                                   height: Responsive.h(45),
                                   child: ElevatedButton(
@@ -1023,348 +1170,246 @@ class _LoginPageState extends State<LoginPage>
                                       backgroundColor: AppColors.blue1,
                                       foregroundColor: Colors.white,
                                       elevation: 6,
-                                      disabledBackgroundColor: AppColors.grey300,
+                                      disabledBackgroundColor: isDark
+                                          ? Colors.white12
+                                          : AppColors.grey300,
                                       side: BorderSide(
                                         color: AppColors.blue1,
                                         width: Responsive.w(2),
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                        borderRadius: BorderRadius.circular(
+                                            Responsive.r(12)),
                                       ),
                                     ),
                                     child: Text(
-                                            'login'.tr,
-                                            style: AppFonts.AlmaraiBold16.copyWith(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                                
-                                if (_canCheckBiometric) ...[
-                                  SizedBox(height: Responsive.h(20)),
-                                  InkWell(
-                                    onTap: _triggerBiometric,
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.blue1.withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: AppColors.blue1.withOpacity(0.3)),
-                                      ),
-                                      child: Icon(
-                                        Icons.fingerprint,
-                                        size: 40,
-                                        color: AppColors.blue1,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'biometric_login'.tr,
-                                    style: TextStyle(
-                                      color: AppColors.blue1, 
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                                // Login with Email/Phone Toggle
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isPhoneLogin = !_isPhoneLogin;
-                                    });
-                                  },
-                                  child: Text(
-                                    _isPhoneLogin
-                                        ? 'login_with_email'.tr
-                                        : 'login_with_phone'.tr,
-                                    style: AppFonts.AlmaraiBold14.copyWith(
-                                      color: primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-
-                          SizedBox(height: Responsive.h(24)),
-                           Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: AppColors.grey300,
-                                ),
-                              ),
-                              Padding(
-                                padding: Responsive.symmetric(horizontal: 16),
-                                child: Text(
-                                  'or_continue_with'.tr,
-                                  style: AppFonts.AlmaraiRegular12.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: AppColors.grey300,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: Responsive.h(24)),
-
-                          // Google Button
-                          SizedBox(
-                            height: Responsive.h(45),
-                            child: OutlinedButton(
-                              onPressed: _isLoading ? null : _handleGoogleLogin,
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppColors.grey300),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                ),
-                                padding: EdgeInsets.zero,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    AssetsManager.googleSvg,
-                                    width: Responsive.w(24),
-                                    height: Responsive.w(24),
-                                  ),
-                                  SizedBox(width: Responsive.w(12)),
-                                  Text(
-                                    'continue_with_google'.tr,
-                                    style: AppFonts.AlmaraiMedium14.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                          // Social Login Buttons
-                          if (Platform.isIOS) ...[
-                            SizedBox(height: Responsive.h(16)),
-                            SizedBox(
-                              height: Responsive.h(45),
-                               child: OutlinedButton(
-                                onPressed: _isLoading ? null : _handleAppleLogin,
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  side: BorderSide(color: Colors.black),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SvgPicture.asset(
-                                      AssetsManager.appleSvg,
-                                      width: Responsive.w(24),
-                                      height: Responsive.w(24),
-                                       colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                    ),
-                                    SizedBox(width: Responsive.w(12)),
-                                    Text(
-                                      'continue_with_apple'.tr,
-                                      style: AppFonts.AlmaraiMedium14.copyWith(
+                                      'login'.tr,
+                                      style: AppFonts.AlmaraiBold16.copyWith(
                                         color: Colors.white,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        SizedBox(height: Responsive.h(20)),
-
-                        // Register Button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'dont_have_account'.tr,
-                              style: AppFonts.AlmaraiRegular14.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Get.toNamed(AppRoutes.register);
-                              },
-                              child: Text(
-                                'register'.tr,
-                                style: AppFonts.AlmaraiBold14.copyWith(
-                                  color: primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: Responsive.h(24)),
-
-                        // Terms and Privacy Policy
-                        Padding(
-                          padding: Responsive.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  _showPolicyDialog(context, 'privacy_policy'.tr, 'privacy_policy_content'.tr);
-                                },
-                                child: Text(
-                                  'privacy_policy'.tr,
-                                  style: AppFonts.AlmaraiRegular12.copyWith(
-                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: Responsive.symmetric(horizontal: 8),
-                                child: Text(
-                                  '|',
-                                  style: AppFonts.AlmaraiRegular12.copyWith(
-                                    color: AppColors.grey400,
+                                      // Login with Email/Phone Toggle
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isPhoneLogin = !_isPhoneLogin;
+                                          });
+                                        },
+                                        child: Text(
+                                          _isPhoneLogin
+                                              ? 'login_with_email'.tr
+                                              : 'login_with_phone'.tr,
+                                          style:
+                                              AppFonts.AlmaraiBold14.copyWith(
+                                            color: primary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  _showPolicyDialog(context, 'terms_conditions'.tr, 'terms_conditions_content'.tr);
-                                },
-                                child: Text(
-                                  'terms_conditions'.tr,
-                                  style: AppFonts.AlmaraiRegular12.copyWith(
-                                    color: AppColors.textSecondary,
+
+                              SizedBox(height: Responsive.h(24)),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 1,
+                                      color: borderColor,
+                                    ),
                                   ),
-                                ),
+                                  Padding(
+                                    padding:
+                                        Responsive.symmetric(horizontal: 16),
+                                    child: Text(
+                                      'or_continue_with'.tr,
+                                      style: AppFonts.AlmaraiRegular12.copyWith(
+                                        color: secondaryTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      height: 1,
+                                      color: borderColor,
+                                    ),
+                                  ),
+                                ],
                               ),
+                              SizedBox(height: Responsive.h(24)),
+
+                              // Google Button
+                              // SizedBox(
+                              //   height: Responsive.h(45),
+                              //   child: OutlinedButton(
+                              //     onPressed:
+                              //         _isLoading ? null : _handleGoogleLogin,
+                              //     style: OutlinedButton.styleFrom(
+                              //       side: BorderSide(color: borderColor),
+                              //       shape: RoundedRectangleBorder(
+                              //         borderRadius: BorderRadius.circular(
+                              //             Responsive.r(12)),
+                              //       ),
+                              //       padding: EdgeInsets.zero,
+                              //     ),
+                              //     child: Row(
+                              //       mainAxisAlignment: MainAxisAlignment.center,
+                              //       children: [
+                              //         SvgPicture.asset(
+                              //           AssetsManager.googleSvg,
+                              //           width: Responsive.w(24),
+                              //           height: Responsive.w(24),
+                              //         ),
+                              //         SizedBox(width: Responsive.w(12)),
+                              //         Text(
+                              //           'continue_with_google'.tr,
+                              //           style:
+                              //               AppFonts.AlmaraiMedium14.copyWith(
+                              //             color: textColor,
+                              //           ),
+                              //         ),
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
+
+                              // Social Login Buttons
+                              // if (Platform.isIOS) ...[
+                              //   SizedBox(height: Responsive.h(16)),
+                              //   SizedBox(
+                              //     height: Responsive.h(45),
+                              //      child: OutlinedButton(
+                              //       onPressed: _isLoading ? null : _handleAppleLogin,
+                              //       style: OutlinedButton.styleFrom(
+                              //         backgroundColor: Colors.black,
+                              //         side: BorderSide(color: Colors.black),
+                              //         shape: RoundedRectangleBorder(
+                              //           borderRadius: BorderRadius.circular(Responsive.r(12)),
+                              //         ),
+                              //         padding: EdgeInsets.zero,
+                              //       ),
+                              //       child: Row(
+                              //         mainAxisAlignment: MainAxisAlignment.center,
+                              //         children: [
+                              //           SvgPicture.asset(
+                              //             AssetsManager.appleSvg,
+                              //             width: Responsive.w(24),
+                              //             height: Responsive.w(24),
+                              //              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                              //           ),
+                              //           SizedBox(width: Responsive.w(12)),
+                              //           Text(
+                              //             'continue_with_apple'.tr,
+                              //             style: AppFonts.AlmaraiMedium14.copyWith(
+                              //               color: Colors.white,
+                              //             ),
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ],
+                              SizedBox(height: Responsive.h(20)),
+
+                              // Register Button
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'dont_have_account'.tr,
+                                    style: AppFonts.AlmaraiRegular14.copyWith(
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.toNamed(AppRoutes.register);
+                                    },
+                                    child: Text(
+                                      'register'.tr,
+                                      style: AppFonts.AlmaraiBold14.copyWith(
+                                        color: primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              SizedBox(height: Responsive.h(40)),
                             ],
                           ),
                         ),
-
-                        SizedBox(height: Responsive.h(40)),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),      // Draggable Floating Chat Button
-      Positioned(
-        left: _chatButtonPosition.dx,
-        top: _chatButtonPosition.dy,
-        child: Draggable(
-          feedback: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: Responsive.w(56),
-              height: Responsive.h(56),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.blue1,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.blue1.withOpacity(0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Icon(
-                IconlyBold.chat,
-                color: Colors.white,
-                size: Responsive.sp(24),
+            ), // Draggable Floating Chat Button
+            Positioned(
+              left: _chatButtonPosition.dx,
+              top: _chatButtonPosition.dy,
+              child: Draggable(
+                feedback: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    width: Responsive.w(56),
+                    height: Responsive.h(56),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.blue1,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.blue1.withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      IconlyBold.chat,
+                      color: Colors.white,
+                      size: Responsive.sp(18),
+                    ),
+                  ),
+                ),
+                 child: FloatingActionButton(
+                  onPressed: () {
+                    Get.toNamed(AppRoutes.chatbot);
+                  },
+                  backgroundColor: AppColors.blue1,
+                  elevation: 6,
+                  child: Icon(
+                    IconlyBold.chat,
+                    color: Colors.white,
+                    size: Responsive.sp(18),
+                  ),
+                ),
+                onDragEnd: (details) {
+                  setState(() {
+                    final size = MediaQuery.of(context).size;
+                    double newX = details.offset.dx;
+                    double newY = details.offset.dy;
+
+                    // Keep button within screen bounds
+                    newX = newX.clamp(0.0, size.width - Responsive.w(56));
+                    newY = newY.clamp(0.0, size.height - Responsive.h(56));
+
+                    _chatButtonPosition = Offset(newX, newY);
+                  });
+                },
               ),
             ),
-          ),
-          child: FloatingActionButton(
-            onPressed: () {
-              Get.toNamed(AppRoutes.chatbot);
-            },
-            backgroundColor: AppColors.blue1,
-            elevation: 6,
-            child: Icon(
-              IconlyBold.chat,
-              color: Colors.white,
-              size: Responsive.sp(24),
-            ),
-          ),
-          onDragEnd: (details) {
-            setState(() {
-              final size = MediaQuery.of(context).size;
-              double newX = details.offset.dx;
-              double newY = details.offset.dy;
-
-              // Keep button within screen bounds
-              newX = newX.clamp(0.0, size.width - Responsive.w(56));
-              newY = newY.clamp(0.0, size.height - Responsive.h(56));
-
-              _chatButtonPosition = Offset(newX, newY);
-            });
-          },
-        ),
-      ),
-      if (_isLoading)
-        const Positioned.fill(
-          child: LoadingPage(),
-        ),
-    ],
-    ),
-    );
-  }
-
-
-  void _showPolicyDialog(BuildContext context, String title, String content) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          title,
-          style: AppFonts.AlmaraiBold18.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Text(
-            content,
-            style: AppFonts.AlmaraiRegular14.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'close'.tr,
-              style: AppFonts.AlmaraiBold14.copyWith(
-                color: AppConfigController.to.primaryColorAsColor,
+            if (_isLoading)
+              const Positioned.fill(
+                child: LoadingPage(),
               ),
-            ),
-          ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Responsive.r(16)),
+          ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
-

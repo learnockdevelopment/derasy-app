@@ -4,9 +4,9 @@ import 'dart:ui';
 import '../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
-import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/routes/app_routes.dart';
+import '../core/controllers/app_config_controller.dart';
 
 class BottomNavBarWidget extends StatelessWidget {
   const BottomNavBarWidget({Key? key}) : super(key: key);
@@ -21,9 +21,12 @@ class BottomNavBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: true,
-      child: Padding(
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      
+      return SafeArea(
+        bottom: true,
+        child: Padding(
         padding: EdgeInsets.fromLTRB(
           Responsive.w(24),
           0,
@@ -49,10 +52,10 @@ class BottomNavBarWidget extends StatelessWidget {
               child: Container(
                 padding: Responsive.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4), // Low opacity glass
+                  color: isDark ? const Color(0xFF1E293B).withOpacity(0.8) : Colors.white.withOpacity(0.4), // Low opacity glass
                   borderRadius: BorderRadius.circular(Responsive.r(40)),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.3),
                     width: 1.5,
                   ),
                 ),
@@ -63,6 +66,7 @@ class BottomNavBarWidget extends StatelessWidget {
                       icon: IconlyBold.home,
                       label: 'home'.tr,
                       index: 0,
+                      isDark: isDark,
                       onTap: () {
                         if (Get.currentRoute != AppRoutes.home) {
                           Get.offNamed(AppRoutes.home);
@@ -73,6 +77,7 @@ class BottomNavBarWidget extends StatelessWidget {
                       icon: IconlyBold.document,
                       label: 'applications'.tr,
                       index: 1,
+                      isDark: isDark,
                       onTap: () {
                         if (Get.currentRoute != AppRoutes.applications) {
                           Get.offNamed(AppRoutes.applications);
@@ -83,6 +88,7 @@ class BottomNavBarWidget extends StatelessWidget {
                       icon: IconlyBold.profile,
                       label: 'my_students'.tr,
                       index: 2,
+                      isDark: isDark,
                       onTap: () {
                         if (Get.currentRoute != AppRoutes.myStudents) {
                           Get.offNamed(AppRoutes.myStudents);
@@ -97,17 +103,19 @@ class BottomNavBarWidget extends StatelessWidget {
         ),
       ),
     );
+    });
   }
 
   Widget _buildNavItem({
     required IconData icon,
     required String label,
     required int index,
+    required bool isDark,
     VoidCallback? onTap,
   }) {
     final isSelected = _currentIndex == index;
-    const activeColor = Color(0xFF000000); // Bold Black
-    final inactiveColor = const Color(0xFF000000).withOpacity(0.45);
+    final activeColor = isDark ? Colors.white : const Color(0xFF000000); 
+    final inactiveColor = isDark ? Colors.grey.shade500 : const Color(0xFF000000).withOpacity(0.45);
 
     return Expanded(
       child: InkWell(
@@ -124,7 +132,7 @@ class BottomNavBarWidget extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 padding: Responsive.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.black.withOpacity(0.06) : Colors.transparent,
+                  color: isSelected ? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.06)) : Colors.transparent,
                   borderRadius: BorderRadius.circular(Responsive.r(20)),
                 ),
                 child: Icon(

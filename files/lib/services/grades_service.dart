@@ -30,7 +30,7 @@ class GradesResponse {
 }
 
 class GradesService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
 
   static Future<GradesResponse> getAllGrades(String schoolId) async {
     try {

@@ -12,7 +12,6 @@ import '../../views/students/data/student_details_page.dart';
 import '../../views/students/management/add_student_page.dart';
 import '../../views/students/management/edit_student_page.dart';
 import '../../views/profile/user_profile_page.dart';
-import '../../views/settings/settings_page.dart';
 import '../../views/notifications/notifications_page.dart';
 import '../../views/notifications/notification_details_page.dart';
 import '../../models/notification_model.dart';
@@ -99,11 +98,6 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const UserProfilePage(),
-        );
-      case AppRoutes.settings:
-        return GetPageRoute(
-          settings: settings,
-          page: () => const SettingsPage(),
         );
       case AppRoutes.notifications:
         return GetPageRoute(

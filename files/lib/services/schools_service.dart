@@ -4,11 +4,10 @@ import '../core/constants/api_constants.dart';
 import '../models/school_models.dart';
 import '../models/school_suggestion_models.dart';
 import 'user_storage_service.dart';
-
-
+import 'auth_error_handler.dart';
 
 class SchoolsService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
 
   // Get all schools with optional pagination/filtering (though API seems to return all or list)
   static Future<SchoolsResponse> getAllSchools() async {
@@ -22,6 +21,10 @@ class SchoolsService {
       final response = await http.get(Uri.parse(url), headers: headers);
       
       print('🏫 [SCHOOLS] Response status: ${response.statusCode}');
+
+      // if (await AuthErrorHandler.handleIfUnauthorized(response.statusCode, body: response.body)) {
+      //   throw SchoolsException('Session expired');
+      // }
       
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
@@ -46,6 +49,10 @@ class SchoolsService {
       print('🏫 [SCHOOLS] Fetching school details: $url');
       
       final response = await http.get(Uri.parse(url), headers: headers);
+
+      // if (await AuthErrorHandler.handleIfUnauthorized(response.statusCode, body: response.body)) {
+      //   throw SchoolsException('Session expired');
+      // }
       
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);

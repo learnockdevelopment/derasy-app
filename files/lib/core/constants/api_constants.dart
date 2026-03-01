@@ -1,6 +1,7 @@
 class ApiConstants {
   // API Configuration
-  static const String baseUrl = 'https://www.derasy.com/api';
+  static const String parentBaseUrl = 'https://parent.derasy.com/api';
+  static const String salesBaseUrl = 'http://192.168.1.4:3000/api';
   static const String apiKey = 'external_key_123';
   static const String apiKeyHeader = 'x-api-key';
   static const String authorizationHeader = 'Authorization';
@@ -20,6 +21,7 @@ class ApiConstants {
   static const String setNewPasswordEndpoint =
       '/register/reset-password/new-password';
   static const String getUserProfileEndpoint = '/me';
+  static const String checkUserEndpoint = '/users/check';
 
   // Students Endpoints
   static const String getAllStudentsEndpoint = '/schools/my/[id]/students';
@@ -68,8 +70,11 @@ class ApiConstants {
   static const String chatbotEndpoint = '/chatbot';
 
   // Sales Endpoints
-  static const String salesOnboardingEndpoint = '/sales/onboarding';
-  static const String salesMySchoolsEndpoint = '/schools/my'; 
+  static const String salesOnboardingEndpoint = '/onboarding';
+  static const String salesDashboardStatsEndpoint = '/dashboard/stats';
+  static const String salesDashboardSchoolDetailsEndpoint = '/dashboard/schools'; 
+  static const String salesManagerStatsEndpoint = '/sales-manager/stats';
+  static const String salesManagerTeamEndpoint = '/sales-manager/team';
 
 
   // Headers

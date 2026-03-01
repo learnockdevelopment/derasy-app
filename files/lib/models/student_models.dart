@@ -109,8 +109,8 @@ class Student {
       section: json['section'] != null && json['section'] is Map
           ? _parseSectionInfo(json['section'] as Map<String, dynamic>)
           : SectionInfo.fromJson({'name': json['section']?.toString() ?? 'N/A'}),
-      moodleUser: json['moodleUser'] != null
-          ? MoodleUser.fromJson(json['moodleUser'])
+      moodleUser: json['moodleUser'] != null && json['moodleUser'] is Map
+          ? MoodleUser.fromJson(json['moodleUser'] as Map<String, dynamic>)
           : null,
       nationality: _parseStringField(json['nationality']),
       passport: _parseStringField(json['passport']),
@@ -158,7 +158,7 @@ class Student {
       'moodleUser': moodleUser?.toJson(),
       'specialNeeds': specialNeeds,
       'healthStatus': healthStatus,
-      'studentStatus': studentStatusData?.toJson(),
+      'studentStatusData': studentStatusData?.toJson(),
       'religion': religion,
       'birthPlace': birthPlace,
       'currentSchool': currentSchool,

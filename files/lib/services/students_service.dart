@@ -7,10 +7,28 @@ import '../core/constants/api_constants.dart';
 import '../models/student_models.dart';
 import '../models/pagination_models.dart';
 import 'user_storage_service.dart';
-import 'auth_error_handler.dart';
 
 class StudentsService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
+
+  /// Helper to handle 403 errors and HTML redirects globally
+  // static Future<bool> _handleResponse(http.Response response) async {
+  //   final body = response.body.trim();
+    
+  //   if (response.statusCode == 403 || response.statusCode == 401) {
+  //     print('🔒 [STUDENTS] Unauthorized ( ${response.statusCode} ) - Triggering Logout');
+  //     await AuthErrorHandler.handle403Error();
+  //     return true;
+  //   }
+
+  //   if (body.startsWith('<!DOCTYPE html>') || body.startsWith('<html')) {
+  //      print('⚠️ [STUDENTS] Received HTML response - Likely session expired or wrong route.');
+  //      await AuthErrorHandler.handle403Error();
+  //      return true;
+  //   }
+
+  //   return false;
+  // }
 
   /// Get students in a school with advanced navigation (pagination and search)
   static Future<PaginatedStudentsResponse> getStudents(String schoolId,
@@ -327,26 +345,52 @@ class StudentsService {
 
       print('👶 [CHILDREN] Response status: ${response.statusCode}');
 
+      // if (await _handleResponse(response)) throw StudentsException('Session Expired');
+
       if (response.statusCode == 200) {
         try {
-          final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-          // API returns { children: [...] } format
-          if (responseData.containsKey('children') && responseData['children'] is List) {
-            return StudentsResponse( 
-              success: true,
-              message: 'Children retrieved successfully',
-              students: (responseData['children'] as List)
-                      .map((child) => Student.fromJson(child as Map<String, dynamic>))
-                      .toList(),
-            );
-          } else {
-            // Fallback for other response formats
+          final decoded = jsonDecode(response.body);
+
+          List<dynamic> rawList = [];
+
+          if (decoded is List) {
+            rawList = decoded;
+          } else if (decoded is Map<String, dynamic>) {
+            if (decoded['children'] is List) {
+              rawList = decoded['children'] as List;
+            } else if (decoded['data'] is List) {
+              rawList = decoded['data'] as List;
+            } else if (decoded['students'] is List) {
+              rawList = decoded['students'] as List;
+            }
+          } else if (decoded is String) {
+            // Server returned a plain string message — treat as empty
             return StudentsResponse(
               success: true,
-              message: 'Children retrieved successfully',
+              message: decoded,
               students: [],
             );
           }
+
+          // Parse each item individually, skipping any that aren't Maps
+          final students = <Student>[];
+          for (final item in rawList) {
+            if (item is! Map<String, dynamic>) {
+              print('👶 [CHILDREN] Skipping non-map item: $item (${item.runtimeType})');
+              continue;
+            }
+            try {
+              students.add(Student.fromJson(item));
+            } catch (e) {
+              print('👶 [CHILDREN] Skipping malformed student item: $e');
+            }
+          }
+
+          return StudentsResponse(
+            success: true,
+            message: 'Children retrieved successfully',
+            students: students,
+          );
         } catch (e) {
           print('👶 [CHILDREN] Error parsing JSON: $e');
           throw StudentsException('Failed to parse response: $e');

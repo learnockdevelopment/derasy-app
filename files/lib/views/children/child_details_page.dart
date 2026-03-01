@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
-import '../../core/utils/responsive_utils.dart' as resp;
 import '../../models/student_models.dart';
 import '../../core/routes/app_routes.dart';
 import '../../widgets/safe_network_image.dart';
@@ -24,16 +23,16 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     final imageUrl = child.avatar ?? child.profileImage ?? child.image;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF0F172A), // dark background
       appBar: AppBar(
-        backgroundColor: AppColors.blue1,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
           onPressed: () => Get.back(),
-        ),
+        ), 
         title: Text(
-          child.fullName,
+          'student_details'.tr,
           style: AppFonts.h3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -51,8 +50,8 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.blue1,
-                    AppColors.blue1.withOpacity(0.85),
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.85),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -143,22 +142,30 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
                         // Removed transfer button, show school name prominently
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                          padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
                           decoration: BoxDecoration(
-                            color: AppColors.blue1.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: AppColors.blue1.withOpacity(0.1)),
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.school_rounded, color: AppColors.blue1, size: 20.sp),
-                              SizedBox(width: 12.w),
+                              Container(
+                                padding: EdgeInsets.all(10.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.school_rounded, color: Colors.white, size: 22.sp),
+                              ),
+                              SizedBox(width: 14.w),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('enrolled_at'.tr, style: TextStyle(color: Colors.grey[600], fontSize: 10.sp, fontWeight: FontWeight.normal)),
-                                    Text(child.schoolId.name, style: TextStyle(color: AppColors.blue1, fontSize: 13.sp, fontWeight: FontWeight.bold)),
+                                    Text('enrolled_at'.tr, style: TextStyle(color: Colors.white70, fontSize: 11.sp, fontWeight: FontWeight.w500)),
+                                    SizedBox(height: 4.h),
+                                    Text(child.schoolId.name, style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                               ),
@@ -266,31 +273,19 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: EdgeInsets.all(12.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.surface,
-            AppColors.surface.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(14.r),
+        color: const Color(0xFF1E293B).withOpacity(0.6),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: AppColors.blue1.withOpacity(0.1),
-          width: 1.5,
+          color: Colors.white.withOpacity(0.08),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
             offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: AppColors.blue1.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -300,40 +295,26 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(7.w),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.blue1,
-                      AppColors.blue1.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.blue1.withOpacity(0.3),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 16.sp),
+                child: Icon(icon, color: Colors.white, size: 18.sp),
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: 12.w),
               Text(
                 title,
                 style: AppFonts.h4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
-                  letterSpacing: 0.2,
+                  fontSize: 15.sp,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 16.h),
           ...children,
         ],
       ),
@@ -342,13 +323,13 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
 
   Widget _buildInfoRow(String label, String value) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8.h),
-      padding: EdgeInsets.all(10.w),
+      margin: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: AppColors.grey200.withOpacity(0.5),
+          color: Colors.white.withOpacity(0.05),
           width: 1,
         ),
       ),
@@ -356,12 +337,12 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 90.w,
+            width: 100.w,
             child: Text(
               label,
               style: AppFonts.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 11.sp,
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -370,9 +351,9 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
             child: Text(
               value,
               style: AppFonts.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                fontSize: 12.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13.sp,
               ),
             ),
           ),
@@ -408,34 +389,34 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         child: Container(
           width: isFullWidth ? double.infinity : null,
-          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+          padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
           decoration: BoxDecoration(
             gradient: isOutline
                 ? null
                 : LinearGradient(
                     colors: [
-                      AppColors.blue1,
-                      AppColors.blue1.withOpacity(0.85),
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withOpacity(0.85),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-            color: isOutline ? Colors.white : null,
-            borderRadius: BorderRadius.circular(12.r),
+            color: isOutline ? Colors.white.withOpacity(0.1) : null,
+            borderRadius: BorderRadius.circular(14.r),
             border: isOutline
                 ? Border.all(
-                    color: AppColors.blue1,
-                    width: 1.5,
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
                   )
                 : null,
-            boxShadow: [
+            boxShadow: isOutline ? [] : [
               BoxShadow(
-                color: AppColors.blue1.withOpacity(0.15),
-                blurRadius: isOutline ? 6 : 8,
-                offset: Offset(0, isOutline ? 3 : 4),
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -443,14 +424,16 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
             children: [
-              Icon(icon, size: 16.sp, color: isOutline ? AppColors.blue1 : Colors.white),
+              Icon(icon, size: 18.sp, color: Colors.white),
               SizedBox(width: 8.w),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppFonts.bodyMedium.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 12.sp,
-                  color: isOutline ? AppColors.blue1 : Colors.white,
+                  fontSize: 14.sp,
+                  color: Colors.white,
                 ),
               ),
             ],

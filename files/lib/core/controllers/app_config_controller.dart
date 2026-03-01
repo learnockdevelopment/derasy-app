@@ -22,10 +22,25 @@ class AppConfigController extends GetxController {
   final _error = RxString('');
   String get error => _error.value;
 
+  final _isDarkMode = false.obs;
+  bool get isDarkMode => _isDarkMode.value;
+
   @override
   void onInit() {
     super.onInit();
+    final savedTheme = _storage.read('is_dark_mode');
+    if (savedTheme != null) {
+      _isDarkMode.value = savedTheme;
+    } else {
+      _isDarkMode.value = true;
+    }
     loadAppConfig();
+  }
+
+  void toggleTheme() {
+    _isDarkMode.value = !_isDarkMode.value;
+    _storage.write('is_dark_mode', _isDarkMode.value);
+    Get.changeThemeMode(_isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
 
   /// Load app configuration

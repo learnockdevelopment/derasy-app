@@ -46,17 +46,17 @@ class SchoolCardWidget extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: isSelected
-              ? Border.all(color: AppColors.blue1, width: 2)
+              ? Border.all(color: AppColors.salesAccent, width: 2)
               : isAISuggested
-                  ? Border.all(color: AppColors.blue1.withOpacity(0.5), width: 1.5)
-                  : null,
+                  ? Border.all(color: AppColors.salesAccent.withOpacity(0.5), width: 1.5)
+                  : Border.all(color: Theme.of(context).dividerColor.withOpacity(0.05)),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? AppColors.blue1.withOpacity(0.15)
+                  ? AppColors.salesAccent.withOpacity(0.15)
                   : Colors.black.withOpacity(0.08),
               blurRadius: 24,
               offset: const Offset(0, 8),
@@ -67,7 +67,7 @@ class SchoolCardWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // 1. Image Header Section
-            _buildHeader(),
+            _buildHeader(context),
 
             // 2. Info Section
             Padding(
@@ -82,7 +82,7 @@ class SchoolCardWidget extends StatelessWidget {
                         child: Text(
                           name,
                           style: AppFonts.AlmaraiBold20.copyWith(
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                             height: 1.2,
                           ),
                           maxLines: 2,
@@ -100,7 +100,7 @@ class SchoolCardWidget extends StatelessWidget {
                       Text(
                         type,
                         style: AppFonts.AlmaraiMedium14.copyWith(
-                            color: AppColors.textSecondary),
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                       ),
                     ],
                   ),
@@ -111,12 +111,12 @@ class SchoolCardWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.grey50,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.03),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.grey100),
+                        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.05)),
                       ),
                       child: Row(
-                        children: _buildDataGrid(),
+                        children: _buildDataGrid(context),
                       ),
                     ),
                   ],
@@ -129,12 +129,12 @@ class SchoolCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       height: 160,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        color: AppColors.blue1.withOpacity(0.05),
+        color: AppColors.salesAccent.withOpacity(0.05),
         image: coverUrl != null
             ? DecorationImage(
                 image: NetworkImage(coverUrl!),
@@ -154,8 +154,8 @@ class SchoolCardWidget extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.blue1.withOpacity(0.1),
-                    AppColors.purple100.withOpacity(0.3),
+                    AppColors.salesAccent.withOpacity(0.15),
+                    AppColors.salesAccent.withOpacity(0.05),
                   ],
                 ),
               ),
@@ -169,7 +169,7 @@ class SchoolCardWidget extends StatelessWidget {
               width: 70,
               height: 70,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -209,8 +209,8 @@ class SchoolCardWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.blue1,
-                        AppColors.blue1.withOpacity(0.8),
+                        AppColors.salesAccent,
+                        AppColors.salesAccent.withOpacity(0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(30),
@@ -243,9 +243,9 @@ class SchoolCardWidget extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.blue1,
+                  color: AppColors.salesAccent,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
                   boxShadow: [
                     BoxShadow(
                         color: Colors.black.withOpacity(0.1), blurRadius: 4),
@@ -263,7 +263,7 @@ class SchoolCardWidget extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildDataGrid() {
+  List<Widget> _buildDataGrid(BuildContext context) {
     List<Widget> widgets = [];
     for (int i = 0; i < dataItems.length; i++) {
       widgets.add(Expanded(
@@ -285,7 +285,7 @@ class SchoolCardWidget extends StatelessWidget {
             Text(
               dataItems[i].value,
               style: AppFonts.AlmaraiBold14.copyWith(
-                  color: AppColors.textPrimary),
+                  color: Theme.of(context).colorScheme.onSurface),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

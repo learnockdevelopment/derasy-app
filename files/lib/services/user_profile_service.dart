@@ -4,7 +4,7 @@ import '../core/constants/api_constants.dart';
 import 'user_storage_service.dart';
 
 class UserProfileService {
-  static const String _baseUrl = ApiConstants.baseUrl;
+  static const String _baseUrl = ApiConstants.parentBaseUrl;
 
   /// Get current user profile from API
   static Future<Map<String, dynamic>> getCurrentUserProfile() async {

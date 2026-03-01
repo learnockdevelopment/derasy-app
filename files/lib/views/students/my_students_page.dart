@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/controllers/app_config_controller.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -166,25 +167,23 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
   Widget build(BuildContext context) {
     Responsive.h(120);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: Stack(
-        children: [
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      return Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        body: Stack(
+          children: [
           HorizontalSwipeDetector(
             onSwipeRight: () {
               if (Responsive.isRTL) {
-                // RTL: Swipe Right -> Next Index (2 -> None)
               } else {
-                // LTR: Swipe Right -> Previous Index (2 -> 1)
                 Get.offNamed(AppRoutes.applications);
               }
             },
             onSwipeLeft: () {
               if (Responsive.isRTL) {
-                // RTL: Swipe Left -> Previous Index (2 -> 1)
                 Get.offNamed(AppRoutes.applications);
               } else {
-                // LTR: Swipe Left -> Next Index (2 -> None)
               }
             },
             child: RefreshIndicator(
@@ -227,9 +226,9 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                           child: Container(
                             padding: Responsive.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: AppColors.warning.withOpacity(0.1),
+                              color: isDark ? AppColors.warning.withOpacity(0.05) : AppColors.warning.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(Responsive.r(12)),
-                              border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                              border: Border.all(color: AppColors.warning.withOpacity(isDark ? 0.2 : 0.3)),
                             ),
                             child: Row(
                               children: [
@@ -256,9 +255,9 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                             child: Container(
                               padding: Responsive.symmetric(horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
-                                color: AppColors.error.withOpacity(0.1),
+                                color: isDark ? AppColors.error.withOpacity(0.05) : AppColors.error.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                                border: Border.all(color: AppColors.error.withOpacity(isDark ? 0.2 : 0.3)),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -349,7 +348,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) {
                                       return _buildStudentListItem(
-                                          _filteredChildren[index], index);
+                                          _filteredChildren[index], index, isDark);
                                     },
                                     childCount: _filteredChildren.length,
                                   ),
@@ -374,6 +373,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
       extendBody: true,
       bottomNavigationBar: null,
     );
+    });
   }
 
   void _navigateToAddChild() async {
@@ -461,7 +461,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     return parts.isEmpty ? '0 ${'months'.tr}' : parts.join(' - ');
   }
 
-  Widget _buildStudentListItem(Student child, int index) {
+  Widget _buildStudentListItem(Student child, int index, bool isDark) {
     final schoolName =
         child.schoolId.name.isNotEmpty ? child.schoolId.name : 'no_school'.tr;
 
@@ -476,17 +476,17 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     return Container(
         margin: Responsive.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(Responsive.r(16)),
           boxShadow: [
             BoxShadow(
-              color: studentColor.withOpacity(0.08),
+              color: studentColor.withOpacity(isDark ? 0.05 : 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 0,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(isDark ? 0.1 : 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
               spreadRadius: 0,
@@ -504,7 +504,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Responsive.r(20)),
                 border: Border.all(
-                  color: studentColor.withOpacity(0.15),
+                  color: isDark ? Colors.white.withOpacity(0.05) : studentColor.withOpacity(0.15),
                   width: 1,
                 ),
               ),
@@ -673,7 +673,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                       child: Text(
                         child.arabicFullName ?? '',
                         style: AppFonts.h4.copyWith(
-                          color: AppColors.textPrimary,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: Responsive.sp(15),
                           letterSpacing: 0.1,
@@ -686,7 +686,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                     ),                    Container(
                       padding: Responsive.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.grey200.withOpacity(0.5),
+                        color: isDark ? Colors.white.withOpacity(0.02) : AppColors.grey200.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(Responsive.r(10)),
                       ),
                       child: Column(
@@ -728,7 +728,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         _translateNationality(
                                             child.nationality),
                                         style: AppFonts.bodyMedium.copyWith(
-                                          color: AppColors.textPrimary,
+                                          color: isDark ? Colors.white : AppColors.textPrimary,
                                           fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -874,7 +874,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                                         _formatAgeInOctober(child.ageInOctober,
                                             child.birthDate),
                                         style: AppFonts.bodyMedium.copyWith(
-                                          color: AppColors.textPrimary,
+                                          color: isDark ? Colors.white : AppColors.textPrimary,
                                           fontSize: Responsive.sp(12),
                                           fontWeight: FontWeight.w600,
                                         ),

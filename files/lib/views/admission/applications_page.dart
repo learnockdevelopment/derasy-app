@@ -12,6 +12,7 @@ import '../../widgets/hero_section_widget.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import '../../services/user_storage_service.dart';
 import '../../core/controllers/dashboard_controller.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../widgets/horizontal_swipe_detector.dart';
 
 class ApplicationsPage extends StatefulWidget {
@@ -158,8 +159,11 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return Obx(() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
           _filterChildId == null 
@@ -224,7 +228,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_filterChildId == null && !hasActiveApp)
-              FloatingActionButton(
+              FloatingActionButton.small(
                 onPressed: () {
                   if (controller.relatedChildren.isEmpty) {
                     Get.snackbar(
@@ -240,8 +244,9 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   }
                 },
                 backgroundColor: AppColors.blue1,
+                elevation: 6,
                 tooltip: 'add_application'.tr,
-                child: const Icon(Icons.add, color: Colors.white),
+                child: Icon(Icons.add, color: Colors.white, size: Responsive.sp(14)),
               ),
             SizedBox(height: Responsive.h(16)),
             DraggableChatbotWidget(),
@@ -250,9 +255,13 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
       }),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+    });
   }
 
   Widget _buildBodyContent(DashboardController controller, bool isLoading) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final textPrimary = isDark ? Colors.white : AppColors.textPrimary;
     final groupedApplications = _getGroupedApplications();
     
     return CustomScrollView(
@@ -264,7 +273,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             floating: false,
             pinned: true,
             automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFFF8FAFC),
+            backgroundColor: scaffoldBg,
             elevation: 0,
             toolbarHeight: 0,
             collapsedHeight: Responsive.h(45),
@@ -280,11 +289,15 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
           )
         else
           SliverAppBar(
-            title: Text('applications'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(16))),
-            backgroundColor: Colors.white,
+            title: Text('applications'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(16), color: textPrimary)),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: true,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: textPrimary),
+              onPressed: () => Get.back(),
+            ),
           ),
 
         SliverToBoxAdapter(child: SizedBox(height: Responsive.h(20))),
@@ -295,18 +308,21 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
             padding: Responsive.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchController,
+              style: AppFonts.bodySmall.copyWith(color: isDark ? Colors.white : AppColors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'search_applications'.tr,
-                hintStyle: AppFonts.bodySmall.copyWith(fontSize: Responsive.sp(12), color: AppColors.grey400),
-                prefixIcon: const Icon(IconlyLight.search),
+                hintStyle: AppFonts.bodySmall.copyWith(fontSize: Responsive.sp(12), color: isDark ? Colors.white38 : AppColors.grey400),
+                prefixIcon: Icon(IconlyLight.search, color: isDark ? Colors.white54 : AppColors.grey400),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  borderSide: BorderSide(color: AppColors.grey300),
+                  borderSide: BorderSide(color: isDark ? Colors.white12 : AppColors.grey300),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  borderSide: BorderSide(color: AppColors.grey200),
+                  borderSide: BorderSide(color: isDark ? Colors.white12 : AppColors.grey200),
                 ),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                 contentPadding: Responsive.symmetric(vertical: 12),
               ),
             ),
@@ -317,8 +333,8 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
 
         // Content
         if (isLoading && groupedApplications.isEmpty)
-          const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
+          SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator(color: AppColors.blue1)),
           )
         else if (groupedApplications.isEmpty)
           SliverFillRemaining(
@@ -326,11 +342,11 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(IconlyLight.document, size: Responsive.sp(64), color: AppColors.grey400),
+                  Icon(IconlyLight.document, size: Responsive.sp(64), color: isDark ? Colors.white38 : AppColors.grey400),
                   SizedBox(height: Responsive.h(16)),
                   Text(
                     'no_applications_found'.tr,
-                    style: AppFonts.bodyLarge.copyWith(color: AppColors.textSecondary),
+                    style: AppFonts.bodyLarge.copyWith(color: isDark ? Colors.white60 : AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -359,6 +375,11 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
 
   Widget _buildApplicationGroupCard(List<Application> applications, int applicationNumber) {
     if (applications.isEmpty) return const SizedBox.shrink();
+    final isDark = AppConfigController.to.isDarkMode;
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final cardBorderColor = isDark ? Colors.white.withOpacity(0.08) : AppColors.blue1.withOpacity(0.08);
+    final textPrimary = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondary = isDark ? Colors.white60 : AppColors.textSecondary;
     
     final firstApp = applications.first;
     final displayName = firstApp.child.arabicFullName ?? firstApp.child.fullName;
@@ -367,15 +388,15 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
     return Container(
       padding: Responsive.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(Responsive.r(24)),
         border: Border.all(
-          color: AppColors.blue1.withOpacity(0.08),
+          color: cardBorderColor,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -407,7 +428,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     Text(
                       '${'num_application'.tr} #$applicationNumber',
                       style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: textPrimary,
                         fontWeight: FontWeight.w900,
                         fontSize: Responsive.sp(14),
                       ),
@@ -415,7 +436,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     Text(
                       displayName,
                       style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: textSecondary,
                         fontSize: Responsive.sp(11),
                         fontWeight: FontWeight.w500,
                       ),
@@ -501,7 +522,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                         child: Text(
                           app.school.name,
                           style: AppFonts.bodyMedium.copyWith(
-                            color: AppColors.textPrimary,
+                            color: textPrimary,
                             fontSize: Responsive.sp(13),
                             fontWeight: FontWeight.w700,
                           ),
@@ -548,7 +569,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                   child: Text(
                     '${'submitted_date'.tr}: ${_formatDate(submittedDate)}',
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: textSecondary,
                       fontSize: Responsive.sp(11),
                       fontWeight: FontWeight.w500,
                     ),

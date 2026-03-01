@@ -8,6 +8,7 @@ import '../../core/utils/responsive_utils.dart';
 import '../../services/sales_service.dart';
 import '../../widgets/loading_page.dart';
 import '../../widgets/school_card_widget.dart';
+import '../../core/controllers/app_config_controller.dart';
 import 'school_details_page.dart';
 
 class MySchoolsPage extends StatefulWidget {
@@ -49,84 +50,98 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('my_schools'.tr, style: AppFonts.AlmaraiBold18),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.grey100,
-              shape: BoxShape.circle,
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final scaffoldColor = Theme.of(context).scaffoldBackgroundColor;
+      final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+      final surfaceColor = Theme.of(context).colorScheme.surface;
+
+      return Scaffold(
+        backgroundColor: scaffoldColor,
+        appBar: AppBar(
+          title: Text('my_schools'.tr, style: AppFonts.AlmaraiBold18.copyWith(color: onSurfaceColor)),
+          backgroundColor: surfaceColor,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white12 : AppColors.grey100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.arrow_back_ios_new, color: onSurfaceColor, size: 16),
             ),
-            child: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 16),
+            onPressed: () => Get.back(),
           ),
-          onPressed: () => Get.back(),
+          actions: [
+            IconButton(
+              icon: Icon(isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round_rounded),
+              onPressed: () => AppConfigController.to.toggleTheme(),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: LoadingPage())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(IconlyBold.danger, size: 48, color: AppColors.error),
-                      const SizedBox(height: 16),
-                      Text(
-                        _error!,
-                        style: AppFonts.AlmaraiBold16.copyWith(color: AppColors.textPrimary),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _fetchSchools,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.blue1,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        body: _isLoading
+            ? const Center(child: LoadingPage())
+            : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(IconlyBold.danger, size: 48, color: AppColors.error),
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          style: AppFonts.AlmaraiBold16.copyWith(color: onSurfaceColor),
+                          textAlign: TextAlign.center,
                         ),
-                        child: Text('Retry', style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white)),
-                      ),
-                    ],
-                  ),
-                )
-              : _schools.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(IconlyBold.home, size: 64, color: AppColors.grey300),
-                          const SizedBox(height: 16),
-                          Text(
-                            'no_schools_found'.tr,
-                            style: AppFonts.AlmaraiBold16.copyWith(color: AppColors.textSecondary),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _fetchSchools,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.salesAccent,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: Responsive.all(24),
-                      itemCount: _schools.length,
-                      itemBuilder: (context, index) {
-                        final school = _schools[index];
-                        return _buildSchoolCard(school);
-                      },
+                          child: Text('Retry', style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white)),
+                        ),
+                      ],
                     ),
-    );
+                  )
+                : _schools.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(IconlyBold.home, size: 64, color: isDark ? Colors.white24 : AppColors.grey300),
+                            const SizedBox(height: 16),
+                            Text(
+                              'no_schools_found'.tr,
+                              style: AppFonts.AlmaraiBold16.copyWith(color: onSurfaceColor.withOpacity(0.5)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: Responsive.all(24),
+                        itemCount: _schools.length,
+                        itemBuilder: (context, index) {
+                          final school = _schools[index];
+                          return _buildSchoolCard(school);
+                        },
+                      ),
+      );
+    });
   }
 
   Widget _buildSchoolCard(Map<String, dynamic> school) {
-    bool isApproved = school['approved'] == true;
+    bool isApproved = school['status'] == 'نشط';
     final schoolId = school['id']?.toString() ?? school['_id']?.toString() ?? '';
     
     return SchoolCardWidget(
       name: school['name'] ?? 'Unknown School',
-      coverUrl: school['coverUrl'],
+      coverUrl: school['bannerImage'],
       logoUrl: school['logoUrl'],
       type: school['type'] ?? 'School',
       onTap: schoolId.isNotEmpty ? () => Get.toNamed(AppRoutes.schoolDetails, arguments: schoolId) : null,
@@ -155,7 +170,7 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
             ),
             const SizedBox(width: 6),
             Text(
-              isApproved ? 'active'.tr : 'not_active'.tr,
+              school['status'] ?? (isApproved ? 'active'.tr : 'not_active'.tr),
               style: AppFonts.AlmaraiBold12.copyWith(
                 color: isApproved ? Colors.green : Colors.orange,
               ),
@@ -165,22 +180,18 @@ class _MySchoolsPageState extends State<MySchoolsPage> {
       ),
       dataItems: [
         SchoolCardData(
-          'System',
-          school['educationSystem'] != null
-              ? (school['educationSystem'] is Map
-                  ? school['educationSystem']['name'] ?? 'General'
-                  : 'General')
-              : 'General',
-          IconlyLight.work,
+          'owner'.tr,
+          school['owner'] ?? '---',
+          IconlyLight.user,
         ),
         SchoolCardData(
-          'Location',
-          school['city'] ?? 'N/A',
+          'location'.tr,
+          school['location']?['governorate'] ?? '---',
           IconlyLight.location,
         ),
         SchoolCardData(
-          'Date',
-          '2024',
+          'date'.tr,
+          school['date'] != null ? school['date'].toString().split('T')[0] : '---',
           IconlyLight.calendar,
         ),
       ],

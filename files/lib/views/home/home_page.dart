@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 import 'dart:ui';
-import '../../core/constants/assets.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -52,84 +51,91 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        body: Stack(
-          children: [
-            // Modern Background Elements (Glassy Blobs)
-            Positioned(
-              top: -Responsive.h(50),
-              right: -Responsive.w(50),
-              child: Container(
-                width: Responsive.w(250),
-                height: Responsive.w(250),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.blue1.withOpacity(0.08),
-                      AppColors.blue1.withOpacity(0),
-                    ],
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final bgColor =
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+          ),
+          child: Scaffold(
+            backgroundColor: bgColor,
+            body: Stack(
+              children: [
+                // Modern Background Elements (Glassy Blobs)
+                Positioned(
+                  top: -Responsive.h(50),
+                  right: -Responsive.w(50),
+                  child: Container(
+                    width: Responsive.w(250),
+                    height: Responsive.w(250),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.blue1.withOpacity(0.08),
+                          AppColors.blue1.withOpacity(0),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: Responsive.h(100),
-              left: -Responsive.w(70),
-              child: Container(
-                width: Responsive.w(300),
-                height: Responsive.w(300),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF6366F1).withOpacity(0.06),
-                      const Color(0xFF6366F1).withOpacity(0),
-                    ],
+                Positioned(
+                  bottom: Responsive.h(100),
+                  left: -Responsive.w(70),
+                  child: Container(
+                    width: Responsive.w(300),
+                    height: Responsive.w(300),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF6366F1).withOpacity(0.06),
+                          const Color(0xFF6366F1).withOpacity(0),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+
+                // Scalable Content
+                HorizontalSwipeDetector(
+                  onSwipeRight: () {
+                    if (Responsive.isRTL) {
+                      Get.offNamed(AppRoutes.applications);
+                    }
+                  },
+                  onSwipeLeft: () {
+                    if (!Responsive.isRTL) {
+                      Get.offNamed(AppRoutes.applications);
+                    }
+                  },
+                  child: Obx(() => _buildHomeContent()),
+                ),
+
+                // Absolute Floating Modern Navbar
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: const BottomNavBarWidget(),
+                ),
+              ],
             ),
-            
-            // Scalable Content
-            HorizontalSwipeDetector(
-              onSwipeRight: () {
-                if (Responsive.isRTL) {
-                  Get.offNamed(AppRoutes.applications);
-                }
-              },
-              onSwipeLeft: () {
-                if (!Responsive.isRTL) {
-                  Get.offNamed(AppRoutes.applications);
-                }
-              },
-              child: Obx(() => _buildHomeContent()),
-            ),
-            
-            // Absolute Floating Modern Navbar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: const BottomNavBarWidget(),
-            ),
-          ],
-        ),
-        extendBody: true,
-        bottomNavigationBar: null,
-        floatingActionButton: DraggableChatbotWidget(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      ),
-    );
+            extendBody: true,
+            bottomNavigationBar: null,
+            floatingActionButton: DraggableChatbotWidget(),
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          ));
+    });
   }
 
   Widget _buildHomeContent() {
@@ -152,19 +158,19 @@ class _HomePageState extends State<HomePage> {
         slivers: [
           // Elegant Header Section
           SliverAppBar(
-            expandedHeight: Responsive.h(220),
+            expandedHeight: Responsive.h(170),
             floating: true,
             pinned: false,
             automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            toolbarHeight: Responsive.h(70),
-            collapsedHeight: Responsive.h(80),
+            toolbarHeight: Responsive.h(60),
+            collapsedHeight: Responsive.h(70),
             flexibleSpace: FlexibleSpaceBar(
               background: HeroSectionWidget(
                 userData: _userData,
                 showFeatures: true,
-                borderRadius: 24,
+                borderRadius: 20,
               ),
             ),
           ),
@@ -173,21 +179,19 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                SizedBox(height: Responsive.h(24)),
+                SizedBox(height: Responsive.h(16)),
                 _buildSectionHeader(
                   title: 'my_students'.tr,
                   onViewAll: () => Get.toNamed(AppRoutes.myStudents),
                   icon: IconlyBold.user_2,
                 ),
-                SizedBox(height: Responsive.h(12)),
+                SizedBox(height: Responsive.h(10)),
                 _buildStudentsCarousel(),
-                
-                SizedBox(height: Responsive.h(28)),
+                SizedBox(height: Responsive.h(30)),
                 _buildRecentApplicationsSection(),
-                
-                SizedBox(height: Responsive.h(28)),
+                SizedBox(height: Responsive.h(20)),
                 _buildUpcomingInterviewsSection(allApplications),
-                SizedBox(height: Responsive.h(110)),
+                SizedBox(height: Responsive.h(100)),
               ],
             ),
           ),
@@ -199,7 +203,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildStudentsCarousel() {
     final children = DashboardController.to.relatedChildren;
     return SizedBox(
-      height: Responsive.h(205),
+      height: Responsive.w(110),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -208,13 +212,13 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           if (index == children.length) {
             return Padding(
-              padding: EdgeInsets.only(right: Responsive.w(20)),
+              padding: EdgeInsets.only(right: Responsive.w(12)),
               child: _buildAddStudentCard(),
             );
           }
           final child = children[index];
           return Padding(
-            padding: EdgeInsets.only(right: Responsive.w(20)),
+            padding: EdgeInsets.only(right: Responsive.w(12)),
             child: _buildStudentCard(child),
           );
         },
@@ -228,8 +232,9 @@ class _HomePageState extends State<HomePage> {
     bool showViewAll = true,
     IconData? icon,
   }) {
+    final isDark = AppConfigController.to.isDarkMode;
     return Padding(
-      padding: Responsive.symmetric(horizontal: 24),
+      padding: Responsive.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -237,22 +242,23 @@ class _HomePageState extends State<HomePage> {
             children: [
               if (icon != null) ...[
                 Container(
-                  padding: Responsive.all(8),
+                  padding: Responsive.all(6),
                   decoration: BoxDecoration(
                     color: AppColors.blue1.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                    borderRadius: BorderRadius.circular(Responsive.r(10)),
                   ),
-                  child: Icon(icon, color: AppColors.blue1, size: Responsive.sp(18)),
+                  child: Icon(icon,
+                      color: AppColors.blue1, size: Responsive.sp(15)),
                 ),
-                SizedBox(width: Responsive.w(12)),
+                SizedBox(width: Responsive.w(10)),
               ],
               Text(
                 title,
                 style: AppFonts.h3.copyWith(
-                  color: const Color(0xFF1F2937),
-                  fontSize: Responsive.sp(18),
+                  color: isDark ? Colors.white : const Color(0xFF1F2937),
+                  fontSize: Responsive.sp(15),
                   fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.4,
                 ),
               ),
             ],
@@ -262,8 +268,9 @@ class _HomePageState extends State<HomePage> {
               onPressed: onViewAll,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.blue1,
-                padding: Responsive.symmetric(horizontal: 12, vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                padding: Responsive.symmetric(horizontal: 8, vertical: 4),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Responsive.r(10))),
               ),
               child: Row(
                 children: [
@@ -271,13 +278,15 @@ class _HomePageState extends State<HomePage> {
                     'view_all'.tr,
                     style: AppFonts.bodySmall.copyWith(
                       fontWeight: FontWeight.w700,
-                      fontSize: Responsive.sp(13),
+                      fontSize: Responsive.sp(12),
                     ),
                   ),
-                  SizedBox(width: Responsive.w(4)),
+                  SizedBox(width: Responsive.w(3)),
                   Icon(
-                    Responsive.isRTL ? IconlyLight.arrow_left_2 : IconlyLight.arrow_right_2,
-                    size: Responsive.sp(14),
+                    Responsive.isRTL
+                        ? IconlyLight.arrow_left_2
+                        : IconlyLight.arrow_right_2,
+                    size: Responsive.sp(12),
                   ),
                 ],
               ),
@@ -288,202 +297,102 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildStudentCard(Student child) {
-    final bool isMale = child.gender.toLowerCase().contains('male') || child.gender.isEmpty;
+    final bool isMale =
+        child.gender.toLowerCase().contains('male') || child.gender.isEmpty;
     final themeColor = isMale ? AppColors.blue600 : AppColors.pink500;
     final fullName = child.arabicFullName ?? child.fullName;
     final firstName = fullName.split(' ').first;
     final bool isEnrolled = child.schoolId.id.isNotEmpty;
-    final birthDate = DateTime.tryParse(child.birthDate);
-    final formattedBirthDate = birthDate != null ? DateFormat.yMMMMd(Get.locale?.languageCode ?? 'en').format(birthDate) : 'N/A';
     final ageYears = (child.ageInOctober / 12).floor();
+    final isDark = AppConfigController.to.isDarkMode;
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.childDetails, arguments: {'child': child}),
+      onTap: () =>
+          Get.toNamed(AppRoutes.childDetails, arguments: {'child': child}),
       child: Container(
-        width: Responsive.w(280),
+        width: Responsive.w(110),
+        height: Responsive.w(110),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Responsive.r(32)),
+          color: isDark
+              ? const Color(0xFF1E293B).withOpacity(0.9)
+              : Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(Responsive.r(24)),
+          border: Border.all(
+            color: isDark
+                ? themeColor.withOpacity(0.2)
+                : themeColor.withOpacity(0.15),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
+              color: themeColor.withOpacity(isDark ? 0.1 : 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(Responsive.r(32)),
-          child: Stack(
-            children: [
-              // High-End Frosted Glass Background
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Avatar
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: Responsive.r(24),
+                  backgroundColor: themeColor.withOpacity(0.12),
+                  child: Icon(IconlyBold.profile,
+                      color: themeColor, size: Responsive.sp(22)),
+                ),
+                Container(
+                  width: Responsive.w(10),
+                  height: Responsive.w(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.92),
-                    borderRadius: BorderRadius.circular(Responsive.r(32)),
+                    color: isEnrolled ? themeColor : Colors.grey.shade400,
+                    shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.6),
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       width: 1.5,
                     ),
                   ),
                 ),
+              ],
+            ),
+            SizedBox(height: Responsive.h(8)),
+            // Name
+            Padding(
+              padding: Responsive.symmetric(horizontal: 8),
+              child: Text(
+                firstName,
+                style: AppFonts.h3.copyWith(
+                  fontSize: Responsive.sp(13),
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
-              
-              // Subtle Modern Tech Pattern or Gradient Corner
-              Positioned(
-                top: -30,
-                right: -30,
-                child: Container(
-                  width: Responsive.w(120),
-                  height: Responsive.w(120),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        themeColor.withOpacity(0.12),
-                        themeColor.withOpacity(0),
-                      ],
-                    ),
-                  ),
+            ),
+            SizedBox(height: Responsive.h(2)),
+            // Age badge
+            Container(
+              padding: Responsive.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: themeColor.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(Responsive.r(8)),
+              ),
+              child: Text(
+                '$ageYears ${'years'.tr}',
+                style: TextStyle(
+                  color: themeColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: Responsive.sp(10),
                 ),
               ),
-
-              // Card Content
-              Padding(
-                padding: Responsive.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        // Modern Floating Avatar
-                        Container(
-                          padding: Responsive.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: themeColor.withOpacity(0.1), width: 1.5),
-                          ),
-                          child: CircleAvatar(
-                            radius: Responsive.r(24),
-                            backgroundColor: themeColor.withOpacity(0.05),
-                            child: Icon(IconlyBold.profile, color: themeColor, size: Responsive.sp(22)),
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(15)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                firstName,
-                                style: AppFonts.h3.copyWith(
-                                  fontSize: Responsive.sp(19),
-                                  color: const Color(0xFF1E293B),
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.8,
-                                ),
-                              ),
-                              Text(
-                                '$ageYears ${'years'.tr}',
-                                style: TextStyle(
-                                  color: themeColor,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: Responsive.sp(10),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    // Premium Information Area
-                    Container(
-                      padding: Responsive.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.04),
-                        borderRadius: BorderRadius.circular(Responsive.r(20)),
-                        border: Border.all(color: Colors.black.withOpacity(0.03)),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: isEnrolled ? themeColor : Colors.grey.shade400,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isEnrolled ? themeColor : Colors.grey.shade400).withOpacity(0.3),
-                                      blurRadius: 6,
-                                      spreadRadius: 2,
-                                    )
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: Responsive.w(10)),
-                              Expanded(
-                                child: Text(
-                                  isEnrolled ? child.schoolId.name : 'not_enrolled'.tr,
-                                  style: TextStyle(
-                                    color: const Color(0xFF334155),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: Responsive.sp(11),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: Responsive.h(10)),
-                          Row(
-                            children: [
-                              Icon(IconlyLight.star, size: Responsive.sp(13), color: const Color(0xFF94A3B8)),
-                              SizedBox(width: Responsive.w(8)),
-                              Text(
-                                '${child.grade.name}${child.studentClass.name.isNotEmpty ? ' | ${child.studentClass.name}' : ''}',
-                                style: TextStyle(
-                                  color: const Color(0xFF64748B),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: Responsive.sp(10),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: Responsive.h(12)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(IconlyLight.calendar, size: Responsive.sp(12), color: const Color(0xFFCBD5E1)),
-                            SizedBox(width: Responsive.w(6)),
-                            Text(
-                              formattedBirthDate,
-                              style: TextStyle(
-                                color: const Color(0xFF94A3B8),
-                                fontWeight: FontWeight.w600,
-                                fontSize: Responsive.sp(9.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -491,15 +400,21 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAddStudentCard() {
     final themeColor = AppColors.blue900;
+    final isDark = AppConfigController.to.isDarkMode;
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.addChildSteps),
       child: Container(
-        width: Responsive.w(140),
+        width: Responsive.w(110),
+        height: Responsive.w(110),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(Responsive.r(32)),
+          color: isDark
+              ? const Color(0xFF1E293B).withOpacity(0.8)
+              : Colors.white.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(Responsive.r(24)),
           border: Border.all(
-            color: const Color(0xFFE2E8F0),
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : const Color(0xFFE2E8F0),
             width: 1.5,
           ),
         ),
@@ -507,22 +422,24 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: Responsive.w(50),
-              height: Responsive.w(50),
+              width: Responsive.w(36),
+              height: Responsive.w(36),
               decoration: BoxDecoration(
                 color: themeColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(IconlyLight.plus, color: themeColor, size: Responsive.sp(24)),
+              child: Icon(IconlyLight.plus,
+                  color: themeColor, size: Responsive.sp(18)),
             ),
-            SizedBox(height: Responsive.h(15)),
+            SizedBox(height: Responsive.h(10)),
             Text(
               'add_student'.tr,
               style: TextStyle(
-                color: const Color(0xFF475569),
-                fontWeight: FontWeight.w800,
-                fontSize: Responsive.sp(12),
+                color: isDark ? Colors.white60 : const Color(0xFF475569),
+                fontWeight: FontWeight.w700,
+                fontSize: Responsive.sp(11),
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -535,55 +452,59 @@ class _HomePageState extends State<HomePage> {
     // Filter for unfinished applications
     final apps = controller.allApplications.where((app) {
       final s = app.status.toLowerCase();
-      return !s.contains('completed') && 
-             !s.contains('declined') && 
-             !s.contains('rejected') &&
-             !s.contains('success');
+      return !s.contains('completed') &&
+          !s.contains('declined') &&
+          !s.contains('rejected') &&
+          !s.contains('success');
     }).toList();
-    
+
     final isLoading = controller.isLoading && apps.isEmpty;
 
-    return Column(
-      children: [
-        _buildSectionHeader(
-          title: 'recent_applications'.tr,
-          onViewAll: () => Get.toNamed(AppRoutes.applications),
-          showViewAll: apps.isNotEmpty,
-          icon: IconlyBold.document,
-        ),
-        if (isLoading)
-          Padding(
-            padding: Responsive.symmetric(horizontal: 24),
-            child: ShimmerCard(height: Responsive.h(140), borderRadius: Responsive.r(28)),
-          )
-        else if (apps.isEmpty)
-          Padding(
-            padding: Responsive.symmetric(horizontal: 24),
-            child: _buildEmptyApplicationsState(),
-          )
-        else
-          Padding(
-            padding: Responsive.symmetric(horizontal: 24, vertical: 12),
-            child: ListView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: apps.length,
-              itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.only(bottom: Responsive.h(12)),
-                child: _buildRecentAppCard(apps[index]),
-              ),
+    return Column(children: [
+      _buildSectionHeader(
+        title: 'recent_applications'.tr,
+        onViewAll: () => Get.toNamed(AppRoutes.applications),
+        showViewAll: apps.isNotEmpty,
+        icon: IconlyBold.document,
+      ),
+      SizedBox(height: Responsive.h(12)),
+      if (isLoading)
+        Padding(
+          padding: Responsive.symmetric(horizontal: 24),
+          child: ShimmerCard(
+              height: Responsive.h(140), borderRadius: Responsive.r(28)),
+        )
+      else if (apps.isEmpty)
+        Padding(
+          padding: Responsive.symmetric(horizontal: 24),
+          child: _buildEmptyApplicationsState(),
+        )
+      else
+        
+        Padding(
+          padding: Responsive.symmetric(horizontal: 24, vertical: 12),
+          child: ListView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: apps.length,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.only(bottom: Responsive.h(12)),
+              child: _buildRecentAppCard(apps[index]),
             ),
           ),
-      ]);
+        ),
+    ]);
   }
 
   Widget _buildRecentAppCard(Application app) {
     final statusColor = _getStatusColor(app.status);
     final hasAiReport = app.aiAssessment != null;
+    final isDark = AppConfigController.to.isDarkMode;
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.applicationDetails, arguments: {'applicationId': app.id}),
+      onTap: () => Get.toNamed(AppRoutes.applicationDetails,
+          arguments: {'applicationId': app.id}),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(Responsive.r(32)),
         child: BackdropFilter(
@@ -591,15 +512,18 @@ class _HomePageState extends State<HomePage> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: isDark
+                  ? const Color(0xFF1E293B).withOpacity(0.9)
+                  : Colors.white.withOpacity(0.08),
               borderRadius: BorderRadius.circular(Responsive.r(32)),
-              border: Border.all(color: statusColor.withOpacity(0.18), width: 1.5),
+              border:
+                  Border.all(color: statusColor.withOpacity(0.18), width: 1.5),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  statusColor.withOpacity(0.12),
-                  statusColor.withOpacity(0.04),
+                  statusColor.withOpacity(isDark ? 0.2 : 0.12),
+                  statusColor.withOpacity(isDark ? 0.08 : 0.04),
                 ],
               ),
             ),
@@ -610,11 +534,13 @@ class _HomePageState extends State<HomePage> {
                   padding: Responsive.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(Responsive.r(30))),
                   ),
                   child: Row(
                     children: [
-                      Icon(IconlyBold.document, color: statusColor, size: Responsive.sp(14)),
+                      Icon(IconlyBold.document,
+                          color: statusColor, size: Responsive.sp(14)),
                       SizedBox(width: Responsive.w(8)),
                       Text(
                         app.status.tr.toUpperCase(),
@@ -628,15 +554,21 @@ class _HomePageState extends State<HomePage> {
                       const Spacer(),
                       if (app.payment != null)
                         Container(
-                          padding: Responsive.symmetric(horizontal: 10, vertical: 4),
+                          padding:
+                              Responsive.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: app.payment!.isPaid ? AppColors.blue700.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(Responsive.r(8)),
+                            color: app.payment!.isPaid
+                                ? AppColors.blue700.withOpacity(0.15)
+                                : Colors.red.withOpacity(0.15),
+                            borderRadius:
+                                BorderRadius.circular(Responsive.r(8)),
                           ),
                           child: Text(
                             app.payment!.isPaid ? 'paid'.tr : 'unpaid'.tr,
                             style: TextStyle(
-                              color: app.payment!.isPaid ? AppColors.blue700 : Colors.red.shade700,
+                              color: app.payment!.isPaid
+                                  ? AppColors.blue700
+                                  : Colors.red.shade700,
                               fontWeight: FontWeight.w900,
                               fontSize: Responsive.sp(9),
                             ),
@@ -661,7 +593,9 @@ class _HomePageState extends State<HomePage> {
                                   style: AppFonts.h3.copyWith(
                                     fontSize: Responsive.sp(16),
                                     fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF0F172A),
+                                    color: AppConfigController.to.isDarkMode
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
                                     letterSpacing: -0.4,
                                   ),
                                   maxLines: 1,
@@ -695,25 +629,34 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: Responsive.symmetric(horizontal: 12, vertical: 7),
+                            padding: Responsive.symmetric(
+                                horizontal: 12, vertical: 7),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(Responsive.r(14)),
-                              border: Border.all(color: Colors.white.withOpacity(0.4)),
+                              color: isDark ? const Color(0xFF0F172A).withOpacity(0.4) : Colors.white.withOpacity(0.4),
+                              borderRadius:
+                                  BorderRadius.circular(Responsive.r(14)),
+                              border: Border.all(
+                                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.4)),
                             ),
                             child: Row(
                               children: [
                                 Icon(
                                   IconlyBold.shield_done,
                                   size: Responsive.sp(13),
-                                  color: hasAiReport ? AppColors.blue600 : Colors.grey.shade400,
+                                  color: hasAiReport
+                                      ? AppColors.blue600
+                                      : Colors.grey.shade400,
                                 ),
                                 SizedBox(width: Responsive.w(8)),
                                 Text(
-                                  hasAiReport ? 'ai_assessment_ready'.tr : 'ai_not_found'.tr,
+                                  hasAiReport
+                                      ? 'ai_assessment_ready'.tr
+                                      : 'ai_not_found'.tr,
                                   style: TextStyle(
                                     fontSize: Responsive.sp(10.5),
-                                    color: hasAiReport ? AppColors.blue700 : Colors.grey.shade600,
+                                    color: hasAiReport
+                                        ? AppColors.blue700
+                                        : Colors.grey.shade600,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -722,19 +665,21 @@ class _HomePageState extends State<HomePage> {
                           ),
                           if (app.events.isNotEmpty)
                             Container(
-                              padding: Responsive.symmetric(horizontal: 12, vertical: 7),
+                              padding: Responsive.symmetric(
+                                  horizontal: 12, vertical: 7),
                               decoration: BoxDecoration(
                                 color: AppColors.blue1.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(Responsive.r(14)),
+                                borderRadius:
+                                    BorderRadius.circular(Responsive.r(14)),
                               ),
                               child: Text(
-                                '${app.events.length} ${'events'.tr}',  
+                                '${app.events.length} ${'events'.tr}',
                                 style: TextStyle(
-                                  color: AppColors.blue900,
+                                  color: isDark ? AppColors.blue2 : AppColors.blue900,
                                   fontWeight: FontWeight.w900,
                                   fontSize: Responsive.sp(10),
                                 ),
-                              ), 
+                              ),
                             ),
                         ],
                       ),
@@ -749,14 +694,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   Color _getStatusColor(String status) {
     final s = status.toLowerCase();
     if (s.contains('pending')) return AppColors.blue400;
-    if (s.contains('success') || s.contains('accepted')) return AppColors.blue700;
+    if (s.contains('success') || s.contains('accepted'))
+      return AppColors.blue700;
     return AppColors.blue600;
   }
-
 
   Widget _buildUpcomingInterviewsSection(List<Application> allApplications) {
     final interviewApps = allApplications
@@ -796,10 +740,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildInterviewItem(Application app) {
     final interviewDate = app.interview!.date!;
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       margin: EdgeInsets.only(bottom: Responsive.h(16)),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(Responsive.r(24)),
         boxShadow: [
           BoxShadow(
@@ -808,10 +753,14 @@ class _HomePageState extends State<HomePage> {
             offset: const Offset(0, 6),
           ),
         ],
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        border: Border.all(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : const Color(0xFFF3F4F6)),
       ),
       child: InkWell(
-        onTap: () => Get.toNamed(AppRoutes.applicationDetails, arguments: {'applicationId': app.id}),
+        onTap: () => Get.toNamed(AppRoutes.applicationDetails,
+            arguments: {'applicationId': app.id}),
         borderRadius: BorderRadius.circular(Responsive.r(24)),
         child: Padding(
           padding: Responsive.all(18),
@@ -828,17 +777,21 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       DateFormat('dd').format(interviewDate),
-                      style: AppFonts.h3.copyWith(color: AppColors.blue1, height: 1),
+                      style: AppFonts.h3
+                          .copyWith(color: AppColors.blue1, height: 1),
                     ),
                     Text(
                       DateFormat('MMM').format(interviewDate).toUpperCase(),
-                      style: AppFonts.bodySmall.copyWith(color: AppColors.blue1, fontWeight: FontWeight.w800, fontSize: Responsive.sp(10)),
+                      style: AppFonts.bodySmall.copyWith(
+                          color: AppColors.blue1,
+                          fontWeight: FontWeight.w800,
+                          fontSize: Responsive.sp(10)),
                     ),
                   ],
                 ),
               ),
               SizedBox(width: Responsive.w(18)),
-              
+
               // Info
               Expanded(
                 child: Column(
@@ -848,7 +801,7 @@ class _HomePageState extends State<HomePage> {
                       app.school.name,
                       style: AppFonts.bodyMedium.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF1F2937),
+                        color: isDark ? Colors.white : const Color(0xFF1F2937),
                         fontSize: Responsive.sp(15),
                       ),
                       maxLines: 1,
@@ -857,7 +810,9 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(height: Responsive.h(4)),
                     Row(
                       children: [
-                        Icon(IconlyLight.time_circle, size: Responsive.sp(14), color: const Color(0xFF9CA3AF)),
+                        Icon(IconlyLight.time_circle,
+                            size: Responsive.sp(14),
+                            color: const Color(0xFF9CA3AF)),
                         SizedBox(width: Responsive.w(6)),
                         Text(
                           app.interview?.time ?? '',
@@ -871,10 +826,12 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              
+
               // Action Icon
               Icon(
-                Responsive.isRTL ? IconlyLight.arrow_left_2 : IconlyLight.arrow_right_2,
+                Responsive.isRTL
+                    ? IconlyLight.arrow_left_2
+                    : IconlyLight.arrow_right_2,
                 color: const Color(0xFFD1D5DB),
                 size: Responsive.sp(20),
               ),
@@ -886,17 +843,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEmptyInterviewsState() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       width: double.infinity,
       padding: Responsive.all(30),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(Responsive.r(28)),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        border: Border.all(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : const Color(0xFFF3F4F6)),
       ),
       child: Column(
         children: [
-          Icon(IconlyBroken.calendar, size: Responsive.sp(48), color: const Color(0xFFD1D5DB)),
+          Icon(IconlyBroken.calendar,
+              size: Responsive.sp(48), color: const Color(0xFFD1D5DB)),
           SizedBox(height: Responsive.h(16)),
           Text(
             'no_upcoming_interviews'.tr,
@@ -912,13 +874,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEmptyApplicationsState() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       width: double.infinity,
-      padding: Responsive.all(28),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      padding: Responsive.all(28), 
+      decoration: BoxDecoration( 
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(Responsive.r(30)),
-        border: Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
+        border: Border.all(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : const Color(0xFFF3F4F6),
+            width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -935,20 +902,23 @@ class _HomePageState extends State<HomePage> {
               color: AppColors.blue1.withOpacity(0.05),
               shape: BoxShape.circle,
             ),
-            child: Icon(IconlyBroken.document, color: AppColors.blue1.withOpacity(0.4), size: Responsive.sp(48)),
+            child: Icon(IconlyBroken.document,
+                color: AppColors.blue1.withOpacity(0.4),
+                size: Responsive.sp(48)),
           ),
           SizedBox(height: Responsive.h(20)),
           Text(
             'no_applications_found'.tr,
             style: AppFonts.bodyLarge.copyWith(
-              fontWeight: FontWeight.w800, 
-              color: const Color(0xFF1F2937),
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : const Color(0xFF1F2937),
               fontSize: Responsive.sp(16),
             ),
           ),
           SizedBox(height: Responsive.h(8)),
           Text(
-            'start_admission_journey_hint'.tr, // Assuming this key might exist or can be replaced
+            'start_admission_journey_hint'
+                .tr, // Assuming this key might exist or can be replaced
             style: AppFonts.bodySmall.copyWith(
               color: const Color(0xFF9CA3AF),
               fontWeight: FontWeight.w500,
@@ -966,12 +936,14 @@ class _HomePageState extends State<HomePage> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: Responsive.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Responsive.r(16))),
                 shadowColor: AppColors.blue1.withOpacity(0.3),
               ),
               child: Text(
                 'apply_now'.tr,
-                style: AppFonts.bodyMedium.copyWith(fontWeight: FontWeight.w800, color: Colors.white),
+                style: AppFonts.bodyMedium
+                    .copyWith(fontWeight: FontWeight.w800, color: Colors.white),
               ),
             ),
           ),
@@ -979,7 +951,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
- 
+
   Widget _buildShimmerLoading() {
     return CustomScrollView(
       slivers: [
@@ -1006,7 +978,8 @@ class _HomePageState extends State<HomePage> {
                     itemCount: 3,
                     itemBuilder: (_, __) => Padding(
                       padding: const EdgeInsets.only(right: 16),
-                      child: ShimmerCard(width: 130, height: 160, borderRadius: 28),
+                      child: ShimmerCard(
+                          width: 130, height: 160, borderRadius: 28),
                     ),
                   ),
                 ),
@@ -1047,7 +1020,8 @@ class DashRectPainter extends CustomPainter {
 
     Path path = Path();
     path.addRRect(RRect.fromRectAndRadius(
-      Rect.fromLTWH(strokeWidth / 2, strokeWidth / 2, size.width - strokeWidth, size.height - strokeWidth),
+      Rect.fromLTWH(strokeWidth / 2, strokeWidth / 2, size.width - strokeWidth,
+          size.height - strokeWidth),
       Radius.circular(borderRadius),
     ));
 

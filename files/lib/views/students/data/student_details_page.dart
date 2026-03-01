@@ -606,7 +606,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
     } else {
       // If it's a relative URL, prepend base URL
       if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
-        final fullUrl = '${ApiConstants.baseUrl}$imageUrl';
+        final fullUrl = '${ApiConstants.parentBaseUrl}$imageUrl';
         debugPrint('🎓 [STUDENT DETAILS IMAGE] 🔄 Converted relative URL to full URL: $fullUrl');
         return fullUrl;
       }

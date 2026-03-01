@@ -330,7 +330,17 @@ class AppColors {
   static const Color shadowLight = Color(0x0A000000);
   static const Color shadowDark = Color(0x33000000);
 
-  // Custom Colors
+  // Sales Portal Theme Colors
+  static const Color salesBackgroundLight = Color(0xFFFFFFFF);
+  static const Color salesForegroundLight = Color(0xFF171717);
+  
+  static const Color salesBackgroundDark = Color(0xFF030711);
+  static const Color salesForegroundDark = Color(0xFFEDEDED);
+  
+  static const Color salesSurfaceDark = Color(0xFF0F172A); // Slate 900 variant for cards in dark mode
+  static const Color salesAccent = Color(0xFF3B82F6); // Blue 500
+
+  // Common Colors
   static const Color lightPeach = Color(0xFFFFDBB2);
 }
 

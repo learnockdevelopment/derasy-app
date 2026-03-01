@@ -9,6 +9,7 @@ import '../../models/school_models.dart';
 import '../../services/schools_service.dart';
 import '../../services/sales_service.dart';
 import '../../services/user_storage_service.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../widgets/loading_page.dart';
 
 class SchoolDetailsPage extends StatefulWidget {
@@ -35,19 +36,20 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
       School? school;
       
       if (UserStorageService.isSales()) {
-        print('🏫 [SCHOOL DETAILS] Sales role detected - searching in sales schools');
-        final salesSchools = await SalesService.getSalesSchools();
-        final schoolData = salesSchools.firstWhere(
-          (s) => (s['id']?.toString() ?? s['_id']?.toString() ?? '') == widget.schoolId,
-          orElse: () => null,
-        );
-        
-        if (schoolData != null) {
-          school = School.fromJson(schoolData);
+        print('🏫 [SCHOOL DETAILS] Sales role detected - fetching detail from dashboard API');
+        try {
+          final schoolData = await SalesService.getSchoolById(widget.schoolId);
+          if (schoolData.isNotEmpty) {
+            // Handle wrapper if exists (e.g. { "success": true, "school": { ... } })
+            final data = schoolData.containsKey('school') ? schoolData['school'] : schoolData;
+            school = School.fromJson(data);
+          }
+        } catch (e) {
+          print('🏫 [SCHOOL DETAILS] Dashboard API fetch failed: $e. Falling back to SchoolsService.');
         }
       }
 
-      // If not sales or not found in sales list, try direct fetch
+      // Fallback or Parent Role
       if (school == null) {
         school = await SchoolsService.getSchoolById(widget.schoolId);
       }
@@ -120,105 +122,116 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: LoadingPage()));
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('school_details'.tr, style: AppFonts.AlmaraiBold18),
-          elevation: 0,
-          backgroundColor: Colors.white,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
-            onPressed: () => Get.back(),
-          ),
-        ),
-        body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.red50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(IconlyBold.danger, size: 64, color: AppColors.error),
-                ),
-                SizedBox(height: 24.h),
-                Text('Something went wrong', style: AppFonts.AlmaraiBold20),
-                SizedBox(height: 12.h),
-                Text(_error!, style: AppFonts.AlmaraiRegular14.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
-                SizedBox(height: 32.h),
-                ElevatedButton(
-                  onPressed: _fetchSchoolDetails,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blue1,
-                    padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text('Retry', style: AppFonts.AlmaraiBold16.copyWith(color: Colors.white)),
-                ),
-              ],
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final scaffoldColor = Theme.of(context).scaffoldBackgroundColor;
+      final surfaceColor = Theme.of(context).colorScheme.surface;
+      final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
+      if (_isLoading) return Scaffold(backgroundColor: scaffoldColor, body: const Center(child: LoadingPage()));
+      
+      if (_error != null) {
+        return Scaffold(
+          backgroundColor: scaffoldColor,
+          appBar: AppBar(
+            title: Text('school_details'.tr, style: AppFonts.AlmaraiBold18.copyWith(color: onSurfaceColor)),
+            elevation: 0,
+            backgroundColor: surfaceColor,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: onSurfaceColor, size: 20),
+              onPressed: () => Get.back(),
             ),
           ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(context),
-          SliverToBoxAdapter(
+          body: Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+              padding: EdgeInsets.all(24.w),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildQuickStats(),
+                  Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.red50.withOpacity(isDark ? 0.1 : 1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(IconlyBold.danger, size: 64, color: AppColors.error),
+                  ),
+                  SizedBox(height: 24.h),
+                  Text('Something went wrong', style: AppFonts.AlmaraiBold20.copyWith(color: onSurfaceColor)),
+                  SizedBox(height: 12.h),
+                  Text(_error!, style: AppFonts.AlmaraiRegular14.copyWith(color: onSurfaceColor.withOpacity(0.6)), textAlign: TextAlign.center),
                   SizedBox(height: 32.h),
-                  
-                   SizedBox(height: 32.h),
- 
-                   if (_school?.ownership.owner != null || (_school?.ownership.moderators.isNotEmpty == true)) ...[
-                     _buildSectionHeader('management'.tr, IconlyLight.user_1),
-                     _buildStaffSection(),
-                     SizedBox(height: 32.h),
-                   ],
-                  
-                  if (_school?.facilities != null && _school!.facilities!.isNotEmpty) ...[
-                    _buildSectionHeader('facilities'.tr, IconlyLight.category),
-                    _buildFacilitiesGrid(),
-                    SizedBox(height: 32.h),
-                  ],
-
-                  if (_school?.workingHours != null && _school!.workingHours!.isNotEmpty) ...[
-                    _buildSectionHeader('working_hours'.tr, IconlyLight.time_circle),
-                    _buildWorkingHoursSection(),
-                    SizedBox(height: 32.h),
-                  ],
-
-                  _buildSectionHeader('admission_info'.tr, IconlyLight.wallet),
-                  _buildAdmissionSection(),
-                  SizedBox(height: 32.h),
-
-                  _buildSectionHeader('location'.tr, IconlyLight.location),
-                  _buildLocationSection(),
-                  SizedBox(height: 60.h),
+                  ElevatedButton(
+                    onPressed: _fetchSchoolDetails,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.salesAccent,
+                      padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Retry', style: AppFonts.AlmaraiBold16.copyWith(color: Colors.white)),
+                  ),
                 ],
               ),
             ),
           ),
-        ],
-      ),
-    );
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: scaffoldColor,
+        body: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildAppBar(context, isDark, surfaceColor, onSurfaceColor),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildQuickStats(isDark, surfaceColor, onSurfaceColor),
+                    SizedBox(height: 32.h),
+                    
+                    _buildSectionHeader('info'.tr, IconlyLight.info_square, isDark),
+                    _buildAboutSection(isDark, surfaceColor, onSurfaceColor),
+                    SizedBox(height: 32.h),
+                    
+                    if (_school?.ownership.owner != null || (_school?.ownership.moderators.isNotEmpty == true)) ...[
+                      _buildSectionHeader('management'.tr, IconlyLight.user_1, isDark),
+                      _buildStaffSection(isDark, surfaceColor, onSurfaceColor),
+                      SizedBox(height: 32.h),
+                    ],
+                    
+                    if (_school?.facilities != null && _school!.facilities!.isNotEmpty) ...[
+                      _buildSectionHeader('facilities'.tr, IconlyLight.category, isDark),
+                      _buildFacilitiesGrid(isDark, surfaceColor, onSurfaceColor),
+                      SizedBox(height: 32.h),
+                    ],
+
+                    if (_school?.workingHours != null && _school!.workingHours!.isNotEmpty) ...[
+                      _buildSectionHeader('working_hours'.tr, IconlyLight.time_circle, isDark),
+                      _buildWorkingHoursSection(isDark, surfaceColor, onSurfaceColor),
+                      SizedBox(height: 32.h),
+                    ],
+
+                    _buildSectionHeader('admission_info'.tr, IconlyLight.wallet, isDark),
+                    _buildAdmissionSection(isDark, surfaceColor, onSurfaceColor),
+                    SizedBox(height: 32.h),
+
+                    _buildSectionHeader('location'.tr, IconlyLight.location, isDark),
+                    _buildLocationSection(isDark, surfaceColor, onSurfaceColor),
+                    SizedBox(height: 60.h),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
+  Widget _buildSectionHeader(String title, IconData icon, bool isDark) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
@@ -226,19 +239,19 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: AppColors.blue1.withOpacity(0.1),
+              color: AppColors.salesAccent.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppColors.blue1, size: 20.w),
+            child: Icon(icon, color: AppColors.salesAccent, size: 20.w),
           ),
           SizedBox(width: 12.w),
-          Text(title, style: AppFonts.AlmaraiBold18.copyWith(color: AppColors.blue1)),
+          Text(title, style: AppFonts.AlmaraiBold18.copyWith(color: AppColors.salesAccent)),
         ],
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, bool isDark, Color surfaceColor, Color onSurfaceColor) {
     final bannerUrl = _school?.media?.schoolImages?.isNotEmpty == true 
         ? _school!.media!.schoolImages!.first.url 
         : _school?.bannerImage;
@@ -247,7 +260,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
       expandedHeight: 320.h,
       pinned: true,
       stretch: true,
-      backgroundColor: AppColors.blue1,
+      backgroundColor: AppColors.salesAccent,
       elevation: 0,
       leading: IconButton(
         icon: Container(
@@ -262,9 +275,9 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
           icon: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
-            child: Icon(IconlyLight.heart, color: Colors.white, size: 20.w),
+            child: Icon(isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round_rounded, color: Colors.white, size: 20.w),
           ),
-          onPressed: () {},
+          onPressed: () => AppConfigController.to.toggleTheme(),
         ),
         SizedBox(width: 8.w),
         IconButton(
@@ -289,7 +302,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [AppColors.blue1, AppColors.blue2],
+                        colors: [AppColors.salesAccent, AppColors.salesAccent.withOpacity(0.7)],
                       ),
                     ),
                     child: Center(
@@ -322,13 +335,13 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: AppColors.blue1,
+                          color: AppColors.salesAccent,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
                         ),
                         child: Text(
                           _school?.type?.toUpperCase() ?? 'SCHOOL',
-                          style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold, letterSpacing: 1),
+                          style: AppFonts.AlmaraiBold10.copyWith(color: Colors.white, letterSpacing: 1),
                         ),
                       ),
                       if (_school?.approved == true) ...[
@@ -368,24 +381,24 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildQuickStats() {
+  Widget _buildQuickStats(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     return Row(
       children: [
-        _buildStatCard('status'.tr, _school?.approved == true ? 'active'.tr : 'pending'.tr, _school?.approved == true ? Colors.green : Colors.orange),
+        _buildStatCard('status'.tr, _school?.approved == true ? 'active'.tr : 'pending'.tr, _school?.approved == true ? Colors.green : Colors.orange, surfaceColor, onSurfaceColor),
         SizedBox(width: 12.w),
-        _buildStatCard('system'.tr, _school?.educationSystem ?? 'general'.tr, AppColors.blue1),
+        _buildStatCard('system'.tr, _school?.educationSystem ?? 'general'.tr, AppColors.salesAccent, surfaceColor, onSurfaceColor),
         SizedBox(width: 12.w),
-        _buildStatCard('gender'.tr, _school?.gender ?? 'co_ed'.tr, Colors.deepPurpleAccent),
+        _buildStatCard('gender'.tr, _school?.gender ?? 'co_ed'.tr, Colors.deepPurpleAccent, surfaceColor, onSurfaceColor),
       ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color) {
+  Widget _buildStatCard(String label, String value, Color color, Color surfaceColor, Color onSurfaceColor) {
     return Expanded(
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: surfaceColor,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4)),
@@ -394,7 +407,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppFonts.AlmaraiRegular12.copyWith(color: AppColors.textSecondary)),
+            Text(label, style: AppFonts.AlmaraiRegular12.copyWith(color: onSurfaceColor.withOpacity(0.5))),
             SizedBox(height: 6.h),
             Text(
               value,
@@ -408,36 +421,36 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildAboutSection(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
-          _buildInfoRow(IconlyLight.user_1, 'principal'.tr, _school?.principal?.name ?? 'N/A'),
-          _divider(),
-          _buildInfoRow(IconlyLight.calling, 'phone'.tr, _school?.location?.mainPhone ?? 'N/A'),
-          _divider(),
-          _buildInfoRow(IconlyLight.message, 'email'.tr, _school?.location?.officialEmail ?? 'N/A'),
-          _divider(),
-          _buildInfoRow(IconlyLight.discovery, 'languages'.tr, _school?.languages.isNotEmpty == true ? _school!.languages.join(', ') : 'N/A'),
+          _buildInfoRow(IconlyLight.user_1, 'principal'.tr, _school?.principal?.name ?? 'N/A', onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.calling, 'phone'.tr, _school?.location?.mainPhone ?? 'N/A', onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.message, 'email'.tr, _school?.location?.officialEmail ?? 'N/A', onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.discovery, 'languages'.tr, _school?.languages.isNotEmpty == true ? _school!.languages.join(', ') : 'N/A', onSurfaceColor),
         ],
       ),
     );
   }
 
-  Widget _buildFacilitiesGrid() {
+  Widget _buildFacilitiesGrid(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     final facilities = _school!.facilities!;
 
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
@@ -460,15 +473,15 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: AppColors.blue1.withOpacity(0.05),
+                  color: AppColors.salesAccent.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(_getIconData(facility.icon), color: AppColors.blue1, size: 24.w),
+                child: Icon(_getIconData(facility.icon), color: AppColors.salesAccent, size: 24.w),
               ),
               SizedBox(height: 8.h),
               Text(
                 facility.name,
-                style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.textPrimary),
+                style: AppFonts.AlmaraiBold12.copyWith(color: onSurfaceColor),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -480,7 +493,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildWorkingHoursSection() {
+  Widget _buildWorkingHoursSection(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     final hours = _school!.workingHours!;
     final days = hours.keys.toList();
 
@@ -488,7 +501,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
@@ -503,11 +516,11 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(day, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.textPrimary)),
+                    Text(day, style: AppFonts.AlmaraiBold14.copyWith(color: onSurfaceColor)),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: AppColors.grey50,
+                        color: isDark ? Colors.white12 : AppColors.grey50,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -518,7 +531,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                   ],
                 ),
               ),
-              if (!isLast) _divider(),
+              if (!isLast) _divider(isDark),
             ],
           );
         }).toList(),
@@ -526,35 +539,35 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildAdmissionSection() {
+  Widget _buildAdmissionSection(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
-          _buildInfoRow(IconlyLight.wallet, 'admission_fee'.tr, '${_school?.admissionFee?.amount ?? 0} ${_school?.admissionFee?.currency ?? "EGP"}'),
-          _divider(),
-          _buildInfoRow(IconlyLight.ticket_star, 'fees_range'.tr, '${_school?.feesRange?.min.toInt() ?? 0} - ${_school?.feesRange?.max.toInt() ?? 0} EGP'),
-          _divider(),
-          _buildInfoRow(IconlyLight.info_square, 'admission_open'.tr, _school?.admissionOpen == true ? 'yes'.tr : 'no'.tr),
-          _divider(),
-          _buildInfoRow(IconlyLight.document, 'special_needs_policy_label'.tr, _school?.supportsSpecialNeeds == true ? 'supported'.tr : 'no'.tr),
+          _buildInfoRow(IconlyLight.wallet, 'admission_fee'.tr, '${_school?.admissionFee?.amount ?? 0} ${_school?.admissionFee?.currency ?? "EGP"}', onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.ticket_star, 'fees_range'.tr, '${_school?.feesRange?.min.toInt() ?? 0} - ${_school?.feesRange?.max.toInt() ?? 0} EGP', onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.info_square, 'admission_open'.tr, _school?.admissionOpen == true ? 'yes'.tr : 'no'.tr, onSurfaceColor),
+          _divider(isDark),
+          _buildInfoRow(IconlyLight.document, 'special_needs_policy_label'.tr, _school?.supportsSpecialNeeds == true ? 'supported'.tr : 'no'.tr, onSurfaceColor),
         ],
       ),
     );
   }
 
-  Widget _buildLocationSection() {
+  Widget _buildLocationSection(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
@@ -563,12 +576,12 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
         children: [
           Row(
             children: [
-              Icon(IconlyLight.location, color: AppColors.blue1, size: 20.w),
+              const Icon(IconlyLight.location, color: AppColors.salesAccent, size: 20),
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
                   '${_school?.location?.governorate ?? ""}, ${_school?.location?.city ?? ""}',
-                  style: AppFonts.AlmaraiBold16,
+                  style: AppFonts.AlmaraiBold16.copyWith(color: onSurfaceColor),
                 ),
               ),
             ],
@@ -578,12 +591,12 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
             padding: EdgeInsets.only(left: 32.w),
             child: Text(
               _school?.location?.address ?? 'Address not provided',
-              style: AppFonts.AlmaraiRegular14.copyWith(color: AppColors.textSecondary),
+              style: AppFonts.AlmaraiRegular14.copyWith(color: onSurfaceColor.withOpacity(0.6)),
             ),
           ),
           SizedBox(height: 20.h),
           Material(
-            color: AppColors.grey50,
+            color: isDark ? Colors.white10 : AppColors.grey50,
             borderRadius: BorderRadius.circular(15),
             child: InkWell(
               onTap: _launchMaps,
@@ -594,9 +607,9 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(IconlyLight.discovery, color: AppColors.blue1, size: 20.w),
+                    const Icon(IconlyLight.discovery, color: AppColors.salesAccent, size: 20),
                     SizedBox(width: 8.w),
-                    Text('view_on_maps'.tr, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.blue1)),
+                    Text('view_on_maps'.tr, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.salesAccent)),
                   ],
                 ),
               ),
@@ -607,7 +620,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildStaffSection() {
+  Widget _buildStaffSection(bool isDark, Color surfaceColor, Color onSurfaceColor) {
     final ownership = _school!.ownership;
     final List<Widget> children = [];
 
@@ -619,14 +632,14 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Text('admin'.tr.toUpperCase(), style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.blue1, letterSpacing: 1)),
+              child: Text('admin'.tr.toUpperCase(), style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent, letterSpacing: 1)),
             ),
-            _buildInfoRow(IconlyLight.user_1, 'name'.tr, ownership.owner!.name),
-            _divider(),
-            _buildInfoRow(IconlyLight.message, 'email'.tr, ownership.owner!.email),
+            _buildInfoRow(IconlyLight.user_1, 'name'.tr, ownership.owner!.name, onSurfaceColor),
+            _divider(isDark),
+            _buildInfoRow(IconlyLight.message, 'email'.tr, ownership.owner!.email, onSurfaceColor),
             if (ownership.owner!.phone != null) ...[
-              _divider(),
-              _buildInfoRow(IconlyLight.calling, 'phone'.tr, ownership.owner!.phone!),
+              _divider(isDark),
+              _buildInfoRow(IconlyLight.calling, 'phone'.tr, ownership.owner!.phone!, onSurfaceColor),
             ],
           ],
         ),
@@ -647,12 +660,12 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 child: Text('${'moderator'.tr} ${i + 1}'.toUpperCase(), style: AppFonts.AlmaraiBold12.copyWith(color: Colors.orange, letterSpacing: 1)),
               ),
-              _buildInfoRow(IconlyLight.user_1, 'name'.tr, mod.name),
-              _divider(),
-              _buildInfoRow(IconlyLight.message, 'email'.tr, mod.email),
+              _buildInfoRow(IconlyLight.user_1, 'name'.tr, mod.name, onSurfaceColor),
+              _divider(isDark),
+              _buildInfoRow(IconlyLight.message, 'email'.tr, mod.email, onSurfaceColor),
               if (mod.phone != null) ...[
-                _divider(),
-                _buildInfoRow(IconlyLight.calling, 'phone'.tr, mod.phone!),
+                _divider(isDark),
+                _buildInfoRow(IconlyLight.calling, 'phone'.tr, mod.phone!, onSurfaceColor),
               ],
               if (i < ownership.moderators.length - 1) SizedBox(height: 16.h),
             ],
@@ -665,7 +678,7 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
       ),
@@ -676,22 +689,22 @@ class _SchoolDetailsPageState extends State<SchoolDetailsPage> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, Color onSurfaceColor) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
       child: Row(
         children: [
-          Icon(icon, size: 20.w, color: AppColors.blue1),
+          Icon(icon, size: 20.w, color: AppColors.salesAccent),
           SizedBox(width: 12.w),
-          Text(label, style: AppFonts.AlmaraiRegular14.copyWith(color: AppColors.textSecondary)),
+          Text(label, style: AppFonts.AlmaraiRegular14.copyWith(color: onSurfaceColor.withOpacity(0.5))),
           const Spacer(),
-          Text(value, style: AppFonts.AlmaraiBold14.copyWith(color: AppColors.textPrimary)),
+          Text(value, style: AppFonts.AlmaraiBold14.copyWith(color: onSurfaceColor)),
         ],
       ),
     );
   }
 
-  Widget _divider() => Divider(height: 1, color: AppColors.grey100);
+  Widget _divider(bool isDark) => Divider(height: 1, color: isDark ? Colors.white10 : AppColors.grey100);
 
   Future<void> _launchMaps() async {
     if (_school?.location == null) return;
