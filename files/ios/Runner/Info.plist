@@ -2,19 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your message for location permission request</string>
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-		<key>YourPurposeKey</key>
-		<string>The example App requires temporary access to the device&apos;s precise location.</string>
-	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to take photos for your profile/assignments.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need photos access to select images for your profile/assignments.</string>
-	<key>NSMicrophoneUsageDescription</key> 
-	<string>We need microphone access for video recording.</string>
 	<key>AppLovinSdkKey</key>
 	<string>YOUR_SDK_KEY</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -26,7 +13,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.derasy.app</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLocalizations</key>
@@ -67,10 +54,23 @@
 		<string>sms</string>
 		<string>tel</string>
 	</array>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Your message for location permission request</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take photos for your profile/assignments.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your message for location permission request</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>YourPurposeKey</key>
+		<string>The example App requires temporary access to the device's precise location.</string>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your message for location permission request</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access for video recording.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photos access to select images for your profile/assignments.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
