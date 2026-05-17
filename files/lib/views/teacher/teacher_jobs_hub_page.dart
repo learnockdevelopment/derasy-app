@@ -8,6 +8,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../models/teacher_models.dart';
 import '../../services/teacher_service.dart';
+import '../../services/user_storage_service.dart';
 import '../../widgets/loading_page.dart';
 
 class TeacherJobsHubPage extends StatefulWidget {
@@ -19,11 +20,32 @@ class TeacherJobsHubPage extends StatefulWidget {
 
 class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
   late Future<List<TeacherJob>> _jobsFuture;
+  TeacherModel? _profile;
+  bool _loadingProfile = true;
 
   @override
   void initState() {
     super.initState();
+    _loadProfile();
     _refreshJobs();
+  }
+
+  void _loadProfile() {
+    final user = UserStorageService.getCurrentUser();
+    TeacherService.getTeacherProfile(user?.id ?? 'teacher_123').then((profile) {
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _loadingProfile = false;
+        });
+      }
+    }).catchError((e) {
+      if (mounted) {
+        setState(() {
+          _loadingProfile = false;
+        });
+      }
+    });
   }
 
   void _refreshJobs() {
@@ -61,6 +83,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          _loadProfile();
           _refreshJobs();
         },
         color: AppColors.salesAccent,
@@ -120,28 +143,22 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                     ),
                     SizedBox(height: Responsive.h(20)),
                     
-                    // Side-by-side action buttons
+                    // Action button
                     Row(
                       children: [
                         Expanded(
                           child: _buildActionCard(
-                            icon: IconlyLight.document,
-                            title: 'cv_profile_builder'.tr,
+                            icon: _profile?.hasCv == true ? IconlyLight.document : IconlyLight.plus,
+                            title: _profile?.hasCv == true 
+                                ? 'edit_cv'.tr 
+                                : 'add_your_cv_to_apply'.tr,
                             color: AppColors.salesAccent,
                             cardBg: cardBg,
                             borderColor: borderColor,
-                            onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) => _refreshJobs()),
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(12)),
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: IconlyLight.plus,
-                            title: 'add_job_opening'.tr,
-                            color: Colors.teal,
-                            cardBg: cardBg,
-                            borderColor: borderColor,
-                            onTap: () => Get.toNamed(AppRoutes.teacherAddJob)?.then((_) => _refreshJobs()),
+                            onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) {
+                              _refreshJobs();
+                              _loadProfile();
+                            }),
                           ),
                         ),
                       ],
@@ -415,10 +432,10 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
             width: double.infinity,
             height: Responsive.h(38),
             child: ElevatedButton.icon(
-              onPressed: () => _showApplyBottomSheet(job),
+              onPressed: () => _handleApplyPressed(job),
               icon: Icon(IconlyLight.send, color: Colors.white, size: Responsive.sp(16)),
               label: Text(
-                'apply_now'.tr.isEmpty ? 'قدم الآن' : 'apply_now'.tr,
+                'apply_now'.tr,
                 style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
@@ -435,6 +452,106 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
     );
   }
 
+  void _handleApplyPressed(TeacherJob job) {
+    if (_profile == null || !_profile!.hasCv) {
+      final isDark = AppConfigController.to.isDarkMode;
+      final bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+      final textColor = isDark ? Colors.white : AppColors.textPrimary;
+      final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
+      final borderColor = isDark ? Colors.white12 : AppColors.grey300;
+
+      Get.dialog(
+        Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: Responsive.all(24),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(Responsive.r(24)),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: Responsive.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    IconlyBold.document,
+                    color: Colors.amber,
+                    size: 48,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(20)),
+                Text(
+                  'add_your_cv_to_apply'.tr,
+                  style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: Responsive.h(8)),
+                Text(
+                  'please_add_cv_first'.tr,
+                  style: AppFonts.AlmaraiRegular12.copyWith(color: secondaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: Responsive.h(24)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: borderColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                          ),
+                          padding: Responsive.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'cancel'.tr,
+                          style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(12)),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Get.back();
+                          Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) {
+                            _refreshJobs();
+                            _loadProfile();
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.salesAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                          ),
+                          padding: Responsive.symmetric(vertical: 12),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'add_cv'.tr,
+                          style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      _showApplyBottomSheet(job);
+    }
+  }
+
   void _showApplyBottomSheet(TeacherJob job) {
     final isDark = AppConfigController.to.isDarkMode;
     final bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -445,7 +562,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
     bool isSubmitting = false;
     
     final TextEditingController _coverLetterController = TextEditingController(
-      text: 'خطاب تعريفي للمدرسة يوضح دوافع التقديم',
+      text: 'cover_letter_default'.tr,
     );
 
     Get.bottomSheet(
@@ -490,7 +607,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'job_application'.tr.isEmpty ? 'تقديم طلب وظيفة' : 'job_application'.tr,
+                              'job_application'.tr,
                               style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
                             ),
                             SizedBox(height: Responsive.h(2)),
@@ -505,7 +622,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                   ),
                   SizedBox(height: Responsive.h(24)),
                   Text(
-                    'cover_letter'.tr.isEmpty ? 'الخطاب التعريفي' : 'cover_letter'.tr,
+                    'cover_letter'.tr,
                     style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
                   ),
                   SizedBox(height: Responsive.h(8)),
@@ -514,7 +631,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                     maxLines: 4,
                     style: AppFonts.AlmaraiRegular12.copyWith(color: textColor),
                     decoration: InputDecoration(
-                      hintText: 'اكتب هنا دوافع التقديم للمدرسة...',
+                      hintText: 'write_cover_letter_hint'.tr,
                       hintStyle: AppFonts.AlmaraiRegular12.copyWith(color: secondaryTextColor.withOpacity(0.5)),
                       fillColor: inputBg,
                       filled: true,
@@ -543,10 +660,8 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                               final text = _coverLetterController.text.trim();
                               if (text.isEmpty) {
                                 Get.snackbar(
-                                  'error'.tr.isEmpty ? 'خطأ' : 'error'.tr,
-                                  'please_enter_cover_letter'.tr.isEmpty
-                                      ? 'يرجى كتابة الخطاب التعريفي أولاً'
-                                      : 'please_enter_cover_letter'.tr,
+                                  'error'.tr,
+                                  'please_enter_cover_letter'.tr,
                                   backgroundColor: Colors.red.withOpacity(0.9),
                                   colorText: Colors.white,
                                 );
@@ -562,12 +677,15 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                 text,
                               );
 
+                              if (!context.mounted) return;
+
                               setModalState(() {
                                 isSubmitting = false;
                               });
 
                               if (success) {
                                 Get.back(); // close bottom sheet
+                                if (!context.mounted) return;
                                 Get.dialog(
                                   Dialog(
                                     backgroundColor: Colors.transparent,
@@ -595,17 +713,13 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                           ),
                                           SizedBox(height: Responsive.h(20)),
                                           Text(
-                                            'applied_successfully'.tr.isEmpty
-                                                ? 'تم التقديم بنجاح'
-                                                : 'applied_successfully'.tr,
+                                            'applied_successfully'.tr,
                                             style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
                                             textAlign: TextAlign.center,
                                           ),
                                           SizedBox(height: Responsive.h(8)),
                                           Text(
-                                            'application_sent_sub'.tr.isEmpty
-                                                ? 'تم إرسال طلبك والخطاب التعريفي إلى المدرسة بنجاح وجاري مراجعة ملفك الشخصي.'
-                                                : 'application_sent_sub'.tr,
+                                            'application_sent_sub'.tr,
                                             style: AppFonts.AlmaraiRegular12.copyWith(color: secondaryTextColor),
                                             textAlign: TextAlign.center,
                                           ),
@@ -622,7 +736,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                                 ),
                                               ),
                                               child: Text(
-                                                'ok'.tr.isEmpty ? 'حسناً' : 'ok'.tr,
+                                                'ok'.tr,
                                                 style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
                                               ),
                                             ),
@@ -634,10 +748,8 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                 );
                               } else {
                                 Get.snackbar(
-                                  'error'.tr.isEmpty ? 'خطأ' : 'error'.tr,
-                                  'failed_to_apply'.tr.isEmpty
-                                      ? 'فشل تقديم الطلب، يرجى المحاولة لاحقاً'
-                                      : 'failed_to_apply'.tr,
+                                  'error'.tr,
+                                  'failed_to_apply'.tr,
                                   backgroundColor: Colors.red.withOpacity(0.9),
                                   colorText: Colors.white,
                                 );
@@ -656,7 +768,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                             )
                           : Text(
-                              'submit_application'.tr.isEmpty ? 'إرسال الطلب' : 'submit_application'.tr,
+                              'submit_application'.tr,
                               style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white),
                             ),
                     ),

@@ -149,6 +149,7 @@ class TeacherService {
       );
 
       print('👨‍🏫 [TEACHER_SERVICE] Apply status code: ${response.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] Apply response body: ${response.body}');
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       print('👨‍🏫 [TEACHER_SERVICE] Error applying to job: $e');
