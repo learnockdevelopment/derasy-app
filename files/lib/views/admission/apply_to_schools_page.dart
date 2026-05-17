@@ -11,7 +11,7 @@ import '../../core/utils/responsive_utils.dart';
 import '../../core/controllers/dashboard_controller.dart';
 import '../../models/student_models.dart';
 import '../../models/school_models.dart';
-import '../../models/admission_models.dart';
+import '../../models/admission_models.dart' hide SchoolSuggestionRequest, SchoolSuggestionResponse;
 import '../../models/school_suggestion_models.dart';
 import '../../services/admission_service.dart';
 import '../../services/schools_service.dart';

@@ -116,6 +116,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
             if (UserStorageService.isSales()) {
               print('📱 Sales user logged in - navigating to sales home');
               Get.offNamed(AppRoutes.salesHome);
+            } else if (UserStorageService.isTeacher()) {
+              print('📱 Teacher user logged in - navigating to teacher home');
+              Get.offNamed(AppRoutes.teacherHome);
             } else {
               print('📱 Regular user logged in - navigating to home');
               Get.offNamed(AppRoutes.home);

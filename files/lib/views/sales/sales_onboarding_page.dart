@@ -208,41 +208,8 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
   }
 
   bool _isCurrentStepValid() {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    
-    switch (_currentStep) {
-      case 0: // School Data
-        final bool adminValid = _availableAdministrationsList.isNotEmpty 
-            ? _selectedAdministration != null 
-            : _administrationController.text.isNotEmpty;
-
-        return _schoolNameArController.text.isNotEmpty &&
-               _schoolNameEnController.text.isNotEmpty &&
-               _selectedEducationSystemId != null &&
-               _selectedGovernorate != null &&
-               adminValid;
-      case 1: // Academic Settings
-        final stages = _selectedStructure['stages'] as Map? ?? {};
-        return stages.values.any((s) => s['active'] == true);
-      case 2: // Financial Data - No strict validation as per JS
-        return true;
-      case 3: // Working Hours - No strict validation as per JS
-        return true;
-      case 4: // Facilities - Optional
-        return true;
-      case 5: // Owner Data
-        return _ownerNameController.text.isNotEmpty &&
-               emailRegex.hasMatch(_ownerEmailController.text) &&
-               _ownerPhoneController.text.isNotEmpty;
-      case 6: // Moderator Data
-        return _modNameController.text.isNotEmpty &&
-               emailRegex.hasMatch(_modEmailController.text) &&
-               _modPhoneController.text.isNotEmpty;
-      case 7: // Review
-        return true;
-      default:
-        return false;
-    }
+    // All fields made optional for sales onboarding
+    return true;
   }
 
   Future<void> _nextStep() async {
@@ -283,10 +250,15 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
   Future<bool> _checkCollision(String email, String phone) async {
      try {
-        final emailCollision = await AuthService.checkUserCollision(email: email);
-        if (emailCollision) return true;
-        final phoneCollision = await AuthService.checkUserCollision(phone: phone);
-        return phoneCollision;
+        if (email.isNotEmpty) {
+           final emailCollision = await AuthService.checkUserCollision(email: email);
+           if (emailCollision) return true;
+        }
+        if (phone.isNotEmpty) {
+           final phoneCollision = await AuthService.checkUserCollision(phone: phone);
+           return phoneCollision;
+        }
+        return false;
      } catch (e) {
         return false;
      }
@@ -1174,8 +1146,8 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
     final bool isEmpty = controller.text.trim().isEmpty;
     final bool isValidEmail = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(controller.text);
     
-    final bool showGreen = isEmail ? isValidEmail : !isEmpty;
-    final bool showRed = _showErrors && (isEmail ? !isValidEmail : isEmpty);
+    final bool showGreen = isEmail ? (isValidEmail && !isEmpty) : !isEmpty;
+    final bool showRed = _showErrors && (isEmail && !isEmpty && !isValidEmail);
     
     final Color borderColor = showRed ? Colors.red : (showGreen ? Colors.green : (isDark ? Colors.white12 : Colors.grey[200]!));
 
@@ -1208,21 +1180,21 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
 
   Widget _buildEnhancedDropdown(String label, String? value, List<String> items, Function(String?) onChanged, {List<String>? itemsLabels, IconData? icon, String? hintText, bool isDark = false}) {
     final bool isEmpty = value == null || value.isEmpty;
-    final Color borderColor = isEmpty ? Colors.red.withOpacity(0.5) : (isDark ? Colors.white12 : Colors.green.withOpacity(0.5));
+    final Color borderColor = isDark ? Colors.white12 : (isEmpty ? Colors.grey[200]! : Colors.green.withOpacity(0.5));
 
     return Padding(
       padding: EdgeInsets.only(bottom: 20.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppFonts.AlmaraiBold12.copyWith(color: isEmpty ? Colors.red[300] : (isDark ? Colors.white54 : Colors.grey[700]))),
+          Text(label, style: AppFonts.AlmaraiBold12.copyWith(color: isDark ? Colors.white54 : Colors.grey[700])),
           SizedBox(height: 8.h),
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: isEmpty ? Colors.red.withOpacity(0.05) : (isDark ? Colors.black26 : Colors.black.withOpacity(0.03)), blurRadius: 10, offset: const Offset(0, 4)),
+                BoxShadow(color: isDark ? Colors.black26 : Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
             child: DropdownButtonFormField<String>(
@@ -1232,15 +1204,15 @@ class _SalesOnboardingPageState extends State<SalesOnboardingPage> {
                 setState(() {}); // Force visual update
               },
               hint: hintText != null ? Text(hintText, style: AppFonts.AlmaraiRegular12.copyWith(color: isDark ? Colors.white24 : Colors.grey[400])) : null,
-              icon: Icon(IconlyLight.arrow_down_2, size: 18, color: isEmpty ? Colors.red[300] : AppColors.salesAccent),
+              icon: Icon(IconlyLight.arrow_down_2, size: 18, color: AppColors.salesAccent),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                prefixIcon: Icon(icon ?? IconlyLight.category, color: isEmpty ? Colors.red[300] : AppColors.salesAccent, size: 20),
+                prefixIcon: Icon(icon ?? IconlyLight.category, color: AppColors.salesAccent, size: 20),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: borderColor)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isEmpty ? Colors.red : AppColors.salesAccent, width: 2)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColors.salesAccent, width: 2)),
                 filled: true,
-                fillColor: isEmpty ? Colors.red.withOpacity(0.01) : Colors.green.withOpacity(0.01),
+                fillColor: Theme.of(context).colorScheme.surface,
               ),
               dropdownColor: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),

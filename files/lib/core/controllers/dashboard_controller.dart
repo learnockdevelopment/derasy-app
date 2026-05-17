@@ -41,9 +41,9 @@ class DashboardController extends GetxController {
   void onInit() {
     super.onInit();
     
-    // Don't call parent APIs if user is sales
-    if (UserStorageService.isSales()) {
-      print('📊 [DASHBOARD] Sales role detected - skipping parent API calls');
+    // Don't call parent APIs if user is sales or teacher
+    if (UserStorageService.isSales() || UserStorageService.isTeacher()) {
+      print('📊 [DASHBOARD] Sales or Teacher role detected - skipping parent API calls');
       return;
     }
     

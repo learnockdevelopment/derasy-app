@@ -40,13 +40,13 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
 
     _pulseController.repeat(reverse: true);
 
-    // Show hint after a small delay, then hide after 5 seconds
+    // Show hint after a small delay, then hide after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _showHint = true);
         
-        // Hide after 5 seconds
-        Future.delayed(const Duration(seconds: 5), () {
+        // Hide after 2 seconds
+        Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
             setState(() => _showHint = false);
           }
@@ -80,48 +80,46 @@ class _DraggableChatbotWidgetState extends State<DraggableChatbotWidget> with Si
                 scale: _showHint ? 1.0 : 0.6,
                 duration: const Duration(milliseconds: 300),
                 alignment: Responsive.isRTL ? Alignment.centerLeft : Alignment.centerRight,
-                child: Container(
-                  padding: Responsive.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-                    borderRadius: BorderRadius.circular(Responsive.r(20)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(AppConfigController.to.isDarkMode ? 0.2 : 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(color: AppConfigController.to.isDarkMode ? Colors.white.withOpacity(0.1) : AppColors.blue1.withOpacity(0.1)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (Responsive.isRTL)
-                        GestureDetector(
-                          onTap: () => setState(() => _showHint = false),
-                          child: Padding(
+                child: GestureDetector(
+                  onTap: () => setState(() => _showHint = false),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: Responsive.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(Responsive.r(20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(AppConfigController.to.isDarkMode ? 0.2 : 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(color: AppConfigController.to.isDarkMode ? Colors.white.withOpacity(0.1) : AppColors.blue1.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (Responsive.isRTL)
+                          Padding(
                             padding: Responsive.only(right: 4),
                             child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
                           ),
+                        Text(
+                          'need_help_hint'.tr,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.blue1,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.sp(11),
+                          ),
                         ),
-                      Text(
-                        'need_help_hint'.tr,
-                        style: AppFonts.bodySmall.copyWith(
-                          color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.blue1,
-                          fontWeight: FontWeight.bold,
-                          fontSize: Responsive.sp(11),
-                        ),
-                      ),
-                      if (!Responsive.isRTL)
-                        GestureDetector(
-                          onTap: () => setState(() => _showHint = false),
-                          child: Padding(
+                        if (!Responsive.isRTL)
+                          Padding(
                             padding: Responsive.only(left: 4),
                             child: Icon(Icons.close_rounded, size: Responsive.sp(14), color: AppColors.grey400),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

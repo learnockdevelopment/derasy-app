@@ -1,4 +1,3 @@
-import 'package:derasy/widgets/app_scaffold_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -71,9 +70,7 @@ class DerasyApp extends StatelessWidget {
             Locale('ar', 'SA'),
             Locale('en', 'US'),
           ],
-          builder: (context, child) {
-            return AppScaffoldWrapper(child: child ?? const SizedBox());
-          },
+
           theme: ThemeData(
             primaryColor: AppColors.salesAccent,
             colorScheme: ColorScheme.fromSeed(

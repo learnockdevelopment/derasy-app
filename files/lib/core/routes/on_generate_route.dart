@@ -27,6 +27,10 @@ import '../../views/sales/my_schools_page.dart';
 import '../../views/sales/sales_home_page.dart';
 import '../../views/sales/sales_onboarding_page.dart';
 import '../../views/sales/school_details_page.dart';
+import '../../views/teacher/teacher_home_page.dart';
+import '../../views/teacher/teacher_cv_profile_page.dart';
+import '../../views/teacher/teacher_add_job_page.dart';
+import '../../views/teacher/teacher_jobs_hub_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -171,6 +175,26 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => SchoolDetailsPage(schoolId: schoolId),
+        );
+      case AppRoutes.teacherHome:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const TeacherHomePage(),
+        );
+      case AppRoutes.teacherCvProfile:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const TeacherCvProfilePage(),
+        );
+      case AppRoutes.teacherAddJob:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const TeacherAddJobPage(),
+        );
+      case AppRoutes.teacherJobsHub:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const TeacherJobsHubPage(),
         );
       default:
         return errorRoute();

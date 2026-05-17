@@ -426,14 +426,16 @@ class _ChildDetailsPageState extends State<ChildDetailsPage> {
             children: [
               Icon(icon, size: 18.sp, color: Colors.white),
               SizedBox(width: 8.w),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppFonts.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
-                  color: Colors.white,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.sp,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

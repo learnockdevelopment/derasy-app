@@ -40,5 +40,11 @@ class AppRoutes {
   static const String salesOnboarding = '/sales-onboarding';
   static const String mySchools = '/my-schools';
   static const String schoolDetails = '/school-details';
+
+  // Teacher Routes
+  static const String teacherHome = '/teacher-home';
+  static const String teacherCvProfile = '/teacher-cv-profile';
+  static const String teacherAddJob = '/teacher-add-job';
+  static const String teacherJobsHub = '/teacher-jobs-hub';
 }
 

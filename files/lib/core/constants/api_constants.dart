@@ -1,7 +1,7 @@
 class ApiConstants {
   // API Configuration
   static const String parentBaseUrl = 'https://parent.derasy.com/api';
-  static const String salesBaseUrl = 'http://192.168.1.4:3000/api';
+  static const String salesBaseUrl = 'https://sales.derasy.com/api';
   static const String apiKey = 'external_key_123';
   static const String apiKeyHeader = 'x-api-key';
   static const String authorizationHeader = 'Authorization';

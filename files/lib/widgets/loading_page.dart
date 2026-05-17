@@ -96,7 +96,7 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
                             ),
                           ],
                         ),
-                        child: Image.asset(AssetsManager.login, fit: BoxFit.contain),
+                        child: Image.asset(AssetsManager.logo, fit: BoxFit.contain),
                       ),
                     ),
                   ],
@@ -163,5 +163,84 @@ class _LoadingPageState extends State<LoadingPage> with SingleTickerProviderStat
         ),
       );
     });
+  }
+}
+
+class ModernLoadingWidget extends StatefulWidget {
+  final double size;
+  const ModernLoadingWidget({Key? key, this.size = 80}) : super(key: key);
+
+  @override
+  State<ModernLoadingWidget> createState() => _ModernLoadingWidgetState();
+}
+
+class _ModernLoadingWidgetState extends State<ModernLoadingWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    
+    _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final containerBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return Container(
+              width: widget.size * 1.3 * _animation.value,
+              height: widget.size * 1.3 * _animation.value,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.blue1.withOpacity(
+                  (0.15 * (1.2 - _animation.value)).clamp(0.0, 1.0),
+                ),
+              ),
+            );
+          },
+        ),
+        ScaleTransition(
+          scale: _animation,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            padding: EdgeInsets.all(widget.size * 0.2),
+            decoration: BoxDecoration(
+              color: containerBg,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.blue1.withOpacity(isDark ? 0.1 : 0.2),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Image.asset(AssetsManager.logo, fit: BoxFit.contain),
+          ),
+        ),
+      ],
+    );
   }
 }

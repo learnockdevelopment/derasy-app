@@ -324,6 +324,40 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
+  void _showSnackBar(String title, String message, {bool isError = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Container(
+          padding: Responsive.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            color: isError ? AppColors.error : AppColors.blue1,
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white),
+              ),
+              SizedBox(height: Responsive.h(4)),
+              Text(
+                message,
+                style: AppFonts.AlmaraiRegular12.copyWith(color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        duration: Duration(seconds: isError ? 3 : 2),
+      ),
+    );
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -354,21 +388,19 @@ class _LoginPageState extends State<LoginPage>
       // Check user role
       final userRole = loginResponse.user.role.toLowerCase();
 
-      if (userRole != 'student' &&
-          userRole != 'parent' &&
-          userRole != 'sales') {
+      if (userRole != 'parent' &&
+          userRole != 'sales' &&
+          userRole != 'teacher' &&
+          userRole != 'school_teacher') {
         // Role not allowed
         setState(() {
           _isLoading = false;
         });
 
-        Get.snackbar(
+        _showSnackBar(
           'login_failed'.tr,
-          'unauthorized_role'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
+          "can't login this user yet",
+          isError: true,
         );
         return;
       }
@@ -384,19 +416,16 @@ class _LoginPageState extends State<LoginPage>
       });
 
       // Show success message
-      Get.snackbar(
+      _showSnackBar(
         'login_success'.tr,
         loginResponse.message.isNotEmpty
             ? loginResponse.message
             : 'welcome_back_message'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.blue1,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        isError: false,
       );
 
-      // Trigger pre-fetching of all data if not sales
-      if (userRole != 'sales') {
+      // Trigger pre-fetching of all data if not sales/teacher
+      if (userRole == 'parent') {
         try {
           DashboardController.to.refreshAll();
         } catch (e) {
@@ -407,6 +436,8 @@ class _LoginPageState extends State<LoginPage>
       // Navigate based on role
       if (userRole == 'sales') {
         Get.offNamed(AppRoutes.salesHome);
+      } else if (userRole == 'teacher' || userRole == 'school_teacher') {
+        Get.offNamed(AppRoutes.teacherHome);
       } else {
         Get.offNamed(AppRoutes.home);
       }
@@ -424,13 +455,10 @@ class _LoginPageState extends State<LoginPage>
       }
 
       // Show error message
-      Get.snackbar(
+      _showSnackBar(
         'login_failed'.tr,
         errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
+        isError: true,
       );
     } catch (e) {
       if (!mounted) return;
@@ -440,13 +468,10 @@ class _LoginPageState extends State<LoginPage>
       });
 
       // Show generic error message
-      Get.snackbar(
+      _showSnackBar(
         'login_failed'.tr,
         'network_error_please_try_again'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
+        isError: true,
       );
     }
   }
