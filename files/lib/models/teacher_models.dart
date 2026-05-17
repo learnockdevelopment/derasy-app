@@ -31,6 +31,8 @@ class TeacherModel {
     required this.timetable,
   });
 
+  bool get hasCv => qualifications.isNotEmpty || experienceYears > 0 || salary > 0;
+
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
     final tData = json['teacher'] as Map<String, dynamic>? ?? {};
     return TeacherModel(
