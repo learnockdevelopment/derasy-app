@@ -31,6 +31,10 @@ import '../../views/teacher/teacher_home_page.dart';
 import '../../views/teacher/teacher_cv_profile_page.dart';
 import '../../views/teacher/teacher_add_job_page.dart';
 import '../../views/teacher/teacher_jobs_hub_page.dart';
+import '../../views/store/store_home_page.dart';
+import '../../views/store/product_details_page.dart';
+import '../../views/store/cart_page.dart';
+import '../../views/store/order_history_page.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -195,6 +199,26 @@ class RouteGenerator {
         return GetPageRoute(
           settings: settings,
           page: () => const TeacherJobsHubPage(),
+        );
+      case AppRoutes.storeHome:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const StoreHomePage(),
+        );
+      case AppRoutes.storeProductDetails:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const ProductDetailsPage(),
+        );
+      case AppRoutes.storeCart:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const CartPage(),
+        );
+      case AppRoutes.storeOrderHistory:
+        return GetPageRoute(
+          settings: settings,
+          page: () => const OrderHistoryPage(),
         );
       default:
         return errorRoute();

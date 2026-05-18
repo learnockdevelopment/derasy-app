@@ -46,5 +46,11 @@ class AppRoutes {
   static const String teacherCvProfile = '/teacher-cv-profile';
   static const String teacherAddJob = '/teacher-add-job';
   static const String teacherJobsHub = '/teacher-jobs-hub';
+
+  // Store Routes
+  static const String storeHome = '/store-home';
+  static const String storeProductDetails = '/store-product-details';
+  static const String storeCart = '/store-cart';
+  static const String storeOrderHistory = '/store-orders';
 }
 

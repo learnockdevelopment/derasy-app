@@ -7,13 +7,16 @@ import 'dart:io';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
+import '../../models/auth_models.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../widgets/safe_network_image.dart';
 import '../../widgets/global_chatbot_widget.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../services/auth_service.dart';
-import '../../models/auth_models.dart';
+import '../../models/teacher_models.dart';
+import '../../services/teacher_service.dart';
+import 'package:iconly/iconly.dart';
 import 'package:flutter/services.dart';
 
 
@@ -26,6 +29,8 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   Map<String, dynamic>? _userData;
+  List<TeacherJobApplication> _applications = [];
+  TeacherModel? _teacherProfile;
   bool _isEditing = false;
   bool _isLoading = false;
   final _nameController = TextEditingController();
@@ -178,6 +183,41 @@ class _UserProfilePageState extends State<UserProfilePage> {
         );
       }
     }
+    // Load applications for teacher
+    await _loadTeacherApplications();
+    await _loadTeacherProfile();
+  }
+
+  Future<void> _loadTeacherProfile() async {
+    final roleVal = _userData?['role']?.toString().toLowerCase() ?? '';
+    if (roleVal == 'teacher') {
+      try {
+        final tProf = await TeacherService.getTeacherProfile(_userData?['id'] ?? 'teacher_123');
+        if (mounted) {
+          setState(() {
+            _teacherProfile = tProf;
+          });
+        }
+      } catch (e) {
+        print('Error loading teacher profile in user profile: $e');
+      }
+    }
+  }
+
+  Future<void> _loadTeacherApplications() async {
+    final roleVal = _userData?['role']?.toString().toLowerCase() ?? '';
+    if (roleVal == 'teacher') {
+      try {
+        final apps = await TeacherService.getMyApplications();
+        if (mounted) {
+          setState(() {
+            _applications = apps;
+          });
+        }
+      } catch (e) {
+        print('Error loading teacher applications: $e');
+      }
+    }
   }
 
   Future<void> _updateProfile() async {
@@ -318,8 +358,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
            }
 
             Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
-            
-            try {
+
+            try { 
                await AuthService.login(LoginRequest(email: email, password: password));
                Get.back(); // close loading
 
@@ -327,7 +367,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     localizedReason: 'scan_fingerprint'.tr,
                     options: const AuthenticationOptions(stickyAuth: true),
                 );
-                
+                 
                 if (didAuthenticate) {
                     await UserStorageService.saveBiometricCredentials(email, password);
                     if (mounted) {
@@ -409,18 +449,69 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _logout() async {
-    try {
-      await UserStorageService.clearUserData();
-      Get.offAllNamed(AppRoutes.login);
-    } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_logout'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    final isDark = AppConfigController.to.isDarkMode;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(20))),
+        title: Text(
+          'logout'.tr,
+          style: AppFonts.AlmaraiBold16.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'confirm_logout'.tr,
+          style: AppFonts.AlmaraiRegular12.copyWith(
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? Colors.white10 : Colors.grey.shade200,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(color: isDark ? Colors.white70 : AppColors.textPrimary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              try {
+                await UserStorageService.clearUserData();
+                Get.offAllNamed(AppRoutes.login);
+              } catch (e) {
+                Get.snackbar(
+                  'error'.tr,
+                  'failed_to_logout'.tr,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'logout'.tr,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -471,6 +562,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   // User Profile Card with Image, Name, Email
                   _buildProfileCard(cardColor, textColor, textSecondaryColor),
                   SizedBox(height: Responsive.h(16)),
+
+                  // Teacher CV & Applications Sections (if role is teacher)
+                  if (_userData?['role']?.toString().toLowerCase() == 'teacher') ...[
+                    _buildTeacherCvSection(cardColor, textColor, textSecondaryColor, borderColor),
+                    SizedBox(height: Responsive.h(16)),
+                    _buildTeacherApplicationsSection(cardColor, textColor, textSecondaryColor, borderColor),
+                    SizedBox(height: Responsive.h(16)),
+                  ],
 
                   // User Information Section
                   _buildUserInfoSection(cardColor, textColor, textSecondaryColor, borderColor, isDark),
@@ -776,6 +875,413 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               ],
             ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeacherCvSection(Color cardColor, Color textColor, Color textSecondaryColor, Color borderColor) {
+    final hasHeadline = _teacherProfile != null && _teacherProfile!.headline.isNotEmpty;
+    final hasBio = _teacherProfile != null && _teacherProfile!.bio.isNotEmpty;
+    final hasSkills = _teacherProfile != null && _teacherProfile!.skills.isNotEmpty;
+    final hasExp = _teacherProfile != null && _teacherProfile!.experienceYears > 0;
+
+    return Container(
+      width: double.infinity,
+      padding: Responsive.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.salesAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: Icon(
+                  IconlyLight.document,
+                  color: AppColors.salesAccent,
+                  size: Responsive.sp(18),
+                ),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'cv_profile_builder'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+          
+          if (_teacherProfile != null) ...[
+            SizedBox(height: Responsive.h(12)),
+            Divider(color: borderColor),
+            SizedBox(height: Responsive.h(8)),
+            
+            // Headline badge
+            if (hasHeadline) ...[
+              Container(
+                padding: Responsive.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.salesAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: Text(
+                  _teacherProfile!.headline,
+                  style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
+                ),
+              ),
+              SizedBox(height: Responsive.h(10)),
+            ],
+            
+            // Experience and Expected Salary
+            Row(
+              children: [
+                if (hasExp) ...[
+                  const Icon(IconlyLight.star, color: Colors.orange, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${_teacherProfile!.experienceYears} ${'years'.tr}',
+                    style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+                if (_teacherProfile!.salary > 0) ...[
+                  const Icon(IconlyLight.wallet, color: Colors.teal, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${_teacherProfile!.salary.toStringAsFixed(0)} EGP',
+                    style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                  ),
+                ],
+              ],
+            ),
+            
+            // Bio
+            if (hasBio) ...[
+              SizedBox(height: Responsive.h(12)),
+              Text(
+                'bio'.tr,
+                style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+              ),
+              SizedBox(height: Responsive.h(4)),
+              Text(
+                _teacherProfile!.bio,
+                style: AppFonts.AlmaraiRegular12.copyWith(color: textSecondaryColor),
+              ),
+            ],
+
+            // Skills
+            if (hasSkills) ...[
+              SizedBox(height: Responsive.h(12)),
+              Text(
+                'skills'.tr,
+                style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+              ),
+              SizedBox(height: Responsive.h(6)),
+              Wrap(
+                spacing: Responsive.w(6),
+                runSpacing: Responsive.h(6),
+                children: _teacherProfile!.skills.map((skill) {
+                  return Container(
+                    padding: Responsive.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.salesAccent.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(Responsive.r(8)),
+                      border: Border.all(color: AppColors.salesAccent.withOpacity(0.15)),
+                    ),
+                    child: Text(
+                      skill.name,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: textColor),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+            
+            SizedBox(height: Responsive.h(16)),
+          ] else ...[
+            SizedBox(height: Responsive.h(12)),
+            Text(
+              'cv_profile_desc'.tr,
+              style: AppFonts.AlmaraiRegular12.copyWith(
+                color: textSecondaryColor,
+              ),
+            ),
+            SizedBox(height: Responsive.h(16)),
+          ],
+
+          SizedBox(
+            width: double.infinity,
+            height: Responsive.h(48),
+            child: ElevatedButton.icon(
+              onPressed: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) => _loadUserData()),
+              icon: const Icon(IconlyLight.edit, color: Colors.white, size: 18),
+              label: Text(
+                'edit_cv'.tr,
+                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salesAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeacherApplicationsSection(Color cardColor, Color textColor, Color textSecondaryColor, Color borderColor) {
+    final isDark = AppConfigController.to.isDarkMode;
+    if (_applications.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: Responsive.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: const Icon(
+                  IconlyLight.work,
+                  color: Colors.purple,
+                  size: 18,
+                ),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'recent_applications'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(16)),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _applications.length,
+            separatorBuilder: (context, index) => Padding(
+              padding: Responsive.symmetric(vertical: 8),
+              child: Divider(color: borderColor, height: 1),
+            ),
+            itemBuilder: (context, index) {
+              final app = _applications[index];
+              
+              Color statusColor = AppColors.salesAccent;
+              if (app.status.toLowerCase().contains('shortlist')) {
+                statusColor = Colors.orange;
+              } else if (app.status.toLowerCase().contains('accept') || app.status.toLowerCase().contains('hire')) {
+                statusColor = Colors.teal;
+              } else if (app.status.toLowerCase().contains('reject')) {
+                statusColor = Colors.red;
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          app.jobTitle,
+                          style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Container(
+                        padding: Responsive.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
+                        ),
+                        child: Text(
+                          app.status.tr,
+                          style: AppFonts.AlmaraiBold10.copyWith(color: statusColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Responsive.h(4)),
+                  Text(
+                    app.schoolName,
+                    style: AppFonts.AlmaraiRegular10.copyWith(color: textSecondaryColor),
+                  ),
+                  SizedBox(height: Responsive.h(10)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Responsive.r(4)),
+                          child: LinearProgressIndicator(
+                            value: app.progress,
+                            backgroundColor: isDark ? Colors.white10 : AppColors.grey200,
+                            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                            minHeight: Responsive.h(6),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: Responsive.w(12)),
+                      Text(
+                        '${(app.progress * 100).toInt()}%',
+                        style: AppFonts.AlmaraiBold10.copyWith(color: textSecondaryColor),
+                      ),
+                    ],
+                  ),
+                  if (app.interview != null)
+                    _buildInterviewDetailsCard(
+                      app.interview!,
+                      cardColor,
+                      borderColor,
+                      textColor,
+                      textSecondaryColor,
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterviewDetailsCard(
+    TeacherInterview interview,
+    Color cardBg,
+    Color borderColor,
+    Color textColor,
+    Color textSecondaryColor,
+  ) {
+    return Container(
+      margin: EdgeInsets.only(top: Responsive.h(12)),
+      padding: Responsive.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.salesAccent.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
+        border: Border.all(color: AppColors.salesAccent.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(IconlyBold.calendar, color: AppColors.salesAccent, size: 16),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                'interview_details'.tr,
+                style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
+              ),
+              const Spacer(),
+              Container(
+                padding: Responsive.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.salesAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: Text(
+                  interview.type.tr,
+                  style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(10)),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(IconlyLight.calendar, size: 14, color: textSecondaryColor),
+                    SizedBox(width: Responsive.w(4)),
+                    Text(
+                      interview.date.length >= 10 ? interview.date.substring(0, 10) : interview.date,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(IconlyLight.time_circle, size: 14, color: textSecondaryColor),
+                    SizedBox(width: Responsive.w(4)),
+                    Text(
+                      interview.time,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (interview.meetingLink.isNotEmpty) ...[
+            SizedBox(height: Responsive.h(8)),
+            InkWell(
+              onTap: () => print('Open Link: ${interview.meetingLink}'),
+              child: Row(
+                children: [
+                  const Icon(IconlyLight.video, size: 14, color: Colors.blue),
+                  SizedBox(width: Responsive.w(4)),
+                  Expanded(
+                    child: Text(
+                      interview.meetingLink,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (interview.notes.isNotEmpty) ...[
+            SizedBox(height: Responsive.h(8)),
+            Divider(color: AppColors.salesAccent.withOpacity(0.1), height: 1),
+            SizedBox(height: Responsive.h(6)),
+            Text(
+              '${'notes'.tr}: ${interview.notes}',
+              style: AppFonts.AlmaraiRegular10.copyWith(color: textSecondaryColor),
+            ),
+          ],
         ],
       ),
     );

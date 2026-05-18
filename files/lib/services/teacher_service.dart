@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
 import '../core/constants/api_constants.dart';
 import '../models/teacher_models.dart';
 import 'user_storage_service.dart';
@@ -16,15 +17,17 @@ class TeacherService {
   static Future<TeacherModel> getTeacherProfile(String teacherId) async {
     try {
       final token = UserStorageService.getAuthToken() ?? '';
-      final schoolId = _getSchoolId();
-      final url = '${ApiConstants.parentBaseUrl}/schools/my/$schoolId/teachers/$teacherId';
+      final url = '${ApiConstants.parentBaseUrl}/me/cv';
 
-      print('👨‍🏫 [TEACHER_SERVICE] GET Profile: $url');
+      print('👨‍🏫 [TEACHER_SERVICE] GET Profile (CV) from: $url');
 
       final response = await http.get(
         Uri.parse(url),
         headers: ApiConstants.getHeaders(token: token),
       );
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET Profile status: ${response.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] GET Profile body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -33,7 +36,7 @@ class TeacherService {
         return _getMockTeacherProfile(teacherId);
       }
     } catch (e) {
-      print('👨‍🏫 [TEACHER_SERVICE] Error: $e');
+      print('👨‍🏫 [TEACHER_SERVICE] Error fetching CV: $e');
       return _getMockTeacherProfile(teacherId);
     }
   }
@@ -42,18 +45,29 @@ class TeacherService {
   static Future<bool> updateTeacherProfile(String teacherId, Map<String, dynamic> updateData) async {
     try {
       final token = UserStorageService.getAuthToken() ?? '';
+      
+      // Update directly via /api/me/cv (PUT)
+      final cvUrl = '${ApiConstants.parentBaseUrl}/me/cv';
+      print('👨‍🏫 [TEACHER_SERVICE] PUT Update CV: $cvUrl');
+      final responseCv = await http.put(
+        Uri.parse(cvUrl),
+        headers: ApiConstants.getHeaders(token: token),
+        body: jsonEncode(updateData),
+      );
+      print('👨‍🏫 [TEACHER_SERVICE] PUT Update CV status: ${responseCv.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] PUT Update CV response: ${responseCv.body}');
+
+      // Backup update for school context
       final schoolId = _getSchoolId();
       final url = '${ApiConstants.parentBaseUrl}/schools/my/$schoolId/teachers/$teacherId';
-
-      print('👨‍🏫 [TEACHER_SERVICE] PUT Update: $url');
-
+      print('👨‍🏫 [TEACHER_SERVICE] PUT Update Backup: $url');
       final response = await http.put(
         Uri.parse(url),
         headers: ApiConstants.getHeaders(token: token),
         body: jsonEncode(updateData),
       );
 
-      return response.statusCode == 200;
+      return responseCv.statusCode == 200 || responseCv.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       print('👨‍🏫 [TEACHER_SERVICE] Error updating: $e');
       return true; // Return true to keep the flow smooth locally
@@ -107,38 +121,69 @@ class TeacherService {
   }
 
   // 5. Get All Job Openings
-  static Future<List<TeacherJob>> getJobs() async {
+  static Future<List<TeacherJob>> getJobs({
+    int page = 1,
+    int limit = 10,
+    String? educationSystemIds = 'egyptian_national',
+    String? employmentType,
+  }) async {
     try {
       final token = UserStorageService.getAuthToken() ?? '';
-      final schoolId = _getSchoolId();
-      final url = '${ApiConstants.parentBaseUrl}/schools/my/$schoolId/jobs';
+      
+      final queryParams = {
+        'page': page.toString(),
+        'limit': limit.toString(),
+        if (educationSystemIds != null && educationSystemIds.isNotEmpty)
+          'educationSystemIds': educationSystemIds,
+        if (employmentType != null && employmentType.isNotEmpty)
+          'employmentType': employmentType,
+      };
 
-      print('👨‍🏫 [TEACHER_SERVICE] GET Jobs: $url');
+      final uri = Uri.parse('${ApiConstants.parentBaseUrl}/jobs');
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET Jobs: $uri');
+      print('👨‍🏫 [TEACHER_SERVICE] Stored Auth Token: $token');
 
       final response = await http.get(
-        Uri.parse(url),
+        uri,
         headers: ApiConstants.getHeaders(token: token),
       );
 
+      print('👨‍🏫 [TEACHER_SERVICE] GET Jobs status code: ${response.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] GET Jobs response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
-        return data.map((json) => TeacherJob.fromJson(json as Map<String, dynamic>)).toList();
+        final decoded = jsonDecode(response.body);
+        List<dynamic> jobsList = [];
+        
+        if (decoded is List) {
+          jobsList = decoded;
+        } else if (decoded is Map) {
+          if (decoded.containsKey('jobs')) {
+            jobsList = decoded['jobs'] as List<dynamic>? ?? [];
+          } else if (decoded.containsKey('data')) {
+            jobsList = decoded['data'] as List<dynamic>? ?? [];
+          }
+        }
+        
+        return jobsList.map((json) => TeacherJob.fromJson(json as Map<String, dynamic>)).toList();
       } else {
-        return _getMockJobs();
+        return [];
       }
     } catch (e) {
       print('👨‍🏫 [TEACHER_SERVICE] Error fetching jobs: $e');
-      return _getMockJobs();
+      return [];
     }
   }
 
   // 6. Apply for a Job Post
-  static Future<bool> applyToJob(String jobId, String coverLetter) async {
+  static Future<String?> applyToJob(String jobId, String coverLetter) async {
     try {
       final token = UserStorageService.getAuthToken() ?? '';
       final url = '${ApiConstants.parentBaseUrl}/jobs/$jobId/apply';
 
       print('👨‍🏫 [TEACHER_SERVICE] POST Apply to Job: $url');
+      print('👨‍🏫 [TEACHER_SERVICE] Stored Auth Token: $token');
 
       final response = await http.post(
         Uri.parse(url),
@@ -150,10 +195,85 @@ class TeacherService {
 
       print('👨‍🏫 [TEACHER_SERVICE] Apply status code: ${response.statusCode}');
       print('👨‍🏫 [TEACHER_SERVICE] Apply response body: ${response.body}');
-      return response.statusCode == 200 || response.statusCode == 201;
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return null;
+      } else {
+        try {
+          final decoded = jsonDecode(response.body);
+          if (decoded is Map && decoded.containsKey('message')) {
+            final msg = decoded['message']?.toString() ?? '';
+            if (msg.contains('already submitted') || msg.contains('already applied')) {
+              return 'already_applied'.tr;
+            }
+            return msg;
+          }
+        } catch (_) {}
+        return 'failed_to_apply'.tr;
+      }
     } catch (e) {
       print('👨‍🏫 [TEACHER_SERVICE] Error applying to job: $e');
-      return true; // Return true to keep the flow smooth locally if connection fails
+      return 'check_connection'.tr;
+    }
+  }
+
+  // Get Teacher's Submitted Job Applications
+  static Future<List<TeacherJobApplication>> getMyApplications() async {
+    try {
+      final token = UserStorageService.getAuthToken() ?? '';
+      final url = '${ApiConstants.parentBaseUrl}/me/job-applications';
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET My Applications: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: ApiConstants.getHeaders(token: token),
+      );
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET Applications status: ${response.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] GET Applications body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        List<dynamic> list = [];
+        if (decoded is Map && decoded.containsKey('applications')) {
+          list = decoded['applications'] as List<dynamic>? ?? [];
+        } else if (decoded is List) {
+          list = decoded;
+        }
+        return list.map((json) => TeacherJobApplication.fromJson(json as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('👨‍🏫 [TEACHER_SERVICE] Error fetching applications: $e');
+      return [];
+    }
+  }
+
+  // Get Teacher Career Dashboard Recruitment Stats
+  static Future<TeacherRecruitmentStats?> getRecruitmentStats() async {
+    try {
+      final token = UserStorageService.getAuthToken() ?? '';
+      final url = '${ApiConstants.parentBaseUrl}/me/recruitment-stats';
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET Recruitment Stats: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: ApiConstants.getHeaders(token: token),
+      );
+
+      print('👨‍🏫 [TEACHER_SERVICE] GET Stats status: ${response.statusCode}');
+      print('👨‍🏫 [TEACHER_SERVICE] GET Stats body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return TeacherRecruitmentStats.fromJson(decoded as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      print('👨‍🏫 [TEACHER_SERVICE] Error fetching stats: $e');
+      return null;
     }
   }
 
@@ -178,9 +298,9 @@ class TeacherService {
         TeacherClassroom(id: 'cls_1', name: '10-A'),
         TeacherClassroom(id: 'cls_2', name: '11-B'),
       ],
-      qualifications: ['بكالوريوس التربية والعلوم', 'ماجستير في طرق التدريس الحديثة'],
-      experienceYears: 8,
-      salary: 8500.0,
+      qualifications: [],
+      experienceYears: 0,
+      salary: 0.0,
       employmentType: 'full_time',
       isActive: true,
       timetable: [
@@ -189,41 +309,12 @@ class TeacherService {
         TimetableItem(day: 'Wednesday', subject: 'الرياضيات', gradeLevel: '10-A', startTime: '08:00', endTime: '09:30'),
         TimetableItem(day: 'Thursday', subject: 'الفيزياء', gradeLevel: '11-B', startTime: '12:00', endTime: '13:30'),
       ],
+      headline: '',
+      bio: '',
+      skills: [],
+      languages: [],
+      certificates: [],
+      workExperience: [],
     );
-  }
-
-  static List<TeacherJob> _getMockJobs() {
-    return [
-      TeacherJob(
-        id: 'job_123_english',
-        title: 'مدرس لغة إنجليزية للمرحلة الإعدادية',
-        department: 'قسم اللغات الأجنبية',
-        salary: 7500.0,
-        employmentType: 'full_time',
-        requirements: ['شهادة بكالوريوس آداب أو تربية لغة إنجليزية', 'خبرة لا تقل عن سنتين', 'إتقان مهارات التعلم النشط'],
-        description: 'مطلوب معلم لغة إنجليزية كفء لتدريس طلاب المرحلة الإعدادية وتحسين مهارات المحادثة والكتابة لديهم.',
-        datePosted: DateTime.now().subtract(const Duration(days: 2)).toIso8601String().substring(0, 10),
-      ),
-      TeacherJob(
-        id: 'job_456_chemistry',
-        title: 'مدرس كيمياء للمرحلة الثانوية',
-        department: 'قسم العلوم الطبيعية',
-        salary: 9500.0,
-        employmentType: 'full_time',
-        requirements: ['بكالوريوس علوم كيمياء أو تربية كيمياء', 'خبرة 3 سنوات على الأقل في تدريس المناهج الثانوية', 'القدرة على إدارة التجارب المعملية بأمان'],
-        description: 'نبحث عن معلم كيمياء متميز يمتلك أسلوب تدريس مبسط وتفاعلي ولديه القدرة على تحفيز الطلاب على التفكير النقدي.',
-        datePosted: DateTime.now().subtract(const Duration(days: 5)).toIso8601String().substring(0, 10),
-      ),
-      TeacherJob(
-        id: 'job_789_special_needs',
-        title: 'مدرس مساعد تربية خاصة',
-        department: 'قسم التربية الخاصة والدعم التعليمي',
-        salary: 6000.0,
-        employmentType: 'part_time',
-        requirements: ['مؤهل تربوي مناسب في التربية الخاصة', 'الصبر والقدرة على التعامل مع الأطفال ذوي الاحتياجات الخاصة'],
-        description: 'مطلوب معلم مساعد للعمل لدوام جزئي لدعم وتوجيه الطلاب ذوي صعوبات التعلم ومتابعة تقدمهم الدراسي.',
-        datePosted: DateTime.now().subtract(const Duration(days: 7)).toIso8601String().substring(0, 10),
-      ),
-    ];
   }
 }

@@ -22,6 +22,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
   late Future<List<TeacherJob>> _jobsFuture;
   TeacherModel? _profile;
   bool _loadingProfile = true;
+  List<TeacherJobApplication> _applications = [];
 
   @override
   void initState() {
@@ -51,6 +52,15 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
   void _refreshJobs() {
     setState(() {
       _jobsFuture = TeacherService.getJobs();
+    });
+    TeacherService.getMyApplications().then((apps) {
+      if (mounted) {
+        setState(() {
+          _applications = apps;
+        });
+      }
+    }).catchError((e) {
+      print('Error fetching applications: $e');
     });
   }
 
@@ -168,28 +178,10 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
               ),
               
               SizedBox(height: Responsive.h(28)),
+              
+              _buildSubmittedApplicationsSection(isDark),
 
-              // 2. Feed Section Title
-              Row(
-                children: [
-                  Container(
-                    width: Responsive.w(4),
-                    height: Responsive.h(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.salesAccent,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  SizedBox(width: Responsive.w(8)),
-                  Text(
-                    'active_jobs'.tr,
-                    style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
-                  ),
-                ],
-              ),
-              SizedBox(height: Responsive.h(16)),
-
-              // 3. Dynamic FutureBuilder Feed List
+              // 2. Dynamic FutureBuilder Feed List
               FutureBuilder<List<TeacherJob>>(
                 future: _jobsFuture,
                 builder: (context, snapshot) {
@@ -239,15 +231,74 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                     );
                   }
 
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: jobs.length,
-                    separatorBuilder: (context, index) => SizedBox(height: Responsive.h(16)),
-                    itemBuilder: (context, index) {
-                      final job = jobs[index];
-                      return _buildJobFeedCard(job, cardBg, borderColor, shadowColor, textColor);
-                    },
+                  final recentJobs = jobs.take(2).toList();
+                  final otherJobs = jobs.skip(2).toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (recentJobs.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Container(
+                              width: Responsive.w(4),
+                              height: Responsive.h(16),
+                              decoration: BoxDecoration(
+                                color: Colors.amber,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            SizedBox(width: Responsive.w(8)),
+                            Text(
+                              'recent_jobs'.tr,
+                              style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: Responsive.h(16)),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: recentJobs.length,
+                          separatorBuilder: (context, index) => SizedBox(height: Responsive.h(16)),
+                          itemBuilder: (context, index) {
+                            final job = recentJobs[index];
+                            return _buildJobFeedCard(job, cardBg, borderColor, shadowColor, textColor);
+                          },
+                        ),
+                        if (otherJobs.isNotEmpty) SizedBox(height: Responsive.h(28)),
+                      ],
+                      if (otherJobs.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Container(
+                              width: Responsive.w(4),
+                              height: Responsive.h(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.salesAccent,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            SizedBox(width: Responsive.w(8)),
+                            Text(
+                              'other_jobs'.tr,
+                              style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: Responsive.h(16)),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: otherJobs.length,
+                          separatorBuilder: (context, index) => SizedBox(height: Responsive.h(16)),
+                          itemBuilder: (context, index) {
+                            final job = otherJobs[index];
+                            return _buildJobFeedCard(job, cardBg, borderColor, shadowColor, textColor);
+                          },
+                        ),
+                      ],
+                    ],
                   );
                 },
               ),
@@ -428,25 +479,48 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
             ),
           ],
           SizedBox(height: Responsive.h(16)),
-          SizedBox(
-            width: double.infinity,
-            height: Responsive.h(38),
-            child: ElevatedButton.icon(
-              onPressed: () => _handleApplyPressed(job),
-              icon: Icon(IconlyLight.send, color: Colors.white, size: Responsive.sp(16)),
-              label: Text(
-                'apply_now'.tr,
-                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.salesAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+          (() {
+            final app = _applications.firstWhereOrNull((a) => a.jobId == job.id);
+            final hasApplied = app != null;
+            
+            Color buttonBg = AppColors.salesAccent;
+            String labelText = 'apply_now'.tr;
+            IconData iconData = IconlyLight.send;
+            
+            if (hasApplied) {
+              final status = app.status.toLowerCase();
+              if (status.contains('reject')) {
+                buttonBg = Colors.red;
+                labelText = 'rejected'.tr;
+                iconData = IconlyLight.close_square;
+              } else {
+                buttonBg = Colors.grey.shade500;
+                labelText = 'applied'.tr;
+                iconData = IconlyLight.tick_square;
+              }
+            }
+
+            return SizedBox(
+              width: double.infinity,
+              height: Responsive.h(38),
+              child: ElevatedButton.icon(
+                onPressed: hasApplied ? null : () => _handleApplyPressed(job),
+                icon: Icon(iconData, color: Colors.white, size: Responsive.sp(16)),
+                label: Text(
+                  labelText,
+                  style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
                 ),
-                elevation: 0,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonBg,
+                  disabledBackgroundColor: buttonBg.withOpacity(0.6),
+                  shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  ),
+                  elevation: 0,
+                ),
               ),
-            ),
-          ),
+            );
+          }()),
         ],
       ),
     );
@@ -672,7 +746,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                 isSubmitting = true;
                               });
 
-                              final success = await TeacherService.applyToJob(
+                              final errorMsg = await TeacherService.applyToJob(
                                 job.id ?? 'job_123_english',
                                 text,
                               );
@@ -683,11 +757,12 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                 isSubmitting = false;
                               });
 
-                              if (success) {
+                              if (errorMsg == null) {
                                 Get.back(); // close bottom sheet
                                 if (!context.mounted) return;
-                                Get.dialog(
-                                  Dialog(
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) => Dialog(
                                     backgroundColor: Colors.transparent,
                                     child: Container(
                                       padding: Responsive.all(24),
@@ -728,7 +803,7 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                             width: double.infinity,
                                             height: Responsive.h(40),
                                             child: ElevatedButton(
-                                              onPressed: () => Get.back(),
+                                              onPressed: () => Navigator.of(dialogContext).pop(),
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: AppColors.salesAccent,
                                                 shape: RoundedRectangleBorder(
@@ -747,11 +822,68 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                                   ),
                                 );
                               } else {
-                                Get.snackbar(
-                                  'error'.tr,
-                                  'failed_to_apply'.tr,
-                                  backgroundColor: Colors.red.withOpacity(0.9),
-                                  colorText: Colors.white,
+                                Get.back(); // close bottom sheet
+                                if (!context.mounted) return;
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) => Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      padding: Responsive.all(24),
+                                      decoration: BoxDecoration(
+                                        color: bgColor,
+                                        borderRadius: BorderRadius.circular(Responsive.r(24)),
+                                        border: Border.all(color: borderColor),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            padding: Responsive.all(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withOpacity(0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.error_outline_rounded,
+                                              color: AppColors.error,
+                                              size: 48,
+                                            ),
+                                          ),
+                                          SizedBox(height: Responsive.h(20)),
+                                          Text(
+                                            'error'.tr,
+                                            style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          SizedBox(height: Responsive.h(8)),
+                                          Text(
+                                            errorMsg,
+                                            style: AppFonts.AlmaraiRegular12.copyWith(color: secondaryTextColor),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          SizedBox(height: Responsive.h(24)),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            height: Responsive.h(40),
+                                            child: ElevatedButton(
+                                              onPressed: () => Navigator.of(dialogContext).pop(),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.error,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'ok'.tr,
+                                                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 );
                               }
                             },
@@ -780,6 +912,144 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
         },
       ),
       isScrollControlled: true,
+    );
+  }
+
+  Widget _buildSubmittedApplicationsSection(bool isDark) {
+    final appliedApps = _applications.where((app) => !app.status.toLowerCase().contains('reject')).toList();
+    final rejectedApps = _applications.where((app) => app.status.toLowerCase().contains('reject')).toList();
+
+    if (appliedApps.isEmpty && rejectedApps.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (appliedApps.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(
+                width: Responsive.w(4),
+                height: Responsive.h(16),
+                decoration: BoxDecoration(
+                  color: Colors.teal,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                'applied_applications'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(12)),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: appliedApps.length,
+            separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
+            itemBuilder: (context, index) {
+              final app = appliedApps[index];
+              return _buildApplicationCard(app, cardBg, borderColor, Colors.teal, isDark);
+            },
+          ),
+          SizedBox(height: Responsive.h(24)),
+        ],
+        if (rejectedApps.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(
+                width: Responsive.w(4),
+                height: Responsive.h(16),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                'rejected_applications'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(12)),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: rejectedApps.length,
+            separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
+            itemBuilder: (context, index) {
+              final app = rejectedApps[index];
+              return _buildApplicationCard(app, cardBg, borderColor, Colors.red, isDark);
+            },
+          ),
+          SizedBox(height: Responsive.h(24)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildApplicationCard(TeacherJobApplication app, Color cardBg, Color borderColor, Color themeColor, bool isDark) {
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    return Container(
+      padding: Responsive.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(Responsive.r(20)),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  app.jobTitle,
+                  style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: Responsive.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: themeColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(10)),
+                ),
+                child: Text(
+                  app.status.tr,
+                  style: AppFonts.AlmaraiBold10.copyWith(color: themeColor),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(4)),
+          Text(
+            app.schoolName,
+            style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
+          ),
+          SizedBox(height: Responsive.h(8)),
+          Row(
+            children: [
+              Icon(IconlyLight.calendar, size: 12, color: AppColors.textSecondary),
+              SizedBox(width: Responsive.w(4)),
+              Text(
+                '${'applied_on'.tr} ${app.appliedDate}',
+                style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

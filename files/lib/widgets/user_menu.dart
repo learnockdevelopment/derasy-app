@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../services/user_storage_service.dart';
 
 class UserMenu extends StatelessWidget {
@@ -78,7 +79,7 @@ class UserMenu extends StatelessWidget {
           _buildMenuItem(
             icon: Icons.logout,
             title: 'Logout',
-            onTap: _handleLogout,
+            onTap: () => _handleLogout(context),
           ),
         ],
       ),
@@ -118,12 +119,62 @@ class UserMenu extends StatelessWidget {
     );
   }
 
-  void _handleLogout() {
-    // Clear user data
-    UserStorageService.clearCurrentUser();
-
-    // Navigate to login page
-    Get.offAllNamed(AppRoutes.login);
+  void _handleLogout(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(20))),
+        title: Text(
+          'logout'.tr,
+          style: AppFonts.AlmaraiBold16.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'confirm_logout'.tr,
+          style: AppFonts.AlmaraiRegular12.copyWith(
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? Colors.white10 : Colors.grey.shade200,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(color: isDark ? Colors.white70 : AppColors.textPrimary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // Clear user data
+              UserStorageService.clearCurrentUser();
+              // Navigate to login page
+              Get.offAllNamed(AppRoutes.login);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'logout'.tr,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

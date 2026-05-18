@@ -11,6 +11,7 @@ import '../../models/teacher_models.dart';
 import '../../services/teacher_service.dart';
 import '../../services/user_storage_service.dart';
 import '../../widgets/loading_page.dart';
+import '../../services/store_service.dart';
 
 class TeacherHomePage extends StatefulWidget {
   const TeacherHomePage({Key? key}) : super(key: key);
@@ -23,6 +24,9 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   late Future<TeacherModel> _profileFuture;
   TeacherModel? _profile;
   String? _selectedDay;
+  List<TeacherJobApplication> _applications = [];
+  TeacherRecruitmentStats? _recruitmentStats;
+  int _cartCount = 0;
 
   @override
   void initState() {
@@ -35,6 +39,17 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     setState(() {
       _profileFuture = TeacherService.getTeacherProfile(user?.id ?? 'teacher_123');
     });
+
+    StoreService.getCart().then((cart) {
+      if (mounted) {
+        setState(() {
+          _cartCount = cart.itemCount;
+        });
+      }
+    }).catchError((e) {
+      print('🛒 [TEACHER_HOME] Error loading cart count: $e');
+    });
+
     _profileFuture.then((profile) {
       if (mounted) {
         setState(() {
@@ -57,11 +72,78 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         });
       }
     });
+
+    TeacherService.getMyApplications().then((apps) {
+      if (mounted) {
+        setState(() {
+          _applications = apps;
+        });
+      }
+    });
+
+    TeacherService.getRecruitmentStats().then((stats) {
+      if (mounted) {
+        setState(() {
+          _recruitmentStats = stats;
+        });
+      }
+    });
   }
 
   Future<void> _handleLogout() async {
-    await UserStorageService.logout();
-    Get.offAllNamed(AppRoutes.login);
+    final isDark = AppConfigController.to.isDarkMode;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(20))),
+        title: Text(
+          'logout'.tr,
+          style: AppFonts.AlmaraiBold16.copyWith(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'confirm_logout'.tr,
+          style: AppFonts.AlmaraiRegular12.copyWith(
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? Colors.white10 : Colors.grey.shade200,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(color: isDark ? Colors.white70 : AppColors.textPrimary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await UserStorageService.logout();
+              Get.offAllNamed(AppRoutes.login);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(10))),
+            ),
+            child: Text(
+              'logout'.tr,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -142,7 +224,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                       child: CustomScrollView(
                         physics: const BouncingScrollPhysics(),
                         slivers: [
-                          // Elegant Dashboard Header
+                          // 1. Elegant Dashboard Header
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: Responsive.symmetric(horizontal: 24, vertical: 16),
@@ -150,27 +232,35 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                             ),
                           ),
 
-                          // Quick Statistics Grid
+                          // 2. Store Section
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: Responsive.symmetric(horizontal: 24),
-                              child: _buildStatsGrid(profile, isDark),
+                              padding: EdgeInsets.only(bottom: Responsive.h(24)),
+                              child: _buildStoreSection(isDark),
                             ),
                           ),
 
-                          // Timetable Schedule Section
+                          // 3. Timetable Schedule Section
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: EdgeInsets.only(top: Responsive.h(28)),
+                              padding: EdgeInsets.only(bottom: Responsive.h(28)),
                               child: _buildTimetableSection(profile, isDark),
                             ),
                           ),
 
-                          // Dashboard Actions
+                          // 4. Careers Section (stats & cv)
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: Responsive.symmetric(horizontal: 24, vertical: 28),
-                              child: _buildActionCards(isDark),
+                              padding: EdgeInsets.only(bottom: Responsive.h(28)),
+                              child: _buildCareersSection(profile, isDark),
+                            ),
+                          ),
+
+                          // 5. Applications Section (stats, apps list, jobs hub button)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: Responsive.h(28)),
+                              child: _buildApplicationsSection(isDark),
                             ),
                           ),
 
@@ -194,125 +284,455 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   Widget _buildHeader(TeacherModel profile, bool isDark) {
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
     final secondaryTextColor = isDark ? Colors.white60 : AppColors.textSecondary;
+    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.5) : Colors.white.withOpacity(0.7);
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Premium glassmorphic avatar with initials
-        Container(
-          width: Responsive.w(64),
-          height: Responsive.w(64),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                AppColors.salesAccent,
-                AppColors.salesAccent.withOpacity(0.6),
+    return Container(
+      padding: Responsive.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(Responsive.r(28)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Premium glassmorphic avatar with initials and ring glow
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.userProfile),
+            child: Container(
+              width: Responsive.w(64),
+              height: Responsive.w(64),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.salesAccent,
+                    AppColors.salesAccent.withOpacity(0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.salesAccent.withOpacity(0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  profile.name.isNotEmpty ? profile.name.trim().substring(0, 1).toUpperCase() : 'T',
+                  style: AppFonts.AlmaraiBold24.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: Responsive.w(16)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(IconlyBold.discovery, color: AppColors.salesAccent, size: 14),
+                    SizedBox(width: Responsive.w(4)),
+                    Text(
+                      'welcome_back_message'.tr,
+                      style: AppFonts.AlmaraiMedium12.copyWith(color: secondaryTextColor),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(4)),
+                Text(
+                  profile.name,
+                  style: AppFonts.AlmaraiBold20.copyWith(color: textColor, letterSpacing: -0.5),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: Responsive.h(6)),
+                Container(
+                  padding: Responsive.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.salesAccent.withOpacity(0.15), AppColors.salesAccent.withOpacity(0.05)],
+                    ),
+                    borderRadius: BorderRadius.circular(Responsive.r(30)),
+                    border: Border.all(color: AppColors.salesAccent.withOpacity(0.2), width: 1),
+                  ),
+                  child: Text(
+                    'teacher_portal'.tr,
+                    style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                  ),
+                ),
               ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.salesAccent.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+          ),
+          // Cart Button
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: () => Get.toNamed(AppRoutes.storeCart)?.then((_) => _loadProfile()),
+                  icon: Icon(
+                    IconlyLight.buy,
+                    color: isDark ? Colors.white70 : AppColors.textSecondary,
+                    size: Responsive.sp(20),
+                  ),
+                ),
               ),
+              if (_cartCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _cartCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
-          child: Center(
-            child: Text(
-              profile.name.isNotEmpty ? profile.name.trim().substring(0, 1).toUpperCase() : 'T',
-              style: AppFonts.AlmaraiBold24.copyWith(color: Colors.white),
+          SizedBox(width: Responsive.w(8)),
+          // Logout button styled elegantly
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: _handleLogout,
+              icon: Icon(
+                IconlyLight.logout,
+                color: isDark ? Colors.white70 : AppColors.textSecondary,
+                size: Responsive.sp(20),
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoreSection(bool isDark) {
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
+    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
+
+    return Padding(
+      padding: Responsive.symmetric(horizontal: 24),
+      child: Container(
+        padding: Responsive.all(20),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(Responsive.r(28)),
+          border: Border.all(color: borderColor, width: 1.2),
+          boxShadow: [
+            BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
+          ],
         ),
-        SizedBox(width: Responsive.w(16)),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: Responsive.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.salesAccent.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(Responsive.r(12)),
+                  ),
+                  child: const Icon(IconlyBold.buy, color: AppColors.salesAccent, size: 18),
+                ),
+                SizedBox(width: Responsive.w(12)),
+                Text(
+                  'derasy_store'.tr.isNotEmpty ? 'derasy_store'.tr : 'Derasy Store',
+                  style: AppFonts.AlmaraiBold16.copyWith(color: textColor, letterSpacing: -0.5),
+                ),
+              ],
+            ),
+            SizedBox(height: Responsive.h(12)),
+            Text(
+              'store_desc'.tr.isNotEmpty 
+                  ? 'store_desc'.tr 
+                  : 'Upgrade your classroom with premium tools, stationery, and hardware synced with your official school account.',
+              style: AppFonts.AlmaraiRegular12.copyWith(
+                color: isDark ? Colors.white70 : AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: Responsive.h(16)),
+            ElevatedButton(
+              onPressed: () => Get.toNamed(AppRoutes.storeHome)?.then((_) => _loadProfile()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.salesAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+                padding: Responsive.symmetric(vertical: 12),
+                minimumSize: const Size(double.infinity, 44),
+                elevation: 0,
+              ),
+              child: Text(
+                'explore_store'.tr.isNotEmpty ? 'explore_store'.tr : 'Explore Store',
+                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCareersSection(TeacherModel profile, bool isDark) {
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
+
+    return Padding(
+      padding: Responsive.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                'welcome_back_message'.tr,
-                style: AppFonts.AlmaraiMedium12.copyWith(color: secondaryTextColor),
-              ),
-              SizedBox(height: Responsive.h(2)),
-              Text(
-                profile.name,
-                style: AppFonts.AlmaraiBold20.copyWith(color: textColor),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: Responsive.h(2)),
               Container(
-                padding: Responsive.symmetric(horizontal: 8, vertical: 2),
+                padding: Responsive.all(6),
                 decoration: BoxDecoration(
                   color: AppColors.salesAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(Responsive.r(6)),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
                 ),
-                child: Text(
-                  'teacher_portal'.tr,
-                  style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
-                ),
+                child: const Icon(IconlyBold.work, color: AppColors.salesAccent, size: 16),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'careers'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
               ),
             ],
           ),
+          SizedBox(height: Responsive.h(14)),
+          
+          _buildActionCard(
+            icon: IconlyLight.document,
+            title: profile.hasCv ? 'edit_cv'.tr : 'add_cv'.tr,
+            subtitle: profile.hasCv ? 'edit_cv_desc'.tr : 'cv_profile_desc'.tr,
+            color: AppColors.salesAccent,
+            cardBg: cardBg,
+            borderColor: borderColor,
+            shadowColor: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) => _loadProfile()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCareerStatsSection(bool isDark) {
+    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
+    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
+    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
+
+    return Container(
+      width: double.infinity,
+      padding: Responsive.all(20),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(Responsive.r(28)),
+        border: Border.all(color: borderColor, width: 1.2),
+        boxShadow: [
+          BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildCareerMetricItem(
+              icon: IconlyBold.star,
+              title: 'experience'.tr,
+              value: '${_profile?.experienceYears ?? 0} ${'years'.tr}',
+              color: Colors.amber,
+              isDark: isDark,
+            ),
+          ),
+          Container(
+            width: 1,
+            height: Responsive.h(40),
+            color: isDark ? Colors.white12 : AppColors.grey200,
+          ),
+          Expanded(
+            child: _buildCareerMetricItem(
+              icon: IconlyBold.wallet,
+              title: 'expected_salary'.tr,
+              value: '${_profile?.salary.toStringAsFixed(0) ?? '0'} EGP',
+              color: Colors.teal,
+              isDark: isDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCareerMetricItem({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: Responsive.all(10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 20),
         ),
-        // Logout button
-        IconButton(
-          onPressed: _handleLogout,
-          icon: Icon(
-            IconlyLight.logout,
-            color: isDark ? Colors.white70 : AppColors.textSecondary,
-            size: Responsive.sp(22),
+        SizedBox(height: Responsive.h(10)),
+        Text(
+          title,
+          style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.textSecondary),
+        ),
+        SizedBox(height: Responsive.h(4)),
+        Text(
+          value,
+          style: AppFonts.AlmaraiBold16.copyWith(
+            color: isDark ? Colors.white : AppColors.textPrimary,
+            letterSpacing: -0.5,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatsGrid(TeacherModel profile, bool isDark) {
-    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white;
-    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.04);
+  Widget _buildApplicationsSection(bool isDark) {
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
+
+    return Padding(
+      padding: Responsive.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: const Icon(IconlyBold.work, color: Colors.purple, size: 16),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'applications'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(14)),
+          
+          if (_recruitmentStats != null) ...[
+            _buildAppsDashboardStats(isDark),
+            SizedBox(height: Responsive.h(16)),
+          ],
+
+          _buildRecentApplicationsSection(isDark),
+          SizedBox(height: Responsive.h(16)),
+
+          _buildActionCard(
+            icon: IconlyLight.discovery,
+            title: 'jobs_you_can_apply'.tr,
+            subtitle: 'explore_latest_teacher_jobs'.tr,
+            color: Colors.teal,
+            cardBg: cardBg,
+            borderColor: borderColor,
+            shadowColor: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            onTap: () => Get.toNamed(AppRoutes.teacherJobsHub),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppsDashboardStats(bool isDark) {
+    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
     final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
+    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
 
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: Responsive.w(16),
-      mainAxisSpacing: Responsive.h(16),
-      childAspectRatio: 1.3,
+      crossAxisSpacing: Responsive.w(14),
+      mainAxisSpacing: Responsive.h(14),
+      childAspectRatio: 1.45,
       children: [
         _buildStatCard(
-          icon: IconlyBold.category,
-          title: 'subjects_count'.tr,
-          value: profile.subjects.length.toString(),
+          icon: IconlyBold.document,
+          title: 'applied_jobs'.tr,
+          value: _recruitmentStats!.appliedJobsCount.toString(),
           color: Colors.blue,
           cardBg: cardBg,
           borderColor: borderColor,
           shadowColor: shadowColor,
         ),
         _buildStatCard(
-          icon: IconlyBold.profile,
-          title: 'classes_count'.tr,
-          value: profile.classes.length.toString(),
-          color: Colors.indigo,
+          icon: IconlyBold.show,
+          title: 'interviews'.tr,
+          value: _recruitmentStats!.interviewsCount.toString(),
+          color: Colors.purple,
           cardBg: cardBg,
           borderColor: borderColor,
           shadowColor: shadowColor,
         ),
         _buildStatCard(
-          icon: IconlyBold.work,
-          title: 'experience'.tr,
-          value: '${profile.experienceYears} ${'years'.tr}',
-          color: Colors.amber,
+          icon: IconlyBold.star,
+          title: 'shortlisted'.tr,
+          value: _recruitmentStats!.shortlistedCount.toString(),
+          color: Colors.orange,
           cardBg: cardBg,
           borderColor: borderColor,
           shadowColor: shadowColor,
         ),
         _buildStatCard(
-          icon: IconlyBold.activity,
-          title: 'employment_type'.tr,
-          value: profile.employmentType == 'full_time' ? 'full_time'.tr : 'part_time'.tr,
+          icon: IconlyBold.ticket,
+          title: 'hired'.tr,
+          value: _recruitmentStats!.hiredCount.toString(),
           color: Colors.teal,
           cardBg: cardBg,
           borderColor: borderColor,
@@ -332,43 +752,70 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     required Color shadowColor,
   }) {
     return Container(
-      padding: Responsive.symmetric(horizontal: 14, vertical: 12),
+      padding: Responsive.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(Responsive.r(24)),
-        border: Border.all(color: borderColor, width: 1.5),
+        border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
-          BoxShadow(color: shadowColor, blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: shadowColor, blurRadius: 12, offset: const Offset(0, 6)),
         ],
       ),
       child: FittedBox(
         fit: BoxFit.scaleDown,
         alignment: AlignmentDirectional.centerStart,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: Responsive.all(6),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                shape: BoxShape.circle,
+        child: SizedBox(
+          width: Responsive.w(135),
+          height: Responsive.h(75),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: Responsive.all(6),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: Responsive.sp(14)),
+                  ),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: color.withOpacity(0.6), blurRadius: 4, spreadRadius: 1),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: Responsive.sp(14)),
-            ),
-            SizedBox(height: Responsive.h(4)),
-            Text(
-              title,
-              style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: Responsive.h(2)),
-            Text(
-              value,
-              style: AppFonts.AlmaraiBold14.copyWith(color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.textPrimary),
-            ),
-          ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: Responsive.h(2)),
+                  Text(
+                    value,
+                    style: AppFonts.AlmaraiBold18.copyWith(
+                      color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -624,6 +1071,250 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       borderColor: borderColor,
       shadowColor: shadowColor,
       onTap: () => Get.toNamed(AppRoutes.teacherJobsHub),
+    );
+  }
+
+  Widget _buildRecentApplicationsSection(bool isDark) {
+    if (_applications.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondaryColor = isDark ? Colors.grey.shade400 : AppColors.textSecondary;
+    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(Responsive.r(24)),
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: Responsive.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: const Icon(
+                  IconlyLight.work,
+                  color: Colors.purple,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'recent_applications'.tr,
+                style: AppFonts.AlmaraiBold14.copyWith(
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(16)),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _applications.length,
+            separatorBuilder: (context, index) => Padding(
+              padding: Responsive.symmetric(vertical: 10),
+              child: Divider(color: borderColor, height: 1),
+            ),
+            itemBuilder: (context, index) {
+              final app = _applications[index];
+              
+              Color statusColor = AppColors.salesAccent;
+              if (app.status.toLowerCase().contains('shortlist')) {
+                statusColor = Colors.orange;
+              } else if (app.status.toLowerCase().contains('accept') || app.status.toLowerCase().contains('hire')) {
+                statusColor = Colors.teal;
+              } else if (app.status.toLowerCase().contains('reject')) {
+                statusColor = Colors.red;
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          app.jobTitle,
+                          style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Container(
+                        padding: Responsive.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(Responsive.r(12)),
+                        ),
+                        child: Text(
+                          app.status.tr,
+                          style: AppFonts.AlmaraiBold10.copyWith(color: statusColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Responsive.h(4)),
+                  Text(
+                    app.schoolName,
+                    style: AppFonts.AlmaraiRegular10.copyWith(color: textSecondaryColor),
+                  ),
+                  SizedBox(height: Responsive.h(10)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Responsive.r(4)),
+                          child: LinearProgressIndicator(
+                            value: app.progress,
+                            backgroundColor: isDark ? Colors.white10 : AppColors.grey200,
+                            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                            minHeight: Responsive.h(6),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: Responsive.w(12)),
+                      Text(
+                        '${(app.progress * 100).toInt()}%',
+                        style: AppFonts.AlmaraiBold10.copyWith(color: textSecondaryColor),
+                      ),
+                    ],
+                  ),
+                  if (app.interview != null)
+                    _buildInterviewDetailsCard(
+                      app.interview!,
+                      cardBg,
+                      borderColor,
+                      textColor,
+                      textSecondaryColor,
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterviewDetailsCard(
+    TeacherInterview interview,
+    Color cardBg,
+    Color borderColor,
+    Color textColor,
+    Color textSecondaryColor,
+  ) {
+    return Container(
+      margin: EdgeInsets.only(top: Responsive.h(12)),
+      padding: Responsive.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.salesAccent.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
+        border: Border.all(color: AppColors.salesAccent.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(IconlyBold.calendar, color: AppColors.salesAccent, size: 16),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                'interview_details'.tr,
+                style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
+              ),
+              const Spacer(),
+              Container(
+                padding: Responsive.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.salesAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: Text(
+                  interview.type.tr,
+                  style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(10)),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(IconlyLight.calendar, size: 14, color: textSecondaryColor),
+                    SizedBox(width: Responsive.w(4)),
+                    Text(
+                      interview.date.length >= 10 ? interview.date.substring(0, 10) : interview.date,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(IconlyLight.time_circle, size: 14, color: textSecondaryColor),
+                    SizedBox(width: Responsive.w(4)),
+                    Text(
+                      interview.time,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (interview.meetingLink.isNotEmpty) ...[
+            SizedBox(height: Responsive.h(8)),
+            InkWell(
+              onTap: () => print('Open Link: ${interview.meetingLink}'),
+              child: Row(
+                children: [
+                  const Icon(IconlyLight.video, size: 14, color: Colors.blue),
+                  SizedBox(width: Responsive.w(4)),
+                  Expanded(
+                    child: Text(
+                      interview.meetingLink,
+                      style: AppFonts.AlmaraiRegular10.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (interview.notes.isNotEmpty) ...[
+            SizedBox(height: Responsive.h(8)),
+            Divider(color: AppColors.salesAccent.withOpacity(0.1), height: 1),
+            SizedBox(height: Responsive.h(6)),
+            Text(
+              '${'notes'.tr}: ${interview.notes}',
+              style: AppFonts.AlmaraiRegular10.copyWith(color: textSecondaryColor),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

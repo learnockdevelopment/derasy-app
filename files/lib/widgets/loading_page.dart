@@ -175,25 +175,26 @@ class ModernLoadingWidget extends StatefulWidget {
 }
 
 class _ModernLoadingWidgetState extends State<ModernLoadingWidget> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  AnimationController? _controller;
+  Animation<double>? _animation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    final controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
+    _controller = controller;
     
     _animation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -201,27 +202,29 @@ class _ModernLoadingWidgetState extends State<ModernLoadingWidget> with SingleTi
   Widget build(BuildContext context) {
     final isDark = AppConfigController.to.isDarkMode;
     final containerBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final animation = _animation;
+    if (animation == null) return const SizedBox.shrink();
 
     return Stack(
       alignment: Alignment.center,
       children: [
         AnimatedBuilder(
-          animation: _animation,
+          animation: animation,
           builder: (context, child) {
             return Container(
-              width: widget.size * 1.3 * _animation.value,
-              height: widget.size * 1.3 * _animation.value,
+              width: widget.size * 1.3 * animation.value,
+              height: widget.size * 1.3 * animation.value,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.blue1.withOpacity(
-                  (0.15 * (1.2 - _animation.value)).clamp(0.0, 1.0),
+                  (0.15 * (1.2 - animation.value)).clamp(0.0, 1.0),
                 ),
               ),
             );
           },
         ),
         ScaleTransition(
-          scale: _animation,
+          scale: animation,
           child: Container(
             width: widget.size,
             height: widget.size,

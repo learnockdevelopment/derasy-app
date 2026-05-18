@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
 import '../core/constants/api_constants.dart';
 import '../models/auth_models.dart';
-import '../models/user.dart';
 
 class AuthService {
 
@@ -139,89 +139,78 @@ class AuthService {
 
   // 5. Login
   static Future<LoginResponse> login(LoginRequest request) async {
+    final requestBody = jsonEncode(request.toJson());
+    print('🔐 [LOGIN] ========== STARTING LOGIN FLOW ==========');
+    print('🔐 [LOGIN] REQUEST BODY: $requestBody');
+
+    Object? lastError;
+
+    // Step 1: First try Parent API
+    final parentUrl = '${ApiConstants.parentBaseUrl}${ApiConstants.loginEndpoint}';
     try {
-      print('🔐 [LOGIN] ========== STARTING LOGIN FLOW ==========');
-      final requestBody = jsonEncode(request.toJson());
-      print('🔐 [LOGIN] REQUEST BODY: $requestBody');
-
-      // Step 1: Prioritize Sales API
-      final salesUrl = '${ApiConstants.salesBaseUrl}${ApiConstants.loginEndpoint}';
-      try {
-        print('🔐 [LOGIN] ATTEMPTING SALES API: $salesUrl');
-        final response = await http.post(
-          Uri.parse(salesUrl),
-          headers: ApiConstants.getHeaders(),
-          body: requestBody,
-        ).timeout(const Duration(seconds: 10));
-
-        if (response.statusCode == 200) {
-          print('🔐 [LOGIN] SUCCESSFULLY AUTHENTICATED VIA SALES API: $salesUrl');
-          print('🔐 [LOGIN] SALES RESPONSE BODY: ${response.body}');
-          final Map<String, dynamic> data = jsonDecode(response.body) as Map<
-              String,
-              dynamic>;
-          return LoginResponse.fromJson(data);
-        }
-      } catch (e) {
-        print('🔐 [LOGIN] Sales API failed: $e');
-      }
-
-      // Step 2: Fallback to Parent API
-      final parentUrl = '${ApiConstants.parentBaseUrl}${ApiConstants.loginEndpoint}';
-      print('🔐 [LOGIN] FALLING BACK TO PARENT API: $parentUrl');
-      final parentResponse = await http.post(
+      print('🔐 [LOGIN] ATTEMPTING PARENT API: $parentUrl');
+      final response = await http.post(
         Uri.parse(parentUrl),
         headers: ApiConstants.getHeaders(),
         body: requestBody,
       ).timeout(const Duration(seconds: 10));
 
-      if (parentResponse.statusCode == 200) {
+      if (response.statusCode == 200) {
         print('🔐 [LOGIN] SUCCESSFULLY AUTHENTICATED VIA PARENT API: $parentUrl');
-        print('🔐 [LOGIN] PARENT RESPONSE BODY: ${parentResponse.body}');
-        final Map<String, dynamic> data = jsonDecode(
-            parentResponse.body) as Map<String, dynamic>;
+        print('🔐 [LOGIN] PARENT RESPONSE BODY: ${response.body}');
+        final Map<String, dynamic> data = jsonDecode(response.body) as Map<String, dynamic>;
         return LoginResponse.fromJson(data);
       } else {
-        print('🔐 [LOGIN] PARENT API ERROR AT: $parentUrl');
-        print('🔐 [LOGIN] PARENT ERROR RESPONSE BODY: ${parentResponse.body}');
-
-        // Bypassing error specifically for teacher accounts during testing/development
-        if (request.email.toLowerCase().contains('teacher')) {
-          print('🔐 [LOGIN] ACTIVE TEACHER TEST ACCOUNT BYPASSED BACKEND ERROR - LOGGING IN AS MOCK TEACHER');
-          return LoginResponse(
-            message: 'Authenticated via mock bypass',
-            token: 'mock_teacher_token_123',
-            user: User(
-              id: 'teacher_123',
-              name: 'أ. أحمد محمد (معلم)',
-              email: request.email,
-              role: 'teacher',
-            ),
-          );
+        print('🔐 [LOGIN] PARENT API ERROR: Status Code ${response.statusCode}');
+        print('🔐 [LOGIN] PARENT ERROR RESPONSE BODY: ${response.body}');
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          final String errorMsg = (errorData['message'] ?? 'Login failed').toString();
+          lastError = AuthException(errorMsg, response.statusCode);
+        } catch (_) {
+          lastError = AuthException('Login failed with status ${response.statusCode}', response.statusCode);
         }
-
-        final Map<String, dynamic> errorData = jsonDecode(
-            parentResponse.body) as Map<String, dynamic>;
-        final String errorMsg = (errorData['message'] ?? 'Login failed')
-            .toString();
-        throw AuthException(errorMsg, parentResponse.statusCode);
       }
     } catch (e) {
-      if (request.email.toLowerCase().contains('teacher')) {
-        print('🔐 [LOGIN] ACTIVE TEACHER TEST ACCOUNT BYPASSED NETWORK EXCEPTION - LOGGING IN AS MOCK TEACHER');
-        return LoginResponse(
-          message: 'Authenticated via mock bypass (Network Fallback)',
-          token: 'mock_teacher_token_123',
-          user: User(
-            id: 'teacher_123',
-            name: 'أ. أحمد محمد (معلم)',
-            email: request.email,
-            role: 'teacher',
-          ),
-        );
+      print('🔐 [LOGIN] Parent API failed with exception: $e');
+      lastError = e;
+    }
+
+    // Step 2: Fallback to Sales API
+    final salesUrl = '${ApiConstants.salesBaseUrl}${ApiConstants.loginEndpoint}';
+    print('🔐 [LOGIN] FALLING BACK TO SALES API: $salesUrl');
+    try {
+      final response = await http.post(
+        Uri.parse(salesUrl),
+        headers: ApiConstants.getHeaders(),
+        body: requestBody,
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        print('🔐 [LOGIN] SUCCESSFULLY AUTHENTICATED VIA SALES API: $salesUrl');
+        print('🔐 [LOGIN] SALES RESPONSE BODY: ${response.body}');
+        final Map<String, dynamic> data = jsonDecode(response.body) as Map<String, dynamic>;
+        return LoginResponse.fromJson(data);
+      } else {
+        print('🔐 [LOGIN] SALES API ERROR: Status Code ${response.statusCode}');
+        print('🔐 [LOGIN] SALES ERROR RESPONSE BODY: ${response.body}');
+        final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        final String errorMsg = (errorData['message'] ?? 'Login failed').toString();
+        throw AuthException(errorMsg, response.statusCode);
       }
-      if (e is AuthException) rethrow;
-      throw AuthException('Network error: $e', 0);
+    } catch (e) {
+      print('🔐 [LOGIN] Sales API fallback failed with exception: $e');
+      
+      // If we got a real AuthException from the Parent API, throw that instead of network error
+      if (lastError is AuthException) {
+        throw lastError;
+      }
+      if (e is AuthException) {
+        rethrow;
+      }
+      
+      // Return a clean localized network error
+      throw AuthException('${'check_connection'.tr} ($e)', 0);
     }
   }
 

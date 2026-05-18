@@ -14,7 +14,7 @@ class PulsingLogoLoader extends StatefulWidget {
 }
 
 class _PulsingLogoLoaderState extends State<PulsingLogoLoader> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  AnimationController? _controller;
 
   @override
   void initState() {
@@ -27,7 +27,7 @@ class _PulsingLogoLoaderState extends State<PulsingLogoLoader> with SingleTicker
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -35,9 +35,11 @@ class _PulsingLogoLoaderState extends State<PulsingLogoLoader> with SingleTicker
   Widget build(BuildContext context) {
     final double pulseSize = widget.size;
     final double logoSize = widget.size * 0.55;
+    final controller = _controller;
+    if (controller == null) return const SizedBox.shrink();
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: controller,
       builder: (context, child) {
         return SizedBox(
           width: pulseSize,
@@ -47,10 +49,10 @@ class _PulsingLogoLoaderState extends State<PulsingLogoLoader> with SingleTicker
             children: [
               // Pulse Circle 1 (Primary Accent Color)
               Opacity(
-                opacity: (1.0 - _controller.value) * 0.4,
+                opacity: (1.0 - controller.value) * 0.4,
                 child: Container(
-                  width: pulseSize * (0.5 + (_controller.value * 0.5)),
-                  height: pulseSize * (0.5 + (_controller.value * 0.5)),
+                  width: pulseSize * (0.5 + (controller.value * 0.5)),
+                  height: pulseSize * (0.5 + (controller.value * 0.5)),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.blue1,
@@ -59,10 +61,10 @@ class _PulsingLogoLoaderState extends State<PulsingLogoLoader> with SingleTicker
               ),
               // Pulse Circle 2 (Amber Accent Color)
               Opacity(
-                opacity: (1.0 - _controller.value) * 0.2,
+                opacity: (1.0 - controller.value) * 0.2,
                 child: Container(
-                  width: pulseSize * (0.3 + (_controller.value * 0.7)),
-                  height: pulseSize * (0.3 + (_controller.value * 0.7)),
+                  width: pulseSize * (0.3 + (controller.value * 0.7)),
+                  height: pulseSize * (0.3 + (controller.value * 0.7)),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.amber,
