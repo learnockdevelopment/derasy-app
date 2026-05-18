@@ -23,9 +23,12 @@ class _CartPageState extends State<CartPage> {
 
   // Checkout Form Controllers
   final _formKey = GlobalKey<FormState>();
-  final _addressController = TextEditingController(text: 'Main Campus Lounge');
-  final _cityController = TextEditingController(text: 'Cairo');
-  final _phoneController = TextEditingController(text: '01012345678');
+  final _nameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _governorateController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   String _paymentMethod = 'wallet';
   String _deliveryMethod = 'pickup';
@@ -109,7 +112,6 @@ class _CartPageState extends State<CartPage> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
     final textSecondary = isDark ? Colors.grey.shade400 : AppColors.textSecondary;
-    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
 
     Get.bottomSheet(
       StatefulBuilder(
@@ -145,64 +147,139 @@ class _CartPageState extends State<CartPage> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Shipping Address Inputs
+                    // Delivery Method Options
                     Text(
-                      'delivery_details'.tr.isNotEmpty ? 'delivery_details'.tr : 'Delivery Details',
+                      'delivery_method'.tr,
                       style: AppFonts.AlmaraiBold12.copyWith(color: textSecondary),
                     ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: _addressController,
-                      style: TextStyle(color: textColor),
-                      decoration: InputDecoration(
-                        labelText: 'shipping_address'.tr.isNotEmpty ? 'shipping_address'.tr : 'Shipping Address',
-                        labelStyle: TextStyle(color: textSecondary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
-                      ),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
-                            controller: _cityController,
-                            style: TextStyle(color: textColor),
-                            decoration: InputDecoration(
-                              labelText: 'city'.tr.isNotEmpty ? 'city'.tr : 'City',
-                              labelStyle: TextStyle(color: textSecondary),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
-                            ),
-                            validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                          child: ChoiceChip(
+                            label: Center(child: Text('in_person'.tr)),
+                            selected: _deliveryMethod == 'pickup',
+                            selectedColor: AppColors.salesAccent.withOpacity(0.2),
+                            onSelected: (val) {
+                              if (val) setSheetState(() => _deliveryMethod = 'pickup');
+                            },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: TextFormField(
-                            controller: _phoneController,
-                            style: TextStyle(color: textColor),
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              labelText: 'phone'.tr.isNotEmpty ? 'phone'.tr : 'Phone Number',
-                              labelStyle: TextStyle(color: textSecondary),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
-                            ),
-                            validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                          child: ChoiceChip(
+                            label: Center(child: Text('home_delivery'.tr)),
+                            selected: _deliveryMethod == 'delivery',
+                            selectedColor: AppColors.salesAccent.withOpacity(0.2),
+                            onSelected: (val) {
+                              if (val) setSheetState(() => _deliveryMethod = 'delivery');
+                            },
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _notesController,
-                      style: TextStyle(color: textColor),
-                      decoration: InputDecoration(
-                        hintText: 'delivery_notes_hint'.tr.isNotEmpty ? 'delivery_notes_hint'.tr : 'Special delivery notes (optional)...',
-                        hintStyle: TextStyle(color: textSecondary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                    const SizedBox(height: 18),
+
+                    // Shipping Address Inputs (only visible if home delivery selected)
+                    if (_deliveryMethod == 'delivery') ...[
+                      Text(
+                        'delivery_details'.tr.isNotEmpty ? 'delivery_details'.tr : 'Delivery Details',
+                        style: AppFonts.AlmaraiBold12.copyWith(color: textSecondary),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _nameController,
+                        style: TextStyle(color: textColor),
+                        decoration: InputDecoration(
+                          labelText: 'full_name'.tr.isNotEmpty ? 'full_name'.tr : 'Full Name',
+                          labelStyle: TextStyle(color: textSecondary),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _addressController,
+                        style: TextStyle(color: textColor),
+                        decoration: InputDecoration(
+                          labelText: 'shipping_address'.tr.isNotEmpty ? 'shipping_address'.tr : 'Shipping Address',
+                          labelStyle: TextStyle(color: textSecondary),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _cityController,
+                              style: TextStyle(color: textColor),
+                              decoration: InputDecoration(
+                                labelText: 'city'.tr.isNotEmpty ? 'city'.tr : 'City',
+                                labelStyle: TextStyle(color: textSecondary),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                              ),
+                              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _governorateController,
+                              style: TextStyle(color: textColor),
+                              decoration: InputDecoration(
+                                labelText: 'governorate'.tr.isNotEmpty ? 'governorate'.tr : 'Governorate',
+                                labelStyle: TextStyle(color: textSecondary),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                              ),
+                              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _postalCodeController,
+                              style: TextStyle(color: textColor),
+                              decoration: InputDecoration(
+                                labelText: 'postal_code'.tr.isNotEmpty ? 'postal_code'.tr : 'Postal Code',
+                                labelStyle: TextStyle(color: textSecondary),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _phoneController,
+                              style: TextStyle(color: textColor),
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                labelText: 'phone'.tr.isNotEmpty ? 'phone'.tr : 'Phone Number',
+                                labelStyle: TextStyle(color: textSecondary),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                              ),
+                              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _notesController,
+                        style: TextStyle(color: textColor),
+                        decoration: InputDecoration(
+                          hintText: 'delivery_notes_hint'.tr.isNotEmpty ? 'delivery_notes_hint'.tr : 'Special delivery notes (optional)...',
+                          hintStyle: TextStyle(color: textSecondary),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(Responsive.r(14))),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
 
                     // Payment Method Options
                     Text(
@@ -214,7 +291,7 @@ class _CartPageState extends State<CartPage> {
                       children: [
                         Expanded(
                           child: ChoiceChip(
-                            label: Text('wallet'.tr.isNotEmpty ? 'wallet'.tr : 'Wallet Balance'),
+                            label: Center(child: Text('wallet'.tr.isNotEmpty ? 'wallet'.tr : 'Wallet Balance')),
                             selected: _paymentMethod == 'wallet',
                             selectedColor: AppColors.salesAccent.withOpacity(0.2),
                             onSelected: (val) {
@@ -225,7 +302,7 @@ class _CartPageState extends State<CartPage> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: ChoiceChip(
-                            label: Text('cod'.tr.isNotEmpty ? 'cod'.tr : 'Cash on Delivery'),
+                            label: Center(child: Text('cod'.tr.isNotEmpty ? 'cod'.tr : 'Cash on Delivery')),
                             selected: _paymentMethod == 'cod',
                             selectedColor: AppColors.salesAccent.withOpacity(0.2),
                             onSelected: (val) {
@@ -238,6 +315,36 @@ class _CartPageState extends State<CartPage> {
                     const SizedBox(height: 24),
 
                     // Order Summary Row
+                    if (_deliveryMethod == 'delivery') ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'subtotal'.tr,
+                            style: AppFonts.AlmaraiBold12.copyWith(color: textSecondary),
+                          ),
+                          Text(
+                            '${_cart?.subtotal.toInt() ?? 0} EGP',
+                            style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'delivery_fee'.tr,
+                            style: AppFonts.AlmaraiBold12.copyWith(color: textSecondary),
+                          ),
+                          Text(
+                            '50 EGP',
+                            style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -246,7 +353,7 @@ class _CartPageState extends State<CartPage> {
                           style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
                         ),
                         Text(
-                          '${_cart?.total.toInt() ?? 0} EGP',
+                          '${(_cart?.subtotal.toInt() ?? 0) + (_deliveryMethod == 'delivery' ? 50 : 0)} EGP',
                           style: AppFonts.AlmaraiBold18.copyWith(color: AppColors.salesAccent),
                         ),
                       ],
@@ -270,7 +377,7 @@ class _CartPageState extends State<CartPage> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              if (_formKey.currentState?.validate() ?? false) {
+                              if (_deliveryMethod == 'pickup' || (_formKey.currentState?.validate() ?? false)) {
                                 Get.back(); // Dismiss sheet
                                 _submitCheckout();
                               }
@@ -303,15 +410,18 @@ class _CartPageState extends State<CartPage> {
     setState(() => _isLoading = true);
     try {
       final shippingAddress = StoreShippingAddress(
-        address: _addressController.text,
-        city: _cityController.text,
+        name: _nameController.text,
+        address: _deliveryMethod == 'delivery' ? _addressController.text : 'Store Lounge Pickup',
+        city: _deliveryMethod == 'delivery' ? _cityController.text : 'Cairo',
+        governorate: _deliveryMethod == 'delivery' ? _governorateController.text : 'Cairo',
+        postalCode: _deliveryMethod == 'delivery' ? _postalCodeController.text : '',
         phone: _phoneController.text,
       );
 
-      final order = await StoreService.createOrder(
-        paymentMethod: _paymentMethod,
+      final orderId = await StoreService.createOrder(
         deliveryMethod: _deliveryMethod,
         shippingAddress: shippingAddress,
+        items: _cart?.items ?? [],
         notes: _notesController.text,
       );
 
@@ -321,7 +431,7 @@ class _CartPageState extends State<CartPage> {
         });
       }
 
-      if (order != null) {
+      if (orderId != null) {
         // Success Dialog
         Get.dialog(
           AlertDialog(
@@ -364,6 +474,39 @@ class _CartPageState extends State<CartPage> {
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+      Get.dialog(
+        AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(24))),
+          backgroundColor: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+          title: Column(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.redAccent, size: 54),
+              const SizedBox(height: 14),
+              Text(
+                'error'.tr.isNotEmpty ? 'error'.tr : 'Checkout Failed',
+                style: AppFonts.AlmaraiBold18,
+              ),
+            ],
+          ),
+          content: Text(
+            e.toString().replaceAll('Exception:', '').trim(),
+            textAlign: TextAlign.center,
+            style: AppFonts.AlmaraiRegular12.copyWith(color: AppColors.textSecondary),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Get.back(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                ),
+                child: Text('ok'.tr, style: const TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
 

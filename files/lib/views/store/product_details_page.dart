@@ -19,30 +19,56 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   late StoreProduct _product;
   int _quantity = 1;
-  String _selectedVariant = 'Standard';
   bool _isAdding = false;
-
-  final List<String> _variants = ['Standard', 'Premium Upgrade', 'Deluxe Bundle'];
+  bool _isLoadingDetails = false;
 
   @override
   void initState() {
     super.initState();
     _product = Get.arguments as StoreProduct;
+    _loadDetails();
+  }
+
+  Future<void> _loadDetails() async {
+    if (_product.slug.isEmpty) return;
+    setState(() => _isLoadingDetails = true);
+    try {
+      StoreProduct detailed;
+      if (_product.itemType == 'package') {
+        detailed = await StoreService.getPackageDetails(_product.slug);
+      } else {
+        detailed = await StoreService.getProductDetails(_product.slug);
+      }
+      if (mounted) {
+        setState(() {
+          _product = detailed;
+          _isLoadingDetails = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading detailed product info: $e');
+      if (mounted) {
+        setState(() => _isLoadingDetails = false);
+      }
+    }
   }
 
   Future<void> _handleAddToCart() async {
     setState(() => _isAdding = true);
     try {
-      final selection = CartItemSelection(name: 'Option', value: _selectedVariant);
-      await StoreService.addToCart(_product.id, _quantity, [selection]);
+      await StoreService.addToCart(_product.id, _quantity, []);
       
       if (mounted) {
         setState(() => _isAdding = false);
       }
 
       // Premium visual feedback bottom sheet
-      Get.bottomSheet(
-        Container(
+      if (!mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
           padding: Responsive.all(24),
           decoration: BoxDecoration(
             color: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : Colors.white,
@@ -88,7 +114,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: Responsive.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
@@ -103,7 +129,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Get.back(); // Dismiss bottomsheet
+                        Navigator.pop(context); // Dismiss bottomsheet
                         Get.offNamed(AppRoutes.storeCart); // Go to Cart
                       },
                       style: ElevatedButton.styleFrom(
@@ -122,7 +148,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             ],
           ),
         ),
-        isScrollControlled: true,
       );
     } catch (e) {
       if (mounted) setState(() => _isAdding = false);
@@ -239,60 +264,106 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 20),
                   Divider(color: borderColor),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 14),                   // Included Items for packages (Real, dynamically loaded from GET /store/packages/:slug)
+                  if (_product.itemType == 'package') ...[
+                    Text(
+                      Responsive.isRTL ? 'محتويات الباقة' : 'Bundle Contents',
+                      style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+                    ),
+                    const SizedBox(height: 10),
+                    if (_isLoadingDetails)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: CircularProgressIndicator(color: AppColors.salesAccent),
+                        ),
+                      )
+                    else if (_product.packageItems != null && _product.packageItems!.isNotEmpty)
+                      Column(
+                        children: _product.packageItems!.map((item) {
+                          if (item is! Map) return const SizedBox.shrink();
+                          final prod = (item['product'] is Map) ? (item['product'] as Map) : {};
+                          final title = Responsive.isRTL 
+                              ? (prod['title_ar'] ?? prod['title'] ?? prod['title_en'] ?? '') 
+                              : (prod['title_en'] ?? prod['title'] ?? '');
+                          final qty = item['quantity'] ?? 1;
+                          final price = (prod['price'] as num?)?.toDouble() ?? 0.0;
+                          final images = prod['images'] as List?;
+                          final imgUrl = (images != null && images.isNotEmpty) ? images.first.toString() : null;
 
-                  // Option Variants
-                  Text(
-                    'select_option'.tr.isNotEmpty ? 'select_option'.tr : 'Select Format / Option',
-                    style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(
-                    children: _variants.map((v) {
-                      final isSelected = _selectedVariant == v;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedVariant = v),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.salesAccent.withOpacity(0.06) : cardBg,
-                            borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            border: Border.all(
-                              color: isSelected ? AppColors.salesAccent : borderColor,
-                              width: isSelected ? 1.5 : 1,
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: Responsive.all(12),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(Responsive.r(16)),
+                              border: Border.all(color: borderColor),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                v,
-                                style: AppFonts.AlmaraiBold12.copyWith(
-                                  color: isSelected ? AppColors.salesAccent : textColor,
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: imgUrl != null 
+                                      ? Image.network(
+                                          imgUrl,
+                                          width: Responsive.w(48),
+                                          height: Responsive.h(48),
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (c, e, s) => Container(
+                                            width: Responsive.w(48),
+                                            height: Responsive.h(48),
+                                            color: Colors.grey.shade200,
+                                            child: Icon(IconlyLight.image, color: textSecondary, size: 20),
+                                          ),
+                                        )
+                                      : Container(
+                                          width: Responsive.w(48),
+                                          height: Responsive.h(48),
+                                          color: Colors.grey.shade200,
+                                          child: Icon(IconlyLight.document, color: textSecondary, size: 20),
+                                        ),
                                 ),
-                              ),
-                              if (isSelected)
-                                const Icon(IconlyBold.shield_done, color: AppColors.salesAccent, size: 18)
-                              else
-                                Container(
-                                  width: 18,
-                                  height: 18,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: textSecondary),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title.toString(),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${Responsive.isRTL ? 'الكمية' : 'Qty'}: $qty',
+                                        style: AppFonts.AlmaraiRegular10.copyWith(color: textSecondary),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                            ],
-                          ),
+                                if (price > 0)
+                                  Text(
+                                    '${price.toInt()} EGP',
+                                    style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
+                                  ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          Responsive.isRTL ? 'لا توجد عناصر مضافة لهذه الباقة بعد.' : 'No items added to this bundle yet.',
+                          style: AppFonts.AlmaraiRegular12.copyWith(color: textSecondary),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  Divider(color: borderColor),
-                  const SizedBox(height: 14),
+                      ),
+                    const SizedBox(height: 20),
+                    Divider(color: borderColor),
+                    const SizedBox(height: 14),
+                  ],
 
                   // Quantity Selector
                   Row(

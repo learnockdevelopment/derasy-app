@@ -20,21 +20,28 @@ class _StoreHomePageState extends State<StoreHomePage> {
   bool _isLoading = true;
   List<StoreProduct> _allProducts = [];
   List<StoreProduct> _filteredProducts = [];
+  List<StoreProduct> _filteredPackages = [];
   String _selectedCategory = 'all';
   String _searchQuery = '';
   int _cartCount = 0;
 
   final List<Map<String, String>> _categories = [
     {'id': 'all', 'name': 'All Items', 'name_ar': 'الكل'},
-    {'id': 'teaching_tools', 'name': 'Teaching Tools', 'name_ar': 'أدوات التعليم'},
-    {'id': 'electronics', 'name': 'Electronics', 'name_ar': 'إلكترونيات'},
-    {'id': 'merchandise', 'name': 'Merchandise', 'name_ar': 'منتجات دراسي'},
   ];
 
   @override
   void initState() {
     super.initState();
     _loadStoreData();
+  }
+
+  String _translateCategoryArabic(String cat) {
+    final lower = cat.toLowerCase();
+    if (lower.contains('uniform')) return 'الزي المدرسي';
+    if (lower.contains('book')) return 'الكتب الدراسية';
+    if (lower.contains('tool')) return 'الأدوات المدرسية';
+    if (lower.contains('package') || lower.contains('bundle')) return 'الباقات';
+    return cat.replaceAll('_', ' ').capitalizeFirst ?? cat;
   }
 
   Future<void> _loadStoreData() async {
@@ -46,6 +53,24 @@ class _StoreHomePageState extends State<StoreHomePage> {
         setState(() {
           _allProducts = products;
           _cartCount = cart.itemCount;
+
+          // Extract unique categories from items dynamically
+          final uniqueCategories = _allProducts
+              .map((p) => p.category)
+              .where((c) => c.isNotEmpty)
+              .toSet()
+              .toList();
+
+          _categories.clear();
+          _categories.add({'id': 'all', 'name': 'All Items', 'name_ar': 'الكل'});
+          for (final cat in uniqueCategories) {
+            _categories.add({
+              'id': cat,
+              'name': cat.replaceAll('_', ' ').capitalizeFirst ?? cat,
+              'name_ar': _translateCategoryArabic(cat),
+            });
+          }
+
           _filterProducts();
           _isLoading = false;
         });
@@ -57,13 +82,16 @@ class _StoreHomePageState extends State<StoreHomePage> {
 
   void _filterProducts() {
     setState(() {
-      _filteredProducts = _allProducts.where((p) {
+      final matchedAll = _allProducts.where((p) {
         final matchesCat = _selectedCategory == 'all' || p.category == _selectedCategory;
         final matchesSearch = _searchQuery.isEmpty || 
             p.titleEn.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             p.titleAr.toLowerCase().contains(_searchQuery.toLowerCase());
         return matchesCat && matchesSearch;
       }).toList();
+
+      _filteredProducts = matchedAll.where((p) => p.itemType == 'product').toList();
+      _filteredPackages = matchedAll.where((p) => p.itemType == 'package').toList();
     });
   }
 
@@ -152,7 +180,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10,
+                              blurRadius: 10, 
                               offset: const Offset(0, 4),
                             ),
                           ],
@@ -230,8 +258,161 @@ class _StoreHomePageState extends State<StoreHomePage> {
                     ),
                   ),
 
-                  // 3. Grid of Products
-                  if (_filteredProducts.isEmpty)
+                  // 3. School Packages / Bundles Section (Horizontal Scroll)
+                  if (_filteredPackages.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: Responsive.symmetric(horizontal: 24, vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              Responsive.isRTL ? 'الباقات' : 'Bundles',
+                              style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.salesAccent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${_filteredPackages.length} ${Responsive.isRTL ? 'باقات' : 'Bundles'}',
+                                style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Container(
+                        height: Responsive.h(130),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          padding: Responsive.symmetric(horizontal: 20),
+                          itemCount: _filteredPackages.length,
+                          itemBuilder: (context, index) {
+                            final pkg = _filteredPackages[index];
+                            final title = Responsive.isRTL ? pkg.titleAr : pkg.titleEn;
+                            
+                            return GestureDetector(
+                              onTap: () {
+                                Get.toNamed(
+                                  AppRoutes.storeProductDetails,
+                                  arguments: pkg,
+                                )?.then((_) => _loadStoreData());
+                              },
+                              child: Container(
+                                width: Responsive.w(230),
+                                margin: EdgeInsets.symmetric(horizontal: Responsive.w(6), vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: cardBg,
+                                  borderRadius: BorderRadius.circular(Responsive.r(16)),
+                                  border: Border.all(color: borderColor, width: 1.2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Cover Image
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.horizontal(
+                                        left: Radius.circular(Responsive.isRTL ? 0 : Responsive.r(14)),
+                                        right: Radius.circular(Responsive.isRTL ? Responsive.r(14) : 0),
+                                      ),
+                                      child: Image.network(
+                                        pkg.images.isNotEmpty ? pkg.images.first : 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=500',
+                                        width: Responsive.w(80),
+                                        height: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, e, s) => Container(color: Colors.grey.shade300, width: Responsive.w(80)),
+                                      ),
+                                    ),
+                                    // Text details
+                                    Expanded(
+                                      child: Padding(
+                                        padding: Responsive.all(8),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF6366F1).withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                pkg.category.isNotEmpty ? pkg.category : 'Uniform',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppFonts.AlmaraiBold10.copyWith(color: const Color(0xFF6366F1)),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              title,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppFonts.AlmaraiBold10.copyWith(color: textColor, height: 1.2),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  '${pkg.price.toInt()} EGP',
+                                                  style: AppFonts.AlmaraiBold12.copyWith(color: AppColors.salesAccent),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(3),
+                                                  decoration: const BoxDecoration(
+                                                    color: AppColors.salesAccent,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    IconlyLight.plus,
+                                                    size: 10,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // 4. Products Section Header
+                  if (_filteredProducts.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: Responsive.symmetric(horizontal: 24, vertical: 12),
+                        child: Text(
+                          Responsive.isRTL ? 'المنتجات' : 'Products',
+                          style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+                        ),
+                      ),
+                    ),
+
+                  // 5. Grid of Products / Empty State
+                  if (_filteredProducts.isEmpty && _filteredPackages.isEmpty)
                     SliverFillRemaining(
                       child: Center(
                         child: Column(

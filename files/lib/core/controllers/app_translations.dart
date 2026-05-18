@@ -58,6 +58,10 @@ class AppTranslations extends Translations {
       _enUs['order_success'] = 'Order Placed!';
       _enUs['order_success_desc'] = 'Your order was successfully placed and wallet balance deducted.';
       _enUs['my_cart'] = 'My Cart';
+      _enUs['in_person'] = 'In-Person Pickup';
+      _enUs['delivery_method'] = 'Delivery Method';
+      _enUs['home_delivery'] = 'Home Delivery';
+      _enUs['delivery_fee'] = 'Delivery Fee';
       _enUs['cart_is_empty'] = 'Your Cart is Empty';
       _enUs['subtotal'] = 'Subtotal';
       _enUs['total'] = 'Total Amount';
@@ -130,6 +134,10 @@ class AppTranslations extends Translations {
       _arSa['order_success'] = 'تم إرسال الطلب!';
       _arSa['order_success_desc'] = 'تم تقديم طلبك بنجاح وخصم المبلغ من المحفظة.';
       _arSa['my_cart'] = 'سلة المشتريات';
+      _arSa['in_person'] = 'استلام شخصي';
+      _arSa['delivery_method'] = 'طريقة التوصيل';
+      _arSa['home_delivery'] = 'شحن للمنزل';
+      _arSa['delivery_fee'] = 'رسوم التوصيل';
       _arSa['cart_is_empty'] = 'سلة المشتريات فارغة';
       _arSa['subtotal'] = 'المجموع الفرعي';
       _arSa['total'] = 'المجموع الإجمالي';

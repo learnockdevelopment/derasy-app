@@ -122,7 +122,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Order #${order.id}',
+                                  order.orderNumber.isNotEmpty ? order.orderNumber : 'Order #${order.id.length > 8 ? order.id.substring(order.id.length - 8) : order.id}',
                                   style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
                                 ),
                                 Container(
@@ -173,6 +173,20 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
+                                  'delivery_method'.tr.isNotEmpty ? 'delivery_method'.tr : 'Delivery Method',
+                                  style: TextStyle(color: textSecondary, fontSize: 11),
+                                ),
+                                Text(
+                                  order.deliveryMethod.toUpperCase(),
+                                  style: AppFonts.AlmaraiRegular12.copyWith(color: textColor),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
                                   'shipping_address'.tr.isNotEmpty ? 'shipping_address'.tr : 'Delivery Address',
                                   style: TextStyle(color: textSecondary, fontSize: 11),
                                 ),
@@ -182,9 +196,70 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                 ),
                               ],
                             ),
+                            if (order.items.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              Divider(color: borderColor, height: 1),
+                              const SizedBox(height: 10),
+                              ...order.items.map((item) {
+                                final prod = item.product;
+                                final title = prod != null
+                                    ? (Responsive.isRTL ? prod.titleAr : prod.titleEn)
+                                    : (item.itemType == 'package' ? 'School Package Bundle' : 'Store Product');
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 6.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '$title x${item.quantity}',
+                                          style: AppFonts.AlmaraiRegular12.copyWith(color: textColor),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${item.subtotal.toInt()} EGP',
+                                        style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ],
                             const SizedBox(height: 12),
                             Divider(color: borderColor, height: 1),
                             const SizedBox(height: 12),
+                            if (order.deliveryFee > 0) ...[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'subtotal'.tr,
+                                    style: TextStyle(color: textSecondary, fontSize: 11),
+                                  ),
+                                  Text(
+                                    '${order.subtotal.toInt()} EGP',
+                                    style: AppFonts.AlmaraiRegular12.copyWith(color: textColor),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'delivery_fee'.tr,
+                                    style: TextStyle(color: textSecondary, fontSize: 11),
+                                  ),
+                                  Text(
+                                    '${order.deliveryFee.toInt()} EGP',
+                                    style: AppFonts.AlmaraiRegular12.copyWith(color: textColor),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                            ],
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [

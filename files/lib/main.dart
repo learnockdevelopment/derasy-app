@@ -31,7 +31,7 @@ void main() async {
       }
       FlutterError.presentError(details);
     };
-    
+
     await GetStorage.init();
     await AppTranslations.loadTranslations();
     Get.put(LanguageController());
