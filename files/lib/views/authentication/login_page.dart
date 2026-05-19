@@ -1341,28 +1341,28 @@ class _LoginPageState extends State<LoginPage>
                               SizedBox(height: Responsive.h(20)),
 
                               // Register Button
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'dont_have_account'.tr,
-                                    style: AppFonts.AlmaraiRegular14.copyWith(
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Get.toNamed(AppRoutes.register);
-                                    },
-                                    child: Text(
-                                      'register'.tr,
-                                      style: AppFonts.AlmaraiBold14.copyWith(
-                                        color: primary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              // Row(
+                              //   mainAxisAlignment: MainAxisAlignment.center,
+                              //   children: [
+                              //     Text(
+                              //       'dont_have_account'.tr,
+                              //       style: AppFonts.AlmaraiRegular14.copyWith(
+                              //         color: secondaryTextColor,
+                              //       ),
+                              //     ),
+                              //     TextButton(
+                              //       onPressed: () {
+                              //         Get.toNamed(AppRoutes.register);
+                              //       },
+                              //       child: Text(
+                              //         'register'.tr,
+                              //         style: AppFonts.AlmaraiBold14.copyWith(
+                              //           color: primary,
+                              //         ),
+                              //       ),
+                              //     ),
+                              //   ],
+                              // ),
 
                               SizedBox(height: Responsive.h(40)),
                             ],

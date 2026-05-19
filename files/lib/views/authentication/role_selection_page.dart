@@ -70,9 +70,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
     Get.toNamed(AppRoutes.login);
   }
 
-  void _handleRegister() {
-    Get.toNamed(AppRoutes.register);
-  }
+  // void _handleRegister() {
+  //   Get.toNamed(AppRoutes.register);
+  // }
 
   void _toggleLanguage() {
     final languageController = LanguageController.to;
@@ -183,16 +183,16 @@ class _RoleSelectionPageState extends State<RoleSelectionPage>
                                   isPrimary: true,
                                   primary: AppColors.blue1,
                                 ),
-                                SizedBox(height: Responsive.h(25)),
+                                // SizedBox(height: Responsive.h(25)),
                                 
                                 // Register Button
-                                _buildButton(
-                                  label: 'register'.tr,
-                                  icon: IconlyBold.edit,
-                                  onPressed: _handleRegister,
-                                  isPrimary: false,
-                                  primary: AppColors.blue1,
-                                ),
+                                // _buildButton(
+                                //   label: 'register'.tr,
+                                //   icon: IconlyBold.edit,
+                                //   onPressed: _handleRegister,
+                                //   isPrimary: false,
+                                //   primary: AppColors.blue1,
+                                // ),
                               ],
                             ),
                           ),
