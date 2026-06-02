@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import '../../core/utils/responsive_utils.dart';
@@ -517,188 +520,188 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
-  // Future<void> _handleGoogleLogin() async {
-  //   try {
-  //     setState(() {
-  //       _isLoading = true;
-  //     });
+  Future<void> _handleGoogleLogin() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
 
-  //     final GoogleSignIn googleSignIn = GoogleSignIn(
-  //       serverClientId: '121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com',
-  //       scopes: ['email', 'profile'],
-  //     );
-  //     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: '121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com',
+        scopes: ['email', 'profile'],
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-  //     if (googleUser == null) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //       return;
-  //     }
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
-  //     final GoogleSignInAuthentication googleAuth =
-  //         await googleUser.authentication;
-  //     final String? idToken = googleAuth.idToken;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
 
-  //     if (idToken == null) {
-  //       throw AuthException('Failed to get Google ID token', 0);
-  //     }
+      if (idToken == null) {
+        throw AuthException('Failed to get Google ID token', 0);
+      }
 
-  //     final loginResponse = await AuthService.loginWithGoogle(idToken);
+      final loginResponse = await AuthService.loginWithGoogle(idToken);
 
-  //     if (!mounted) return;
+      if (!mounted) return;
 
-  //     final userRole = loginResponse.user.role.toLowerCase();
+      final userRole = loginResponse.user.role.toLowerCase();
 
-  //     if (userRole != 'student' && userRole != 'parent') {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
+      if (userRole != 'student' && userRole != 'parent') {
+        setState(() {
+          _isLoading = false;
+        });
 
-  //       Get.snackbar(
-  //         'login_failed'.tr,
-  //         'only_student_or_parent_allowed'.tr,
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: AppColors.error,
-  //         colorText: Colors.white,
-  //         duration: const Duration(seconds: 3),
-  //       );
-  //       return;
-  //     }
+        Get.snackbar(
+          'login_failed'.tr,
+          'only_student_or_parent_allowed'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        return;
+      }
 
-  //     await UserStorageService.saveCurrentUser(
-  //       loginResponse.user,
-  //       loginResponse.token,
-  //     );
+      await UserStorageService.saveCurrentUser(
+        loginResponse.user,
+        loginResponse.token,
+      );
 
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
+      setState(() {
+        _isLoading = false;
+      });
 
-  //     Get.snackbar(
-  //       'login_success'.tr,
-  //       loginResponse.message.isNotEmpty
-  //           ? loginResponse.message
-  //           : 'welcome_back_message'.tr,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: AppColors.blue1,
-  //       colorText: Colors.white,
-  //       duration: const Duration(seconds: 2),
-  //     );
+      Get.snackbar(
+        'login_success'.tr,
+        loginResponse.message.isNotEmpty
+            ? loginResponse.message
+            : 'welcome_back_message'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.blue1,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
 
-  //     try {
-  //       DashboardController.to.refreshAll();
-  //     } catch (e) {
-  //       print('📊 [LOGIN] Error triggering pre-fetch: $e');
-  //     }
+      try {
+        DashboardController.to.refreshAll();
+      } catch (e) {
+        print('📊 [LOGIN] Error triggering pre-fetch: $e');
+      }
 
-  //     Get.offNamed<void>(AppRoutes.home);
-  //   } catch (e) {
-  //     if (!mounted) return;
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //     print('Google Sign In Error: $e');
-  //     Get.snackbar(
-  //       'error'.tr,
-  //       'google_login_failed'.tr,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: AppColors.error,
-  //       colorText: Colors.white,
-  //     );
-  //   }
-  // }
+      Get.offNamed<void>(AppRoutes.home);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      print('Google Sign In Error: $e');
+      Get.snackbar(
+        'error'.tr,
+        'google_login_failed'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    }
+  }
 
-  // Future<void> _handleAppleLogin() async {
-  //   try {
-  //       setState(() {
-  //       _isLoading = true;
-  //     });
-  //
-  //     final credential = await SignInWithApple.getAppleIDCredential(
-  //       scopes: [
-  //         AppleIDAuthorizationScopes.email,
-  //         AppleIDAuthorizationScopes.fullName,
-  //       ],
-  //     );
-  //
-  //     final identityToken = credential.identityToken;
-  //
-  //     if (identityToken == null) {
-  //         throw AuthException('Failed to get Apple Identity Token', 0);
-  //     }
-  //
-  //     // Prepare user object for first-time login as per mobile auth documentation
-  //     Map<String, dynamic>? userObj;
-  //     if (credential.givenName != null || credential.familyName != null || credential.email != null) {
-  //       userObj = {
-  //         'name': {
-  //           'firstName': credential.givenName ?? '',
-  //           'lastName': credential.familyName ?? '',
-  //         },
-  //         'email': credential.email,
-  //       };
-  //     }
-  //
-  //     final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
-  //
-  //      if (!mounted) return;
-  //
-  //     final userRole = loginResponse.user.role.toLowerCase();
-  //
-  //     if (userRole != 'student' && userRole != 'parent') {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //
-  //       Get.snackbar(
-  //         'login_failed'.tr,
-  //         'only_student_or_parent_allowed'.tr,
-  //         snackPosition: SnackPosition.BOTTOM,
-  //         backgroundColor: AppColors.error,
-  //         colorText: Colors.white,
-  //         duration: const Duration(seconds: 3),
-  //       );
-  //       return;
-  //     }
-  //
-  //     await UserStorageService.saveCurrentUser(
-  //       loginResponse.user,
-  //       loginResponse.token,
-  //     );
-  //
-  //     setState(() {
-  //       _isLoading = false;
-  //     });
-  //
-  //     Get.snackbar(
-  //       'login_success'.tr,
-  //       loginResponse.message.isNotEmpty
-  //           ? loginResponse.message
-  //           : 'welcome_back_message'.tr,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: AppColors.blue1,
-  //       colorText: Colors.white,
-  //       duration: const Duration(seconds: 2),
-  //     );
-  //
-  //     Get.offNamed<void>(AppRoutes.home);
-  //
-  //   } catch (e) {
-  //       if (!mounted) return;
-  //       setState(() {
-  //       _isLoading = false;
-  //     });
-  //     print('Apple Sign In Error: $e');
-  //      Get.snackbar(
-  //       'error'.tr,
-  //       'apple_login_failed'.tr,
-  //       snackPosition: SnackPosition.BOTTOM,
-  //        backgroundColor: AppColors.error,
-  //       colorText: Colors.white,
-  //     );
-  //   }
-  // }
+  Future<void> _handleAppleLogin() async {
+    try {
+        setState(() {
+        _isLoading = true;
+      });
+  
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+  
+      final identityToken = credential.identityToken;
+  
+      if (identityToken == null) {
+          throw AuthException('Failed to get Apple Identity Token', 0);
+      }
+  
+      // Prepare user object for first-time login as per mobile auth documentation
+      Map<String, dynamic>? userObj;
+      if (credential.givenName != null || credential.familyName != null || credential.email != null) {
+        userObj = {
+          'name': {
+            'firstName': credential.givenName ?? '',
+            'lastName': credential.familyName ?? '',
+          },
+          'email': credential.email,
+        };
+      }
+  
+      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
+  
+       if (!mounted) return;
+  
+      final userRole = loginResponse.user.role.toLowerCase();
+  
+      if (userRole != 'student' && userRole != 'parent') {
+        setState(() {
+          _isLoading = false;
+        });
+  
+        Get.snackbar(
+          'login_failed'.tr,
+          'only_student_or_parent_allowed'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+        return;
+      }
+  
+      await UserStorageService.saveCurrentUser(
+        loginResponse.user,
+        loginResponse.token,
+      );
+  
+      setState(() {
+        _isLoading = false;
+      });
+  
+      Get.snackbar(
+        'login_success'.tr,
+        loginResponse.message.isNotEmpty
+            ? loginResponse.message
+            : 'welcome_back_message'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.blue1,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+  
+      Get.offNamed<void>(AppRoutes.home);
+  
+    } catch (e) {
+        if (!mounted) return;
+        setState(() {
+        _isLoading = false;
+      });
+      print('Apple Sign In Error: $e');
+       Get.snackbar(
+        'error'.tr,
+        'apple_login_failed'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+         backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -723,60 +726,80 @@ class _LoginPageState extends State<LoginPage>
               child: Column(
                 children: [
                   // Top Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDark ? Colors.white12 : AppColors.grey200,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    padding: Responsive.symmetric(horizontal: 16, vertical: 4),
+                  Padding(
+                    padding: Responsive.symmetric(horizontal: 24, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Theme Toggle Button
-                        IconButton(
-                          onPressed: () => config.toggleTheme(),
-                          icon: Icon(
-                            isDark ? Icons.light_mode : Icons.dark_mode,
-                            color: isDark ? Colors.white70 : AppColors.textSecondary,
-                            size: Responsive.sp(20),
+                        // Language Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withOpacity(0.05) : AppColors.grey50,
+                            borderRadius: BorderRadius.circular(Responsive.r(30)),
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : AppColors.grey200,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(Responsive.r(30)),
+                              onTap: () {
+                                final isAr = Get.locale?.languageCode == 'ar';
+                                Get.updateLocale(isAr
+                                    ? const Locale('en', 'US')
+                                    : const Locale('ar', 'SA'));
+                                setState(() {});
+                              },
+                              child: Padding(
+                                padding: Responsive.symmetric(horizontal: 16, vertical: 8),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.language,
+                                      color: primary,
+                                      size: Responsive.sp(18),
+                                    ),
+                                    SizedBox(width: Responsive.w(8)),
+                                    Text(
+                                      (Get.locale?.languageCode == 'ar')
+                                          ? 'English'
+                                          : 'العربية',
+                                      style: AppFonts.AlmaraiMedium12.copyWith(
+                                        color: isDark ? Colors.white : AppColors.textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        SizedBox(width: Responsive.w(8)),
-                        // Language Button (toggle)
-                        InkWell(
-                          borderRadius: BorderRadius.circular(Responsive.r(6)),
-                          onTap: () {
-                            final isAr = Get.locale?.languageCode == 'ar';
-                            Get.updateLocale(isAr
-                                ? const Locale('en', 'US')
-                                : const Locale('ar', 'SA'));
-                            setState(() {});
-                          },
-                          child: Padding(
-                            padding: Responsive.symmetric(
-                                horizontal: 6, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.language,
-                                  color: isDark ? Colors.white70 : AppColors.textSecondary,
-                                  size: Responsive.sp(18),
+                        SizedBox(width: Responsive.w(12)),
+                        // Theme Toggle Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withOpacity(0.05) : AppColors.grey50,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : AppColors.grey200,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () => config.toggleTheme(),
+                              child: Padding(
+                                padding: Responsive.all(8),
+                                child: Icon(
+                                  isDark ? Icons.light_mode : Icons.dark_mode,
+                                  color: primary,
+                                  size: Responsive.sp(20),
                                 ),
-                                SizedBox(width: Responsive.w(3)),
-                                Text(
-                                  (Get.locale?.languageCode == 'ar')
-                                      ? 'English'
-                                      : 'العربية',
-                                  style: AppFonts.AlmaraiMedium12.copyWith(
-                                    color: isDark ? Colors.white70 : AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -794,20 +817,20 @@ class _LoginPageState extends State<LoginPage>
                           key: _formKey,
                           child: Column(
                             children: [
-                              SizedBox(height: Responsive.h(20)),
+                              SizedBox(height: Responsive.h(8)),
 
                               // Logo
                               FadeTransition(
                                 opacity: _fadeAnimation,
                                 child: Image.asset(
                                   AssetsManager.login,
-                                  width: Responsive.w(90),
-                                  height: Responsive.w(90),
+                                  width: Responsive.w(35),
+                                  height: Responsive.w(35),
                                   fit: BoxFit.contain,
                                 ),
                               ),
 
-                              SizedBox(height: Responsive.h(20)),
+                              SizedBox(height: Responsive.h(8)),
 
                               // Title
                               FadeTransition(
@@ -833,7 +856,7 @@ class _LoginPageState extends State<LoginPage>
                                 ),
                               ),
 
-                              SizedBox(height: Responsive.h(24)),
+                              SizedBox(height: Responsive.h(8)),
 
                           
 
@@ -1268,101 +1291,101 @@ class _LoginPageState extends State<LoginPage>
                               SizedBox(height: Responsive.h(24)),
 
                               // Google Button
-                              // SizedBox(
-                              //   height: Responsive.h(45),
-                              //   child: OutlinedButton(
-                              //     onPressed:
-                              //         _isLoading ? null : _handleGoogleLogin,
-                              //     style: OutlinedButton.styleFrom(
-                              //       side: BorderSide(color: borderColor),
-                              //       shape: RoundedRectangleBorder(
-                              //         borderRadius: BorderRadius.circular(
-                              //             Responsive.r(12)),
-                              //       ),
-                              //       padding: EdgeInsets.zero,
-                              //     ),
-                              //     child: Row(
-                              //       mainAxisAlignment: MainAxisAlignment.center,
-                              //       children: [
-                              //         SvgPicture.asset(
-                              //           AssetsManager.googleSvg,
-                              //           width: Responsive.w(24),
-                              //           height: Responsive.w(24),
-                              //         ),
-                              //         SizedBox(width: Responsive.w(12)),
-                              //         Text(
-                              //           'continue_with_google'.tr,
-                              //           style:
-                              //               AppFonts.AlmaraiMedium14.copyWith(
-                              //             color: textColor,
-                              //           ),
-                              //         ),
-                              //       ],
-                              //     ),
-                              //   ),
-                              // ),
+                              SizedBox(
+                                height: Responsive.h(45),
+                                child: OutlinedButton(
+                                  onPressed:
+                                      _isLoading ? null : _handleGoogleLogin,
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: borderColor),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          Responsive.r(12)),
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        AssetsManager.googleSvg,
+                                        width: Responsive.w(24),
+                                        height: Responsive.w(24),
+                                      ),
+                                      SizedBox(width: Responsive.w(12)),
+                                      Text(
+                                        'continue_with_google'.tr,
+                                        style:
+                                            AppFonts.AlmaraiMedium14.copyWith(
+                                          color: textColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
 
                               // Social Login Buttons
-                              // if (Platform.isIOS) ...[
-                              //   SizedBox(height: Responsive.h(16)),
-                              //   SizedBox(
-                              //     height: Responsive.h(45),
-                              //      child: OutlinedButton(
-                              //       onPressed: _isLoading ? null : _handleAppleLogin,
-                              //       style: OutlinedButton.styleFrom(
-                              //         backgroundColor: Colors.black,
-                              //         side: BorderSide(color: Colors.black),
-                              //         shape: RoundedRectangleBorder(
-                              //           borderRadius: BorderRadius.circular(Responsive.r(12)),
-                              //         ),
-                              //         padding: EdgeInsets.zero,
-                              //       ),
-                              //       child: Row(
-                              //         mainAxisAlignment: MainAxisAlignment.center,
-                              //         children: [
-                              //           SvgPicture.asset(
-                              //             AssetsManager.appleSvg,
-                              //             width: Responsive.w(24),
-                              //             height: Responsive.w(24),
-                              //              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                              //           ),
-                              //           SizedBox(width: Responsive.w(12)),
-                              //           Text(
-                              //             'continue_with_apple'.tr,
-                              //             style: AppFonts.AlmaraiMedium14.copyWith(
-                              //               color: Colors.white,
-                              //             ),
-                              //           ),
-                              //         ],
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ],
+                              if (Platform.isIOS) ...[
+                                SizedBox(height: Responsive.h(16)),
+                                SizedBox(
+                                  height: Responsive.h(45),
+                                   child: OutlinedButton(
+                                    onPressed: _isLoading ? null : _handleAppleLogin,
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: Colors.black,
+                                      side: BorderSide(color: Colors.black),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          AssetsManager.appleSvg,
+                                          width: Responsive.w(24),
+                                          height: Responsive.w(24),
+                                           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                        ),
+                                        SizedBox(width: Responsive.w(12)),
+                                        Text(
+                                          'continue_with_apple'.tr,
+                                          style: AppFonts.AlmaraiMedium14.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                               SizedBox(height: Responsive.h(20)),
 
                               // Register Button
-                              // Row(
-                              //   mainAxisAlignment: MainAxisAlignment.center,
-                              //   children: [
-                              //     Text(
-                              //       'dont_have_account'.tr,
-                              //       style: AppFonts.AlmaraiRegular14.copyWith(
-                              //         color: secondaryTextColor,
-                              //       ),
-                              //     ),
-                              //     TextButton(
-                              //       onPressed: () {
-                              //         Get.toNamed(AppRoutes.register);
-                              //       },
-                              //       child: Text(
-                              //         'register'.tr,
-                              //         style: AppFonts.AlmaraiBold14.copyWith(
-                              //           color: primary,
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ],
-                              // ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'dont_have_account'.tr,
+                                    style: AppFonts.AlmaraiRegular14.copyWith(
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.toNamed(AppRoutes.register);
+                                    },
+                                    child: Text(
+                                      'register'.tr,
+                                      style: AppFonts.AlmaraiBold14.copyWith(
+                                        color: primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
 
                               SizedBox(height: Responsive.h(40)),
                             ],

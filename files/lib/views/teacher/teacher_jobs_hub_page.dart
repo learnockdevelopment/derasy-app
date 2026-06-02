@@ -106,17 +106,19 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
               // 1. Premium Glassmorphic Portal Header
               Container(
                 width: double.infinity,
-                padding: Responsive.all(20),
+                padding: Responsive.all(24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isDark
-                        ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                        : [Colors.white, const Color(0xFFF1F5F9)],
+                        ? [AppColors.salesAccent.withOpacity(0.2), const Color(0xFF1E293B)]
+                        : [AppColors.salesAccent.withOpacity(0.1), Colors.white],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(Responsive.r(28)),
-                  border: Border.all(color: borderColor),
+                  borderRadius: BorderRadius.circular(Responsive.r(32)),
+                  border: Border.all(color: AppColors.salesAccent.withOpacity(0.3), width: 1.5),
                   boxShadow: [
-                    BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 8)),
+                    BoxShadow(color: AppColors.salesAccent.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: Column(
@@ -125,53 +127,61 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
                     Row(
                       children: [
                         Container(
-                          padding: Responsive.all(10),
+                          padding: Responsive.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.salesAccent.withOpacity(0.12),
+                            color: AppColors.salesAccent,
                             borderRadius: BorderRadius.circular(Responsive.r(16)),
+                            boxShadow: [
+                              BoxShadow(color: AppColors.salesAccent.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4)),
+                            ],
                           ),
-                          child: Icon(IconlyBold.work, color: AppColors.salesAccent, size: Responsive.sp(22)),
+                          child: Icon(IconlyBold.work, color: Colors.white, size: Responsive.sp(24)),
                         ),
-                        SizedBox(width: Responsive.w(12)),
+                        SizedBox(width: Responsive.w(16)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'jobs_portal'.tr,
-                                style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+                                style: AppFonts.AlmaraiBold20.copyWith(color: textColor),
                               ),
-                              SizedBox(height: Responsive.h(2)),
+                              SizedBox(height: Responsive.h(4)),
                               Text(
                                 'manage_jobs_cv'.tr,
-                                style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
+                                style: AppFonts.AlmaraiRegular12.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: Responsive.h(20)),
+                    SizedBox(height: Responsive.h(24)),
                     
                     // Action button
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: _profile?.hasCv == true ? IconlyLight.document : IconlyLight.plus,
-                            title: _profile?.hasCv == true 
-                                ? 'edit_cv'.tr 
-                                : 'add_your_cv_to_apply'.tr,
-                            color: AppColors.salesAccent,
-                            cardBg: cardBg,
-                            borderColor: borderColor,
-                            onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) {
-                              _refreshJobs();
-                              _loadProfile();
-                            }),
-                          ),
-                        ),
-                      ],
+                    ElevatedButton.icon(
+                      onPressed: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) {
+                        _refreshJobs();
+                        _loadProfile();
+                      }),
+                      icon: Icon(
+                        _profile?.hasCv == true ? IconlyLight.document : IconlyLight.plus,
+                        color: Colors.white,
+                        size: Responsive.sp(18),
+                      ),
+                      label: Text(
+                        _profile?.hasCv == true 
+                            ? 'edit_cv'.tr 
+                            : 'add_your_cv_to_apply'.tr,
+                        style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.salesAccent,
+                        padding: Responsive.symmetric(vertical: 14, horizontal: 20),
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
+                        elevation: 0,
+                      ),
                     ),
                   ],
                 ),
@@ -309,46 +319,6 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
     );
   }
 
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required Color cardBg,
-    required Color borderColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: Responsive.symmetric(vertical: 14, horizontal: 10),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(Responsive.r(16)),
-          border: Border.all(color: borderColor, width: 1.2),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: Responsive.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: Responsive.sp(18)),
-            ),
-            SizedBox(height: Responsive.h(8)),
-            Text(
-              title,
-              style: AppFonts.AlmaraiBold10.copyWith(color: color),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildJobFeedCard(
     TeacherJob job,
@@ -358,118 +328,135 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
     Color textColor,
   ) {
     final currencyText = 'salary_currency'.tr;
+    final isDark = AppConfigController.to.isDarkMode;
+    
     return Container(
       width: double.infinity,
-      padding: Responsive.all(18),
+      padding: Responsive.all(20),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(Responsive.r(24)),
-        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(Responsive.r(28)),
+        border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
-          BoxShadow(color: shadowColor, blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Title and salary badge
+          // Row 1: Icon, Title and Department
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: Responsive.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withOpacity(0.05) : AppColors.grey50,
+                  borderRadius: BorderRadius.circular(Responsive.r(16)),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Icon(IconlyLight.work, color: AppColors.salesAccent, size: Responsive.sp(24)),
+              ),
+              SizedBox(width: Responsive.w(14)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       job.title,
-                      style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+                      style: AppFonts.AlmaraiBold16.copyWith(color: textColor, letterSpacing: -0.5),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: Responsive.h(4)),
                     Text(
                       job.department,
-                      style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
+                      style: AppFonts.AlmaraiMedium12.copyWith(color: AppColors.salesAccent),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(16)),
+
+          // Row 2: Premium Tag labels
+          Wrap(
+            spacing: Responsive.w(8),
+            runSpacing: Responsive.h(8),
+            children: [
+              Container(
+                padding: Responsive.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(Responsive.r(20)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(IconlyBold.wallet, color: Colors.amber.shade700, size: Responsive.sp(14)),
+                    SizedBox(width: Responsive.w(6)),
+                    Text(
+                      '${job.salary.toStringAsFixed(0)} $currencyText',
+                      style: AppFonts.AlmaraiBold10.copyWith(color: Colors.amber.shade800),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: Responsive.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(Responsive.r(8)),
-                ),
-                child: Text(
-                  '${job.salary.toStringAsFixed(0)} $currencyText',
-                  style: AppFonts.AlmaraiBold10.copyWith(color: Colors.amber.shade800),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: Responsive.h(12)),
-
-          // Row 2: Tag labels
-          Row(
-            children: [
-              Container(
-                padding: Responsive.symmetric(horizontal: 8, vertical: 2),
+                padding: Responsive.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.salesAccent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(Responsive.r(6)),
+                  borderRadius: BorderRadius.circular(Responsive.r(20)),
                 ),
-                child: Text(
-                  job.employmentType == 'full_time' ? 'full_time'.tr : 'part_time'.tr,
-                  style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(IconlyLight.time_circle, color: AppColors.salesAccent, size: Responsive.sp(14)),
+                    SizedBox(width: Responsive.w(6)),
+                    Text(
+                      job.employmentType == 'full_time' ? 'full_time'.tr : 'part_time'.tr,
+                      style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.salesAccent),
+                    ),
+                  ],
                 ),
-              ),
-              const Spacer(),
-              Text(
-                '${'created_at'.tr}: ${job.datePosted}',
-                style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary.withOpacity(0.8)),
               ),
             ],
           ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Colors.black12, height: 1),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: Responsive.h(16)),
+            child: Divider(color: isDark ? Colors.white12 : AppColors.grey200, height: 1),
           ),
 
           // Paragraph: Description
           Text(
             job.description,
-            style: AppFonts.AlmaraiRegular12.copyWith(color: textColor.withOpacity(0.85), height: 1.4),
+            style: AppFonts.AlmaraiRegular12.copyWith(color: AppColors.textSecondary, height: 1.5),
           ),
           
           if (job.requirements.isNotEmpty) ...[
-            SizedBox(height: Responsive.h(12)),
-            // Bullet points for requirements
+            SizedBox(height: Responsive.h(16)),
             Text(
               'job_requirements'.tr,
-              style: AppFonts.AlmaraiBold10.copyWith(color: textColor),
+              style: AppFonts.AlmaraiBold12.copyWith(color: textColor),
             ),
-            SizedBox(height: Responsive.h(6)),
+            SizedBox(height: Responsive.h(10)),
             Column(
               children: job.requirements.map((req) {
                 return Padding(
-                  padding: EdgeInsets.only(bottom: Responsive.h(4)),
+                  padding: EdgeInsets.only(bottom: Responsive.h(8)),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: EdgeInsets.only(top: Responsive.h(5), left: Responsive.w(4), right: Responsive.w(6)),
-                        child: Container(
-                          width: 4,
-                          height: 4,
-                          decoration: const BoxDecoration(
-                            color: Colors.teal,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
+                      Icon(IconlyLight.tick_square, color: Colors.teal, size: Responsive.sp(16)),
+                      SizedBox(width: Responsive.w(8)),
                       Expanded(
                         child: Text(
                           req,
-                          style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
+                          style: AppFonts.AlmaraiRegular12.copyWith(color: AppColors.textSecondary, height: 1.3),
                         ),
                       ),
                     ],
@@ -478,45 +465,46 @@ class _TeacherJobsHubPageState extends State<TeacherJobsHubPage> {
               }).toList(),
             ),
           ],
-          SizedBox(height: Responsive.h(16)),
+          SizedBox(height: Responsive.h(20)),
           (() {
             final app = _applications.firstWhereOrNull((a) => a.jobId == job.id);
             final hasApplied = app != null;
             
             Color buttonBg = AppColors.salesAccent;
             String labelText = 'apply_now'.tr;
-            IconData iconData = IconlyLight.send;
+            IconData iconData = IconlyBold.send;
             
             if (hasApplied) {
               final status = app.status.toLowerCase();
               if (status.contains('reject')) {
                 buttonBg = Colors.red;
                 labelText = 'rejected'.tr;
-                iconData = IconlyLight.close_square;
+                iconData = IconlyBold.close_square;
               } else {
-                buttonBg = Colors.grey.shade500;
+                buttonBg = Colors.grey.shade600;
                 labelText = 'applied'.tr;
-                iconData = IconlyLight.tick_square;
+                iconData = IconlyBold.tick_square;
               }
             }
 
             return SizedBox(
               width: double.infinity,
-              height: Responsive.h(38),
+              height: Responsive.h(44),
               child: ElevatedButton.icon(
                 onPressed: hasApplied ? null : () => _handleApplyPressed(job),
-                icon: Icon(iconData, color: Colors.white, size: Responsive.sp(16)),
+                icon: Icon(iconData, color: Colors.white, size: Responsive.sp(18)),
                 label: Text(
                   labelText,
-                  style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
+                  style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: buttonBg,
                   disabledBackgroundColor: buttonBg.withOpacity(0.6),
                   shape: RoundedRectangleBorder(
-                     borderRadius: BorderRadius.circular(Responsive.r(12)),
+                     borderRadius: BorderRadius.circular(Responsive.r(16)),
                   ),
-                  elevation: 0,
+                  elevation: hasApplied ? 0 : 4,
+                  shadowColor: buttonBg.withOpacity(0.5),
                 ),
               ),
             );

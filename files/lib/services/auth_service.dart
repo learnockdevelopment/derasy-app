@@ -389,45 +389,45 @@ class AuthService {
   }
 
   // 11. Login with Apple
-  // static Future<LoginResponse> loginWithApple(
-  //     String idToken, {Map<String, dynamic>? user}) async {
-  //   try {
-  //     final body = {'idToken': idToken};
-  //     if (user != null) body['user'] = user;
-  //
-  //     // Try Sales first
-  //     try {
-  //       final salesResponse = await http.post(
-  //         Uri.parse('${ApiConstants.salesBaseUrl}${ApiConstants.appleLoginEndpoint}'),
-  //         headers: ApiConstants.getHeaders(),
-  //         body: jsonEncode(body),
-  //       ).timeout(const Duration(seconds: 10));
-  //
-  //       if (salesResponse.statusCode == 200) {
-  //         return LoginResponse.fromJson(jsonDecode(salesResponse.body) as Map<String, dynamic>);
-  //       }
-  //     } catch (e) {
-  //       print('🔐 [LOGIN_APPLE] Sales API failed: $e');
-  //     }
-  //
-  //     // Try Parent fallback
-  //     final response = await http.post(
-  //       Uri.parse('${ApiConstants.parentBaseUrl}${ApiConstants.appleLoginEndpoint}'),
-  //       headers: ApiConstants.getHeaders(),
-  //       body: jsonEncode(body),
-  //     ).timeout(const Duration(seconds: 10));
-  //
-  //     if (response.statusCode == 200) {
-  //       return LoginResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-  //     } else {
-  //       final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
-  //       throw AuthException((errorData['error'] ?? errorData['message'] ?? 'Apple login failed').toString(), response.statusCode);
-  //     }
-  //   } catch (e) {
-  //     if (e is AuthException) rethrow;
-  //     throw AuthException('Network error: $e', 0);
-  //   }
-  // }
+  static Future<LoginResponse> loginWithApple(
+      String idToken, {Map<String, dynamic>? user}) async {
+    try {
+      final body = <String, dynamic>{'idToken': idToken};
+      if (user != null) body['user'] = user;
+
+      // Try Sales first
+      try {
+        final salesResponse = await http.post(
+          Uri.parse('${ApiConstants.salesBaseUrl}${ApiConstants.appleLoginEndpoint}'),
+          headers: ApiConstants.getHeaders(),
+          body: jsonEncode(body),
+        ).timeout(const Duration(seconds: 10));
+
+        if (salesResponse.statusCode == 200) {
+          return LoginResponse.fromJson(jsonDecode(salesResponse.body) as Map<String, dynamic>);
+        }
+      } catch (e) {
+        print('🔐 [LOGIN_APPLE] Sales API failed: $e');
+      }
+
+      // Try Parent fallback
+      final response = await http.post(
+        Uri.parse('${ApiConstants.parentBaseUrl}${ApiConstants.appleLoginEndpoint}'),
+        headers: ApiConstants.getHeaders(),
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return LoginResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      } else {
+        final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+        throw AuthException((errorData['error'] ?? errorData['message'] ?? 'Apple login failed').toString(), response.statusCode);
+      }
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      throw AuthException('Network error: $e', 0);
+    }
+  }
 
   // 12. Check User Collision (Email/Phone)
   static Future<bool> checkUserCollision({String? email, String? phone}) async {

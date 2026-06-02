@@ -11,11 +11,6 @@ import '../../core/routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_models.dart';
 import '../../core/controllers/app_config_controller.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../../services/user_storage_service.dart';
-import 'dart:io' show Platform;
 import '../../widgets/loading_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -237,7 +232,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 )
                               : null,
                           filled: true,
-                          fillColor: AppColors.grey50,
+                          fillColor: AppConfigController.to.isDarkMode ? const Color(0xFF1E293B) : AppColors.grey50,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(Responsive.r(12)),
                             borderSide: BorderSide.none,
@@ -422,102 +417,7 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-  Future<void> _handleGoogleLogin() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        // User canceled the sign-in
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-
-      if (idToken == null) {
-        throw AuthException('Failed to get Google ID token', 0);
-      }
-
-      final loginResponse = await AuthService.loginWithGoogle(idToken);
-
-      if (!mounted) return;
-
-      // Check user role - only allow student or parent
-      final userRole = loginResponse.user.role.toLowerCase();
-
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
-
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
-      }
-
-      // Save user data and token
-      await UserStorageService.saveCurrentUser(
-        loginResponse.user,
-        loginResponse.token,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success message
-      Get.snackbar(
-        'login_success'.tr,
-        loginResponse.message.isNotEmpty
-            ? loginResponse.message
-            : 'welcome_back_message'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.blue1,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
-
-       // Trigger pre-fetching of all data
-      try {
-        // Assuming DashboardController is available globally or injected
-         // DashboardController.to.refreshAll();
-      } catch (e) {
-        print('📊 [LOGIN] Error triggering pre-fetch: $e');
-      }
-
-      // Navigate to home
-      Get.offNamed<void>(AppRoutes.home);
-
-    } catch (e) {
-      if (!mounted) return;
-        setState(() {
-        _isLoading = false;
-      });
-      print('Google Sign In Error: $e');
-      Get.snackbar(
-        'error'.tr,
-        'google_login_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-    }
-  }
+  // Social login handled previously
 
   // Future<void> _handleAppleLogin() async {
   //   try {
@@ -616,56 +516,116 @@ class _RegisterPageState extends State<RegisterPage>
 
   @override
   Widget build(BuildContext context) {
-    final primary = AppConfigController.to.primaryColorAsColor;
+    final config = AppConfigController.to;
+    final primary = config.primaryColorAsColor;
 
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-            child: Column(children: [
-          // Top Bar with Back Button and Language Selector
-          Padding(
-            padding: Responsive.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () => Get.back(),
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: AppColors.textPrimary,
-                    size: Responsive.sp(20),
+    return Obx(() {
+      final isDark = config.isDarkMode;
+      final scaffoldBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+      final textColor = isDark ? Colors.white : AppColors.textPrimary;
+      final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
+      final fieldFillColor = isDark ? const Color(0xFF1E293B) : AppColors.grey50;
+      final borderColor = isDark ? Colors.white24 : AppColors.grey300;
+
+      return Scaffold(
+          backgroundColor: scaffoldBg,
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    // Top Bar with Back Button and Language Selector
+            Padding(
+              padding: Responsive.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: textColor,
+                      size: Responsive.sp(20),
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
                   ),
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(),
-                ),
-                  // Language Button (toggle)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(Responsive.r(6)),
-                    onTap: () {
-                      final isAr = Get.locale?.languageCode == 'ar';
-                      Get.updateLocale(isAr ? const Locale('en', 'US') : const Locale('ar', 'SA'));
-                      setState(() {});
-                    },
-                    child: Padding(
-                      padding: Responsive.symmetric(horizontal: 6, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.language,
-                            color: primary,
-                            size: Responsive.sp(18),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Language Button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.05) : AppColors.grey50,
+                          borderRadius: BorderRadius.circular(Responsive.r(30)),
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : AppColors.grey200,
                           ),
-                          SizedBox(width: Responsive.w(3)),
-                          Text(
-                            (Get.locale?.languageCode == 'ar') ? 'English' : 'العربية',
-                            style: AppFonts.AlmaraiMedium12.copyWith(
-                              color: primary,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(Responsive.r(30)),
+                            onTap: () {
+                              final isAr = Get.locale?.languageCode == 'ar';
+                              Get.updateLocale(isAr
+                                  ? const Locale('en', 'US')
+                                  : const Locale('ar', 'SA'));
+                              setState(() {});
+                            },
+                            child: Padding(
+                              padding: Responsive.symmetric(horizontal: 16, vertical: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.language,
+                                    color: primary,
+                                    size: Responsive.sp(18),
+                                  ),
+                                  SizedBox(width: Responsive.w(8)),
+                                  Text(
+                                    (Get.locale?.languageCode == 'ar')
+                                        ? 'English'
+                                        : 'العربية',
+                                    style: AppFonts.AlmaraiMedium12.copyWith(
+                                      color: isDark ? Colors.white : AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      SizedBox(width: Responsive.w(12)),
+                      // Theme Toggle Button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.05) : AppColors.grey50,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : AppColors.grey200,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: () => config.toggleTheme(),
+                            child: Padding(
+                              padding: Responsive.all(8),
+                              child: Icon(
+                                isDark ? Icons.light_mode : Icons.dark_mode,
+                                color: primary,
+                                size: Responsive.sp(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -681,13 +641,13 @@ class _RegisterPageState extends State<RegisterPage>
                     opacity: _fadeAnimation,
                     child: Image.asset(
                       AssetsManager.login,
-                      width: Responsive.w(70),
-                      height: Responsive.w(70),
+                      width: Responsive.w(35),
+                      height: Responsive.w(35),
                       fit: BoxFit.contain,
                     ),
                   ),
 
-                  SizedBox(height: Responsive.h(20)),
+                  SizedBox(height: Responsive.h(8)),
 
                   // Title
                   FadeTransition(
@@ -697,7 +657,7 @@ class _RegisterPageState extends State<RegisterPage>
                         Text(
                           'create_account'.tr,
                           style: AppFonts.AlmaraiBold20.copyWith(
-                            color: AppColors.textPrimary,
+                            color: textColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -705,7 +665,7 @@ class _RegisterPageState extends State<RegisterPage>
                         Text(
                           'register_intro'.tr,
                           style: AppFonts.AlmaraiRegular12.copyWith(
-                            color: AppColors.textSecondary,
+                            color: secondaryTextColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -713,7 +673,7 @@ class _RegisterPageState extends State<RegisterPage>
                     ),
                   ),
 
-                  SizedBox(height: Responsive.h(24)),
+                  SizedBox(height: Responsive.h(8)),
 
                   // Form Fields
                   FadeTransition(
@@ -742,7 +702,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(Responsive.r(12)),
                                     borderSide:
-                                        BorderSide(color: AppColors.grey300),
+                                        BorderSide(color: borderColor),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -752,7 +712,7 @@ class _RegisterPageState extends State<RegisterPage>
                                     ),
                                   ),
                                   filled: true,
-                                  fillColor: AppColors.grey50,
+                                  fillColor: fieldFillColor,
                                   contentPadding: Responsive.symmetric(
                                     horizontal: 16,
                                     vertical: 16,
@@ -798,7 +758,7 @@ class _RegisterPageState extends State<RegisterPage>
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: AppColors.grey200,
+                                              color: borderColor,
                                               width: Responsive.w(1),
                                             ),
                                           ),
@@ -814,7 +774,7 @@ class _RegisterPageState extends State<RegisterPage>
                                         Text(
                                           _selectedCountryCode.dialCode ?? '+20',
                                           style: AppFonts.AlmaraiRegular14.copyWith(
-                                            color: AppColors.textPrimary,
+                                            color: textColor,
                                           ),
                                         ),
                                         SizedBox(width: Responsive.w(8)),
@@ -822,7 +782,7 @@ class _RegisterPageState extends State<RegisterPage>
                                         Container(
                                           width: Responsive.w(1),
                                           height: Responsive.h(20),
-                                          color: AppColors.grey300,
+                                          color: borderColor,
                                         ),
                                       ],
                                     ),
@@ -830,7 +790,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                  borderSide: BorderSide(color: AppColors.grey300),
+                                  borderSide: BorderSide(color: borderColor),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -840,7 +800,7 @@ class _RegisterPageState extends State<RegisterPage>
                                   ),
                                 ),
                                 filled: true,
-                                fillColor: AppColors.grey50,
+                                fillColor: fieldFillColor,
                                 contentPadding: Responsive.symmetric(
                                   horizontal: 16,
                                   vertical: 16,
@@ -862,10 +822,10 @@ class _RegisterPageState extends State<RegisterPage>
                           Container(
                             padding: Responsive.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
-                              color: AppColors.grey50,
+                              color: fieldFillColor,
                               borderRadius: BorderRadius.circular(Responsive.r(12)),
                               border: Border.all(
-                                color: AppColors.grey300,
+                                color: borderColor,
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
@@ -885,11 +845,11 @@ class _RegisterPageState extends State<RegisterPage>
                               items: [
                                 DropdownMenuItem(
                                   value: 'parent',
-                                  child: Text('parent'.tr, style: AppFonts.AlmaraiRegular14),
+                                  child: Text('parent'.tr, style: AppFonts.AlmaraiRegular14.copyWith(color: textColor)),
                                 ),
                                 DropdownMenuItem(
                                   value: 'student',
-                                  child: Text('student'.tr, style: AppFonts.AlmaraiRegular14),
+                                  child: Text('student'.tr, style: AppFonts.AlmaraiRegular14.copyWith(color: textColor)),
                                 ),
                               ],
                               onChanged: (value) {
@@ -924,7 +884,7 @@ class _RegisterPageState extends State<RegisterPage>
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
-                                    BorderSide(color: AppColors.grey300),
+                                    BorderSide(color: borderColor),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -934,7 +894,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 ),
                               ),
                               filled: true,
-                              fillColor: AppColors.grey50,
+                              fillColor: fieldFillColor,
                               contentPadding: Responsive.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
@@ -986,7 +946,7 @@ class _RegisterPageState extends State<RegisterPage>
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
-                                    BorderSide(color: AppColors.grey300),
+                                    BorderSide(color: borderColor),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -996,7 +956,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 ),
                               ),
                               filled: true,
-                              fillColor: AppColors.grey50,
+                              fillColor: fieldFillColor,
                               contentPadding: Responsive.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
@@ -1088,7 +1048,7 @@ class _RegisterPageState extends State<RegisterPage>
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
                                 borderSide:
-                                    BorderSide(color: AppColors.grey300),
+                                    BorderSide(color: borderColor),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(Responsive.r(12)),
@@ -1098,7 +1058,7 @@ class _RegisterPageState extends State<RegisterPage>
                                 ),
                               ),
                               filled: true,
-                              fillColor: AppColors.grey50,
+                              fillColor: fieldFillColor,
                               contentPadding: Responsive.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
@@ -1164,101 +1124,29 @@ class _RegisterPageState extends State<RegisterPage>
                             ),
                           ),
                           SizedBox(height: Responsive.h(24)),
-                           Row(
+                          // Login Button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: AppColors.grey300,
+                              Text(
+                                'already_have_account'.tr,
+                                style: AppFonts.AlmaraiRegular14.copyWith(
+                                  color: secondaryTextColor,
                                 ),
                               ),
-                              Padding(
-                                padding: Responsive.symmetric(horizontal: 16),
+                              TextButton(
+                                onPressed: () {
+                                  Get.offNamed(AppRoutes.login);
+                                },
                                 child: Text(
-                                  'or_continue_with'.tr,
-                                  style: AppFonts.AlmaraiRegular12.copyWith(
-                                    color: AppColors.textSecondary,
+                                  'login'.tr,
+                                  style: AppFonts.AlmaraiBold14.copyWith(
+                                    color: primary,
                                   ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  color: AppColors.grey300,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: Responsive.h(24)),
-
-                          // Google Button
-                          SizedBox(
-                            height: Responsive.h(50),
-                            child: OutlinedButton(
-                              onPressed: _isLoading ? null : _handleGoogleLogin,
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppColors.grey300),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                ),
-                                padding: EdgeInsets.zero,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.asset(
-                                    AssetsManager.googleSvg,
-                                    width: Responsive.w(24),
-                                    height: Responsive.w(24),
-                                  ),
-                                  SizedBox(width: Responsive.w(12)),
-                                  Text(
-                                    'continue_with_google'.tr,
-                                    style: AppFonts.AlmaraiMedium14.copyWith(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                           // Social Login Buttons
-                          // if (Platform.isIOS) ...[
-                          //  SizedBox(height: Responsive.h(16)),
-                          //   SizedBox(
-                          //     height: Responsive.h(50),
-                          //      child: OutlinedButton(
-                          //       onPressed: _isLoading ? null : _handleAppleLogin,
-                          //       style: OutlinedButton.styleFrom(
-                          //         backgroundColor: Colors.black,
-                          //         side: BorderSide(color: Colors.black),
-                          //         shape: RoundedRectangleBorder(
-                          //           borderRadius: BorderRadius.circular(Responsive.r(12)),
-                          //         ),
-                          //         padding: EdgeInsets.zero,
-                          //       ),
-                          //       child: Row(
-                          //         mainAxisAlignment: MainAxisAlignment.center,
-                          //         children: [
-                          //           SvgPicture.asset(
-                          //             AssetsManager.appleSvg,
-                          //             width: Responsive.w(24),
-                          //             height: Responsive.w(24),
-                          //              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                          //           ),
-                          //           SizedBox(width: Responsive.w(12)),
-                          //           Text(
-                          //             'continue_with_apple'.tr,
-                          //             style: AppFonts.AlmaraiMedium14.copyWith(
-                          //               color: Colors.white,
-                          //             ),
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ],
                           SizedBox(height: Responsive.h(20)),
                         ],
                       ),
@@ -1267,12 +1155,18 @@ class _RegisterPageState extends State<RegisterPage>
                 ],
               ),
             ),
-          )),
-          if (_isLoading)
-            const Positioned.fill(
-              child: LoadingPage(),
-            ),
-        ])));
+              ), // SingleChildScrollView
+            ), // Expanded
+          ], // Column children
+        ), // Column
+      ), // SafeArea
+      if (_isLoading)
+        const Positioned.fill(
+          child: LoadingPage(),
+        ),
+    ], // Stack children
+  )); // Stack and Scaffold
+    });
   }
 }
 

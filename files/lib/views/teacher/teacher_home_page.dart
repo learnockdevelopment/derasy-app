@@ -232,15 +232,36 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                             ),
                           ),
 
-                          // 2. Store Section
+                          // 2. Quick Actions
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.only(bottom: Responsive.h(24)),
-                              child: _buildStoreSection(isDark),
+                              child: _buildQuickActionsList(profile, isDark),
                             ),
                           ),
 
-                          // 3. Timetable Schedule Section
+                          // 3. Applications Dashboard Stats
+                          if (_recruitmentStats != null)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: Responsive.h(28), left: 24, right: 24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'recruitment_stats'.tr,
+                                      style: AppFonts.AlmaraiBold16.copyWith(
+                                        color: isDark ? Colors.white : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    SizedBox(height: Responsive.h(16)),
+                                    _buildAppsDashboardStats(isDark),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                          // 4. Timetable Schedule Section
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.only(bottom: Responsive.h(28)),
@@ -248,15 +269,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                             ),
                           ),
 
-                          // 4. Careers Section (stats & cv)
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.only(bottom: Responsive.h(28)),
-                              child: _buildCareersSection(profile, isDark),
-                            ),
-                          ),
-
-                          // 5. Applications Section (stats, apps list, jobs hub button)
+                          // 5. Applications Section (recent apps list)
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.only(bottom: Responsive.h(28)),
@@ -444,203 +457,111 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  Widget _buildStoreSection(bool isDark) {
+  Widget _buildQuickActionsList(TeacherModel profile, bool isDark) {
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
-    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
-    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
-
-    return Padding(
-      padding: Responsive.symmetric(horizontal: 24),
-      child: Container(
-        padding: Responsive.all(20),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(Responsive.r(28)),
-          border: Border.all(color: borderColor, width: 1.2),
-          boxShadow: [
-            BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
-          ],
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: Responsive.symmetric(horizontal: 24),
+          child: Text(
+            'quick_actions'.tr,
+            style: AppFonts.AlmaraiBold16.copyWith(color: textColor),
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: Responsive.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.salesAccent.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(Responsive.r(12)),
-                  ),
-                  child: const Icon(IconlyBold.buy, color: AppColors.salesAccent, size: 18),
-                ),
-                SizedBox(width: Responsive.w(12)),
-                Text(
-                  'derasy_store'.tr.isNotEmpty ? 'derasy_store'.tr : 'Derasy Store',
-                  style: AppFonts.AlmaraiBold16.copyWith(color: textColor, letterSpacing: -0.5),
-                ),
-              ],
-            ),
-            SizedBox(height: Responsive.h(12)),
-            Text(
-              'store_desc'.tr.isNotEmpty 
-                  ? 'store_desc'.tr 
-                  : 'Upgrade your classroom with premium tools, stationery, and hardware synced with your official school account.',
-              style: AppFonts.AlmaraiRegular12.copyWith(
-                color: isDark ? Colors.white70 : AppColors.textSecondary,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: Responsive.h(16)),
-            ElevatedButton(
-              onPressed: () => Get.toNamed(AppRoutes.storeHome)?.then((_) => _loadProfile()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.salesAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(16))),
-                padding: Responsive.symmetric(vertical: 12),
-                minimumSize: const Size(double.infinity, 44),
-                elevation: 0,
-              ),
-              child: Text(
-                'explore_store'.tr.isNotEmpty ? 'explore_store'.tr : 'Explore Store',
-                style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCareersSection(TeacherModel profile, bool isDark) {
-    final textColor = isDark ? Colors.white : AppColors.textPrimary;
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
-
-    return Padding(
-      padding: Responsive.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        SizedBox(height: Responsive.h(14)),
+        SizedBox(
+          height: Responsive.h(120),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: Responsive.symmetric(horizontal: 24),
             children: [
-              Container(
-                padding: Responsive.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.salesAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(Responsive.r(8)),
-                ),
-                child: const Icon(IconlyBold.work, color: AppColors.salesAccent, size: 16),
+              _buildHorizontalActionCard(
+                icon: IconlyBold.buy,
+                title: 'derasy_store'.tr.isNotEmpty ? 'derasy_store'.tr : 'Derasy Store',
+                color: AppColors.salesAccent,
+                isDark: isDark,
+                onTap: () => Get.toNamed(AppRoutes.storeHome)?.then((_) => _loadProfile()),
               ),
-              SizedBox(width: Responsive.w(10)),
-              Text(
-                'careers'.tr,
-                style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+              SizedBox(width: Responsive.w(14)),
+              _buildHorizontalActionCard(
+                icon: IconlyLight.document,
+                title: profile.hasCv ? 'edit_cv'.tr : 'add_cv'.tr,
+                color: Colors.blue,
+                isDark: isDark,
+                onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) => _loadProfile()),
+              ),
+              SizedBox(width: Responsive.w(14)),
+              _buildHorizontalActionCard(
+                icon: IconlyLight.discovery,
+                title: 'jobs_hub'.tr,
+                color: Colors.teal,
+                isDark: isDark,
+                onTap: () => Get.toNamed(AppRoutes.teacherJobsHub),
               ),
             ],
-          ),
-          SizedBox(height: Responsive.h(14)),
-          
-          _buildActionCard(
-            icon: IconlyLight.document,
-            title: profile.hasCv ? 'edit_cv'.tr : 'add_cv'.tr,
-            subtitle: profile.hasCv ? 'edit_cv_desc'.tr : 'cv_profile_desc'.tr,
-            color: AppColors.salesAccent,
-            cardBg: cardBg,
-            borderColor: borderColor,
-            shadowColor: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
-            onTap: () => Get.toNamed(AppRoutes.teacherCvProfile)?.then((_) => _loadProfile()),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCareerStatsSection(bool isDark) {
-    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
-    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
-    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
-
-    return Container(
-      width: double.infinity,
-      padding: Responsive.all(20),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(Responsive.r(28)),
-        border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: [
-          BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildCareerMetricItem(
-              icon: IconlyBold.star,
-              title: 'experience'.tr,
-              value: '${_profile?.experienceYears ?? 0} ${'years'.tr}',
-              color: Colors.amber,
-              isDark: isDark,
-            ),
-          ),
-          Container(
-            width: 1,
-            height: Responsive.h(40),
-            color: isDark ? Colors.white12 : AppColors.grey200,
-          ),
-          Expanded(
-            child: _buildCareerMetricItem(
-              icon: IconlyBold.wallet,
-              title: 'expected_salary'.tr,
-              value: '${_profile?.salary.toStringAsFixed(0) ?? '0'} EGP',
-              color: Colors.teal,
-              isDark: isDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCareerMetricItem({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-    required bool isDark,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: Responsive.all(10),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        SizedBox(height: Responsive.h(10)),
-        Text(
-          title,
-          style: AppFonts.AlmaraiBold10.copyWith(color: AppColors.textSecondary),
-        ),
-        SizedBox(height: Responsive.h(4)),
-        Text(
-          value,
-          style: AppFonts.AlmaraiBold16.copyWith(
-            color: isDark ? Colors.white : AppColors.textPrimary,
-            letterSpacing: -0.5,
           ),
         ),
       ],
     );
   }
 
+  Widget _buildHorizontalActionCard({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.6) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
+    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.03);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: Responsive.w(110),
+        padding: Responsive.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(Responsive.r(22)),
+          border: Border.all(color: borderColor, width: 1.2),
+          boxShadow: [
+            BoxShadow(color: shadowColor, blurRadius: 15, offset: const Offset(0, 6)),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: Responsive.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: Responsive.sp(22)),
+            ),
+            SizedBox(height: Responsive.h(8)),
+            Text(
+              title,
+              style: AppFonts.AlmaraiBold10.copyWith(
+                color: isDark ? Colors.white : AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildApplicationsSection(bool isDark) {
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = isDark ? Colors.white12 : AppColors.grey300;
 
     return Padding(
       padding: Responsive.symmetric(horizontal: 24),
@@ -659,31 +580,13 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               ),
               SizedBox(width: Responsive.w(10)),
               Text(
-                'applications'.tr,
+                'recent_applications'.tr,
                 style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
               ),
             ],
           ),
           SizedBox(height: Responsive.h(14)),
-          
-          if (_recruitmentStats != null) ...[
-            _buildAppsDashboardStats(isDark),
-            SizedBox(height: Responsive.h(16)),
-          ],
-
           _buildRecentApplicationsSection(isDark),
-          SizedBox(height: Responsive.h(16)),
-
-          _buildActionCard(
-            icon: IconlyLight.discovery,
-            title: 'jobs_you_can_apply'.tr,
-            subtitle: 'explore_latest_teacher_jobs'.tr,
-            color: Colors.teal,
-            cardBg: cardBg,
-            borderColor: borderColor,
-            shadowColor: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
-            onTap: () => Get.toNamed(AppRoutes.teacherJobsHub),
-          ),
         ],
       ),
     );
@@ -1057,22 +960,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  Widget _buildActionCards(bool isDark) {
-    final cardBg = isDark ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white;
-    final shadowColor = isDark ? Colors.black26 : Colors.black.withOpacity(0.04);
-    final borderColor = isDark ? Colors.white.withOpacity(0.06) : AppColors.grey200.withOpacity(0.8);
-
-    return _buildActionCard(
-      icon: IconlyLight.work,
-      title: 'jobs'.tr,
-      subtitle: 'manage_jobs_cv'.tr,
-      color: AppColors.salesAccent,
-      cardBg: cardBg,
-      borderColor: borderColor,
-      shadowColor: shadowColor,
-      onTap: () => Get.toNamed(AppRoutes.teacherJobsHub),
-    );
-  }
 
   Widget _buildRecentApplicationsSection(bool isDark) {
     if (_applications.isEmpty) {
@@ -1314,68 +1201,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required Color cardBg,
-    required Color borderColor,
-    required Color shadowColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: Responsive.all(18),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(Responsive.r(28)),
-          border: Border.all(color: borderColor, width: 1.5),
-          boxShadow: [
-            BoxShadow(color: shadowColor, blurRadius: 12, offset: const Offset(0, 6)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: Responsive.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(Responsive.r(16)),
-              ),
-              child: Icon(icon, color: color, size: Responsive.sp(22)),
-            ),
-            SizedBox(width: Responsive.w(16)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppFonts.AlmaraiBold14.copyWith(color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.textPrimary),
-                  ),
-                  SizedBox(height: Responsive.h(4)),
-                  Text(
-                    subtitle,
-                    style: AppFonts.AlmaraiRegular10.copyWith(color: AppColors.textSecondary),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Responsive.isRTL ? IconlyLight.arrow_left_2 : IconlyLight.arrow_right_2,
-              color: AppColors.textSecondary,
-              size: 16,
-            ),
-          ],
-        ),
       ),
     );
   }
