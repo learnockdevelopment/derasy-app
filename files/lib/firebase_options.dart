@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '121260320184',
     projectId: 'derasy',
     storageBucket: 'derasy.firebasestorage.app',
-    iosBundleId: 'com.derasy.app',
+    iosBundleId: 'com.derassy.app',
   );
 }
