@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../services/chatbot_service.dart';
 import 'package:iconly/iconly.dart';
 
@@ -98,25 +99,30 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   Widget _buildMessageBubble(ChatMessage message) {
     final isUser = message.role == 'user';
+    final isDark = AppConfigController.to.isDarkMode;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h, left: isUser ? 40.w : 0, right: isUser ? 0 : 40.w),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.blue1 : const Color(0xFFF3F4F6),
+          color: isUser 
+              ? AppColors.blue1 
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF3F4F6)),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.r),
             topRight: Radius.circular(20.r),
             bottomLeft: Radius.circular(isUser ? 20.r : 4.r),
             bottomRight: Radius.circular(isUser ? 4.r : 20.r),
           ),
+          border: isUser 
+              ? null 
+              : Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent),
         ),
         child: Text(
           message.content,
           style: AppFonts.bodyMedium.copyWith(
-            color: isUser ? Colors.white : const Color(0xFF1F2937),
-            
+            color: isUser ? Colors.white : (isDark ? Colors.white : const Color(0xFF1F2937)),
           ),
         ),
       ),
@@ -124,14 +130,16 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Widget _buildTypingIndicator() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h, left: 40.w, right: 40.w),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF3F4F6),
           borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.transparent),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -148,8 +156,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
             Text(
               'typing'.tr,
               style: AppFonts.bodyMedium.copyWith(
-                color: const Color(0xFF6B7280),
-                
+                color: isDark ? Colors.white70 : const Color(0xFF6B7280),
               ),
             ),
           ],
@@ -159,6 +166,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Widget _buildMessagesArea() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Expanded(
       child: _messages.isEmpty && !_isLoading
           ? Center(
@@ -181,8 +189,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   Text(
                     'start_conversation'.tr,
                     style: AppFonts.bodyMedium.copyWith(
-                      color: const Color(0xFF6B7280),
-                      
+                      color: isDark ? Colors.white60 : const Color(0xFF6B7280),
                     ),
                   ),
                 ],
@@ -205,24 +212,29 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Widget _buildInputArea() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final inputAreaBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB);
+    final borderCol = isDark ? Colors.white10 : const Color(0xFFE5E7EB);
+    final inputBg = isDark ? const Color(0xFF0F172A) : Colors.white;
+
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: inputAreaBg,
         border: Border(
-          top: BorderSide(color: const Color(0xFFE5E7EB), width: 1),
+          top: BorderSide(color: borderCol, width: 1),
         ),
       ),
       child: Row(
         children: [
           Expanded(
             child: Material(
-              color: Colors.white,
+              color: inputBg,
               borderRadius: BorderRadius.circular(20.r),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  border: Border.all(color: borderCol),
                 ),
                 child: TextField(
                   controller: _messageController,
@@ -230,8 +242,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   decoration: InputDecoration(
                     hintText: 'type_message'.tr,
                     hintStyle: AppFonts.bodyMedium.copyWith(
-                      color: const Color(0xFF9CA3AF),
-                      
+                      color: isDark ? Colors.white38 : const Color(0xFF9CA3AF),
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
@@ -239,7 +250,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
                       vertical: 10.h,
                     ),
                   ),
-                  style: AppFonts.bodyMedium.copyWith(fontSize: 14.sp),
+                  style: AppFonts.bodyMedium.copyWith(
+                    fontSize: 14.sp,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                   maxLines: null,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
@@ -280,8 +294,9 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final isDark = AppConfigController.to.isDarkMode;
     return AppBar(
-      backgroundColor: AppColors.blue1,
+      backgroundColor: isDark ? const Color(0xFF1E293B) : AppColors.blue1,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
@@ -292,17 +307,17 @@ class _ChatbotPageState extends State<ChatbotPage> {
         style: AppFonts.bodyLarge.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          
         ),
       ),
     );
   }
 
   Widget _buildEmbeddedHeader() {
+    final isDark = AppConfigController.to.isDarkMode;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.blue1,
+        color: isDark ? const Color(0xFF1E293B) : AppColors.blue1,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(14.r),
           topRight: Radius.circular(14.r),
@@ -315,7 +330,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
             style: AppFonts.bodyLarge.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              
             ),
           ),
           const Spacer(),
@@ -331,42 +345,48 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.embedded) {
-      return SizedBox(
-        width: _panelWidth,
-        height: _panelHeight,
-        child: Material(
-          color: Colors.white,
-          elevation: 12,
-          borderRadius: BorderRadius.circular(14.r),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              _buildEmbeddedHeader(),
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildMessagesArea(),
-                    _buildInputArea(),
-                  ],
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+
+      if (widget.embedded) {
+        final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        return SizedBox(
+          width: _panelWidth,
+          height: _panelHeight,
+          child: Material(
+            color: cardBg,
+            elevation: 12,
+            borderRadius: BorderRadius.circular(14.r),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                _buildEmbeddedHeader(),
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildMessagesArea(),
+                      _buildInputArea(),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+        );
+      }
+
+      final bgColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+      return Scaffold(
+        backgroundColor: bgColor,
+        appBar: _buildAppBar(),
+        body: Column(
+          children: [
+            _buildMessagesArea(),
+            _buildInputArea(),
+          ],
         ),
       );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildMessagesArea(),
-          _buildInputArea(),
-        ],
-      ),
-    );
+    });
   }
 }
 

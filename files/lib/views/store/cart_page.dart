@@ -8,6 +8,7 @@ import '../../core/utils/responsive_utils.dart';
 import '../../core/routes/app_routes.dart';
 import '../../models/store_models.dart';
 import '../../services/store_service.dart';
+import '../../services/user_storage_service.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -459,7 +460,13 @@ class _CartPageState extends State<CartPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     Get.back(); // Dismiss dialog
-                    Get.offNamed(AppRoutes.teacherHome); // Back to home
+                    if (UserStorageService.isTeacher()) {
+                      Get.offNamed(AppRoutes.teacherHome);
+                    } else if (UserStorageService.isSales()) {
+                      Get.offNamed(AppRoutes.salesHome);
+                    } else {
+                      Get.offNamed(AppRoutes.home);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.salesAccent,

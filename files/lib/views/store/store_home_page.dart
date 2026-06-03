@@ -8,6 +8,7 @@ import '../../core/utils/responsive_utils.dart';
 import '../../core/routes/app_routes.dart';
 import '../../models/store_models.dart';
 import '../../services/store_service.dart';
+import '../../services/user_storage_service.dart';
 
 class StoreHomePage extends StatefulWidget {
   const StoreHomePage({Key? key}) : super(key: key);
@@ -104,23 +105,43 @@ class _StoreHomePageState extends State<StoreHomePage> {
     final textSecondary = isDark ? Colors.grey.shade400 : AppColors.textSecondary;
     final borderColor = isDark ? Colors.white12 : AppColors.grey300;
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offNamed(AppRoutes.home),
-          icon: Icon(
-            Responsive.isRTL ? IconlyLight.arrow_right : IconlyLight.arrow_left,
-            color: textColor,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (UserStorageService.isTeacher()) {
+          Get.offNamed(AppRoutes.teacherHome);
+        } else if (UserStorageService.isSales()) {
+          Get.offNamed(AppRoutes.salesHome);
+        } else {
+          Get.offNamed(AppRoutes.home);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () {
+              if (UserStorageService.isTeacher()) {
+                Get.offNamed(AppRoutes.teacherHome);
+              } else if (UserStorageService.isSales()) {
+                Get.offNamed(AppRoutes.salesHome);
+              } else {
+                Get.offNamed(AppRoutes.home);
+              }
+            },
+            icon: Icon(
+              Responsive.isRTL ? IconlyLight.arrow_right : IconlyLight.arrow_left,
+              color: textColor,
+            ),
           ),
-        ),
-        title: Text(
-          'derasy_store'.tr.isNotEmpty ? 'derasy_store'.tr : 'Derasy Store',
-          style: AppFonts.AlmaraiBold18.copyWith(color: textColor),
-        ),
-        centerTitle: true,
+          title: Text(
+            'derasy_store'.tr.isNotEmpty ? 'derasy_store'.tr : 'Derasy Store',
+            style: AppFonts.AlmaraiBold18.copyWith(color: textColor),
+          ),
+          centerTitle: true,
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -552,6 +573,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                 ],
               ),
             ),
+      ),
     );
   }
 }
