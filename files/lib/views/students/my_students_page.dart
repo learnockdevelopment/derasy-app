@@ -170,7 +170,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
     return Obx(() {
       final isDark = AppConfigController.to.isDarkMode;
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        backgroundColor: Colors.transparent,
         body: Stack(
           children: [
           HorizontalSwipeDetector(
@@ -277,46 +277,55 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
 
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: Responsive.all(16),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(Responsive.r(16)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.blue1.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                          padding: Responsive.symmetric(horizontal: 16, vertical: 10),
+                          child: GestureDetector(
+                            onTap: _navigateToAddChild,
+                            child: Container(
+                              padding: Responsive.symmetric(vertical: 16, horizontal: 20),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF2563EB), // Premium Blue
+                                    Color(0xFF3B82F6), // Vibrant Blue
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: _navigateToAddChild,
-                                borderRadius: BorderRadius.circular(Responsive.r(16)),
-                                child: Padding(
-                                  padding: Responsive.all(16),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(IconlyBold.plus, color: Colors.white, size: Responsive.sp(20)),
-                                      SizedBox(width: Responsive.w(12)),
-                                      Text(
-                                        'add_student'.tr,
-                                        style: AppFonts.bodyLarge.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: Responsive.sp(14),
-                                        ),
-                                      ),
-                                    ],
+                                borderRadius: BorderRadius.circular(Responsive.r(24)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2563EB).withOpacity(0.35),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 8),
                                   ),
-                                ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: Responsive.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      IconlyBold.plus,
+                                      color: Colors.white,
+                                      size: Responsive.sp(18),
+                                    ),
+                                  ),
+                                  SizedBox(width: Responsive.w(16)),
+                                  Text(
+                                    'add_student'.tr,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: Responsive.sp(15),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -565,18 +574,23 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                               ),
                             ],
                           ),
-                          child: Center(
-                            child: Text(
-                              (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
-                                  ? (child.arabicFullName![0].toUpperCase())
-                                  : 'S',
-                              style: AppFonts.h3.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: Responsive.sp(16),
-                              ),
-                            ),
-                          ),
+                          child: (child.avatar != null && child.avatar!.isNotEmpty)
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                  child: Image.network(child.avatar!, fit: BoxFit.cover),
+                                )
+                              : Center(
+                                  child: Text(
+                                    (child.arabicFullName != null && child.arabicFullName!.isNotEmpty)
+                                        ? (child.arabicFullName![0].toUpperCase())
+                                        : 'S',
+                                    style: AppFonts.h3.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(16),
+                                    ),
+                                  ),
+                                ),
                         ),
                          SizedBox(width: Responsive.w(12)),
                           // Badges beside avatar - centered vertically with avatar (not centered in card)
@@ -944,14 +958,7 @@ class _MyStudentsPageState extends State<MyStudentsPage> {
                         },
                       ),
                     ],
-                    SizedBox(height: Responsive.h(12)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildAdmissionButton(child),
-                        ),
-                      ], 
-                    ),
+                    SizedBox(height: Responsive.h(4)),
 
                   ],
                 ), 

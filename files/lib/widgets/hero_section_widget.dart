@@ -6,6 +6,7 @@ import 'package:iconly/iconly.dart';
 import 'dart:async';
 import '../core/routes/app_routes.dart';
 import '../core/controllers/app_config_controller.dart';
+import 'safe_network_image.dart';
 
 class HeroSectionWidget extends StatelessWidget {
   final Map<String, dynamic>? userData;
@@ -44,6 +45,25 @@ class HeroSectionWidget extends StatelessWidget {
 
     final userName = userData?['name'] ?? userData?['fullName'] ?? 'user'.tr;
     final displayTitle = title ?? pageTitle ?? userName;
+
+    // Safely extract user avatar image URL
+    String? imageUrl;
+    final avatar = userData?['avatar'];
+    if (avatar != null && avatar is String && avatar.trim().isNotEmpty && avatar.trim().toLowerCase() != 'null') {
+      imageUrl = avatar.trim();
+    }
+    if (imageUrl == null || imageUrl.isEmpty) {
+      final profileImage = userData?['profileImage'];
+      if (profileImage != null && profileImage is String && profileImage.trim().isNotEmpty && profileImage.trim().toLowerCase() != 'null') {
+        imageUrl = profileImage.trim();
+      }
+    }
+    if (imageUrl == null || imageUrl.isEmpty) {
+      final image = userData?['image'];
+      if (image != null && image is String && image.trim().isNotEmpty && image.trim().toLowerCase() != 'null') {
+        imageUrl = image.trim();
+      }
+    }
 
     return Obx(() {
       final isDark = AppConfigController.to.isDarkMode;
@@ -109,8 +129,17 @@ class HeroSectionWidget extends StatelessWidget {
                           color: Colors.white.withOpacity(isDark ? 0.1 : 0.15),
                           border: Border.all(color: Colors.white.withOpacity(isDark ? 0.2 : 0.3), width: 1.2),
                         ),
-                        child: Center(
-                          child: Icon(IconlyBold.profile, color: Colors.white, size: Responsive.sp(18)),
+                        child: ClipOval(
+                          child: imageUrl?.isNotEmpty == true
+                              ? SafeNetworkImage(
+                                  imageUrl: imageUrl,
+                                  width: Responsive.w(40),
+                                  height: Responsive.w(40),
+                                  fit: BoxFit.cover,
+                                )
+                              : Center(
+                                  child: Icon(IconlyBold.profile, color: Colors.white, size: Responsive.sp(18)),
+                                ),
                         ),
                       ),
                     ),
@@ -135,7 +164,7 @@ class HeroSectionWidget extends StatelessWidget {
                             style: AppFonts.h3.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
-                              fontSize: Responsive.sp(18),
+                              fontSize: Responsive.sp(14),
                               letterSpacing: -0.4,
                             ),
                             maxLines: 1,

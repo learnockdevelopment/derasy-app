@@ -7,6 +7,7 @@ import '../../../services/grades_service.dart';
 import '../../../services/students_service.dart';
 import '../../../utils/egyptian_national_id_parser.dart';
 import '../data/student_details_page.dart';
+import '../../../core/controllers/dashboard_controller.dart';
 import '../../../widgets/step_navigation.dart';
 import '../../../widgets/error_prompts.dart';
 import '../../../widgets/enhanced_address_field.dart';
@@ -244,6 +245,9 @@ class _AddStudentPageState extends State<AddStudentPage> {
       final response = await StudentsService.addStudent(_schoolId!, request);
 
       if (response.success) {
+        // Trigger dashboard refresh to reload student list
+        DashboardController.to.refreshAll().catchError((_) => null);
+
         Get.snackbar(
           'success'.tr,
           'student_created_successfully'.tr,

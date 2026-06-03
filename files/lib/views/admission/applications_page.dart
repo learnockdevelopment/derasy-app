@@ -348,6 +348,42 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                     'no_applications_found'.tr,
                     style: AppFonts.bodyLarge.copyWith(color: isDark ? Colors.white60 : AppColors.textSecondary),
                   ),
+                  SizedBox(height: Responsive.h(20)),
+                  Padding(
+                    padding: Responsive.symmetric(horizontal: 40),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (controller.relatedChildren.isEmpty) {
+                          Get.snackbar(
+                            'error'.tr,
+                            'no_students_for_application'.tr,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: AppColors.error,
+                            colorText: Colors.white,
+                          );
+                        } else {
+                          Get.toNamed(AppRoutes.applyToSchools);
+                        }
+                      },
+                      icon: Icon(IconlyLight.plus, color: Colors.white, size: Responsive.sp(16)),
+                      label: Text(
+                        'add_application'.tr,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(14),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.blue1,
+                        padding: Responsive.symmetric(vertical: 14, horizontal: 24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Responsive.r(16)),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -520,7 +556,7 @@ class _ApplicationsPageState extends State<ApplicationsPage> {
                       SizedBox(width: Responsive.w(12)),
                       Expanded(
                         child: Text(
-                          app.school.name,
+                          Responsive.formatSchoolName(app.school.name),
                           style: AppFonts.bodyMedium.copyWith(
                             color: textPrimary,
                             fontSize: Responsive.sp(13),

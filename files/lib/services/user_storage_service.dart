@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../models/user.dart';
+import '../core/controllers/dashboard_controller.dart';
 
 class UserStorageService {
   static const String _currentUserKey = 'current_user';
@@ -33,6 +35,14 @@ class UserStorageService {
     await _storage.remove(_currentUserKey);
     await _storage.remove(_authTokenKey);
     await _storage.write(_isLoggedInKey, false);
+
+    // Clear Dashboard Cache
+    await _storage.remove('dashboard_children');
+    await _storage.remove('dashboard_applications');
+    
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().clearMemory();
+    }
   }
 
   static bool isLoggedIn() {

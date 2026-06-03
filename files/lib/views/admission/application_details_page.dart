@@ -277,7 +277,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                     _buildInfoRow(
                       icon: Icons.business,
                       label: 'school_name'.tr,
-                      value: app.school.name,
+                      value: Responsive.formatSchoolName(app.school.name),
                       isHighlight: true,
                       cardBg: cardBg, borderColor: borderColor,
                       textPrimary: textPrimary, textSecondary: textSecondary, surfaceBg: surfaceBg,
@@ -336,70 +336,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 ),
                 SizedBox(height: Responsive.h(10)),
     
-                // Payment Information
-                if (app.payment != null)
-                  _buildInfoCard(
-                    icon: Icons.payments_rounded,
-                    iconColor: app.payment!.isPaid ? AppColors.success : AppColors.warning,
-                    title: 'payment_information'.tr,
-                    cardBg: cardBg, borderColor: borderColor,
-                    textPrimary: textPrimary,
-                    children: [
-                      Container(
-                        padding: Responsive.all(10),
-                        decoration: BoxDecoration(
-                          color: (app.payment!.isPaid ? AppColors.success : AppColors.warning).withOpacity(isDark ? 0.15 : 0.1),
-                          borderRadius: BorderRadius.circular(Responsive.r(10)),
-                          border: Border.all(
-                            color: (app.payment!.isPaid ? AppColors.success : AppColors.warning).withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: Responsive.all(6),
-                              decoration: BoxDecoration(
-                                color: app.payment!.isPaid ? AppColors.success : AppColors.warning,
-                                borderRadius: BorderRadius.circular(Responsive.r(8)),
-                              ),
-                              child: Icon(
-                                app.payment!.isPaid ? Icons.check_circle : Icons.pending,
-                                color: Colors.white,
-                                size: Responsive.sp(16),
-                              ),
-                            ),
-                            SizedBox(width: Responsive.w(10)),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    app.payment!.isPaid ? 'paid'.tr : 'pending'.tr,
-                                    style: AppFonts.h4.copyWith(
-                                      color: app.payment!.isPaid ? AppColors.success : AppColors.warning,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.sp(13),
-                                    ),
-                                  ),
-                                  SizedBox(height: Responsive.h(2)),
-                                  Text(
-                                    '${app.payment!.amount} ${'egp'.tr}',
-                                    style: AppFonts.bodyMedium.copyWith(
-                                      color: textPrimary,
-                                      fontSize: Responsive.sp(13),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                if (app.payment != null) SizedBox(height: Responsive.h(10)),
+               
     
                 // Application Details
                 _buildInfoCard(
@@ -512,20 +449,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                   ),
                 ],
     
-                // Interview Slots
-                if (app.preferredInterviewSlots.isNotEmpty) ...[
-                  SizedBox(height: Responsive.h(10)),
-                  _buildInfoCard(
-                    icon: Icons.event_rounded,
-                    iconColor: const Color(0xFFF59E0B),
-                    title: 'preferred_interview_slots'.tr,
-                    cardBg: cardBg, borderColor: borderColor,
-                    textPrimary: textPrimary,
-                    children: app.preferredInterviewSlots
-                        .map((slot) => _buildInterviewSlot(slot, surfaceBg: surfaceBg, borderColor: borderColor, textPrimary: textPrimary, textSecondary: textSecondary))
-                        .toList(),
-                  ),
-                ],
+
     
                 // Events Timeline
                 if (app.events.isNotEmpty) ...[
@@ -696,55 +620,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
     );
   }
 
-  Widget _buildInterviewSlot(InterviewSlot slot, {
-    required Color surfaceBg, required Color borderColor,
-    required Color textPrimary, required Color textSecondary,
-  }) {
-    return Container(
-      margin: Responsive.only(bottom: 8),
-      padding: Responsive.all(10),
-      decoration: BoxDecoration(
-        color: surfaceBg,
-        borderRadius: BorderRadius.circular(Responsive.r(10)),
-        border: Border.all(color: borderColor, width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: Responsive.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(Responsive.r(8)),
-            ),
-            child: Icon(Icons.calendar_today, size: Responsive.sp(14), color: const Color(0xFFF59E0B)),
-          ),
-          SizedBox(width: Responsive.w(10)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _formatDate(slot.date),
-                  style: AppFonts.bodyMedium.copyWith(color: textPrimary, fontSize: Responsive.sp(12), fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: Responsive.h(3)),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: Responsive.sp(11), color: textSecondary),
-                    SizedBox(width: Responsive.w(5)),
-                    Text(
-                      '${_getWeekdayKey(slot.date.weekday).tr.toUpperCase()} - ${_formatTimeDisplay("${slot.timeRange.from} - ${slot.timeRange.to}")}',
-                      style: AppFonts.bodySmall.copyWith(color: textSecondary, fontSize: Responsive.sp(10)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   IconData _getStatusIcon(String status, bool isPaid) {
     switch (status.toLowerCase()) {
@@ -822,7 +698,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
                 children: [
                   Expanded(
                     child: Text(
-                      event.title.tr,
+                      _translateEvent(event.title),
                       style: AppFonts.bodyMedium.copyWith(
                         color: textPrimary,
                         fontWeight: FontWeight.bold,
@@ -842,7 +718,7 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
               if (event.description != null && event.description!.isNotEmpty) ...[
                 SizedBox(height: Responsive.h(4)),
                 Text(
-                  event.description!.tr,
+                  _translateEvent(event.description!),
                   style: AppFonts.bodySmall.copyWith(
                     color: textSecondary,
                     fontSize: Responsive.sp(11),
@@ -1338,6 +1214,13 @@ class _ApplicationDetailsPageState extends State<ApplicationDetailsPage> {
       setState(() => _isLoading = false);
       Get.snackbar('error'.tr, e.toString(), backgroundColor: AppColors.error, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
     }
+  }
+
+  String _translateEvent(String text) {
+    if (text.isEmpty) return '';
+    final key = text.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '_');
+    final translated = key.tr;
+    return translated == key ? text : translated;
   }
 }
 

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../models/student_models.dart';
 import '../../services/students_service.dart';
 import 'package:iconly/iconly.dart';
@@ -28,31 +29,37 @@ class _AddChildPageState extends State<AddChildPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue1,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'add_child'.tr,
-          style: AppFonts.h3.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
+    return Obx(() {
+      final isDark = AppConfigController.to.isDarkMode;
+      final scaffoldBgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+      return Scaffold(
+        backgroundColor: scaffoldBgColor,
+        appBar: AppBar(
+          backgroundColor: AppColors.blue1,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
+            onPressed: () => Get.back(),
+          ),
+          title: Text(
+            'add_child'.tr,
+            style: AppFonts.h3.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18.sp,
+            ),
           ),
         ),
-      ),
-      body: _extractedData == null
-          ? _buildUploadSection()
-          : _buildReviewSection(),
-    );
+        body: _extractedData == null
+            ? _buildUploadSection()
+            : _buildReviewSection(),
+      );
+    });
   }
 
   Widget _buildUploadSection() {
+    final isDark = AppConfigController.to.isDarkMode;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -101,7 +108,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 Text(
                   'extract_data_automatically'.tr,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withOpacity(0.95),
                     fontSize: 14.sp,
                   ),
                   textAlign: TextAlign.center,
@@ -121,11 +128,11 @@ class _AddChildPageState extends State<AddChildPage> {
                 border: Border.all(
                   color: _birthCertificateFile != null
                       ? AppColors.blue1
-                      : AppColors.grey300,
+                      : (isDark ? Colors.white.withOpacity(0.1) : AppColors.grey300),
                   width: 3,
                 ),
                 borderRadius: BorderRadius.circular(20.r),
-                color: AppColors.surface,
+                color: isDark ? const Color(0xFF1E293B) : AppColors.surface,
               ),
               child: _isExtracting
                   ? Center(
@@ -139,7 +146,7 @@ class _AddChildPageState extends State<AddChildPage> {
                           Text(
                             'extracting_data'.tr,
                             style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
+                              color: isDark ? Colors.white : AppColors.textPrimary,
                               fontSize: 16.sp,
                             ),
                           ),
@@ -147,7 +154,7 @@ class _AddChildPageState extends State<AddChildPage> {
                           Text(
                             'please_wait'.tr,
                             style: AppFonts.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: isDark ? Colors.grey : AppColors.textSecondary,
                               fontSize: 12.sp,
                             ),
                           ),
@@ -204,7 +211,7 @@ class _AddChildPageState extends State<AddChildPage> {
                             Container(
                               padding: EdgeInsets.all(24.w),
                               decoration: BoxDecoration(
-                                color: AppColors.blue1.withOpacity(0.1),
+                                color: AppColors.blue1.withOpacity(isDark ? 0.2 : 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -217,7 +224,7 @@ class _AddChildPageState extends State<AddChildPage> {
                             Text(
                               'click_to_upload_birth_certificate'.tr,
                               style: AppFonts.bodyMedium.copyWith(
-                                color: AppColors.textPrimary,
+                                color: isDark ? Colors.white : AppColors.textPrimary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16.sp,
                               ),
@@ -226,7 +233,7 @@ class _AddChildPageState extends State<AddChildPage> {
                             Text(
                               'PNG, JPG up to 10MB',
                               style: AppFonts.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
+                                color: isDark ? Colors.grey : AppColors.textSecondary,
                                 fontSize: 12.sp,
                               ),
                             ),
@@ -239,7 +246,7 @@ class _AddChildPageState extends State<AddChildPage> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppColors.blue1.withOpacity(0.05),
+              color: AppColors.blue1.withOpacity(isDark ? 0.1 : 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: AppColors.blue1.withOpacity(0.2),
@@ -258,7 +265,7 @@ class _AddChildPageState extends State<AddChildPage> {
                   child: Text(
                     'supported_documents'.tr,
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
+                      color: isDark ? Colors.white70 : AppColors.textPrimary,
                       fontSize: 13.sp,
                     ),
                   ),
@@ -272,6 +279,7 @@ class _AddChildPageState extends State<AddChildPage> {
   }
 
   Widget _buildReviewSection() {
+    final isDark = AppConfigController.to.isDarkMode;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -281,7 +289,7 @@ class _AddChildPageState extends State<AddChildPage> {
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
+              color: AppColors.success.withOpacity(isDark ? 0.15 : 0.1),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: AppColors.success.withOpacity(0.3),
@@ -310,7 +318,7 @@ class _AddChildPageState extends State<AddChildPage> {
                       Text(
                         'data_extracted_successfully'.tr,
                         style: AppFonts.h4.copyWith(
-                          color: AppColors.textPrimary,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 16.sp,
                         ),
@@ -319,7 +327,7 @@ class _AddChildPageState extends State<AddChildPage> {
                       Text(
                         'review_and_confirm'.tr,
                         style: AppFonts.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: isDark ? Colors.grey : AppColors.textSecondary,
                           fontSize: 12.sp,
                         ),
                       ),
@@ -470,18 +478,22 @@ class _AddChildPageState extends State<AddChildPage> {
     required String value,
     String? subtitle,
   }) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : AppColors.grey200;
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: AppColors.grey200,
+          color: borderColor,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -492,7 +504,7 @@ class _AddChildPageState extends State<AddChildPage> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: AppColors.blue1.withOpacity(0.1),
+              color: AppColors.blue1.withOpacity(isDark ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -509,7 +521,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 Text(
                   title,
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: isDark ? Colors.grey : AppColors.textSecondary,
                     fontSize: 12.sp,
                   ),
                 ),
@@ -517,7 +529,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 Text(
                   value,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14.sp,
                   ),
@@ -527,7 +539,7 @@ class _AddChildPageState extends State<AddChildPage> {
                   Text(
                     subtitle,
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: isDark ? Colors.grey : AppColors.textSecondary,
                       fontSize: 12.sp,
                     ),
                   ),
@@ -541,12 +553,18 @@ class _AddChildPageState extends State<AddChildPage> {
   }
 
   void _showImageSourceDialog() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondaryColor = isDark ? Colors.grey : AppColors.textSecondary;
+    final handleBarColor = isDark ? Colors.white.withOpacity(0.2) : AppColors.grey300;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: surfaceColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -562,7 +580,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: AppColors.grey300,
+                  color: handleBarColor,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -571,7 +589,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 child: Text(
                   'select_option'.tr,
                   style: AppFonts.h3.copyWith(
-                    color: AppColors.textPrimary,
+                    color: textPrimaryColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 18.sp,
                   ),
@@ -582,7 +600,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.blue1.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(isDark ? 0.2 : 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -594,7 +612,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 title: Text(
                   'scan_certificate'.tr,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: textPrimaryColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 16.sp,
                   ),
@@ -602,7 +620,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 subtitle: Text(
                   'scan_with_camera'.tr,
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: textSecondaryColor,
                     fontSize: 12.sp,
                   ),
                 ),
@@ -620,7 +638,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 leading: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: AppColors.blue1.withOpacity(0.1),
+                    color: AppColors.blue1.withOpacity(isDark ? 0.2 : 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -632,7 +650,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 title: Text(
                   'upload_from_gallery'.tr,
                   style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: textPrimaryColor,
                     fontWeight: FontWeight.w600,
                     fontSize: 16.sp,
                   ),
@@ -640,7 +658,7 @@ class _AddChildPageState extends State<AddChildPage> {
                 subtitle: Text(
                   'select_from_gallery'.tr,
                   style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: textSecondaryColor,
                     fontSize: 12.sp,
                   ),
                 ),

@@ -31,12 +31,14 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   int _resendCountdown = 0;
   String _email = '';
   bool _isPasswordReset = false;
+  String _role = 'parent';
 
   @override
   void initState() {
     super.initState();
     _email = Get.arguments?['email'] ?? '';
     _isPasswordReset = Get.arguments?['isPasswordReset'] ?? false;
+    _role = Get.arguments?['role'] ?? 'parent';
     _startResendCountdown();
 
     // Add listener to OTP field to trigger UI updates
@@ -130,7 +132,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           otp: _otpController.text.trim(),
         );
 
-        final response = await AuthService.verifyEmail(request);
+        final response = await AuthService.verifyEmail(request, role: _role);
 
         if (!mounted) return;
 
@@ -145,7 +147,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               id: '',
               name: '',
               email: _email,
-              role: 'parent', // Verification usually comes from public registration
+              role: _role,
             ),
             response.token,
           );
@@ -153,6 +155,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
           // Navigate based on role
           if (UserStorageService.isSales()) {
             Get.offAllNamed(AppRoutes.salesHome);
+          } else if (_role == 'teacher' || _role == 'school_teacher') {
+            Get.offAllNamed(AppRoutes.teacherHome);
           } else {
             Get.offAllNamed(AppRoutes.home);
           }
@@ -211,7 +215,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
     try {
       final request = ResendVerificationRequest(email: _email);
-      final response = await AuthService.resendVerification(request);
+      final response = await AuthService.resendVerification(request, role: _role);
 
       if (!mounted) return;
 

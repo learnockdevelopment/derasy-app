@@ -66,45 +66,9 @@ class _HomePageState extends State<HomePage> {
                 isDark ? Brightness.light : Brightness.dark,
           ),
           child: Scaffold(
-            backgroundColor: bgColor,
+            backgroundColor: Colors.transparent,
             body: Stack(
               children: [
-                // Ambient background blobs
-                Positioned(
-                  top: -Responsive.h(40),
-                  right: -Responsive.w(60),
-                  child: Container(
-                    width: Responsive.w(280),
-                    height: Responsive.w(280),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          AppColors.blue1.withOpacity(isDark ? 0.06 : 0.10),
-                          AppColors.blue1.withOpacity(0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: Responsive.h(120),
-                  left: -Responsive.w(80),
-                  child: Container(
-                    width: Responsive.w(320),
-                    height: Responsive.w(320),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          const Color(0xFF6366F1).withOpacity(isDark ? 0.05 : 0.07),
-                          const Color(0xFF6366F1).withOpacity(0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
                 // Scalable Content
                 HorizontalSwipeDetector(
                   onSwipeRight: () {
@@ -190,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                 // ── My Children ─────────────────────────────────────
                 _buildSectionHeader(
                   title: 'my_students'.tr,
-                  onViewAll: () => Get.toNamed(AppRoutes.myStudents),
+                  onViewAll: () => Get.toNamed(AppRoutes.myStudents)?.then((_) => _refreshData()),
                   icon: IconlyBold.user_2,
                   isDark: isDark,
                 ),
@@ -207,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                 // ── Upcoming Interviews ──────────────────────────────
                 _buildUpcomingInterviewsSection(allApplications, isDark),
 
-                SizedBox(height: Responsive.h(110)),
+                SizedBox(height: Responsive.h(150)),
               ],
             ),
           ),
@@ -237,7 +201,7 @@ class _HomePageState extends State<HomePage> {
             label: 'my_students'.tr,
             value: '$childCount',
             color: AppColors.blue600,
-            onTap: () => Get.toNamed(AppRoutes.myStudents),
+            onTap: () => Get.toNamed(AppRoutes.myStudents)?.then((_) => _refreshData()),
           ),
           SizedBox(width: Responsive.w(10)),
           _buildStatPill(
@@ -246,7 +210,7 @@ class _HomePageState extends State<HomePage> {
             label: 'applications'.tr,
             value: '$appCount',
             color: const Color(0xFF8B5CF6),
-            onTap: () => Get.toNamed(AppRoutes.applications),
+            onTap: () => Get.toNamed(AppRoutes.applications)?.then((_) => _refreshData()),
           ),
           SizedBox(width: Responsive.w(10)),
           _buildStatPill(
@@ -271,9 +235,9 @@ class _HomePageState extends State<HomePage> {
     VoidCallback? onTap,
   }) {
     final bg = isDark
-        ? const Color(0xFF1E293B)
-        : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.07) : color.withOpacity(0.12);
+        ? Colors.black.withOpacity(0.18)
+        : Colors.white.withOpacity(0.65);
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.6);
 
     return Expanded(
       child: GestureDetector(
@@ -336,6 +300,7 @@ class _HomePageState extends State<HomePage> {
     bool showViewAll = true,
     IconData? icon,
     required bool isDark,
+    VoidCallback? onAdd,
   }) {
     return Padding(
       padding: Responsive.symmetric(horizontal: 20),
@@ -363,6 +328,24 @@ class _HomePageState extends State<HomePage> {
                   letterSpacing: -0.4,
                 ),
               ),
+              if (onAdd != null) ...[
+                SizedBox(width: Responsive.w(8)),
+                GestureDetector(
+                  onTap: onAdd,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: AppColors.blue1.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.add,
+                      color: AppColors.blue1,
+                      size: Responsive.sp(14),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           if (showViewAll && onViewAll != null)
@@ -436,7 +419,22 @@ class _HomePageState extends State<HomePage> {
     final fullName = child.arabicFullName ?? child.fullName;
     final firstName = fullName.split(' ').first;
     final bool isEnrolled = child.schoolId.id.isNotEmpty;
-    final ageYears = (child.ageInOctober / 12).floor();
+    // Calculate actual age from birthDate
+    int ageYears = 0;
+    if (child.birthDate.isNotEmpty) {
+      try {
+        final birth = DateTime.parse(child.birthDate);
+        final now = DateTime.now();
+        ageYears = now.year - birth.year;
+        if (now.month < birth.month || (now.month == birth.month && now.day < birth.day)) {
+          ageYears--;
+        }
+      } catch (_) {
+        ageYears = (child.ageInOctober / 12).floor();
+      }
+    } else {
+      ageYears = (child.ageInOctober / 12).floor();
+    }
 
     return GestureDetector(
       onTap: () =>
@@ -446,13 +444,13 @@ class _HomePageState extends State<HomePage> {
         height: Responsive.w(118),
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF1E293B)
-              : Colors.white,
+              ? Colors.black.withOpacity(0.18)
+              : Colors.white.withOpacity(0.65),
           borderRadius: BorderRadius.circular(Responsive.r(26)),
           border: Border.all(
             color: isEnrolled
-                ? themeColor.withOpacity(isDark ? 0.3 : 0.2)
-                : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                ? themeColor.withOpacity(isDark ? 0.35 : 0.25)
+                : (isDark ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.6)),
             width: 1.5,
           ),
           boxShadow: [
@@ -484,7 +482,8 @@ class _HomePageState extends State<HomePage> {
                   child: CircleAvatar(
                     radius: Responsive.r(23),
                     backgroundColor: themeColor.withOpacity(0.12),
-                    child: Icon(IconlyBold.profile,
+                    backgroundImage: (child.avatar != null && child.avatar!.isNotEmpty) ? NetworkImage(child.avatar!) : null,
+                    child: (child.avatar != null && child.avatar!.isNotEmpty) ? null : Icon(IconlyBold.profile,
                         color: themeColor, size: Responsive.sp(21)),
                   ),
                 ),
@@ -543,19 +542,19 @@ class _HomePageState extends State<HomePage> {
   Widget _buildAddStudentCard(bool isDark) {
     final color = AppColors.blue900;
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.addChildSteps),
+      onTap: () => Get.toNamed(AppRoutes.addChildSteps)?.then((_) => _refreshData()),
       child: Container(
         width: Responsive.w(108),
         height: Responsive.w(118),
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF1E293B).withOpacity(0.8)
-              : Colors.white,
+              ? Colors.black.withOpacity(0.12)
+              : Colors.white.withOpacity(0.45),
           borderRadius: BorderRadius.circular(Responsive.r(26)),
           border: Border.all(
             color: isDark
                 ? Colors.white.withOpacity(0.07)
-                : const Color(0xFFE2E8F0),
+                : Colors.white.withOpacity(0.4),
             width: 1.5,
             style: BorderStyle.solid,
           ),
@@ -608,10 +607,11 @@ class _HomePageState extends State<HomePage> {
     return Column(children: [
       _buildSectionHeader(
         title: 'recent_applications'.tr,
-        onViewAll: () => Get.toNamed(AppRoutes.applications),
+        onViewAll: () => Get.toNamed(AppRoutes.applications)?.then((_) => _refreshData()),
         showViewAll: apps.isNotEmpty,
         icon: IconlyBold.document,
         isDark: isDark,
+        onAdd: () => Get.toNamed(AppRoutes.applyToSchools)?.then((_) => _refreshData()),
       ),
       SizedBox(height: Responsive.h(14)),
       if (isLoading)
@@ -642,9 +642,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRecentAppCard(Application app, bool isDark) {
     final statusColor = _getStatusColor(app.status);
-    final hasAiReport = app.aiAssessment != null;
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = statusColor.withOpacity(isDark ? 0.25 : 0.18);
+    final cardBg = isDark
+        ? Colors.black.withOpacity(0.18)
+        : Colors.white.withOpacity(0.65);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.08)
+        : Colors.white.withOpacity(0.6);
 
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.applicationDetails,
@@ -693,27 +696,6 @@ class _HomePageState extends State<HomePage> {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const Spacer(),
-                  if (app.payment != null)
-                    Container(
-                      padding: Responsive.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: app.payment!.isPaid
-                            ? AppColors.blue700.withOpacity(0.12)
-                            : Colors.red.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(Responsive.r(8)),
-                      ),
-                      child: Text(
-                        app.payment!.isPaid ? 'paid'.tr : 'unpaid'.tr,
-                        style: TextStyle(
-                          color: app.payment!.isPaid
-                              ? AppColors.blue700
-                              : Colors.red.shade600,
-                          fontWeight: FontWeight.w900,
-                          fontSize: Responsive.sp(9),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -743,7 +725,7 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              app.school.name,
+                              Responsive.formatSchoolName(app.school.name),
                               style: AppFonts.AlmaraiBold16.copyWith(
                                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 letterSpacing: -0.4,
@@ -761,62 +743,12 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      if (app.payment != null)
-                        Text(
-                          '${app.payment!.amount} ${'egp'.tr}',
-                          style: AppFonts.AlmaraiBold16.copyWith(
-                            color: AppColors.blue700,
-                          ),
-                        ),
                     ],
                   ),
                   SizedBox(height: Responsive.h(14)),
                   // Bottom row: AI badge + events
                   Row(
                     children: [
-                      // AI Badge
-                      Container(
-                        padding: Responsive.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: hasAiReport
-                              ? AppColors.blue600.withOpacity(0.08)
-                              : (isDark
-                                  ? Colors.white.withOpacity(0.04)
-                                  : const Color(0xFFF1F5F9)),
-                          borderRadius: BorderRadius.circular(Responsive.r(10)),
-                          border: Border.all(
-                            color: hasAiReport
-                                ? AppColors.blue600.withOpacity(0.2)
-                                : Colors.transparent,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              IconlyBold.shield_done,
-                              size: Responsive.sp(12),
-                              color: hasAiReport
-                                  ? AppColors.blue600
-                                  : Colors.grey.shade400,
-                            ),
-                            SizedBox(width: Responsive.w(6)),
-                            Text(
-                              hasAiReport
-                                  ? 'ai_assessment_ready'.tr
-                                  : 'ai_not_found'.tr,
-                              style: TextStyle(
-                                fontSize: Responsive.sp(10),
-                                color: hasAiReport
-                                    ? AppColors.blue700
-                                    : Colors.grey.shade500,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
                       if (app.events.isNotEmpty)
                         Container(
                           padding: Responsive.symmetric(horizontal: 10, vertical: 6),
@@ -912,17 +844,20 @@ class _HomePageState extends State<HomePage> {
         : diff <= 3
             ? Colors.orange.shade600
             : AppColors.blue600;
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final cardBg = isDark
+        ? Colors.black.withOpacity(0.18)
+        : Colors.white.withOpacity(0.65);
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.applicationDetails,
-          arguments: {'applicationId': app.id}),
+      onTap: () => _showInterviewDetailsModal(app, isDark),
       child: Container(
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(Responsive.r(24)),
           border: Border.all(
-            color: accentColor.withOpacity(isDark ? 0.2 : 0.15),
+            color: isDark
+                ? Colors.white.withOpacity(0.08)
+                : Colors.white.withOpacity(0.6),
             width: 1.3,
           ),
           boxShadow: [
@@ -977,7 +912,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      app.school.name,
+                      Responsive.formatSchoolName(app.school.name),
                       style: AppFonts.AlmaraiBold14.copyWith(
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
@@ -992,7 +927,7 @@ class _HomePageState extends State<HomePage> {
                             color: const Color(0xFF9CA3AF)),
                         SizedBox(width: Responsive.w(5)),
                         Text(
-                          app.interview?.time ?? '',
+                          Responsive.formatTimeToAmPm(app.interview?.time ?? ''),
                           style: AppFonts.AlmaraiRegular12.copyWith(
                             color: const Color(0xFF6B7280),
                           ),
@@ -1051,12 +986,12 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       padding: Responsive.symmetric(horizontal: 24, vertical: 28),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? Colors.black.withOpacity(0.18) : Colors.white.withOpacity(0.65),
         borderRadius: BorderRadius.circular(Responsive.r(26)),
         border: Border.all(
             color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : const Color(0xFFE2E8F0)),
+                ? Colors.white.withOpacity(0.08)
+                : Colors.white.withOpacity(0.6)),
       ),
       child: Column(
         children: [
@@ -1084,75 +1019,73 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildEmptyApplicationsState(bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: Responsive.all(28),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(Responsive.r(28)),
-        border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : const Color(0xFFE2E8F0),
-            width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: Responsive.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.blue1.withOpacity(0.06),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.applyToSchools)?.then((_) => _refreshData()),
+      child: Container(
+        width: double.infinity,
+        padding: Responsive.all(28),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.black.withOpacity(0.18) : Colors.white.withOpacity(0.65),
+          borderRadius: BorderRadius.circular(Responsive.r(28)),
+          border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.08)
+                  : Colors.white.withOpacity(0.6),
+              width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-            child: Icon(IconlyBroken.document,
-                color: AppColors.blue1.withOpacity(0.45),
-                size: Responsive.sp(46)),
-          ),
-          SizedBox(height: Responsive.h(18)),
-          Text(
-            'no_applications_found'.tr,
-            style: AppFonts.AlmaraiBold16.copyWith(
-              color: isDark ? Colors.white : const Color(0xFF1F2937),
+          ],
+        ),
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  padding: Responsive.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue1.withOpacity(0.06),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(IconlyBroken.document,
+                      color: AppColors.blue1.withOpacity(0.45),
+                      size: Responsive.sp(46)),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.blue1,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: Responsive.h(8)),
-          Text(
-            'start_admission_journey_hint'.tr,
-            style: AppFonts.AlmaraiRegular12.copyWith(
-              color: const Color(0xFF9CA3AF),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: Responsive.h(22)),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => Get.toNamed(AppRoutes.applyToSchools),
-              icon: Icon(IconlyLight.arrow_right_2,
-                  color: Colors.white, size: Responsive.sp(16)),
-              label: Text(
-                'apply_now'.tr,
-                style: AppFonts.AlmaraiBold14.copyWith(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.blue1,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: Responsive.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Responsive.r(16))),
-                shadowColor: AppColors.blue1.withOpacity(0.3),
+            SizedBox(height: Responsive.h(18)),
+            Text(
+              'no_applications_found'.tr,
+              style: AppFonts.AlmaraiBold16.copyWith(
+                color: isDark ? Colors.white : const Color(0xFF1F2937),
               ),
             ),
-          ),
-        ],
+            SizedBox(height: Responsive.h(8)),
+            Text(
+              'start_admission_journey_hint'.tr,
+              style: AppFonts.AlmaraiRegular12.copyWith(
+                color: const Color(0xFF9CA3AF),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1216,6 +1149,236 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showInterviewDetailsModal(Application app, bool isDark) {
+    final tp = isDark ? Colors.white : AppColors.textPrimary;
+    final ts = isDark ? Colors.white60 : AppColors.textSecondary;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final interview = app.interview;
+    if (interview == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(Responsive.r(28)),
+            topRight: Radius.circular(Responsive.r(28)),
+          ),
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.6),
+            width: 1.5,
+          ),
+        ),
+        padding: Responsive.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: Responsive.w(40),
+                height: Responsive.h(4),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(20)),
+            
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: Responsive.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue1.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(IconlyBold.calendar, color: AppColors.blue1, size: Responsive.sp(28)),
+                ),
+                SizedBox(width: Responsive.w(16)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'interview_details'.tr,
+                        style: AppFonts.h3.copyWith(color: tp, fontWeight: FontWeight.bold, fontSize: Responsive.sp(18)),
+                      ),
+                      SizedBox(height: Responsive.h(4)),
+                      Text(
+                        Responsive.formatSchoolName(app.school.name),
+                        style: AppFonts.bodyMedium.copyWith(color: ts, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: Responsive.h(24)),
+            
+            // Details List
+            _buildModalDetailRow(Icons.person, 'student_name'.tr, app.child.arabicFullName ?? app.child.fullName, tp, ts, isDark),
+            SizedBox(height: Responsive.h(16)),
+            
+            _buildModalDetailRow(Icons.calendar_today, 'date'.tr, interview.date != null ? DateFormat('EEEE, d MMMM yyyy', Get.locale?.languageCode).format(interview.date!) : 'n_a'.tr, tp, ts, isDark),
+            SizedBox(height: Responsive.h(16)),
+            
+            _buildModalDetailRow(Icons.access_time, 'time'.tr, Responsive.formatTimeToAmPm(interview.time ?? ''), tp, ts, isDark),
+            SizedBox(height: Responsive.h(16)),
+            
+            if (interview.location != null && interview.location!.isNotEmpty) ...[
+              _buildModalDetailRow(Icons.location_on, 'location'.tr, interview.location!, tp, ts, isDark),
+              SizedBox(height: Responsive.h(16)),
+            ],
+            
+            if (interview.notes != null && interview.notes!.isNotEmpty) ...[
+              _buildModalDetailRow(Icons.note, 'notes'.tr, interview.notes!, tp, ts, isDark),
+              SizedBox(height: Responsive.h(16)),
+            ],
+            
+            SizedBox(height: Responsive.h(12)),
+            
+            // View Application Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Get.toNamed(AppRoutes.applicationDetails, arguments: {'applicationId': app.id});
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.blue1,
+                  padding: Responsive.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Responsive.r(16)),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'view_application_details'.tr,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: Responsive.sp(14),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(10)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalDetailRow(IconData icon, String label, String value, Color tp, Color ts, bool isDark) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: Responsive.sp(20), color: AppColors.blue1),
+        SizedBox(width: Responsive.w(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(color: ts, fontSize: Responsive.sp(11), fontWeight: FontWeight.w500)),
+              SizedBox(height: Responsive.h(2)),
+              Text(value, style: TextStyle(color: tp, fontSize: Responsive.sp(14), fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStoreBanner(bool isDark) {
+    final bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final descColor = isDark ? Colors.white70 : const Color(0xFF475569);
+    
+    return Padding(
+      padding: Responsive.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(Responsive.r(16)),
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Get.toNamed(AppRoutes.storeHome)?.then((_) => _refreshData()),
+            borderRadius: BorderRadius.circular(Responsive.r(16)),
+            child: Padding(
+              padding: Responsive.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: Responsive.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.blue1.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.shopping_bag_rounded,
+                      color: AppColors.blue1,
+                      size: Responsive.sp(28),
+                    ),
+                  ),
+                  SizedBox(width: Responsive.w(16)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'derasy_store'.tr,
+                          style: AppFonts.h4.copyWith(
+                            color: titleColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.sp(15),
+                          ),
+                        ),
+                        SizedBox(height: Responsive.h(4)),
+                        Text(
+                          'derasy_store_desc'.tr,
+                          style: AppFonts.bodySmall.copyWith(
+                            color: descColor,
+                            fontSize: Responsive.sp(11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                    size: Responsive.sp(16),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

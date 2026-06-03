@@ -49,11 +49,16 @@ class NotificationDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = _getNotificationColor(notification.type);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF0F172A) : AppColors.background;
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
     
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.blue1,
+        backgroundColor: isDark ? const Color(0xFF1E293B) : AppColors.blue1,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
@@ -76,11 +81,11 @@ class NotificationDetailsPage extends StatelessWidget {
               width: double.infinity,
               padding: Responsive.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(Responsive.r(16)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -105,7 +110,7 @@ class NotificationDetailsPage extends StatelessWidget {
                   Text(
                     notification.title,
                     style: AppFonts.h3.copyWith(
-                      color: AppColors.textPrimary,
+                      color: textColor,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -114,7 +119,7 @@ class NotificationDetailsPage extends StatelessWidget {
                   Text(
                      DateFormat('MMMM d, y • h:mm a').format(notification.createdAt),
                     style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textHint,
+                      color: isDark ? Colors.white54 : AppColors.textHint,
                     ),
                   ),
                 ],
@@ -128,11 +133,11 @@ class NotificationDetailsPage extends StatelessWidget {
               width: double.infinity,
               padding: Responsive.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(Responsive.r(16)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -144,7 +149,7 @@ class NotificationDetailsPage extends StatelessWidget {
                   Text(
                     'details'.tr,
                     style: AppFonts.h4.copyWith(
-                      color: AppColors.textPrimary,
+                      color: textColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -152,7 +157,7 @@ class NotificationDetailsPage extends StatelessWidget {
                   Text(
                     notification.message,
                     style: AppFonts.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: secondaryTextColor,
                       height: 1.6,
                       fontSize: Responsive.sp(16),
                     ),

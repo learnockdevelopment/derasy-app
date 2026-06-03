@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../core/constants/assets.dart';
+import '../core/constants/api_constants.dart';
 
 class SafeNetworkImage extends StatefulWidget {
   final String? imageUrl;
@@ -70,16 +71,25 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
       return widget.errorWidget ?? _buildErrorWidget();
     }
 
+    String finalUrl = trimmedUrl;
+    if (trimmedUrl.startsWith('/') && !trimmedUrl.startsWith('//')) {
+      if (trimmedUrl.startsWith('/api/')) {
+        finalUrl = 'https://parent.derasy.com$trimmedUrl';
+      } else {
+        finalUrl = '${ApiConstants.parentBaseUrl}$trimmedUrl';
+      }
+    }
+
     // If URL is invalid (not http/https), show error widget
-    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       return widget.errorWidget ?? _buildErrorWidget();
     }
 
     // Check if it's an SVG
-    final isSvg = trimmedUrl.toLowerCase().split('?').first.endsWith('.svg');
+    final isSvg = finalUrl.toLowerCase().split('?').first.endsWith('.svg');
     if (isSvg) {
       return SvgPicture.network(
-        trimmedUrl,
+        finalUrl,
         width: widget.width,
         height: widget.height,
         fit: widget.fit,
@@ -98,7 +108,7 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
     Widget imageWidget;
     try {
       imageWidget = Image.network(
-        trimmedUrl,
+        finalUrl,
         width: widget.width,
         height: widget.height,
         fit: widget.fit,

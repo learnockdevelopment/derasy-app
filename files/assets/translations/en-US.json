@@ -1217,6 +1217,7 @@
   "non_egyptian_child_request": "Non-Egyptian Child Request",
   "non_egyptian_request_coming_soon": "Non-Egyptian request feature is coming soon",
   "non_egyptian_request_desc": "Submit a request to add a non-Egyptian child. This requires admin approval.",
+  "new_admission": "New Admission",
   "non_egyptian_request_submitted": "Non-Egyptian request submitted successfully. Waiting for admin approval.",
   "non_refundable_notice": "Please note that registration fees are non-refundable in case of rejection or if the parent does not complete the procedures.",
   "none": "None",
@@ -2048,5 +2049,19 @@
   "youre_done": "You're Done!",
   "zagazig": "Zagazig",
   "zamalek": "Zamalek",
-  "zone": "Zone"
+  "zone": "Zone",
+  "stored_guardian_details": "Stored Guardian Details",
+  "father_details": "Father Details",
+  "mother_details": "Mother Details",
+  "education": "Education",
+  "occupation": "Occupation",
+  "marital_status": "Marital Status",
+  "temporary_national_id": "Temporary National ID",
+  "verified": "Verified",
+  "temporary": "Temporary",
+  "derasy_store": "Derasy Store",
+  "derasy_store_desc": "Browse and purchase school uniforms, packages, and textbooks.",
+  "shop_now": "Shop Now",
+  "website": "Website",
+  "location": "Location"
 }

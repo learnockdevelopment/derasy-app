@@ -379,7 +379,14 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
               Icons.calendar_today),
           _buildInfoRow('gender'.tr, widget.student.gender.toUpperCase(),
               Icons.person_outline),
-          _buildInfoRow('national_id'.tr, widget.student.nationalId, Icons.flag),
+          if (widget.student.nationality == 'Egyptian' || widget.student.nationalId.isNotEmpty)
+            _buildInfoRow('national_id'.tr, widget.student.nationalId, Icons.badge)
+          else ...[
+            if (widget.student.nationality != null && widget.student.nationality!.isNotEmpty)
+              _buildInfoRow('nationality'.tr, widget.student.nationality!, Icons.public),
+            if (widget.student.passport != null && widget.student.passport!.isNotEmpty)
+              _buildInfoRow('passport'.tr, widget.student.passport!, Icons.credit_card),
+          ],
         ],
       ),
     );

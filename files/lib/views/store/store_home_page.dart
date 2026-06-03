@@ -110,7 +110,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Get.offNamed(AppRoutes.home),
           icon: Icon(
             Responsive.isRTL ? IconlyLight.arrow_right : IconlyLight.arrow_left,
             color: textColor,

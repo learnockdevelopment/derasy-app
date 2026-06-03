@@ -14,6 +14,7 @@ import '../../core/constants/countries.dart';
 import '../../core/routes/app_routes.dart'; 
 import '../../core/controllers/app_config_controller.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/animated_app_background.dart';
 import '../../services/user_storage_service.dart';
 import '../../models/auth_models.dart';
 import '../../core/controllers/dashboard_controller.dart';
@@ -35,7 +36,8 @@ class _LoginPageState extends State<LoginPage>
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-  bool _isPhoneLogin = true;
+  bool _isPhoneLogin = false;
+  bool _isTeacherLogin = false;
   Offset _chatButtonPosition = Offset(0, 0);
   CountryCode _selectedCountryCode =
       CountryCode(name: 'Egypt', code: 'EG', dialCode: '+20');
@@ -106,6 +108,10 @@ class _LoginPageState extends State<LoginPage>
   bool _isValidEmail(String email) {
     return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         .hasMatch(email);
+  }
+
+  bool _isValidEmailOrPhone(String value) {
+    return _isValidEmail(value) || _isValidPhone(value);
   }
 
   String _getTranslatedCountryName(String code, String fallback) {
@@ -371,11 +377,7 @@ class _LoginPageState extends State<LoginPage>
     });
 
     try {
-      // Get email or phone based on login type
-      // Note: API expects email field, so we use the entered value (email or phone)
-      final String email = _isPhoneLogin
-          ? _phoneController.text.trim()
-          : _emailController.text.trim();
+      final String email = _emailController.text.trim();
 
       // Create login request
       final loginRequest = LoginRequest(
@@ -384,28 +386,42 @@ class _LoginPageState extends State<LoginPage>
       );
 
       // Call login API
-      final loginResponse = await AuthService.login(loginRequest);
+      final loginResponse = await AuthService.login(
+        loginRequest,
+        role: _isTeacherLogin ? 'teacher' : 'parent',
+      );
 
       if (!mounted) return;
 
       // Check user role
       final userRole = loginResponse.user.role.toLowerCase();
 
-      if (userRole != 'parent' &&
-          userRole != 'sales' &&
-          userRole != 'teacher' &&
-          userRole != 'school_teacher') {
-        // Role not allowed
-        setState(() {
-          _isLoading = false;
-        });
+      if (_isTeacherLogin) {
+        if (userRole != 'teacher' && userRole != 'school_teacher') {
+          setState(() {
+            _isLoading = false;
+          });
 
-        _showSnackBar(
-          'login_failed'.tr,
-          "can't login this user yet",
-          isError: true,
-        );
-        return;
+          _showSnackBar(
+            'login_failed'.tr,
+            'only_teachers_allowed'.tr,
+            isError: true,
+          );
+          return;
+        }
+      } else {
+        if (userRole != 'student' && userRole != 'parent' && userRole != 'sales') {
+          setState(() {
+            _isLoading = false;
+          });
+
+          _showSnackBar(
+            'login_failed'.tr,
+            'only_student_or_parent_allowed'.tr,
+            isError: true,
+          );
+          return;
+        }
       }
 
       // Save user data and token
@@ -547,26 +563,47 @@ class _LoginPageState extends State<LoginPage>
         throw AuthException('Failed to get Google ID token', 0);
       }
 
-      final loginResponse = await AuthService.loginWithGoogle(idToken);
+      final loginResponse = await AuthService.loginWithGoogle(
+        idToken,
+        role: _isTeacherLogin ? 'teacher' : 'parent',
+      );
 
       if (!mounted) return;
 
       final userRole = loginResponse.user.role.toLowerCase();
 
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
+      if (_isTeacherLogin) {
+        if (userRole != 'teacher' && userRole != 'school_teacher') {
+          setState(() {
+            _isLoading = false;
+          });
 
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
+          Get.snackbar(
+            'login_failed'.tr,
+            'only_teachers_allowed'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
+      } else {
+        if (userRole != 'student' && userRole != 'parent') {
+          setState(() {
+            _isLoading = false;
+          });
+
+          Get.snackbar(
+            'login_failed'.tr,
+            'only_student_or_parent_allowed'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
       }
 
       await UserStorageService.saveCurrentUser(
@@ -589,22 +626,37 @@ class _LoginPageState extends State<LoginPage>
         duration: const Duration(seconds: 2),
       );
 
-      try {
-        DashboardController.to.refreshAll();
-      } catch (e) {
-        print('📊 [LOGIN] Error triggering pre-fetch: $e');
+      if (userRole == 'parent') {
+        try {
+          DashboardController.to.refreshAll();
+        } catch (e) {
+          print('📊 [LOGIN] Error triggering pre-fetch: $e');
+        }
       }
 
-      Get.offNamed<void>(AppRoutes.home);
+      // Navigate based on role
+      if (userRole == 'sales') {
+        Get.offNamed(AppRoutes.salesHome);
+      } else if (userRole == 'teacher' || userRole == 'school_teacher') {
+        Get.offNamed(AppRoutes.teacherHome);
+      } else {
+        Get.offNamed(AppRoutes.home);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
       print('Google Sign In Error: $e');
+      
+      String errorMessage = 'google_login_failed'.tr;
+      if (e is AuthException) {
+        errorMessage = e.message;
+      }
+      
       Get.snackbar(
         'error'.tr,
-        'google_login_failed'.tr,
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
@@ -643,37 +695,59 @@ class _LoginPageState extends State<LoginPage>
         };
       }
   
-      final loginResponse = await AuthService.loginWithApple(identityToken, user: userObj);
+      final loginResponse = await AuthService.loginWithApple(
+        identityToken,
+        user: userObj,
+        role: _isTeacherLogin ? 'teacher' : 'parent',
+      );
   
        if (!mounted) return;
   
       final userRole = loginResponse.user.role.toLowerCase();
-  
-      if (userRole != 'student' && userRole != 'parent') {
-        setState(() {
-          _isLoading = false;
-        });
-  
-        Get.snackbar(
-          'login_failed'.tr,
-          'only_student_or_parent_allowed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-        return;
+
+      if (_isTeacherLogin) {
+        if (userRole != 'teacher' && userRole != 'school_teacher') {
+          setState(() {
+            _isLoading = false;
+          });
+
+          Get.snackbar(
+            'login_failed'.tr,
+            'only_teachers_allowed'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
+      } else {
+        if (userRole != 'student' && userRole != 'parent') {
+          setState(() {
+            _isLoading = false;
+          });
+
+          Get.snackbar(
+            'login_failed'.tr,
+            'only_student_or_parent_allowed'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
       }
-  
+
       await UserStorageService.saveCurrentUser(
         loginResponse.user,
         loginResponse.token,
       );
-  
+
       setState(() {
         _isLoading = false;
       });
-  
+
       Get.snackbar(
         'login_success'.tr,
         loginResponse.message.isNotEmpty
@@ -684,20 +758,33 @@ class _LoginPageState extends State<LoginPage>
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-  
-      Get.offNamed<void>(AppRoutes.home);
+
+      // Navigate based on role
+      if (userRole == 'sales') {
+        Get.offNamed(AppRoutes.salesHome);
+      } else if (userRole == 'teacher' || userRole == 'school_teacher') {
+        Get.offNamed(AppRoutes.teacherHome);
+      } else {
+        Get.offNamed(AppRoutes.home);
+      }
   
     } catch (e) {
-        if (!mounted) return;
-        setState(() {
+      if (!mounted) return;
+      setState(() {
         _isLoading = false;
       });
       print('Apple Sign In Error: $e');
-       Get.snackbar(
+      
+      String errorMessage = 'apple_login_failed'.tr;
+      if (e is AuthException) {
+        errorMessage = e.message;
+      }
+      
+      Get.snackbar(
         'error'.tr,
-        'apple_login_failed'.tr,
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: AppColors.error,
+        backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
     }
@@ -718,9 +805,10 @@ class _LoginPageState extends State<LoginPage>
           isDark ? const Color(0xFF1E293B) : AppColors.grey50;
       final borderColor = isDark ? Colors.white24 : AppColors.grey300;
 
-      return Scaffold(
-        backgroundColor: scaffoldBg,
-        body: Stack(
+      return AnimatedAppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
           children: [
             SafeArea(
               child: Column(
@@ -838,7 +926,7 @@ class _LoginPageState extends State<LoginPage>
                                 child: Column(
                                   children: [
                                     Text(
-                                      'login'.tr,
+                                      _isTeacherLogin ? 'login_as_teacher'.tr : 'login'.tr,
                                       style: AppFonts.AlmaraiBold20.copyWith(
                                         color: textColor,
                                       ),
@@ -862,224 +950,73 @@ class _LoginPageState extends State<LoginPage>
 
                               SizedBox(height: Responsive.h(24)),
                               SlideTransition(
-                                position: _slideAnimation,
+                                position: _slideAnimation, 
                                 child: FadeTransition(
                                   opacity: _fadeAnimation,
                                   child: Column(
                                     children: [
-                                      if (_isPhoneLogin)
-                                        // Phone Field with Flag and Country Code
-                                        TextFormField(
-                                          controller: _phoneController,
-                                          keyboardType: TextInputType.phone,
-                                          style: AppFonts.AlmaraiRegular14
-                                              .copyWith(color: textColor),
-                                          decoration: InputDecoration(
-                                            labelText: 'phone_number'.tr,
-                                            labelStyle: AppFonts
-                                                .AlmaraiRegular14.copyWith(
-                                              color: secondaryTextColor,
-                                            ),
-                                            hintText: 'enter_your_phone'.tr,
-                                            hintStyle: AppFonts.AlmaraiRegular12
-                                                .copyWith(
-                                              color: isDark
-                                                  ? Colors.white38
-                                                  : AppColors.grey400,
-                                            ),
-                                            prefixIcon: GestureDetector(
-                                              onTap: () {
-                                                _showModernCountryPicker(
-                                                    context);
-                                              },
-                                              child: Container(
-                                                padding: Responsive.symmetric(
-                                                    horizontal: 12),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                     // Flag - using emoji from Countries
-                                                    Text(
-                                                      Countries.getCountryByCode(
-                                                              _selectedCountryCode
-                                                                      .code ??
-                                                                  'EG')
-                                                          .flag,
-                                                      style: TextStyle(
-                                                          fontSize:
-                                                              Responsive.sp(
-                                                                  22)),
-                                                    ),
-                                                    SizedBox(
-                                                        width: Responsive.w(8)),
-                                                    // Country Code
-                                                    Text(
-                                                      _selectedCountryCode
-                                                              .dialCode ??
-                                                          '+20',
-                                                      style: AppFonts
-                                                              .AlmaraiRegular14
-                                                          .copyWith(
-                                                        color: textColor,
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                        width: Responsive.w(8)),
-                                                    // Separator
-                                                    Container(
-                                                      width: Responsive.w(1),
-                                                      height: Responsive.h(20),
-                                                      color: AppColors.grey300,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: borderColor),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: borderColor),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                color: primary,
-                                                width: Responsive.w(2),
-                                              ),
-                                            ),
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: AppColors.error),
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                color: AppColors.error,
-                                                width: Responsive.w(2),
-                                              ),
-                                            ),
-                                            filled: true,
-                                            fillColor: fieldFillColor,
-                                            contentPadding:
-                                                Responsive.symmetric(
-                                              horizontal: 16,
-                                              vertical: 12,
-                                            ),
+                                      // Email or Phone Field
+                                      TextFormField(
+                                        controller: _emailController,
+                                        keyboardType: TextInputType.emailAddress,
+                                        style: AppFonts.AlmaraiRegular14.copyWith(color: textColor),
+                                        decoration: InputDecoration(
+                                          labelText: 'email_or_phone'.tr,
+                                          labelStyle: AppFonts.AlmaraiRegular14.copyWith(
+                                            color: secondaryTextColor,
                                           ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'phone_required'.tr;
-                                            }
-                                            if (!_isValidPhone(value)) {
-                                              return 'enter_valid_phone'.tr;
-                                            }
-                                            return null;
-                                          },
-                                        )
-                                      else
-                                        // Email Field
-                                        TextFormField(
-                                          controller: _emailController,
-                                          keyboardType:
-                                              TextInputType.emailAddress,
-                                          style: AppFonts.AlmaraiRegular14
-                                              .copyWith(color: textColor),
-                                          decoration: InputDecoration(
-                                            labelText: 'email'.tr,
-                                            labelStyle: AppFonts
-                                                .AlmaraiRegular14.copyWith(
-                                              color: secondaryTextColor,
-                                            ),
-                                            hintText: 'enter_your_email'.tr,
-                                            hintStyle: AppFonts.AlmaraiRegular12
-                                                .copyWith(
-                                              color: isDark
-                                                  ? Colors.white38
-                                                  : AppColors.grey400,
-                                            ),
-                                            prefixIcon: Icon(
-                                              Icons.email_outlined,
+                                          hintText: 'enter_email_or_phone'.tr,
+                                          hintStyle: AppFonts.AlmaraiRegular12.copyWith(
+                                            color: isDark ? Colors.white38 : AppColors.grey400,
+                                          ),
+                                          prefixIcon: Icon(
+                                            Icons.person_outline_rounded,
+                                            color: primary,
+                                            size: Responsive.sp(20),
+                                          ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderSide: BorderSide(color: borderColor),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderSide: BorderSide(color: borderColor),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderSide: BorderSide(
                                               color: primary,
-                                              size: Responsive.sp(20),
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: borderColor),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: borderColor),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                color: primary,
-                                                width: Responsive.w(2),
-                                              ),
-                                            ),
-                                            errorBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                  color: AppColors.error),
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      Responsive.r(12)),
-                                              borderSide: BorderSide(
-                                                color: AppColors.error,
-                                                width: Responsive.w(2),
-                                              ),
-                                            ),
-                                            filled: true,
-                                            fillColor: fieldFillColor,
-                                            contentPadding:
-                                                Responsive.symmetric(
-                                              horizontal: 16,
-                                              vertical: 12,
+                                              width: Responsive.w(2),
                                             ),
                                           ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'email_required'.tr;
-                                            }
-                                            if (!_isValidEmail(value)) {
-                                              return 'enter_valid_email'.tr;
-                                            }
-                                            return null;
-                                          },
+                                          errorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderSide: BorderSide(color: AppColors.error),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                            borderSide: BorderSide(
+                                              color: AppColors.error,
+                                              width: Responsive.w(2),
+                                            ),
+                                          ),
+                                          filled: true,
+                                          fillColor: fieldFillColor,
+                                          contentPadding: Responsive.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
                                         ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'email_or_phone_required'.tr;
+                                          }
+                                          if (!_isValidEmailOrPhone(value)) {
+                                            return 'enter_valid_email_or_phone'.tr;
+                                          }
+                                          return null;
+                                        },
+                                      ),
                                       SizedBox(height: Responsive.h(12)),
 
                                       // Password Field
@@ -1239,19 +1176,18 @@ class _LoginPageState extends State<LoginPage>
                                   ),
                                 ),
                               ),
-                                      // Login with Email/Phone Toggle
+                                      // Login as Teacher / Parent Toggle
                                       TextButton(
                                         onPressed: () {
                                           setState(() {
-                                            _isPhoneLogin = !_isPhoneLogin;
+                                            _isTeacherLogin = !_isTeacherLogin;
                                           });
                                         },
                                         child: Text(
-                                          _isPhoneLogin
-                                              ? 'login_with_email'.tr
-                                              : 'login_with_phone'.tr,
-                                          style:
-                                              AppFonts.AlmaraiBold14.copyWith(
+                                          _isTeacherLogin
+                                              ? 'login_as_parent'.tr
+                                              : 'login_as_teacher'.tr,
+                                          style: AppFonts.AlmaraiBold14.copyWith(
                                             color: primary,
                                           ),
                                         ),
@@ -1364,28 +1300,33 @@ class _LoginPageState extends State<LoginPage>
                               SizedBox(height: Responsive.h(20)),
 
                               // Register Button
-                              // Row(
-                              //   mainAxisAlignment: MainAxisAlignment.center,
-                              //   children: [
-                              //     Text(
-                              //       'dont_have_account'.tr,
-                              //       style: AppFonts.AlmaraiRegular14.copyWith(
-                              //         color: secondaryTextColor,
-                              //       ),
-                              //     ),
-                              //     TextButton(
-                              //       onPressed: () {
-                              //         Get.toNamed(AppRoutes.register);
-                              //       },
-                              //       child: Text(
-                              //         'register'.tr,
-                              //         style: AppFonts.AlmaraiBold14.copyWith(
-                              //           color: primary,
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ],
-                              // ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'dont_have_account'.tr,
+                                    style: AppFonts.AlmaraiRegular14.copyWith(
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.toNamed(
+                                        AppRoutes.register,
+                                        arguments: {
+                                          'role': _isTeacherLogin ? 'teacher' : 'parent',
+                                        },
+                                      );
+                                    },
+                                    child: Text(
+                                      'register'.tr,
+                                      style: AppFonts.AlmaraiBold14.copyWith(
+                                        color: primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
 
                               SizedBox(height: Responsive.h(40)),
                             ],
@@ -1457,7 +1398,7 @@ class _LoginPageState extends State<LoginPage>
               ),
           ],
         ),
-      );
+      ));
     });
   }
 }

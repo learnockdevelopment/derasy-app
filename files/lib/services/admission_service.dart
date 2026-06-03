@@ -709,6 +709,7 @@ class AdmissionService {
       ).timeout(const Duration(seconds: 30));
 
       print('🎓 [ADMISSION] Response status: ${response.statusCode}');
+      print('🎓 [ADMISSION] Response body: ${response.body}');
       
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);

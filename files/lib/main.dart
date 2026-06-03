@@ -11,6 +11,7 @@ import 'core/controllers/app_translations.dart';
 import 'core/controllers/language_controller.dart';
 import 'core/controllers/app_config_controller.dart';
 import 'core/controllers/dashboard_controller.dart';
+import 'widgets/animated_app_background.dart';
 
 void main() async {
   try {
@@ -23,7 +24,7 @@ void main() async {
           errorString.contains('networkimageloadexception') ||
           errorString.contains('statuscode: 404') ||
           errorString.contains('http request failed') ||
-          (details.library?.contains('image') == true && 
+          (details.library?.contains('image') == true &&  
            details.exception.toString().contains('Exception'))) {
         debugPrint('🖼️ [GLOBAL IMAGE ERROR] Caught image error - suppressing');
         debugPrint('🖼️ [GLOBAL IMAGE ERROR] Exception: ${details.exception}');
@@ -83,7 +84,7 @@ class DerasyApp extends StatelessWidget {
             ),
             fontFamily: AppFonts.Almarai,
             useMaterial3: true,
-            scaffoldBackgroundColor: AppColors.salesBackgroundLight,
+            scaffoldBackgroundColor: Colors.transparent,
             textTheme: TextTheme( 
               displayLarge: AppFonts.AlmaraiBold64.copyWith(color: AppColors.salesForegroundLight),
               displayMedium: AppFonts.AlmaraiBold56.copyWith(color: AppColors.salesForegroundLight),
@@ -115,7 +116,7 @@ class DerasyApp extends StatelessWidget {
             ),
             fontFamily: AppFonts.Almarai,
             useMaterial3: true,
-            scaffoldBackgroundColor: AppColors.salesBackgroundDark,
+            scaffoldBackgroundColor: Colors.transparent,
             textTheme: TextTheme( 
               displayLarge: AppFonts.AlmaraiBold64.copyWith(color: AppColors.salesForegroundDark),
               displayMedium: AppFonts.AlmaraiBold56.copyWith(color: AppColors.salesForegroundDark),
@@ -134,6 +135,11 @@ class DerasyApp extends StatelessWidget {
               labelSmall: AppFonts.buttonSmall.copyWith(color: AppColors.salesForegroundDark),
             ),
           ),
+          builder: (context, child) {
+            return AnimatedAppBackground(
+              child: child ?? const SizedBox(),
+            );
+          },
           onGenerateRoute: RouteGenerator.onGenerate,
           initialRoute: AppRoutes.splash,
           debugShowCheckedModeBanner: false,

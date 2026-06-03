@@ -7,8 +7,13 @@ import '../models/auth_models.dart';
 class AuthService {
 
   static String _getBaseUrl({String? role}) {
-    if (role != null && role.toLowerCase() == 'sales') {
-      return ApiConstants.salesBaseUrl;
+    if (role != null) {
+      final normalizedRole = role.toLowerCase();
+      if (normalizedRole == 'sales') {
+        return ApiConstants.salesBaseUrl;
+      } else if (normalizedRole == 'teacher' || normalizedRole == 'school_teacher') {
+        return ApiConstants.teacherBaseUrl;
+      }
     }
     return ApiConstants.parentBaseUrl;
   }
@@ -138,12 +143,46 @@ class AuthService {
   }
 
   // 5. Login
-  static Future<LoginResponse> login(LoginRequest request) async {
+  static Future<LoginResponse> login(LoginRequest request, {String? role}) async {
     final requestBody = jsonEncode(request.toJson());
     print('🔐 [LOGIN] ========== STARTING LOGIN FLOW ==========');
     print('🔐 [LOGIN] REQUEST BODY: $requestBody');
 
     Object? lastError;
+
+    // Check if role is teacher
+    final isTeacher = role != null && (role.toLowerCase() == 'teacher' || role.toLowerCase() == 'school_teacher');
+
+    if (isTeacher) {
+      final teacherUrl = '${ApiConstants.teacherBaseUrl}${ApiConstants.loginEndpoint}';
+      try {
+        print('🔐 [LOGIN] ATTEMPTING TEACHER API: $teacherUrl');
+        final response = await http.post(
+          Uri.parse(teacherUrl),
+          headers: ApiConstants.getHeaders(),
+          body: requestBody,
+        ).timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          print('🔐 [LOGIN] SUCCESSFULLY AUTHENTICATED VIA TEACHER API: $teacherUrl');
+          final Map<String, dynamic> data = jsonDecode(response.body) as Map<String, dynamic>;
+          return LoginResponse.fromJson(data);
+        } else {
+          print('🔐 [LOGIN] TEACHER API ERROR: Status Code ${response.statusCode}');
+          try {
+            final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+            final String errorMsg = (errorData['message'] ?? 'Login failed').toString();
+            throw AuthException(errorMsg, response.statusCode);
+          } catch (e) {
+            if (e is AuthException) rethrow;
+            throw AuthException('Login failed with status ${response.statusCode}', response.statusCode);
+          }
+        }
+      } catch (e) {
+        print('🔐 [LOGIN] Teacher API failed with exception: $e');
+        rethrow;
+      }
+    }
 
     // Step 1: First try Parent API
     final parentUrl = '${ApiConstants.parentBaseUrl}${ApiConstants.loginEndpoint}';
@@ -362,25 +401,41 @@ class AuthService {
   }
 
   // 10. Login with Google
-  static Future<LoginResponse> loginWithGoogle(String idToken) async {
+  static Future<LoginResponse> loginWithGoogle(String idToken, {String? role}) async {
     try {
-      // Use Parent Backend for Google Login
+      final isTeacher = role != null && (role.toLowerCase() == 'teacher' || role.toLowerCase() == 'school_teacher');
+      final baseUrl = isTeacher ? ApiConstants.teacherBaseUrl : ApiConstants.parentBaseUrl;
       final response = await http.post(
         Uri.parse(
-            '${ApiConstants.parentBaseUrl}${ApiConstants.googleLoginEndpoint}'),
+            '$baseUrl${ApiConstants.googleLoginEndpoint}'),
         headers: ApiConstants.getHeaders(),
-        body: jsonEncode({'idToken': idToken}),
+        body: jsonEncode({
+          'idToken': idToken,
+          if (role != null) 'role': role,
+        }),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        return LoginResponse.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>);
+        try {
+          return LoginResponse.fromJson(
+              jsonDecode(response.body) as Map<String, dynamic>);
+        } catch (e) {
+          throw AuthException('Invalid response format from server', response.statusCode);
+        }
       } else {
-        final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<
-            String,
-            dynamic>;
-        throw AuthException((errorData['error'] ?? errorData['message'] ??
-            'Google login failed').toString(), response.statusCode);
+        final bodyText = response.body.trim();
+        if (bodyText.startsWith('<!DOCTYPE html>') || bodyText.startsWith('<html')) {
+          throw AuthException('Server returned HTML response (Code ${response.statusCode})', response.statusCode);
+        }
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<
+              String,
+              dynamic>;
+          throw AuthException((errorData['error'] ?? errorData['message'] ??
+              'Google login failed').toString(), response.statusCode);
+        } catch (_) {
+          throw AuthException('Google login failed (Code ${response.statusCode})', response.statusCode);
+        }
       }
     } catch (e) {
       if (e is AuthException) rethrow;
@@ -390,10 +445,40 @@ class AuthService {
 
   // 11. Login with Apple
   static Future<LoginResponse> loginWithApple(
-      String idToken, {Map<String, dynamic>? user}) async {
+      String idToken, {Map<String, dynamic>? user, String? role}) async {
     try {
       final body = <String, dynamic>{'idToken': idToken};
       if (user != null) body['user'] = user;
+      if (role != null) body['role'] = role;
+
+      final isTeacher = role != null && (role.toLowerCase() == 'teacher' || role.toLowerCase() == 'school_teacher');
+
+      if (isTeacher) {
+        final response = await http.post(
+          Uri.parse('${ApiConstants.teacherBaseUrl}${ApiConstants.appleLoginEndpoint}'),
+          headers: ApiConstants.getHeaders(),
+          body: jsonEncode(body),
+        ).timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          try {
+            return LoginResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+          } catch (e) {
+            throw AuthException('Invalid response format from server', response.statusCode);
+          }
+        } else {
+          final bodyText = response.body.trim();
+          if (bodyText.startsWith('<!DOCTYPE html>') || bodyText.startsWith('<html')) {
+            throw AuthException('Server returned HTML response (Code ${response.statusCode})', response.statusCode);
+          }
+          try {
+            final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+            throw AuthException((errorData['error'] ?? errorData['message'] ?? 'Apple login failed').toString(), response.statusCode);
+          } catch (_) {
+            throw AuthException('Apple login failed (Code ${response.statusCode})', response.statusCode);
+          }
+        }
+      }
 
       // Try Sales first
       try {
@@ -418,10 +503,22 @@ class AuthService {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        return LoginResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+        try {
+          return LoginResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+        } catch (e) {
+          throw AuthException('Invalid response format from server', response.statusCode);
+        }
       } else {
-        final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
-        throw AuthException((errorData['error'] ?? errorData['message'] ?? 'Apple login failed').toString(), response.statusCode);
+        final bodyText = response.body.trim();
+        if (bodyText.startsWith('<!DOCTYPE html>') || bodyText.startsWith('<html')) {
+          throw AuthException('Server returned HTML response (Code ${response.statusCode})', response.statusCode);
+        }
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          throw AuthException((errorData['error'] ?? errorData['message'] ?? 'Apple login failed').toString(), response.statusCode);
+        } catch (_) {
+          throw AuthException('Apple login failed (Code ${response.statusCode})', response.statusCode);
+        }
       }
     } catch (e) {
       if (e is AuthException) rethrow;

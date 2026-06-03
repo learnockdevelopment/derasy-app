@@ -6,6 +6,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/routes/app_routes.dart';
 import '../../models/notification_model.dart';
+import '../../core/controllers/app_config_controller.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({Key? key}) : super(key: key);
@@ -30,10 +31,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
 
     // TODO: Replace with actual API call when notification service is available
-    // Simulated delay
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // Mock notifications data
+    if (!mounted) return;
     setState(() {
       _notifications = [
         NotificationItem(
@@ -42,7 +42,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           message: 'You have a new message from the school',
           type: NotificationType.message,
           isRead: false,
-          createdAt: DateTime.now().subtract(Duration(minutes: 5)),
+          createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
         ),
         NotificationItem(
           id: '2',
@@ -50,7 +50,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           message: 'Your child\'s attendance has been updated',
           type: NotificationType.attendance,
           isRead: false,
-          createdAt: DateTime.now().subtract(Duration(hours: 2)),
+          createdAt: DateTime.now().subtract(const Duration(hours: 2)),
         ),
         NotificationItem(
           id: '3',
@@ -58,7 +58,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           message: 'New homework assignment is due tomorrow',
           type: NotificationType.homework,
           isRead: true,
-          createdAt: DateTime.now().subtract(Duration(days: 1)),
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
         ),
         NotificationItem(
           id: '4',
@@ -66,7 +66,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           message: 'School event scheduled for next week',
           type: NotificationType.event,
           isRead: true,
-          createdAt: DateTime.now().subtract(Duration(days: 2)),
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
         ),
         NotificationItem(
           id: '5',
@@ -74,7 +74,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           message: 'New grades have been posted',
           type: NotificationType.grade,
           isRead: true,
-          createdAt: DateTime.now().subtract(Duration(days: 3)),
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
         ),
       ];
       _isLoading = false;
@@ -88,16 +88,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         _notifications[index] = _notifications[index].copyWith(isRead: true);
       }
     });
-
-    // TODO: Call API to mark notification as read
   }
 
   Future<void> _markAllAsRead() async {
     setState(() {
       _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
     });
-
-    // TODO: Call API to mark all notifications as read
   }
 
   Future<void> _deleteNotification(String notificationId) async {
@@ -105,7 +101,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
       _notifications.removeWhere((n) => n.id == notificationId);
     });
 
-    // TODO: Call API to delete notification
     Get.snackbar(
       'success'.tr,
       'notification_deleted'.tr,
@@ -168,60 +163,72 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final unreadCount = _notifications.where((n) => !n.isRead).length;
+    return Obx(() {
+      final unreadCount = _notifications.where((n) => !n.isRead).length;
+      final isDark = AppConfigController.to.isDarkMode;
+      final backgroundColor = isDark ? const Color(0xFF0F172A) : AppColors.background;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue1,
-        foregroundColor: AppColors.white,
-        elevation: 0,
-        title: Text(
-          'notifications'.tr,
-          style: AppFonts.h4.copyWith(
-            color: AppColors.white,
-            fontSize: Responsive.sp(16),
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          foregroundColor: AppColors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: Responsive.sp(20)),
+            onPressed: () => Get.back(),
           ),
-        ),
-        centerTitle: true,
-        actions: [
-          if (unreadCount > 0)
-            IconButton(
-              icon: Icon(
-                IconlyBroken.tick_square,
-                color: AppColors.white,
-                size: Responsive.sp(24),
-              ),
-              tooltip: 'mark_all_read'.tr,
-              onPressed: _markAllAsRead,
+          title: Text(
+            'notifications'.tr,
+            style: AppFonts.h4.copyWith(
+              color: AppColors.white,
+              fontSize: Responsive.sp(16),
             ),
-        ],
-      ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: AppColors.blue1,
-              ),
-            )
-          : _notifications.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadNotifications,
-                  color: AppColors.blue1,
-                  child: ListView.separated(
-                    padding: Responsive.all(16),
-                    itemCount: _notifications.length,
-                    separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
-                    itemBuilder: (context, index) {
-                      final notification = _notifications[index];
-                      return _buildNotificationItem(notification);
-                    },
-                  ),
+          ),
+          centerTitle: true,
+          actions: [
+            if (unreadCount > 0)
+              IconButton(
+                icon: Icon(
+                  IconlyBroken.tick_square,
+                  color: AppColors.white,
+                  size: Responsive.sp(24),
                 ),
-    );
+                tooltip: 'mark_all_read'.tr,
+                onPressed: _markAllAsRead,
+              ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.blue1,
+                ),
+              )
+            : _notifications.isEmpty
+                ? _buildEmptyState()
+                : RefreshIndicator(
+                    onRefresh: _loadNotifications,
+                    color: AppColors.blue1,
+                    child: ListView.separated(
+                      padding: Responsive.all(16),
+                      itemCount: _notifications.length,
+                      separatorBuilder: (context, index) => SizedBox(height: Responsive.h(12)),
+                      itemBuilder: (context, index) {
+                        final notification = _notifications[index];
+                        return _buildNotificationItem(notification);
+                      },
+                    ),
+                  ),
+      );
+    });
   }
 
   Widget _buildEmptyState() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -235,14 +242,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
           Text(
             'no_new_notifications'.tr,
             style: AppFonts.h3.copyWith(
-              color: AppColors.textSecondary,
+              color: textColor,
             ),
           ),
           SizedBox(height: Responsive.h(8)),
           Text(
             'no_notifications_description'.tr,
             style: AppFonts.AlmaraiBlack18.copyWith(
-              color: AppColors.textSecondary,
+              color: secondaryTextColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -252,6 +259,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildNotificationItem(NotificationItem notification) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    final borderColor = isDark ? const Color(0xFF334155) : AppColors.grey200;
+    final timeColor = isDark ? Colors.white54 : AppColors.grey400;
+
     final iconColor = _getNotificationColor(notification.type);
     final icon = _getNotificationIcon(notification.type);
 
@@ -274,7 +288,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       onDismissed: (direction) {
         _deleteNotification(notification.id);
       },
-          child: InkWell(
+      child: InkWell(
         onTap: () {
           if (!notification.isRead) {
             _markAsRead(notification.id);
@@ -285,12 +299,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Container(
           padding: Responsive.all(12),
           decoration: BoxDecoration(
-            color: notification.isRead ? AppColors.white : AppColors.blue1.withOpacity(0.05),
+            color: notification.isRead ? cardColor : AppColors.blue1.withOpacity(isDark ? 0.15 : 0.05),
             borderRadius: BorderRadius.circular(Responsive.r(12)),
             border: Border.all(
               color: notification.isRead
-                  ? AppColors.grey200
-                  : AppColors.blue1.withOpacity(0.2),
+                  ? borderColor
+                  : AppColors.blue1.withOpacity(isDark ? 0.3 : 0.2),
               width: 1,
             ),
             boxShadow: [
@@ -332,7 +346,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           child: Text(
                             notification.title,
                             style: AppFonts.bodyLarge.copyWith(
-                              color: AppColors.textPrimary,
+                              color: textColor,
                               fontWeight: FontWeight.bold,
                               fontSize: Responsive.sp(13),
                             ),
@@ -344,7 +358,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         Text(
                           _formatDateTime(notification.createdAt),
                           style: AppFonts.caption.copyWith(
-                            color: AppColors.grey400,
+                            color: timeColor,
                             fontSize: Responsive.sp(10),
                           ),
                         ),
@@ -353,7 +367,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           Container(
                             width: Responsive.w(6),
                             height: Responsive.w(6),
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: AppColors.blue1,
                               shape: BoxShape.circle,
                             ),
@@ -365,7 +379,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     Text(
                       notification.message,
                       style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: secondaryTextColor,
                         fontSize: Responsive.sp(11),
                         height: 1.4,
                       ),
@@ -382,7 +396,3 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 }
-
-
-
-

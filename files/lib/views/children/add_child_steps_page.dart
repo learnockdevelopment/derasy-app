@@ -4,13 +4,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:iconly/iconly.dart';
+import 'package:intl/intl.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_fonts.dart';
 import '../../core/constants/countries.dart';
+import '../../core/constants/assets.dart';
+import '../../core/controllers/app_config_controller.dart';
 import '../../models/student_models.dart';
-import '../../services/students_service.dart'; 
-import 'package:iconly/iconly.dart';
+import '../../services/students_service.dart';
+import '../../widgets/animated_app_background.dart';
 import 'certificate_scanner_page.dart';
+
+enum AddChildStep {
+  nationalitySelection,
+  egyptianMethodSelection,
+  egyptianOcrTypeSelection,
+  egyptianOcrUpload,
+  reviewExtractedData,
+  manualForm,
+  nonEgyptianForm,
+  guardianOtpSelection,
+  otpCodeVerification,
+  success
+}
 
 class AddChildStepsPage extends StatefulWidget {
   const AddChildStepsPage({Key? key}) : super(key: key);
@@ -20,1723 +38,506 @@ class AddChildStepsPage extends StatefulWidget {
 }
 
 class _AddChildStepsPageState extends State<AddChildStepsPage> {
-  int _currentStep = 0;
-  String? _selectedNationality;
+  // Navigation stack of steps
+  final List<AddChildStep> _stepHistory = [AddChildStep.nationalitySelection];
+  AddChildStep get _currentStep => _stepHistory.last;
+
+  // Form State
+  String? _selectedNationality; // 'egyptian' or 'foreign'
   String? _selectedForeignCountry;
-  File? _parentNationalIdFrontFile;
-  File? _parentNationalIdBackFile;
-  bool _isExtractingParentId = false;
-  ExtractedData? _parentExtractedData;
+  String? _selectedEgyptianMethod; // 'ocr' or 'manual'
+  String? _selectedOcrType; // 'birth_certificate' or 'national_id'
+
+  // Files
   File? _birthCertificateFile;
-  bool _isExtracting = false;
-  BirthCertificateExtractionResponse? _extractionResponse;
-  ExtractedData? _extractedData;
-  File? _parentPassportFile;
-  File? _childPassportFile;
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _arabicFullNameController = TextEditingController();
-  final TextEditingController _birthDateController = TextEditingController();
-  String? _selectedGender;
-  bool _isSubmitting = false;
+  File? _nationalIdFrontFile;
+  File? _nationalIdBackFile;
+  // Passport Numbers
+  final _parentPassportController = TextEditingController();
+  final _childPassportController = TextEditingController();
+
+  // Form Field Controllers
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _arabicFullNameController = TextEditingController();
+  final _nationalIdController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  final _birthPlaceController = TextEditingController();
+  final _religionController = TextEditingController();
+  final _currentSchoolController = TextEditingController();
+  String? _selectedGender; // 'male' or 'female'
+
+  // Image Picker
   final ImagePicker _picker = ImagePicker();
+
+  // Loading indicator state
+  bool _isLoading = false;
+  String _loadingMessage = '';
+
+  // Duplicate / Linkage conflict state
+  Map<String, dynamic>? _conflictChild;
+  List<dynamic>? _conflictGuardians;
+  Map<String, dynamic>? _selectedGuardian;
+  String? _selectedPhoneNumber;
+  final _otpController = TextEditingController();
+
+  // Newly added student details (to display in success step)
+  String _successChildName = '';
+
   List<Country> get _foreignCountries {
     return Countries.countries.where((country) => country.code != 'EG').toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
+
   String _getTranslatedCountryName(String code) {
-    final translationKey = 'country_${code.toLowerCase()}';
     try {
-      return translationKey.tr;
-    } catch (e) { 
+      return 'country_${code.toLowerCase()}'.tr;
+    } catch (e) {
       return Countries.getCountryByCode(code).name;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue1,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'add_child'.tr,
-          style: AppFonts.h3.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
-          ),
-        ),
-      ),
-      body: _buildStepContent(),
-    );
-  }
-
-  Widget _buildStepContent() {
-    if (_selectedNationality == null) {
-      return _buildNationalitySelectionStep();
-    }
-    
-    if (_selectedNationality == 'egyptian') {
-      // Egyptian flow: Step 1 = Parent ID (verify), Step 2 = Child ID, Step 3 = Certificate, Step 4 = Review
-      switch (_currentStep) {
-        case 1:
-          return _buildNewParentNationalIdStep();
-        case 2:
-          return _buildCertificateUploadStep();
-        case 3:
-          return _buildReviewStep();
-        default:
-          return _buildNationalitySelectionStep();
-      }
-    } else {
-      // Non-Egyptian flow: Step 1 = Form with passports
-      switch (_currentStep) {
-        case 1:
-          return _buildForeignStudentForm();
-        default:
-          return _buildNationalitySelectionStep();
-      }
-    }
-  }
-
-  Widget _buildDataRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppFonts.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 12.sp,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: AppColors.grey300),
-            ),
-            child: Text(
-              value,
-              style: AppFonts.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getCleanArabicFullNameFromData(ExtractedData extractedData) {
-    // Always prefer constructing from firstName + lastName if both are available
-    // First name is written first, then last name
-    if (extractedData.arabicFirstName != null && extractedData.arabicLastName != null) {
-      // Combine: firstName + " " + lastName
-      String combinedName = '${extractedData.arabicFirstName} ${extractedData.arabicLastName}'.trim();
-      
-      // Clean the combined name
-      combinedName = combinedName
-          .replaceAll('بطاقة تحقيق الشخصية', '')
-          .replaceAll('بطاقة الهوية', '')
-          .replaceAll('بطاقة', '')
-          .split('\n')
-          .where((line) => line.trim().isNotEmpty)
-          .join(' ')
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
-      
-      // Remove address patterns if they somehow got included
-      if (combinedName.contains('عمارة') || 
-          combinedName.contains('مجاورة') ||
-          combinedName.contains('حى') ||
-          combinedName.contains('شارع') ||
-          combinedName.contains('طريق')) {
-        // Remove address parts
-        final parts = combinedName.split(RegExp(r'عمارة|مجاورة|حى|شارع|طريق'));
-        combinedName = parts.first.trim();
-      }
-      
-      return combinedName.isNotEmpty ? combinedName : '';
-    }
-    
-    // If we don't have both firstName and lastName, try to clean arabicFullName
-    String? cleanArabicFullName = extractedData.arabicFullName;
-    
-    if (cleanArabicFullName != null && cleanArabicFullName.isNotEmpty) {
-      // Remove unwanted text like "بطاقة تحقيق الشخصية" and addresses
-      cleanArabicFullName = cleanArabicFullName
-          .replaceAll('بطاقة تحقيق الشخصية', '')
-          .replaceAll('بطاقة الهوية', '')
-          .replaceAll('بطاقة', '')
-          .trim();
-      
-      // Remove empty lines and extra spaces
-      cleanArabicFullName = cleanArabicFullName
-          .split('\n')
-          .where((line) => line.trim().isNotEmpty)
-          .join(' ')
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
-      
-      // Remove address patterns
-      if (cleanArabicFullName.contains('عمارة') || 
-          cleanArabicFullName.contains('مجاورة') ||
-          cleanArabicFullName.contains('حى') ||
-          cleanArabicFullName.contains('شارع') ||
-          cleanArabicFullName.contains('طريق')) {
-        // Remove address parts - keep only the part before address
-        final parts = cleanArabicFullName.split(RegExp(r'عمارة|مجاورة|حى|شارع|طريق'));
-        cleanArabicFullName = parts.first.trim();
-      }
-      
-      // If it's too short or still has issues, try using firstName or lastName
-      if (cleanArabicFullName.length < 3) {
-        if (extractedData.arabicFirstName != null && extractedData.arabicLastName != null) {
-          return '${extractedData.arabicFirstName} ${extractedData.arabicLastName}'.trim();
-        } else if (extractedData.arabicFirstName != null) {
-          return extractedData.arabicFirstName!;
-        } else if (extractedData.arabicLastName != null) {
-          return extractedData.arabicLastName!;
-        }
-      }
-      
-      return cleanArabicFullName;
-    }
-    
-    // Fallback: use firstName or lastName if available
-    if (extractedData.arabicFirstName != null) {
-      return extractedData.arabicFirstName!;
-    } else if (extractedData.arabicLastName != null) {
-      return extractedData.arabicLastName!;
-    }
-    
-    return '';
-  }
-
-  Future<void> _showExtractedDataModal({
-    required String title,
-    required ExtractedData extractedData,
-    required VoidCallback onAccept,
-    VoidCallback? onRetry,
-  }) async {
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: AppFonts.h3.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.sp,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: AppColors.textSecondary),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20.h),
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (extractedData.nationalId != null)
-                        _buildDataRow('national_id'.tr, extractedData.nationalId!),
-                      if (extractedData.fullName != null)
-                        _buildDataRow('full_name'.tr, extractedData.fullName!),
-                      _buildDataRow('arabic_full_name'.tr, _getCleanArabicFullNameFromData(extractedData)),
-                      if (extractedData.firstName != null)
-                        _buildDataRow('first_name'.tr, extractedData.firstName!),
-                      if (extractedData.lastName != null)
-                        _buildDataRow('last_name'.tr, extractedData.lastName!),
-                      if (extractedData.arabicFirstName != null)
-                        _buildDataRow('arabic_first_name'.tr, extractedData.arabicFirstName!),
-                      if (extractedData.arabicLastName != null)
-                        _buildDataRow('arabic_last_name'.tr, extractedData.arabicLastName!),
-                      if (extractedData.birthDate != null)
-                        _buildDataRow('birth_date'.tr, extractedData.birthDate!),
-                      if (extractedData.gender != null)
-                        _buildDataRow('gender'.tr, _translateGender(extractedData.gender)),
-                      if (extractedData.nationality != null)
-                        _buildDataRow('nationality'.tr, _translateNationality(extractedData.nationality)),
-                      if (extractedData.birthPlace != null)
-                        _buildDataRow('birth_place'.tr, extractedData.birthPlace!),
-                      if (extractedData.religion != null)
-                        _buildDataRow('religion'.tr, _translateReligion(extractedData.religion)),
-                      if (extractedData.fatherNationalId != null)
-                        _buildDataRow('father_national_id'.tr, extractedData.fatherNationalId!),
-                      if (extractedData.motherNationalId != null)
-                        _buildDataRow('mother_national_id'.tr, extractedData.motherNationalId!),
-                      if (extractedData.parentNationalIds != null && extractedData.parentNationalIds!.isNotEmpty)
-                        _buildDataRow('parent_national_ids'.tr, extractedData.parentNationalIds!.join(', ')),
-                      if (extractedData.ageInComingOctober != null)
-                        _buildDataRow('age_in_october'.tr, _formatAgeInOctober(extractedData.ageInComingOctober)),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              // Buttons Row
-              Row(
-                children: [
-                  if (onRetry != null)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          onRetry();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          side: BorderSide(color: AppColors.blue1, width: 2),
-                        ),
-                        child: Text(
-                          'retry'.tr,
-                          style: AppFonts.bodyMedium.copyWith(
-                            color: AppColors.blue1,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (onRetry != null) SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onAccept();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.blue1,
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      child: Text(
-                        'accept'.tr,
-                        style: AppFonts.bodyMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Step 1: Nationality Selection
-  Widget _buildNationalitySelectionStep() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 20.h),
-          // Enhanced Step Indicator
-          _buildEnhancedStepper(), 
-          SizedBox(height: 30.h),
-          // Title
-          Text(
-            'select_student_nationality'.tr,
-            style: AppFonts.h2.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 20.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            'select_nationality_description'.tr,
-            style: AppFonts.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 13.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24.h),
-          // Egyptian Selection Card
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedNationality = 'egyptian';
-                  _selectedForeignCountry = null;
-                  _currentStep = 1; // Start with parent National ID step
-                });
-              },
-              borderRadius: BorderRadius.circular(16.r),
-              child: Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: _selectedNationality == 'egyptian'
-                      ? AppColors.blue1.withOpacity(0.1)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: _selectedNationality == 'egyptian'
-                        ? AppColors.blue1
-                        : AppColors.borderLight,
-                    width: _selectedNationality == 'egyptian' ? 2 : 1.5,
-                  ),
-                  boxShadow: _selectedNationality == 'egyptian'
-                      ? [
-                          BoxShadow(
-                            color: AppColors.blue1.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: _selectedNationality == 'egyptian'
-                            ? AppColors.blue1
-                            : AppColors.blue1.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Text(
-                        '🇪🇬',
-                        style: TextStyle(fontSize: 24.sp),
-                      ),
-                    ),
-                    SizedBox(width: 14.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'egyptian'.tr,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15.sp,
-                            ),
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            'egyptian_nationality_desc'.tr,
-                            style: AppFonts.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_selectedNationality == 'egyptian')
-                      Icon(
-                        Icons.check_circle,
-                        color: AppColors.blue1,
-                        size: 24.sp,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          // Divider
-          Row(
-            children: [
-              Expanded(child: Divider(color: AppColors.grey300)),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                child: Text(
-                  'or'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ),
-              Expanded(child: Divider(color: AppColors.grey300)),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          // Foreign Countries Dropdown - Modern Design
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.blue1.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: DropdownButtonFormField<String>(
-              value: _selectedForeignCountry,
-              isExpanded: true,
-              icon: Container(
-                margin: EdgeInsets.only(right: 8.w),
-                padding: EdgeInsets.all(4.w),
-                decoration: BoxDecoration(
-                  color: AppColors.blue1.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.blue1,
-                  size: 22.sp,
-                ),
-              ),
-              dropdownColor: Colors.white,
-              style: AppFonts.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w500,
-              ),
-              menuMaxHeight: 400.h,
-              decoration: InputDecoration(
-                labelText: 'other_nationalities'.tr,
-                labelStyle: AppFonts.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-                hintText: 'select_country'.tr,
-                hintStyle: AppFonts.bodyMedium.copyWith(
-                  color: AppColors.textSecondary.withOpacity(0.6),
-                  fontSize: 15.sp,
-                ),
-                prefixIcon: Container(
-                  margin: EdgeInsets.only(left: 12.w, right: 8.w),
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.blue1.withOpacity(0.15),
-                        AppColors.blue1.withOpacity(0.08),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.public_rounded,
-                    color: AppColors.blue1,
-                    size: 22.sp,
-                  ),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 16.h,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                  borderSide: BorderSide(
-                    color: AppColors.blue1.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                  borderSide: BorderSide(
-                    color: AppColors.blue1.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                  borderSide: BorderSide(
-                    color: AppColors.blue1,
-                    width: 2.5,
-                  ),
-                ),
-              ),
-              items: _foreignCountries.map((country) {
-                return DropdownMenuItem<String>(
-                  value: country.code,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: AppColors.grey200,
-                          width: 0.5,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36.w,
-                          height: 36.w,
-                          decoration: BoxDecoration(
-                            color: AppColors.blue1.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          child: Center(
-                            child: Text(
-                              country.flag,
-                              style: TextStyle(fontSize: 22.sp),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 14.w),
-                        Expanded(
-                          child: Text(
-                            _getTranslatedCountryName(country.code),
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        if (_selectedForeignCountry == country.code)
-                          Icon(
-                            Icons.check_circle,
-                            color: AppColors.blue1,
-                            size: 20.sp,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedNationality = 'foreign';
-                    _selectedForeignCountry = value;
-                    _currentStep = 1; // Start with foreign student form
-                  });
-                }
-              },
-            ),
-          ),
-          SizedBox(height: 20.h),
-          // Info Card
-          if (_selectedNationality != null)
-            Container(
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                color: _selectedNationality == 'egyptian'
-                    ? AppColors.blue1.withOpacity(0.05)
-                    : AppColors.blue1.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: _selectedNationality == 'egyptian'
-                      ? AppColors.blue1.withOpacity(0.2)
-                      : AppColors.blue1.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    IconlyBroken.info_circle,
-                    color: _selectedNationality == 'egyptian'
-                        ? AppColors.blue1
-                        : AppColors.blue1,
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      _selectedNationality == 'egyptian'
-                          ? 'egyptian_nationality_desc'.tr
-                          : _selectedForeignCountry != null
-                              ? 'foreign_nationality_desc'.tr + ' (${_getTranslatedCountryName(_selectedForeignCountry!)})'
-                              : 'foreign_nationality_desc'.tr,
-                      style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // Step 2: Child National ID Upload (Egyptian)
-
-  // Step 1: Parent National ID Upload (for verification only)
-
-  // Step 3: Child National ID Upload (Egyptian) - This is the child ID, not certificate
-  Widget _buildCertificateUploadStep() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 20.h),
-          // Enhanced Step Indicator
-          _buildEnhancedStepper(),
-          SizedBox(height: 30.h),
-          // Header - Smaller
-          Container(
-            padding: EdgeInsets.all(18.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.blue1,
-                  AppColors.blue1.withOpacity(0.8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.blue1.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [ 
-                Icon(
-                  Icons.badge,
-                  color: Colors.white,
-                  size: 36.sp,
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'upload_child_national_id'.tr,
-                  style: AppFonts.h3.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  'child_id_validation_desc'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 12.sp,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-          // Upload Area - Smaller
-          GestureDetector(
-            onTap: _isExtracting ? null : _showImageSourceDialog,
-            child: Container(
-              width: double.infinity,
-              height: 200.h,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _birthCertificateFile != null
-                      ? AppColors.blue1
-                      : AppColors.grey300,
-                  width: 2.5,
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-                color: AppColors.surface,
-              ),
-              child: _isExtracting
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
-                          ),
-                          SizedBox(height: 20.h),
-                          Text(
-                            'extracting_data'.tr,
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.textPrimary,
-                              fontSize: 16.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : _birthCertificateFile != null
-                      ? Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(17.r),
-                              child: Image.file(
-                                _birthCertificateFile!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Positioned(
-                              top: 12.h,
-                              right: 12.w,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _birthCertificateFile = null;
-                                  });
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(8.w),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.error,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 20.sp,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(18.w),
-                              decoration: BoxDecoration(
-                                color: AppColors.blue1.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                IconlyBroken.upload,
-                                color: AppColors.blue1,
-                                size: 36.sp,
-                              ),
-                            ),
-                            SizedBox(height: 12.h),
-                            Text(
-                              'click_to_upload_birth_certificate'.tr,
-                              style: AppFonts.bodyMedium.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14.sp,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              'file_format_and_size'.tr,
-                              style: AppFonts.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-            ),
-          ),
-          SizedBox(height: 24.h),
-          // Info Card
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: AppColors.blue1.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: AppColors.blue1.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  IconlyBroken.info_circle,
-                  color: AppColors.blue1,
-                  size: 24.sp,
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    'supported_documents'.tr,
-                    style: AppFonts.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
-                      fontSize: 13.sp,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-          // Continue Button
-          // Continue Button
-          if (_birthCertificateFile != null)
-            _isExtracting
-                ? Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      child: CircularProgressIndicator(color: AppColors.blue1),
-                    ),
-                  )
-                : ElevatedButton(
-                    onPressed: () async {
-                      await _extractBirthCertificateData(_birthCertificateFile!);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.blue1,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'extract_and_validate'.tr,
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                  ),
-        ],
-      ),
-    );
-  }
-
-  // Step 1: Foreign Student Form
-  Widget _buildForeignStudentForm() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 20.h),
-          _buildEnhancedStepper(),
-          SizedBox(height: 30.h),
-          Text(
-            'non_egyptian_child_request'.tr,
-            style: AppFonts.h2.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 20.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            'non_egyptian_request_desc'.tr,
-            style: AppFonts.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 13.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24.h),
-          // Parent Passport Upload
-          _buildPassportUploadSection(
-            'parent_passport'.tr,
-            'upload_parent_passport'.tr,
-            _parentPassportFile,
-            (file) => setState(() => _parentPassportFile = file),
-          ),
-          SizedBox(height: 20.h),
-          // Child Passport Upload
-          _buildPassportUploadSection(
-            'child_passport'.tr,
-            'upload_child_passport'.tr,
-            _childPassportFile,
-            (file) => setState(() => _childPassportFile = file),
-          ),
-          SizedBox(height: 20.h),
-          // Full Name (English)
-          TextField(
-            controller: _fullNameController,
-            decoration: InputDecoration(
-              labelText: 'full_name_english'.tr,
-              hintText: 'enter_full_name_english'.tr,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          // Full Name (Arabic)
-          TextField(
-            controller: _arabicFullNameController,
-            decoration: InputDecoration(
-              labelText: 'full_name_arabic'.tr,
-              hintText: 'enter_full_name_arabic'.tr,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          // Birth Date
-          TextField(
-            controller: _birthDateController,
-            decoration: InputDecoration(
-              labelText: 'birth_date'.tr,
-              hintText: 'YYYY-MM-DD',
-              suffixIcon: Icon(Icons.calendar_today),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
-                firstDate: DateTime(2000),
-                lastDate: DateTime.now(),
-              );
-              if (date != null) {
-                _birthDateController.text = date.toIso8601String().split('T')[0];
-              }
-            },
-          ),
-          SizedBox(height: 16.h),
-          // Gender
-          DropdownButtonFormField<String>(
-            value: _selectedGender,
-            decoration: InputDecoration(
-              labelText: 'gender'.tr,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            items: ['male', 'female', 'other'].map((gender) {
-              return DropdownMenuItem(
-                value: gender,
-                child: Text(gender.tr),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedGender = value),
-          ),
-          SizedBox(height: 24.h),
-          // Submit Button
-          ElevatedButton(
-            onPressed: (_parentPassportFile != null && 
-                       _childPassportFile != null && 
-                       (_fullNameController.text.isNotEmpty || _arabicFullNameController.text.isNotEmpty) &&
-                       _birthDateController.text.isNotEmpty &&
-                       _selectedGender != null &&
-                       !_isSubmitting) 
-                ? _submitNonEgyptianRequest 
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.blue1,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: _isSubmitting
-                ? CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    'submit_request'.tr,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPassportUploadSection(
-    String title,
-    String hint,
-    File? file,
-    Function(File?) onFileSelected,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: AppFonts.bodyMedium.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 14.sp,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        GestureDetector(
-          onTap: () => _showPassportImageSourceDialog(onFileSelected),
-          child: Container(
-            width: double.infinity,
-            height: 150.h,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: file != null ? AppColors.blue1 : AppColors.grey300,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(12.r),
-              color: AppColors.surface,
-            ),
-            child: file != null
-                ? Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Image.file(
-                          file,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        top: 8.h,
-                        right: 8.w,
-                        child: GestureDetector(
-                          onTap: () => onFileSelected(null),
-                          child: Container(
-                            padding: EdgeInsets.all(6.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.error,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.close, color: Colors.white, size: 18.sp),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(IconlyBroken.upload, color: AppColors.blue1, size: 32.sp),
-                      SizedBox(height: 8.h),
-                      Text(
-                        hint,
-                        style: AppFonts.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showPassportImageSourceDialog(Function(File?) onFileSelected) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey300,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.blue1),
-                title: Text('scan_with_camera'.tr),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final scannedFile = await Get.to(() => const CertificateScannerPage());
-                  if (scannedFile != null && scannedFile is File) {
-                    onFileSelected(scannedFile);
-                  }
-                },
-              ),
-              ListTile(
-                leading: Icon(IconlyBroken.upload, color: AppColors.blue1),
-                title: Text('upload_from_gallery'.tr),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final image = await _picker.pickImage(
-                    source: ImageSource.gallery,
-                    maxWidth: 2048,
-                    maxHeight: 2048,
-                    imageQuality: 90,
-                  );
-                  if (image != null) {
-                    onFileSelected(File(image.path));
-                  }
-                },
-              ),
-              SizedBox(height: 16.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Step 3: Review Step
-  Widget _buildReviewStep() {
-    if (_extractedData == null) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: AppColors.blue1,
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 20.h),
-          // Enhanced Step Indicator
-          _buildEnhancedStepper(),
-          SizedBox(height: 30.h),
-          Text(
-            'review_and_confirm'.tr,
-            style: AppFonts.h2.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 22.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 30.h),
-          // Review Card
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 15,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Parent Data Section
-                if (_parentExtractedData != null) ...[
-                  Row(
-                    children: [
-                      Icon(IconlyBroken.profile, color: AppColors.blue1, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'parent_data'.tr,
-                        style: AppFonts.h3.copyWith(
-                          color: AppColors.blue1,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.h),
-                  _buildReviewField('full_name'.tr, 
-                    (_parentExtractedData!.arabicFullName != null && _parentExtractedData!.arabicFullName!.isNotEmpty)
-                        ? _parentExtractedData!.arabicFullName!
-                        : (_parentExtractedData!.fullName ?? '')
-                  ),
-                  _buildReviewField('national_id'.tr, _parentExtractedData!.nationalId ?? ''),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                    child: Divider(color: AppColors.grey300),
-                  ),
-                  SizedBox(height: 8.h),
-                ],
-
-                // Child Data Section
-                Row(
-                  children: [
-                    Icon(IconlyBroken.star, color: AppColors.blue1, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'child_data'.tr,
-                      style: AppFonts.h3.copyWith(
-                        color: AppColors.blue1,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.sp,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.h),
-                _buildReviewField('full_name'.tr, 
-                  _getCleanArabicFullName().isNotEmpty 
-                    ? _getCleanArabicFullName() 
-                    : (_extractedData!.fullName ?? 
-                      (_extractedData!.firstName != null && _extractedData!.lastName != null
-                        ? '${_extractedData!.firstName} ${_extractedData!.lastName}'
-                        : _extractedData!.firstName ?? _extractedData!.lastName ?? ''))
-                ),
-                _buildReviewField('birth_date'.tr, _extractedData!.birthDate ?? ''),
-                _buildReviewField('gender'.tr, _translateGender(_extractedData!.gender)),
-                if (_extractedData!.nationalId != null)
-                  _buildReviewField('national_id'.tr, _extractedData!.nationalId!),
-                if (_extractedData!.nationality != null)
-                  _buildReviewField('nationality'.tr, _translateNationality(_extractedData!.nationality)),
-                if (_extractedData!.ageInComingOctober != null)
-                  _buildReviewField('age_in_october'.tr, _formatAgeInOctober(_extractedData!.ageInComingOctober)),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-          // Submit Button
-          ElevatedButton(
-            onPressed: _isSubmitting ? null : _submitChild,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.blue1,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: _isSubmitting
-                ? CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    'submit'.tr,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReviewField(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppFonts.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 12.sp,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            value,
-            style: AppFonts.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-              fontSize: 16.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEnhancedStepper() {
-    if (_selectedNationality == 'egyptian') {
-      // Egyptian flow: 5 steps (nationality, parent ID, child ID, certificate, review)
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _buildEnhancedStepIndicator(1, _currentStep >= 0, _currentStep > 0, 'select_nationality'.tr),
-            Expanded(child: _buildEnhancedStepLine(_currentStep > 0)),
-            _buildEnhancedStepIndicator(2, _currentStep >= 1, _currentStep > 1, 'parent_id_verify'.tr),
-            Expanded(child: _buildEnhancedStepLine(_currentStep > 1)),
-            _buildEnhancedStepIndicator(3, _currentStep >= 2, _currentStep > 2, 'birth_certificate'.tr),
-            Expanded(child: _buildEnhancedStepLine(_currentStep > 2)),
-            _buildEnhancedStepIndicator(4, _currentStep >= 3, _currentStep > 3, 'review'.tr),
-          ],
-        ),
-      );
-    } else if (_selectedNationality == 'foreign') {
-      // Non-Egyptian flow: 2 steps (nationality, form)
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _buildEnhancedStepIndicator(1, _currentStep >= 0, _currentStep > 0, 'select_nationality'.tr),
-            Expanded(child: _buildEnhancedStepLine(_currentStep > 0)),
-            _buildEnhancedStepIndicator(2, _currentStep >= 1, _currentStep > 1, 'submit_request'.tr),
-          ],
-        ),
-      );
-    } else {
-      // Default: nationality selection only
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _buildEnhancedStepIndicator(1, true, false, 'select_nationality'.tr),
-          ],
-        ),
-      );
-    }
-  }
-
-  Widget _buildEnhancedStepIndicator(int step, bool isActive, bool isCompleted, String label) {
-    final isCurrentStep = _currentStep == step - 1;
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 42.w,
-            height: 42.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: isCompleted
-                  ? LinearGradient(
-                      colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
-                    )
-                  : isCurrentStep
-                      ? LinearGradient(
-                          colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.8)],
-                        )
-                      : null,
-              color: isCompleted || isCurrentStep ? null : AppColors.grey300,
-              boxShadow: (isCompleted || isCurrentStep)
-                  ? [
-                      BoxShadow(
-                        color: (isCompleted ? AppColors.blue1 : AppColors.blue1)
-                            .withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Center(
-              child: isCompleted
-                  ? Icon(Icons.check_rounded, color: Colors.white, size: 20.sp)
-                  : Text(
-                      '$step',
-                      style: AppFonts.bodyMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2.w),
-            child: Text(
-              label,
-              style: AppFonts.bodySmall.copyWith(
-                color: isCurrentStep || isCompleted
-                    ? AppColors.blue1
-                    : AppColors.textSecondary,
-                fontWeight: isCurrentStep ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 9.sp,
-                height: 1.2,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.visible,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEnhancedStepLine(bool isCompleted) {
-    return Container(
-      height: 3.h,
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2.r),
-        gradient: isCompleted
-            ? LinearGradient(
-                colors: [AppColors.blue1, AppColors.blue1.withOpacity(0.6)],
-              )
-            : null,
-        color: isCompleted ? null : AppColors.grey300,
-      ),
-    );
-  }
-
-
-  Future<void> _extractBirthCertificateData(File file) async {
+  void _pushStep(AddChildStep step) {
     setState(() {
-      _isExtracting = true;
+      _stepHistory.add(step);
+    });
+  }
+
+  void _popStep() {
+    if (_stepHistory.length > 1) {
+      setState(() {
+        _stepHistory.removeLast();
+      });
+    } else {
+      Get.back();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nationalIdController.addListener(_onNationalIdChanged);
+  }
+
+  void _onNationalIdChanged() {
+    final text = _nationalIdController.text.trim();
+    if (text.length == 14) {
+      final parsedDate = _parseBirthDateFromNationalId(text);
+      if (parsedDate != null) {
+        setState(() {
+          _birthDateController.text = parsedDate;
+        });
+      }
+      final genderDigit = int.tryParse(text[12]);
+      if (genderDigit != null) {
+        setState(() {
+          _selectedGender = (genderDigit % 2 != 0) ? 'male' : 'female';
+        });
+      }
+    }
+  }
+
+  String? _parseBirthDateFromNationalId(String nationalId) {
+    if (nationalId.length != 14) return null;
+    final centuryDigit = int.tryParse(nationalId[0]);
+    if (centuryDigit == null) return null;
+
+    final yearStr = nationalId.substring(1, 3);
+    final monthStr = nationalId.substring(3, 5);
+    final dayStr = nationalId.substring(5, 7);
+
+    final month = int.tryParse(monthStr);
+    final day = int.tryParse(dayStr);
+    if (month == null || month < 1 || month > 12) return null;
+    if (day == null || day < 1 || day > 31) return null;
+
+    String century;
+    if (centuryDigit == 2) {
+      century = '19';
+    } else if (centuryDigit == 3) {
+      century = '20';
+    } else {
+      return null;
+    }
+
+    final year = '$century$yearStr';
+    return '$year-$monthStr-$dayStr';
+  }
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _arabicFullNameController.dispose();
+    _nationalIdController.dispose();
+    _birthDateController.dispose();
+    _birthPlaceController.dispose();
+    _religionController.dispose();
+    _currentSchoolController.dispose();
+    _otpController.dispose();
+    _parentPassportController.dispose();
+    _childPassportController.dispose();
+    super.dispose();
+  }
+
+  // Pick Date helper
+  Future<void> _selectBirthDate() async {
+    final isDark = AppConfigController.to.isDarkMode;
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 4)),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: isDark
+              ? ThemeData.dark().copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: AppColors.blue1,
+                    onPrimary: Colors.white,
+                    surface: Color(0xFF1E293B),
+                    onSurface: Colors.white,
+                  ),
+                  dialogBackgroundColor: const Color(0xFF0F172A),
+                )
+              : ThemeData.light().copyWith(
+                  colorScheme: ColorScheme.light(
+                    primary: AppColors.blue1,
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: AppColors.textPrimary,
+                  ),
+                ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _birthDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  // OCR Processing Helpers
+  Future<void> _processOcrBirthCertificate(File file) async {
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'extracting_data'.tr + '...';
     });
 
     try {
       final response = await StudentsService.extractBirthCertificate(file);
+      final data = response.extractedData;
       
-      print('👶 [BIRTH_CERT_EXTRACT] API Response:');
-      print('👶 [BIRTH_CERT_EXTRACT] Success: ${response.success}');
-      print('👶 [BIRTH_CERT_EXTRACT] Document Type: ${response.documentType}');
-      print('👶 [BIRTH_CERT_EXTRACT] Extracted Data:');
-      print('👶 [BIRTH_CERT_EXTRACT]   - National ID: ${response.extractedData.nationalId}');
-      
-      if (!mounted) return;
+      _fullNameController.text = data.fullName ?? '';
+      _arabicFullNameController.text = data.arabicFullName ?? '';
+      _nationalIdController.text = data.nationalId ?? '';
+      _birthDateController.text = data.birthDate ?? '';
+      _selectedGender = data.gender?.toLowerCase() == 'female' ? 'female' : 'male';
+      _birthPlaceController.text = data.birthPlace ?? '';
+      _religionController.text = data.religion ?? '';
 
-      // Check if extraction was successful
-      if (response.success != true) {
-        setState(() {
-          _isExtracting = false;
-        });
+      _pushStep(AddChildStep.reviewExtractedData);
+    } catch (e) {
+      if (e is BirthCertificateExtractionException && e.canContinue) {
+        Get.snackbar(
+          'warning'.tr,
+          e.message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 5),
+        );
+        // Direct to review with whatever is present
+        _pushStep(AddChildStep.reviewExtractedData);
+      } else {
         Get.snackbar(
           'error'.tr,
-          'certificate_extraction_failed'.tr,
+          e.toString().replaceAll('StudentsException:', '').trim(),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
           colorText: Colors.white,
         );
-        return;
       }
-
-      // Success - we don't set isExtracting=false here yet to keep spinner until modal shows or we transition
-      // Actually better to hide spinner before showing modal
+    } finally {
       setState(() {
-        _isExtracting = false;
-        _extractionResponse = response;
-        _extractedData = response.extractedData;
-        // _childNationalId = response.extractedData.nationalId; // No longer needed as state variable
+        _isLoading = false;
       });
-
-      // Show modal with extracted data
-      if (mounted) {
-        await _showExtractedDataModal(
-          title: 'extracted_data'.tr,
-          extractedData: response.extractedData,
-          onAccept: () {
-            if (mounted) {
-              setState(() {
-                _currentStep = 3; // Move to review step (Step 3 is Review in 0-indexed? No, 1=Parent, 2=Cert, 3=Review)
-                // Wait, logic says: 1=Parent, 2=Cert, 3=Review. So move to 3.
-              });
-            }
-          },
-          onRetry: () {
-            if (mounted) {
-              setState(() {
-                _birthCertificateFile = null;
-                _extractedData = null;
-                _isExtracting = false;
-              });
-            }
-          },
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isExtracting = false;
-      });
-      Get.snackbar(
-        'error'.tr,
-        e.toString().replaceAll('StudentsException: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
     }
   }
 
-
-  Future<void> _extractParentNationalId([File? dummy]) async {
-    if (_parentNationalIdFrontFile == null || _parentNationalIdBackFile == null) return;
-    
+  Future<void> _processOcrNationalId(File front, File? back) async {
     setState(() {
-      _isExtractingParentId = true;
+      _isLoading = true;
+      _loadingMessage = 'extracting_data'.tr + '...';
     });
 
     try {
       final response = await StudentsService.extractNationalId(
-        nationalIdFront: _parentNationalIdFrontFile!,
-        nationalIdBack: _parentNationalIdBackFile!,
+        nationalIdFront: front,
+        nationalIdBack: back,
       );
+      final data = response.extractedData;
       
-      print('👨 [PARENT_ID_EXTRACT] API Response:');
-      print('👨 [PARENT_ID_EXTRACT] Success: ${response.success}');
-      print('👨 [PARENT_ID_EXTRACT] Document Type: ${response.documentType}');
-      print('👨 [PARENT_ID_EXTRACT] Extracted Data:');
-      print('👨 [PARENT_ID_EXTRACT]   - National ID: ${response.extractedData.nationalId}');
-      print('👨 [PARENT_ID_EXTRACT]   - Full Name: ${response.extractedData.fullName}');
-      print('👨 [PARENT_ID_EXTRACT]   - Arabic Full Name: ${response.extractedData.arabicFullName}');
-      print('👨 [PARENT_ID_EXTRACT]   - First Name: ${response.extractedData.firstName}');
-      print('👨 [PARENT_ID_EXTRACT]   - Last Name: ${response.extractedData.lastName}');
-      print('👨 [PARENT_ID_EXTRACT]   - Birth Date: ${response.extractedData.birthDate}');
-      print('👨 [PARENT_ID_EXTRACT]   - Gender: ${response.extractedData.gender}');
-      print('👨 [PARENT_ID_EXTRACT]   - Nationality: ${response.extractedData.nationality}');
-      if (response.extractedText != null) {
-        final text = response.extractedText!;
-        print('👨 [PARENT_ID_EXTRACT] Extracted Text: ${text.length > 100 ? text.substring(0, 100) + "..." : text}');
-      }
-      
-      if (!mounted) return;
+      _fullNameController.text = data.fullName ?? '';
+      _arabicFullNameController.text = data.arabicFullName ?? '';
+      _nationalIdController.text = data.nationalId ?? '';
+      _birthDateController.text = data.birthDate ?? '';
+      _selectedGender = data.gender?.toLowerCase() == 'female' ? 'female' : 'male';
+      _birthPlaceController.text = data.birthPlace ?? '';
+      _religionController.text = data.religion ?? '';
 
-      final extractedId = response.extractedData.nationalId;
-      if (extractedId == null || extractedId.isEmpty) {
-        throw StudentsException('parent_id_extraction_failed'.tr);
-      }
-
-      setState(() {
-        _parentExtractedData = response.extractedData;
-        _isExtractingParentId = false;
-      });
-
-      // Show modal with extracted data
-      await _showExtractedDataModal(
-        title: 'parent_id_extracted'.tr,
-        extractedData: response.extractedData,
-        onAccept: () {
-          setState(() {
-            _currentStep = 2; // Move to child ID step
-          });
-        },
-        onRetry: () {
-          if (mounted) {
-            setState(() {
-              _parentNationalIdFrontFile = null;
-              _isExtractingParentId = false;
-            });
-          }
-        },
-      );
+      _pushStep(AddChildStep.reviewExtractedData);
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isExtractingParentId = false;
-      });
       Get.snackbar(
         'error'.tr,
-        e.toString().replaceAll('StudentsException: ', ''),
+        e.toString().replaceAll('StudentsException:', '').trim(),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  void _showImageSourceDialog() {
+  // Handle child registration submit
+  Future<void> _submitChildRegistration() async {
+    // Collect child certificate payload
+    Map<String, dynamic>? birthCertificatePayload;
+    if (_birthCertificateFile != null) {
+      final bytes = await _birthCertificateFile!.readAsBytes();
+      final base64String = base64Encode(bytes);
+      final mimeType = _birthCertificateFile!.path.toLowerCase().endsWith('.png')
+          ? 'image/png'
+          : 'image/jpeg';
+      birthCertificatePayload = {
+        'data': 'data:$mimeType;base64,$base64String',
+        'mimeType': mimeType,
+      };
+    }
+
+    final request = AddChildRequest(
+      fullName: _fullNameController.text.trim(),
+      arabicFullName: _arabicFullNameController.text.trim(),
+      birthDate: _birthDateController.text.trim(),
+      gender: _selectedGender ?? 'male',
+      nationalId: _nationalIdController.text.trim().isEmpty ? null : _nationalIdController.text.trim(),
+      nationality: _selectedNationality == 'egyptian' ? 'Egyptian' : _selectedForeignCountry,
+      religion: _religionController.text.trim().isEmpty ? null : _religionController.text.trim(),
+      birthPlace: _birthPlaceController.text.trim().isEmpty ? null : _birthPlaceController.text.trim(),
+      currentSchool: _currentSchoolController.text.trim().isEmpty ? null : _currentSchoolController.text.trim(),
+      birthCertificate: birthCertificatePayload,
+    );
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'submitting'.tr + '...';
+    });
+
+    try {
+      final response = await StudentsService.addChildren(request);
+      if (response.children.isNotEmpty) {
+        setState(() {
+          _successChildName = response.children.first.fullName;
+        });
+      } else {
+        setState(() {
+          _successChildName = _fullNameController.text.isEmpty
+              ? _arabicFullNameController.text
+              : _fullNameController.text;
+        });
+      }
+      _pushStep(AddChildStep.success);
+    } catch (e) {
+      if (e is StudentsException && e.error != null) {
+        final rawJson = e.error!.rawJson;
+        final errorCode = e.error!.error;
+
+        if (errorCode == 'CHILD_EXISTS' && rawJson != null) {
+          // Trigger link duplicate flow
+          setState(() {
+            _conflictChild = rawJson['child'];
+            _conflictGuardians = rawJson['guardians'];
+            if (_conflictGuardians != null && _conflictGuardians!.isNotEmpty) {
+              _selectedGuardian = _conflictGuardians!.first;
+              final List<dynamic> phones = _selectedGuardian!['phones'] ?? [];
+              _selectedPhoneNumber = phones.isNotEmpty ? phones.first.toString() : null;
+            }
+          });
+          _pushStep(AddChildStep.guardianOtpSelection);
+          return;
+        }
+      }
+
+      Get.snackbar(
+        'error'.tr,
+        e.toString().replaceAll('StudentsException:', '').trim(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Handle foreign / non-Egyptian child registration (with files)
+  Future<void> _submitNonEgyptianRegistration() async {
+    if (_parentPassportController.text.trim().isEmpty || _childPassportController.text.trim().isEmpty) {
+      Get.snackbar(
+        'error'.tr,
+        'passports_required'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'submitting'.tr + '...';
+    });
+
+    try {
+      final response = await StudentsService.submitNonEgyptianRequest(
+        parentPassportNumber: _parentPassportController.text.trim(),
+        childPassportNumber: _childPassportController.text.trim(),
+        fullName: _fullNameController.text.trim(),
+        arabicFullName: _arabicFullNameController.text.trim().isEmpty ? null : _arabicFullNameController.text.trim(),
+        birthDate: _birthDateController.text.trim(),
+        gender: _selectedGender ?? 'male',
+        nationality: _selectedForeignCountry,
+        birthPlace: _birthPlaceController.text.trim().isEmpty ? null : _birthPlaceController.text.trim(),
+        religion: _religionController.text.trim().isEmpty ? null : _religionController.text.trim(),
+        currentSchool: _currentSchoolController.text.trim().isEmpty ? null : _currentSchoolController.text.trim(),
+      );
+
+      setState(() {
+        _successChildName = _fullNameController.text.isEmpty
+            ? _arabicFullNameController.text
+            : _fullNameController.text;
+      });
+      _pushStep(AddChildStep.success);
+    } catch (e) {
+      Get.snackbar(
+        'error'.tr,
+        e.toString().replaceAll('StudentsException:', '').trim(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Send Linkage OTP
+  Future<void> _sendGuardianOtp() async {
+    if (_conflictChild == null || _selectedGuardian == null || _selectedPhoneNumber == null) {
+      Get.snackbar(
+        'error'.tr,
+        'please_select_guardian_and_phone'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'sending_otp'.tr + '...';
+    });
+
+    try {
+      final req = SendOtpRequest(
+        childId: _conflictChild!['id'] ?? _conflictChild!['_id'],
+        guardianUserId: _selectedGuardian!['userId'],
+        phoneNumber: _selectedPhoneNumber!,
+      );
+
+      await StudentsService.sendOtpToGuardian(req);
+      _otpController.clear();
+      _pushStep(AddChildStep.otpCodeVerification);
+    } catch (e) {
+      Get.snackbar(
+        'error'.tr,
+        e.toString().replaceAll('StudentsException:', '').trim(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Verify Linkage OTP
+  Future<void> _verifyGuardianOtp() async {
+    if (_otpController.text.trim().length != 6) {
+      Get.snackbar(
+        'error'.tr,
+        'enter_valid_otp'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'verifying'.tr + '...';
+    });
+
+    try {
+      final req = VerifyOtpRequest(
+        childId: _conflictChild!['id'] ?? _conflictChild!['_id'],
+        guardianUserId: _selectedGuardian!['userId'],
+        otp: _otpController.text.trim(),
+      );
+
+      await StudentsService.verifyOtpAndLinkChild(req);
+      setState(() {
+        _successChildName = _conflictChild!['fullName'] ?? 'Child';
+      });
+      _pushStep(AddChildStep.success);
+    } catch (e) {
+      Get.snackbar(
+        'error'.tr,
+        e.toString().replaceAll('StudentsException:', '').trim(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Image Source Bottom Sheet Picker
+  void _showImagePickerModal({required Function(File) onImagePicked, String documentType = 'certificate'}) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: surfaceColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -1751,7 +552,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: AppColors.grey300,
+                  color: isDark ? Colors.white24 : AppColors.grey300,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -1760,7 +561,6 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                 child: Text(
                   'select_option'.tr,
                   style: AppFonts.h3.copyWith(
-                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 18.sp,
                   ),
@@ -1773,34 +573,14 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: AppColors.blue1,
-                    size: 24.sp,
-                  ),
+                  child: const Icon(Icons.camera_alt, color: AppColors.blue1),
                 ),
-                title: Text(
-                  'scan_certificate'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'scan_with_camera'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
+                title: Text('scan_with_camera'.tr),
                 onTap: () async {
                   Navigator.pop(context);
-                  final scannedFile = await Get.to(() => const CertificateScannerPage(documentType: 'child_id'));
-                  if (scannedFile != null && scannedFile is File) {
-                    setState(() {
-                      _birthCertificateFile = scannedFile;
-                    });
+                  final file = await Get.to(() => CertificateScannerPage(documentType: documentType));
+                  if (file != null && file is File) {
+                    onImagePicked(file);
                   }
                 },
               ),
@@ -1811,39 +591,17 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
                     color: AppColors.blue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(
-                    IconlyBroken.upload,
-                    color: AppColors.blue1,
-                    size: 24.sp,
-                  ),
+                  child: const Icon(IconlyBroken.upload, color: AppColors.blue1),
                 ),
-                title: Text(
-                  'upload_from_gallery'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                subtitle: Text(
-                  'select_from_gallery'.tr,
-                  style: AppFonts.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
-                ),
+                title: Text('upload_from_gallery'.tr),
                 onTap: () async {
                   Navigator.pop(context);
-                  final image = await _picker.pickImage(
+                  final XFile? image = await _picker.pickImage(
                     source: ImageSource.gallery,
-                    maxWidth: 2048,
-                    maxHeight: 2048,
-                    imageQuality: 90,
+                    imageQuality: 85,
                   );
                   if (image != null) {
-                    setState(() {
-                      _birthCertificateFile = File(image.path);
-                    });
+                    onImagePicked(File(image.path));
                   }
                 },
               ),
@@ -1855,281 +613,1269 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     );
   }
 
+  // Country Selection Custom Search Bottom Sheet
+  void _showCountrySelectionSheet() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+    final countries = _foreignCountries;
+    final searchController = TextEditingController();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final query = searchController.text.toLowerCase();
+          final filtered = countries.where((c) {
+            final name = c.name.toLowerCase();
+            final trName = _getTranslatedCountryName(c.code).toLowerCase();
+            return name.contains(query) || trName.contains(query);
+          }).toList();
 
-  Future<void> _submitChild() async {
-    if (_extractedData == null) return;
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      // Prepare birth certificate data
-      Map<String, dynamic>? birthCertificate;
-      if (_extractionResponse?.extractedData.birthCertificateImage != null) {
-        final img = _extractionResponse!.extractedData.birthCertificateImage!;
-        birthCertificate = {
-          'data': img.data,
-          'mimeType': img.mimeType,
-        };
-      } else if (_birthCertificateFile != null) {
-        final bytes = await _birthCertificateFile!.readAsBytes();
-        final base64String = base64Encode(bytes);
-        final mimeType = _birthCertificateFile!.path.toLowerCase().endsWith('.png')
-            ? 'image/png'
-            : 'image/jpeg';
-        birthCertificate = {
-          'data': 'data:$mimeType;base64,$base64String',
-          'mimeType': mimeType,
-        };
-      }
-
-      // Clean and construct Arabic full name using helper method
-      String cleanArabicFullName = _getCleanArabicFullName();
-
-      // Clean and construct English full name
-      String? cleanFullName = _extractedData!.fullName;
-      if (cleanFullName == null || cleanFullName.isEmpty) {
-        // Construct from first and last name
-        if (_extractedData!.firstName != null && _extractedData!.lastName != null) {
-          cleanFullName = '${_extractedData!.firstName} ${_extractedData!.lastName}'.trim();
-        } else if (_extractedData!.firstName != null) {
-          cleanFullName = _extractedData!.firstName;
-        } else if (_extractedData!.lastName != null) {
-          cleanFullName = _extractedData!.lastName;
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : AppColors.grey300,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                  child: Text(
+                    'select_country'.tr,
+                    style: AppFonts.h3.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: (_) => setModalState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'search'.tr,
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final c = filtered[index];
+                      return ListTile(
+                        leading: Text(c.flag, style: TextStyle(fontSize: 24.sp)),
+                        title: Text(
+                          _getTranslatedCountryName(c.code),
+                          style: AppFonts.bodyMedium.copyWith(color: textPrimaryColor),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _selectedNationality = 'foreign';
+                            _selectedForeignCountry = c.code;
+                          });
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
         }
-      }
+      ),
+    );
+  }
 
-      print('📝 [SUBMIT] Cleaned Arabic Full Name: $cleanArabicFullName');
-      print('📝 [SUBMIT] Cleaned English Full Name: $cleanFullName');
+  String _tr(String key, String fallback) {
+    final t = key.tr;
+    return t == key ? fallback : t;
+  }
 
-      // Use child's national ID from extracted birth certificate data
-      final request = AddChildRequest(
-        arabicFullName: cleanArabicFullName,
-        fullName: cleanFullName,
-        gender: _extractedData!.gender ?? 'male',
-        birthDate: _extractedData!.birthDate ?? DateTime.now().toIso8601String().split('T')[0],
-        nationalId: _extractedData!.nationalId ?? '', // Extracted from birth certificate
-        nationality: _extractedData!.nationality ?? 'Egyptian',
-        religion: _extractedData!.religion,
-        birthPlace: _extractedData!.birthPlace,
-        birthCertificate: birthCertificate,
-      );
-      
-      print('📝 [SUBMIT] Using National ID: ${_extractedData!.nationalId} (from birth certificate)');
-
-      final response = await StudentsService.addChildren(request);
-
-      print('✅ [ADD_CHILD] API Response:');
-      print('✅ [ADD_CHILD] Message: ${response.message}');
-      print('✅ [ADD_CHILD] Children Count: ${response.children.length}');
-      for (var i = 0; i < response.children.length; i++) {
-        print('✅ [ADD_CHILD] Child ${i + 1}:');
-        print('✅ [ADD_CHILD]   - ID: ${response.children[i].id}');
-        print('✅ [ADD_CHILD]   - Full Name: ${response.children[i].fullName}');
-        print('✅ [ADD_CHILD]   - National ID: ${response.children[i].nationalId}');
-        print('✅ [ADD_CHILD]   - Nationality: ${response.children[i].nationality}');
-      }
-
-      if (!mounted) return;
-      Get.back(result: true);
-      
-      Get.snackbar(
-        'success'.tr,
-        response.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.success,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-      });
-      Get.snackbar(
-        'error'.tr,
-        e.toString().replaceAll('StudentsException: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
+  double _getProgressPercentage() {
+    switch (_currentStep) {
+      case AddChildStep.nationalitySelection:
+        return 0.15;
+      case AddChildStep.egyptianMethodSelection:
+        return 0.3;
+      case AddChildStep.egyptianOcrTypeSelection:
+        return 0.45;
+      case AddChildStep.egyptianOcrUpload:
+      case AddChildStep.manualForm:
+      case AddChildStep.nonEgyptianForm:
+        return 0.65;
+      case AddChildStep.reviewExtractedData:
+        return 0.8;
+      case AddChildStep.guardianOtpSelection:
+        return 0.85;
+      case AddChildStep.otpCodeVerification:
+        return 0.95;
+      case AddChildStep.success:
+        return 1.0;
     }
   }
 
-  Future<void> _submitNonEgyptianRequest() async {
-    if (_parentPassportFile == null || _childPassportFile == null) {
-      Get.snackbar(
-        'error'.tr,
-        'both_passports_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    if (_fullNameController.text.isEmpty && _arabicFullNameController.text.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'name_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final response = await StudentsService.submitNonEgyptianRequest(
-        parentPassport: _parentPassportFile!,
-        childPassport: _childPassportFile!,
-        fullName: _fullNameController.text.isNotEmpty ? _fullNameController.text : null,
-        arabicFullName: _arabicFullNameController.text.isNotEmpty ? _arabicFullNameController.text : null,
-        firstName: _fullNameController.text.isNotEmpty ? _fullNameController.text.split(' ').first : null,
-        lastName: _fullNameController.text.isNotEmpty && _fullNameController.text.split(' ').length > 1
-            ? _fullNameController.text.split(' ').skip(1).join(' ')
-            : null,
-        birthDate: _birthDateController.text,
-        gender: _selectedGender ?? 'male',
-        nationality: _selectedForeignCountry != null
-            ? Countries.getCountryByCode(_selectedForeignCountry!).name
-            : 'Non-Egyptian',
-      );
-
-      print('🌍 [NON_EGYPTIAN_REQUEST] API Response:');
-      print('🌍 [NON_EGYPTIAN_REQUEST] Full Response: $response');
-      print('🌍 [NON_EGYPTIAN_REQUEST] Message: ${response['message']}');
-      if (response['request'] != null) {
-        print('🌍 [NON_EGYPTIAN_REQUEST] Request ID: ${response['request']['id']}');
-        print('🌍 [NON_EGYPTIAN_REQUEST] Request Status: ${response['request']['status']}');
-        print('🌍 [NON_EGYPTIAN_REQUEST] Requested At: ${response['request']['requestedAt']}');
-      }
-
-      if (!mounted) return;
-      
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      Get.back(result: true);
-      
-      Get.snackbar(
-        'success'.tr,
-        response['message']?.toString() ?? 'non_egyptian_request_submitted'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.success,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-      });
-      Get.snackbar(
-        'error'.tr,
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-      );
+  int _getCurrentStepNumber() {
+    switch (_currentStep) {
+      case AddChildStep.nationalitySelection:
+        return 1;
+      case AddChildStep.egyptianMethodSelection:
+      case AddChildStep.egyptianOcrTypeSelection:
+        return 2;
+      case AddChildStep.egyptianOcrUpload:
+      case AddChildStep.manualForm:
+      case AddChildStep.nonEgyptianForm:
+        return 3;
+      case AddChildStep.reviewExtractedData:
+      case AddChildStep.guardianOtpSelection:
+      case AddChildStep.otpCodeVerification:
+        return 4;
+      case AddChildStep.success:
+        return 5;
     }
   }
 
-  String _getCleanArabicFullName() {
-    if (_extractedData == null) return '';
-    
-    String? cleanArabicFullName = _extractedData!.arabicFullName;
-    
-    if (cleanArabicFullName != null && cleanArabicFullName.isNotEmpty) {
-      // Remove unwanted text like "بطاقة تحقيق الشخصية" and addresses
-      cleanArabicFullName = cleanArabicFullName
-          .replaceAll('بطاقة تحقيق الشخصية', '')
-          .replaceAll('بطاقة الهوية', '')
-          .replaceAll('بطاقة', '')
-          .trim();
-      
-      // If it still contains unwanted patterns or is too short, reconstruct from first/last name
-      if (cleanArabicFullName.length < 3 || 
-          cleanArabicFullName.contains('عمارة') || 
-          cleanArabicFullName.contains('مجاورة') ||
-          cleanArabicFullName.contains('حى') ||
-          cleanArabicFullName.contains('شارع') ||
-          cleanArabicFullName.contains('طريق')) {
-        // Reconstruct from first and last name
-        if (_extractedData!.arabicFirstName != null && _extractedData!.arabicLastName != null) {
-          cleanArabicFullName = '${_extractedData!.arabicFirstName} ${_extractedData!.arabicLastName}'.trim();
-        } else if (_extractedData!.arabicFirstName != null) {
-          cleanArabicFullName = _extractedData!.arabicFirstName;
-        } else if (_extractedData!.arabicLastName != null) {
-          cleanArabicFullName = _extractedData!.arabicLastName;
-        } else {
-          cleanArabicFullName = '';
-        }
-      }
-    } else {
-      // If arabicFullName is null or empty, construct from first and last name
-      if (_extractedData!.arabicFirstName != null && _extractedData!.arabicLastName != null) {
-        cleanArabicFullName = '${_extractedData!.arabicFirstName} ${_extractedData!.arabicLastName}'.trim();
-      } else if (_extractedData!.arabicFirstName != null) {
-        cleanArabicFullName = _extractedData!.arabicFirstName;
-      } else if (_extractedData!.arabicLastName != null) {
-        cleanArabicFullName = _extractedData!.arabicLastName;
-      } else {
-        cleanArabicFullName = '';
-      }
-    }
-    
-    return cleanArabicFullName ?? '';
+  Widget _buildTopProgressBar() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final percent = _getProgressPercentage();
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${_tr('step', 'Step')} ${_getCurrentStepNumber()} ${_tr('of', 'of')} 5',
+                style: AppFonts.bodySmall.copyWith(
+                  color: isDark ? Colors.white54 : AppColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${(percent * 100).toInt()}%',
+                style: AppFonts.bodySmall.copyWith(
+                  color: AppColors.blue1,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: percent),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOutCubic,
+            builder: (context, value, child) {
+              return Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 6.h,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white10 : AppColors.grey200,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                  FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: value,
+                    child: Container(
+                      height: 6.h,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.blue1, AppColors.blue2],
+                        ),
+                        borderRadius: BorderRadius.circular(10.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.blue1.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
-  // Helper widget for ID upload card
-  Widget _buildIdUploadCard({
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppConfigController.to.isDarkMode;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: isDark ? Colors.white : AppColors.textPrimary,
+            size: 20.sp,
+          ),
+          onPressed: _popStep,
+        ),
+        title: Text(
+          'add_child'.tr,
+          style: AppFonts.h3.copyWith(
+            color: isDark ? Colors.white : AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 24, color: isDark ? Colors.white : AppColors.textPrimary),
+            onPressed: () => AppConfigController.to.toggleTheme(),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: AnimatedAppBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Content
+              Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                      child: Column(
+                        children: [
+                          _buildTopProgressBar(),
+                          SizedBox(height: 12.h),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: Container(
+                              key: ValueKey('header_${_currentStep}'),
+                              child: _buildStepHeader(),
+                            ),
+                          ),
+                          SizedBox(height: 20.h),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeInOutCubic,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 350),
+                              switchInCurve: Curves.easeInOutCubic,
+                              switchOutCurve: Curves.easeInOutCubic,
+                              transitionBuilder: (Widget child, Animation<double> animation) {
+                                final offsetAnimation = Tween<Offset>(
+                                  begin: const Offset(0.06, 0.0),
+                                  end: Offset.zero,
+                                ).animate(animation);
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: offsetAnimation,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                key: ValueKey('content_${_currentStep}'),
+                                child: _buildGlassContainer(
+                                  child: _buildCurrentStepContent(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // Loader Overlay
+              if (_isLoading)
+                Container(
+                  color: Colors.black54,
+                  child: Center(
+                    child: _buildGlassContainer(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.w),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 60.w,
+                              height: 60.w,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.blue1.withOpacity(0.1),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(12.w),
+                                child: Image.asset(
+                                  AssetsManager.logo,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            SizedBox(
+                              width: 24.w,
+                              height: 24.w,
+                              child: const CircularProgressIndicator(color: AppColors.blue1, strokeWidth: 2),
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              _loadingMessage,
+                              style: AppFonts.bodyMedium.copyWith(
+                                color: isDark ? Colors.white : AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepHeader() {
+    final isDark = AppConfigController.to.isDarkMode;
+    String stepTitle = '';
+    String stepDesc = '';
+
+    switch (_currentStep) {
+      case AddChildStep.nationalitySelection:
+        stepTitle = 'select_student_nationality'.tr;
+        stepDesc = 'select_nationality_description'.tr;
+        break;
+      case AddChildStep.egyptianMethodSelection:
+        stepTitle = 'select_add_method'.tr;
+        stepDesc = 'choose_intelligent_or_manual_desc'.tr;
+        break;
+      case AddChildStep.egyptianOcrTypeSelection:
+        stepTitle = 'select_document_type'.tr;
+        stepDesc = 'select_document_type_desc'.tr;
+        break;
+      case AddChildStep.egyptianOcrUpload:
+        stepTitle = _selectedOcrType == 'birth_certificate'
+            ? 'birth_certificate'.tr
+            : 'national_id'.tr;
+        stepDesc = 'upload_document_for_ocr_desc'.tr;
+        break;
+      case AddChildStep.reviewExtractedData:
+        stepTitle = 'scanned_details_title'.tr;
+        stepDesc = 'verify_ocr_details_desc'.tr;
+        break;
+      case AddChildStep.manualForm:
+        stepTitle = 'manual_add'.tr;
+        stepDesc = 'fill_child_details_desc'.tr;
+        break;
+      case AddChildStep.nonEgyptianForm:
+        stepTitle = 'non_egyptian_form_title'.tr;
+        stepDesc = 'fill_international_details_desc'.tr;
+        break;
+      case AddChildStep.guardianOtpSelection:
+        stepTitle = 'link_child'.tr;
+        stepDesc = 'child_exists_warning'.tr;
+        break;
+      case AddChildStep.otpCodeVerification:
+        stepTitle = 'enter_otp_code'.tr;
+        stepDesc = 'otp_verification_desc'.tr;
+        break;
+      case AddChildStep.success:
+        stepTitle = 'success'.tr;
+        stepDesc = 'registration_completed_desc'.tr;
+        break;
+    }
+
+    return Column(
+      children: [
+        Text(
+          stepTitle,
+          style: AppFonts.h2.copyWith(
+            color: isDark ? Colors.white : AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 20.sp,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 6.h),
+        Text(
+          stepDesc,
+          style: AppFonts.bodyMedium.copyWith(
+            color: isDark ? Colors.white70 : AppColors.textSecondary,
+            fontSize: 13.sp,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassContainer({required Widget child}) {
+    final isDark = AppConfigController.to.isDarkMode;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0x33000000) : const Color(0x55FFFFFF),
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.white60,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildCurrentStepContent() {
+    switch (_currentStep) {
+      case AddChildStep.nationalitySelection:
+        return _buildNationalitySelection();
+      case AddChildStep.egyptianMethodSelection:
+        return _buildEgyptianMethodSelection();
+      case AddChildStep.egyptianOcrTypeSelection:
+        return _buildEgyptianOcrTypeSelection();
+      case AddChildStep.egyptianOcrUpload:
+        return _buildEgyptianOcrUpload();
+      case AddChildStep.reviewExtractedData:
+        return _buildReviewExtractedData();
+      case AddChildStep.manualForm:
+        return _buildManualForm(isEgyptian: true);
+      case AddChildStep.nonEgyptianForm:
+        return _buildManualForm(isEgyptian: false);
+      case AddChildStep.guardianOtpSelection:
+        return _buildGuardianOtpSelection();
+      case AddChildStep.otpCodeVerification:
+        return _buildOtpCodeVerification();
+      case AddChildStep.success:
+        return _buildSuccess();
+    }
+  }
+
+  Widget _buildModernChoiceCard({
     required String title,
-    required File? imageFile,
-    required VoidCallback? onTap,
-    required VoidCallback onClear,
+    required String desc,
+    required Widget visual,
+    required Color glowColor,
+    required bool isDark,
   }) {
+    final surfaceColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondaryColor = isDark ? Colors.white70 : AppColors.textSecondary;
+
+    return Container(
+      height: 190.h,
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(
+          color: glowColor.withOpacity(isDark ? 0.3 : 0.15),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: glowColor.withOpacity(isDark ? 0.15 : 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24.r),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -30.w,
+              top: -30.h,
+              child: Container(
+                width: 120.w,
+                height: 120.h,
+                decoration: BoxDecoration(
+                  color: glowColor.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  visual,
+                  SizedBox(height: 12.h),
+                  Text(
+                    title,
+                    style: AppFonts.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: textPrimaryColor,
+                      fontSize: 15.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    desc,
+                    style: AppFonts.bodySmall.copyWith(
+                      color: textSecondaryColor,
+                      fontSize: 10.5.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 1. Nationality Selection Step
+  Widget _buildNationalitySelection() {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    return Row(
+      children: [
+        // Egyptian Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedNationality = 'egyptian';
+              });
+              _pushStep(AddChildStep.egyptianMethodSelection);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('egyptian', 'Egyptian'),
+              desc: _tr('egyptian_nationality_desc', 'Egyptian National ID / OCR registration'),
+              visual: Text('🇪🇬', style: TextStyle(fontSize: 42.sp)),
+              glowColor: Colors.redAccent,
+              isDark: isDark,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        // International/Other Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedNationality = 'foreign';
+                _selectedForeignCountry = null;
+              });
+              _pushStep(AddChildStep.nonEgyptianForm);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('other_nationalities', 'International'),
+              desc: _tr('select_nationality_description', 'Other nationalities & passports'),
+              visual: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: AppColors.blue1.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.public, color: AppColors.blue1, size: 32.sp),
+              ),
+              glowColor: AppColors.blue1,
+              isDark: isDark,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 2. Egyptian Add Method (Intelligent vs Manual)
+  Widget _buildEgyptianMethodSelection() {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    return Row(
+      children: [
+        // Intelligent / OCR Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedEgyptianMethod = 'ocr';
+              });
+              _pushStep(AddChildStep.egyptianOcrTypeSelection);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('intelligent_add', 'Intelligent Add'),
+              desc: _tr('intelligent_add_desc', 'Scan document using camera to auto-fill details'),
+              visual: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(IconlyBroken.scan, color: Colors.purple, size: 32.sp),
+              ),
+              glowColor: Colors.purple,
+              isDark: isDark,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        // Manual Card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedEgyptianMethod = 'manual';
+                _birthCertificateFile = null;
+                _nationalIdFrontFile = null;
+                _nationalIdBackFile = null;
+                _fullNameController.clear();
+                _arabicFullNameController.clear();
+                _nationalIdController.clear();
+                _birthDateController.clear();
+                _birthPlaceController.clear();
+                _religionController.clear();
+                _parentPassportController.clear();
+                _childPassportController.clear();
+                _selectedGender = null;
+              });
+              _pushStep(AddChildStep.manualForm);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('manual_add', 'Manual Add'),
+              desc: _tr('manual_add_desc', 'Manually type child registration details'),
+              visual: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(IconlyBroken.edit, color: Colors.orange, size: 32.sp),
+              ),
+              glowColor: Colors.orange,
+              isDark: isDark,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 3. Select OCR Document Type (Birth Certificate or National ID)
+  Widget _buildEgyptianOcrTypeSelection() {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    return Row(
+      children: [
+        // Birth Certificate
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedOcrType = 'birth_certificate';
+                _birthCertificateFile = null;
+              });
+              _pushStep(AddChildStep.egyptianOcrUpload);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('birth_certificate', 'Birth Certificate'),
+              desc: _tr('upload_birth_certificate', 'Scan child\'s official Egyptian birth certificate'),
+              visual: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(IconlyBroken.document, color: Colors.blue, size: 32.sp),
+              ),
+              glowColor: Colors.blue,
+              isDark: isDark,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        // National ID
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedOcrType = 'national_id';
+                _nationalIdFrontFile = null;
+                _nationalIdBackFile = null;
+              });
+              _pushStep(AddChildStep.egyptianOcrUpload);
+            },
+            child: _buildModernChoiceCard(
+              title: _tr('national_id', 'National ID'),
+              desc: _tr('upload_child_national_id', 'Scan front and back of child\'s National ID'),
+              visual: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.badge_outlined, color: Colors.teal, size: 32.sp),
+              ),
+              glowColor: Colors.teal,
+              isDark: isDark,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 4. Egyptian OCR Upload
+  Widget _buildEgyptianOcrUpload() {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    if (_selectedOcrType == 'birth_certificate') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildUploadBox(
+            title: 'click_to_upload_birth_certificate'.tr,
+            file: _birthCertificateFile,
+            onTap: () => _showImagePickerModal(
+              onImagePicked: (file) {
+                setState(() {
+                  _birthCertificateFile = file;
+                });
+              },
+              documentType: 'certificate',
+            ),
+          ),
+          SizedBox(height: 24.h),
+          if (_birthCertificateFile != null)
+            ElevatedButton(
+              onPressed: () => _processOcrBirthCertificate(_birthCertificateFile!),
+              style: _buildButtonStyle(),
+              child: Text('extract_and_validate'.tr, style: const TextStyle(color: Colors.white)),
+            ),
+        ],
+      );
+    } else {
+      // National ID front & back
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'upload_national_id_front'.tr + ' *',
+            style: AppFonts.bodyMedium.copyWith(
+              color: isDark ? Colors.white70 : AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          _buildUploadBox(
+            title: 'upload_national_id_front'.tr,
+            file: _nationalIdFrontFile,
+            onTap: () => _showImagePickerModal(
+              onImagePicked: (file) {
+                setState(() {
+                  _nationalIdFrontFile = file;
+                });
+              },
+              documentType: 'child_id',
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Text(
+            'upload_national_id_back'.tr + ' (' + 'optional'.tr + ')',
+            style: AppFonts.bodyMedium.copyWith(
+              color: isDark ? Colors.white70 : AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          _buildUploadBox(
+            title: 'upload_national_id_back'.tr,
+            file: _nationalIdBackFile,
+            onTap: () => _showImagePickerModal(
+              onImagePicked: (file) {
+                setState(() {
+                  _nationalIdBackFile = file;
+                });
+              },
+              documentType: 'child_id',
+            ),
+          ),
+          SizedBox(height: 24.h),
+          if (_nationalIdFrontFile != null)
+            ElevatedButton(
+              onPressed: () => _processOcrNationalId(_nationalIdFrontFile!, _nationalIdBackFile),
+              style: _buildButtonStyle(),
+              child: Text('extract_and_validate'.tr, style: const TextStyle(color: Colors.white)),
+            ),
+        ],
+      );
+    }
+  }
+
+  // 5. Review Extracted Data Screen (OCR Results)
+  Widget _buildReviewExtractedData() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTextField(
+            controller: _fullNameController,
+            label: 'full_name'.tr + ' (English)',
+            icon: Icons.person_outline,
+            validator: (val) => val == null || val.isEmpty ? 'field_required'.tr : null,
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _arabicFullNameController,
+            label: 'arabic_full_name'.tr,
+            icon: Icons.person_outline,
+            validator: (val) => val == null || val.isEmpty ? 'field_required'.tr : null,
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _nationalIdController,
+            label: 'national_id'.tr,
+            icon: Icons.badge_outlined,
+            keyboardType: TextInputType.number,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'field_required'.tr;
+              if (val.length != 14) return 'national_id_must_be_14_digits'.tr;
+              return null;
+            },
+          ),
+          SizedBox(height: 16.h),
+          _buildDatePickerField(
+            controller: _birthDateController,
+            label: 'birth_date'.tr,
+            onTap: _selectBirthDate,
+            enabled: _selectedNationality != 'egyptian',
+          ),
+          SizedBox(height: 16.h),
+          _buildGenderSelector(),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _birthPlaceController,
+            label: 'birth_place'.tr,
+            icon: Icons.location_on_outlined,
+          ),
+          SizedBox(height: 16.h),
+          _buildReligionSelector(),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _currentSchoolController,
+            label: 'current_school'.tr + ' (' + 'optional'.tr + ')',
+            icon: Icons.school_outlined,
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                _submitChildRegistration();
+              }
+            },
+            style: _buildButtonStyle(),
+            child: Text('add_child'.tr, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 6. Manual Registration Form (Egyptian or Foreign)
+  Widget _buildManualForm({required bool isEgyptian}) {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!isEgyptian) ...[
+            GestureDetector(
+              onTap: _showCountrySelectionSheet,
+              child: AbsorbPointer(
+                child: TextFormField(
+                  key: ValueKey('country_field_${_selectedForeignCountry}'),
+                  decoration: _buildInputDecoration(
+                    'select_country'.tr + ' *',
+                    Icons.public,
+                  ),
+                  controller: TextEditingController(
+                    text: _selectedForeignCountry != null
+                        ? _getTranslatedCountryName(_selectedForeignCountry!)
+                        : '',
+                  ),
+                  style: AppFonts.bodyMedium.copyWith(
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
+                  validator: (val) {
+                    if (_selectedForeignCountry == null) {
+                      return 'please_select_country'.tr;
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+          ],
+          _buildTextField(
+            controller: _fullNameController,
+            label: 'full_name'.tr + ' (English)',
+            icon: Icons.person_outline,
+            validator: (val) => val == null || val.isEmpty ? 'field_required'.tr : null,
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _arabicFullNameController,
+            label: 'arabic_full_name'.tr + (isEgyptian ? ' *' : ' (' + 'optional'.tr + ')'),
+            icon: Icons.person_outline,
+            validator: isEgyptian ? (val) => val == null || val.isEmpty ? 'field_required'.tr : null : null,
+          ),
+          SizedBox(height: 16.h),
+          if (isEgyptian) ...[
+            _buildTextField(
+              controller: _nationalIdController,
+              label: 'national_id'.tr + ' *',
+              icon: Icons.badge_outlined,
+              keyboardType: TextInputType.number,
+              validator: (val) {
+                if (val == null || val.isEmpty) return 'field_required'.tr;
+                if (val.length != 14) return 'national_id_must_be_14_digits'.tr;
+                return null;
+              },
+            ),
+            SizedBox(height: 16.h),
+          ],
+          _buildDatePickerField(
+            controller: _birthDateController,
+            label: 'birth_date'.tr + ' *',
+            onTap: _selectBirthDate,
+            enabled: !isEgyptian,
+          ),
+          SizedBox(height: 16.h),
+          _buildGenderSelector(),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _birthPlaceController,
+            label: 'birth_place'.tr,
+            icon: Icons.location_on_outlined,
+          ),
+          SizedBox(height: 16.h),
+          _buildReligionSelector(),
+          SizedBox(height: 16.h),
+          if (!isEgyptian) ...[
+            SizedBox(height: 16.h),
+            _buildTextField(
+              controller: _childPassportController,
+              label: 'child_passport'.tr + ' *',
+              icon: Icons.badge_outlined,
+              validator: (val) => val == null || val.isEmpty ? 'field_required'.tr : null,
+            ),
+          ],
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                if (isEgyptian) {
+                  _submitChildRegistration();
+                } else {
+                  if (_parentPassportController.text.isNotEmpty && _childPassportController.text.isNotEmpty) {
+                    _submitNonEgyptianRegistration();
+                  } else {
+                    _submitChildRegistration();
+                  }
+                }
+              }
+            },
+            style: _buildButtonStyle(),
+            child: Text('add_child'.tr, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 7. Guardian OTP Selection (Duplicate Linkage step 1)
+  Widget _buildGuardianOtpSelection() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'child_exists_warning'.tr,
+                  style: AppFonts.bodySmall.copyWith(color: textPrimaryColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20.h),
+        Text(
+          'guardian_selection_title'.tr,
+          style: AppFonts.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: textPrimaryColor),
+        ),
+        SizedBox(height: 10.h),
+        if (_conflictGuardians != null && _conflictGuardians!.isNotEmpty)
+          DropdownButtonFormField<Map<String, dynamic>>(
+            value: _selectedGuardian,
+            dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            decoration: _buildInputDecoration('guardian'.tr, Icons.person_outline),
+            items: _conflictGuardians!.map((g) {
+              return DropdownMenuItem<Map<String, dynamic>>(
+                value: g as Map<String, dynamic>,
+                child: Text(
+                  '${g['name'] ?? 'Guardian'} (${g['relation'] ?? ''})',
+                  style: AppFonts.bodyMedium.copyWith(color: textPrimaryColor),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedGuardian = value;
+                  final List<dynamic> phones = _selectedGuardian!['phones'] ?? [];
+                  _selectedPhoneNumber = phones.isNotEmpty ? phones.first.toString() : null;
+                });
+              }
+            },
+          ),
+        SizedBox(height: 20.h),
+        if (_selectedGuardian != null) ...[
+          Text(
+            'phone'.tr,
+            style: AppFonts.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: textPrimaryColor),
+          ),
+          SizedBox(height: 10.h),
+          DropdownButtonFormField<String>(
+            value: _selectedPhoneNumber,
+            dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            decoration: _buildInputDecoration('phone'.tr, Icons.phone_android_outlined),
+            items: ((_selectedGuardian!['phones'] ?? []) as List<dynamic>).map((phone) {
+              return DropdownMenuItem<String>(
+                value: phone.toString(),
+                child: Text(
+                  phone.toString(),
+                  style: AppFonts.bodyMedium.copyWith(color: textPrimaryColor),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedPhoneNumber = value;
+              });
+            },
+          ),
+        ],
+        SizedBox(height: 30.h),
+        ElevatedButton(
+          onPressed: _sendGuardianOtp,
+          style: _buildButtonStyle(),
+          child: Text('send_verification_code'.tr, style: const TextStyle(color: Colors.white)),
+        ),
+      ],
+    );
+  }
+
+  // 8. OTP Code Verification (Duplicate Linkage step 2)
+  Widget _buildOtpCodeVerification() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildTextField(
+          controller: _otpController,
+          label: 'enter_otp_code'.tr,
+          icon: Icons.lock_outline,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+        ),
+        SizedBox(height: 10.h),
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: AppColors.blue1.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: AppColors.blue1),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'test_otp_helper'.tr,
+                  style: AppFonts.bodySmall.copyWith(color: textPrimaryColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 30.h),
+        ElevatedButton(
+          onPressed: _verifyGuardianOtp,
+          style: _buildButtonStyle(),
+          child: Text('verify_and_link'.tr, style: const TextStyle(color: Colors.white)),
+        ),
+      ],
+    );
+  }
+
+  // 9. Success Step
+  Widget _buildSuccess() {
+    final isDark = AppConfigController.to.isDarkMode;
+
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: AppColors.success,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.check,
+            color: Colors.white,
+            size: 48,
+          ),
+        ),
+        SizedBox(height: 24.h),
+        Text(
+          _conflictChild != null
+              ? 'linking_success'.tr
+              : 'registration_success'.tr,
+          style: AppFonts.h3.copyWith(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : AppColors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          _successChildName,
+          style: AppFonts.h2.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.blue1,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 32.h),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              // Return success to the caller screen
+              Get.back(result: true);
+            },
+            style: _buildButtonStyle(),
+            child: Text('done'.tr, style: const TextStyle(color: Colors.white)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Upload Area Widget
+  Widget _buildUploadBox({
+    required String title,
+    required File? file,
+    required VoidCallback onTap,
+  }) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+    final textSecondaryColor = isDark ? Colors.grey : AppColors.textSecondary;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 160.h,
+        width: double.infinity,
+        height: 140.h,
         decoration: BoxDecoration(
-          color: AppColors.surface,
           border: Border.all(
-            color: imageFile != null ? AppColors.blue1 : AppColors.grey300,
+            color: file != null ? AppColors.blue1 : (isDark ? Colors.white24 : AppColors.grey300),
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16.r),
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
         ),
-        child: imageFile != null
+        child: file != null
             ? Stack(
-                fit: StackFit.expand,
                 children: [
-                   ClipRRect(
+                  ClipRRect(
                     borderRadius: BorderRadius.circular(14.r),
                     child: Image.file(
-                      imageFile,
+                      file,
+                      width: double.infinity,
+                      height: double.infinity,
                       fit: BoxFit.cover,
                     ),
                   ),
                   Positioned(
                     top: 8.h,
                     right: 8.w,
-                    child: GestureDetector(
-                      onTap: onClear,
-                      child: Container(
-                        padding: EdgeInsets.all(4.w),
-                        decoration: BoxDecoration(
-                          color: AppColors.error,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.close, color: Colors.white, size: 16.sp),
+                    child: Container(
+                      padding: EdgeInsets.all(4.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 18),
                     ),
                   ),
                 ],
@@ -2137,15 +1883,19 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(IconlyBroken.upload, color: AppColors.blue1, size: 32.sp),
+                  const Icon(IconlyBroken.upload, color: AppColors.blue1, size: 36),
                   SizedBox(height: 8.h),
                   Text(
                     title,
                     style: AppFonts.bodySmall.copyWith(
+                      color: textPrimaryColor,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
                     ),
-                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'PNG, JPG up to 10MB',
+                    style: AppFonts.bodySmall.copyWith(color: textSecondaryColor, fontSize: 11.sp),
                   ),
                 ],
               ),
@@ -2153,254 +1903,227 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
     );
   }
 
-  // Helper dialog for image source selection
-  void _showIdImageSourceDialog({required bool isFront}) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24.r),
-              topRight: Radius.circular(24.r),
-            ),
+  // Gender Selector Widget
+  Widget _buildGenderSelector() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'gender'.tr + ' *',
+          style: AppFonts.bodyMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: textPrimaryColor,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grey300,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-                child: Text(
-                  'select_option'.tr,
-                  style: AppFonts.h3.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.blue1),
-                title: Text('scan_with_camera'.tr),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final scannedFile = await Get.to(() => CertificateScannerPage(
-                    documentType: isFront ? 'parent_id_front' : 'parent_id_back',
-                  ));
-                  if (scannedFile != null && scannedFile is File) {
-                    setState(() {
-                      if (isFront) {
-                        _parentNationalIdFrontFile = scannedFile;
-                      } else {
-                        _parentNationalIdBackFile = scannedFile;
-                      }
-                    });
-                  }
-                },
-              ),
-              ListTile(
-                leading: Icon(IconlyBroken.upload, color: AppColors.blue1),
-                title: Text('upload_from_gallery'.tr),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final image = await _picker.pickImage(source: ImageSource.gallery);
-                  if (image != null) {
-                    setState(() {
-                      if (isFront) {
-                        _parentNationalIdFrontFile = File(image.path);
-                      } else {
-                        _parentNationalIdBackFile = File(image.path);
-                      }
-                    });
-                  }
-                },
-              ),
-              SizedBox(height: 24.h),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Translation helper methods for extracted data
-  String _translateGender(String? gender) {
-    if (gender == null || gender.isEmpty) return '';
-    final lowerGender = gender.toLowerCase();
-    if (lowerGender.contains('male') && !lowerGender.contains('female')) {
-      return 'male'.tr;
-    } else if (lowerGender.contains('female')) {
-      return 'female'.tr;
-    }
-    return gender;
-  }
-
-  String _translateReligion(String? religion) {
-    if (religion == null || religion.isEmpty) return '';
-    final lowerReligion = religion.toLowerCase();
-    if (lowerReligion.contains('muslim') || lowerReligion.contains('إسلام') || lowerReligion.contains('مسلم')) {
-      return 'muslim'.tr;
-    } else if (lowerReligion.contains('christian') || lowerReligion.contains('مسيحي')) {
-      return 'christian'.tr;
-    }
-    return 'other_religion'.tr;
-  }
-
-  String _translateNationality(String? nationality) {
-    if (nationality == null || nationality.isEmpty) return '';
-    if (nationality.toLowerCase().contains('egypt') || nationality.contains('مصر')) {
-      return 'egyptian'.tr;
-    }
-    return nationality;
-  }
-
-  String _formatAgeInOctober(AgeInComingOctober? age) {
-    if (age == null) return '';
-    // Always use translated format, ignoring backend formatted string if any
-    return '${age.years} ${'years'.tr} ${'and'.tr} ${age.months} ${'months'.tr}';
-  }
-
-  // Rewritten for dual upload
-  Widget _buildNewParentNationalIdStep() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        ),
+        SizedBox(height: 8.h),
+        Row(
           children: [
-            _buildEnhancedStepper(),
-            SizedBox(height: 32.h),
-            Text(
-              'parent_id_verify'.tr,
-              style: AppFonts.h3.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 20.sp,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'upload_both_sides_desc'.tr,
-              style: AppFonts.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 14.sp,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            
-            // Dual Upload Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _buildIdUploadCard(
-                    title: 'national_id_front'.tr,
-                    imageFile: _parentNationalIdFrontFile,
-                    onTap: _isExtractingParentId ? null : () => _showIdImageSourceDialog(isFront: true),
-                    onClear: () {
-                      setState(() {
-                        _parentNationalIdFrontFile = null;
-                        _parentExtractedData = null;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: _buildIdUploadCard(
-                    title: 'national_id_back'.tr,
-                    imageFile: _parentNationalIdBackFile,
-                    onTap: _isExtractingParentId ? null : () => _showIdImageSourceDialog(isFront: false),
-                    onClear: () {
-                      setState(() {
-                        _parentNationalIdBackFile = null;
-                        _parentExtractedData = null;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-
-            if (_isExtractingParentId)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue1),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedGender = 'male';
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: _selectedGender == 'male'
+                        ? AppColors.blue1
+                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: _selectedGender == 'male'
+                          ? AppColors.blue1
+                          : (isDark ? Colors.white10 : AppColors.grey300),
                     ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'extracting_data'.tr,
+                  ),
+                  child: Center(
+                    child: Text(
+                      'male'.tr,
                       style: AppFonts.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: _selectedGender == 'male'
+                            ? Colors.white
+                            : (isDark ? Colors.white70 : AppColors.textPrimary),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-
-            SizedBox(height: 32.h),
-            SizedBox(
-              width: double.infinity,
-              height: 56.h,
-              child: ElevatedButton(
-                onPressed: (_parentNationalIdFrontFile != null && _parentNationalIdBackFile != null && !_isExtractingParentId)
-                    ? _extractParentNationalId
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.blue1,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedGender = 'female';
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: _selectedGender == 'female'
+                        ? AppColors.blue1
+                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: _selectedGender == 'female'
+                          ? AppColors.blue1
+                          : (isDark ? Colors.white10 : AppColors.grey300),
+                    ),
                   ),
-                  disabledBackgroundColor: AppColors.grey300,
-                ),
-                child: _isExtractingParentId
-                    ? SizedBox(
-                        width: 24.w,
-                        height: 24.h,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : Text(
-                        'extract_data'.tr,
-                        style: AppFonts.bodyLarge.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Center(
+                    child: Text(
+                      'female'.tr,
+                      style: AppFonts.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: _selectedGender == 'female'
+                            ? Colors.white
+                            : (isDark ? Colors.white70 : AppColors.textPrimary),
                       ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  // Text Field Widget
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    int? maxLength,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLength: maxLength,
+      validator: validator,
+      decoration: _buildInputDecoration(label, icon),
+      style: AppFonts.bodyMedium.copyWith(
+        color: AppConfigController.to.isDarkMode ? Colors.white : AppColors.textPrimary,
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _arabicFullNameController.dispose();
-    _birthDateController.dispose();
-    super.dispose();
+  // Date Picker Field Widget
+  Widget _buildDatePickerField({
+    required TextEditingController controller,
+    required String label,
+    required VoidCallback onTap,
+    bool enabled = true,
+  }) {
+    final isDark = AppConfigController.to.isDarkMode;
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      onTap: enabled ? onTap : null,
+      validator: (val) => val == null || val.isEmpty ? 'field_required'.tr : null,
+      decoration: _buildInputDecoration(label, Icons.calendar_today_outlined).copyWith(
+        filled: true,
+        fillColor: enabled
+            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+            : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200]),
+      ),
+      style: AppFonts.bodyMedium.copyWith(
+        color: enabled
+            ? (isDark ? Colors.white : AppColors.textPrimary)
+            : (isDark ? Colors.white30 : Colors.grey),
+      ),
+    );
+  }
+
+  Widget _buildReligionSelector() {
+    final isDark = AppConfigController.to.isDarkMode;
+    final textPrimaryColor = isDark ? Colors.white : AppColors.textPrimary;
+    final religions = ['Muslim', 'Christian', 'Other'];
+
+    String? currentValue;
+    if (_religionController.text.isNotEmpty) {
+      final matched = religions.firstWhere(
+        (r) => r.toLowerCase() == _religionController.text.trim().toLowerCase(),
+        orElse: () => '',
+      );
+      if (matched.isNotEmpty) {
+        currentValue = matched;
+      } else {
+        currentValue = 'Other';
+      }
+    }
+
+    return DropdownButtonFormField<String>(
+      value: currentValue,
+      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      decoration: _buildInputDecoration('religion'.tr, Icons.wb_sunny_outlined),
+      style: AppFonts.bodyMedium.copyWith(color: textPrimaryColor),
+      items: religions.map((r) {
+        return DropdownMenuItem<String>(
+          value: r,
+          child: Text(
+            r.toLowerCase().tr,
+            style: AppFonts.bodyMedium.copyWith(color: textPrimaryColor),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _religionController.text = value;
+          });
+        }
+      },
+    );
+  }
+
+  // Input Decoration Helper
+  InputDecoration _buildInputDecoration(String label, IconData icon) {
+    final isDark = AppConfigController.to.isDarkMode;
+    final secondaryTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    final borderColor = isDark ? Colors.white10 : AppColors.grey300;
+
+    return InputDecoration(
+      labelText: label,
+      labelStyle: AppFonts.bodyMedium.copyWith(color: secondaryTextColor),
+      prefixIcon: Icon(icon, color: AppColors.blue1),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: AppColors.blue1, width: 2),
+      ),
+      filled: true,
+      fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      counterText: '',
+    );
+  }
+
+  // Button Style Helper
+  ButtonStyle _buildButtonStyle() {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.blue1,
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      elevation: 2,
+    );
   }
 }
-
-
-

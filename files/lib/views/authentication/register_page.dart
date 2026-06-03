@@ -41,6 +41,10 @@ class _RegisterPageState extends State<RegisterPage>
   @override
   void initState() {
     super.initState();
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('role')) {
+      _selectedRole = args['role'] as String;
+    }
     _passwordController.addListener(_updatePasswordStrength);
 
     // Add listeners to all text fields to trigger UI updates
@@ -379,6 +383,7 @@ class _RegisterPageState extends State<RegisterPage>
       // Navigate to email verification page
       Get.toNamed(AppRoutes.verifyEmail, arguments: {
         'email': _emailController.text.trim(),
+        'role': _selectedRole,
       });
 
       Get.snackbar(
@@ -655,7 +660,9 @@ class _RegisterPageState extends State<RegisterPage>
                     child: Column(
                       children: [
                         Text(
-                          'create_account'.tr,
+                          _selectedRole == 'teacher'
+                              ? 'create_teacher_account'.tr
+                              : 'create_account'.tr,
                           style: AppFonts.AlmaraiBold20.copyWith(
                             color: textColor,
                           ),
@@ -818,49 +825,6 @@ class _RegisterPageState extends State<RegisterPage>
                           ),
                           SizedBox(height: Responsive.h(12)),
 
-                          // Role Selection Dropdown
-                          Container(
-                            padding: Responsive.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: fieldFillColor,
-                              borderRadius: BorderRadius.circular(Responsive.r(12)),
-                              border: Border.all(
-                                color: borderColor,
-                              ),
-                            ),
-                            child: DropdownButtonFormField<String>(
-                              value: _selectedRole,
-                              decoration: InputDecoration(
-                                labelText: 'role'.tr,
-                                labelStyle: AppFonts.AlmaraiRegular14,
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                prefixIcon: Icon(
-                                  Icons.person_outline,
-                                  color: AppColors.blue1,
-                                  size: Responsive.sp(20),
-                                ),
-                              ),
-                              items: [
-                                DropdownMenuItem(
-                                  value: 'parent',
-                                  child: Text('parent'.tr, style: AppFonts.AlmaraiRegular14.copyWith(color: textColor)),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'student',
-                                  child: Text('student'.tr, style: AppFonts.AlmaraiRegular14.copyWith(color: textColor)),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    _selectedRole = value;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
                           SizedBox(height: Responsive.h(12)),
 
                           // Email Field

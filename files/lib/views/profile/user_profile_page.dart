@@ -8,6 +8,7 @@ import '../../core/constants/app_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../models/auth_models.dart';
+import '../../models/user.dart';
 import '../../services/user_storage_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../widgets/safe_network_image.dart';
@@ -28,6 +29,7 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  static Map<String, dynamic>? _cachedProfileData;
   Map<String, dynamic>? _userData;
   List<TeacherJobApplication> _applications = [];
   TeacherModel? _teacherProfile;
@@ -86,9 +88,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh data when page becomes visible
-    print('👤 [USER PROFILE] didChangeDependencies called - refreshing data');
-    _loadUserData();
   }
 
   @override
@@ -103,33 +102,56 @@ class _UserProfilePageState extends State<UserProfilePage> {
     print('👤 [USER PROFILE] ===========================================');
     print('👤 [USER PROFILE] _loadUserData() method called');
     print('👤 [USER PROFILE] ===========================================');
+    if (_cachedProfileData != null) {
+      print('👤 [USER PROFILE] Using cached profile data, skipping API load');
+      if (mounted) {
+        setState(() {
+          _userData = _cachedProfileData;
+        });
+      }
+      _nameController.text = _userData?['name'] ?? '';
+      _phoneController.text = _userData?['phone'] ?? '';
+      _avatarController.text = _userData?['avatar'] ?? '';
+      await _loadTeacherApplications();
+      await _loadTeacherProfile();
+      return;
+    }
+
+    // Try to load initial data from UserStorageService to show immediately
     try {
-      print('👤 [USER PROFILE] ===========================================');
+      final localData = await UserStorageService.getUserData();
+      if (localData != null) {
+        print('👤 [USER PROFILE] Loaded initial data from UserStorageService: $localData');
+        if (mounted) {
+          setState(() {
+            _userData = localData;
+          });
+        }
+        _nameController.text = localData['name'] ?? '';
+        _phoneController.text = localData['phone'] ?? '';
+        _avatarController.text = localData['avatar'] ?? '';
+      }
+    } catch (e) {
+      print('👤 [USER PROFILE] Error loading local user data: $e');
+    }
+
+    try {
       print('👤 [USER PROFILE] Starting to load user data from API...');
 
       // First try to get data from API
       final apiResponse = await UserProfileService.getCurrentUserProfile();
 
       // Print detailed API response
-      print('👤 [USER PROFILE] ===========================================');
       print('👤 [USER PROFILE] FULL API RESPONSE RECEIVED');
-      print('👤 [USER PROFILE] ===========================================');
+      print('USER PROFILE API RESPONSE: $apiResponse');
       apiResponse.forEach((key, value) {
         print('👤 [USER PROFILE] $key: $value');
       });
-      print('👤 [USER PROFILE] ===========================================');
 
       if (apiResponse.containsKey('user')) {
         final userData = apiResponse['user'] as Map<String, dynamic>;
-        print('👤 [USER PROFILE] User data from API:');
-        print('👤 [USER PROFILE] User ID: ${userData['id']}');
-        print('👤 [USER PROFILE] Name: ${userData['name']}');
-        print('👤 [USER PROFILE] Email: ${userData['email']}');
-        print('👤 [USER PROFILE] Phone: ${userData['phone']}');
-        print('👤 [USER PROFILE] Role: ${userData['role']}');
-        print('👤 [USER PROFILE] Avatar: ${userData['avatar']}');
-        print('👤 [USER PROFILE] Email Verified: ${userData['emailVerified']}');
-        print('👤 [USER PROFILE] All API keys: ${userData.keys.toList()}');
+        _cachedProfileData = userData;
+        print('USER PROFILE USER DATA: $userData');
 
         if (mounted) {
           setState(() {
@@ -141,46 +163,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
         _nameController.text = userData['name'] ?? '';
         _phoneController.text = userData['phone'] ?? '';
         _avatarController.text = userData['avatar'] ?? '';
-      } else {
-        // Fallback to local storage if API doesn't return user data
-        print(
-            '👤 [USER PROFILE] No user data in API response, trying local storage...');
-        final localData = await UserStorageService.getUserData();
-        print('👤 [USER PROFILE] Local storage data: $localData');
 
-        if (mounted) {
-          setState(() {
-            _userData = localData;
-          });
+        // Save back to UserStorageService so it's fresh for next app launch
+        try {
+          final userObj = User.fromJson(userData);
+          final token = UserStorageService.getAuthToken() ?? '';
+          await UserStorageService.saveCurrentUser(userObj, token);
+          print('👤 [USER PROFILE] Saved latest user profile to UserStorageService');
+        } catch (e) {
+          print('👤 [USER PROFILE] Error saving updated user to storage: $e');
         }
       }
     } catch (e) {
-      print('👤 [USER PROFILE] ===========================================');
       print('👤 [USER PROFILE] ERROR loading user data from API: $e');
-      print('👤 [USER PROFILE] Error type: ${e.runtimeType}');
-      print('👤 [USER PROFILE] Stack trace: ${StackTrace.current}');
-      print('👤 [USER PROFILE] Falling back to local storage...');
-      print('👤 [USER PROFILE] ===========================================');
-
-      try {
-        final localData = await UserStorageService.getUserData();
-        print('👤 [USER PROFILE] Local storage fallback data: $localData');
-
-        if (mounted) {
-          setState(() {
-            _userData = localData;
-          });
+      if (_userData == null) {
+        try {
+          final localData = await UserStorageService.getUserData();
+          if (mounted) {
+            setState(() {
+              _userData = localData;
+            });
+          }
+        } catch (localError) {
+          print('👤 [USER PROFILE] Error loading from local storage: $localError');
         }
-      } catch (localError) {
-        print(
-            '👤 [USER PROFILE] Error loading from local storage: $localError');
-        Get.snackbar(
-          'error'.tr,
-          'failed_to_load_user_data'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
       }
     }
     // Load applications for teacher
@@ -261,6 +267,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       if (response.containsKey('user')) {
         final updatedUser = response['user'] as Map<String, dynamic>;
+        _cachedProfileData = updatedUser;
         if (mounted) {
           setState(() {
             _userData = updatedUser;
@@ -487,6 +494,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               try {
+                _cachedProfileData = null;
                 await UserStorageService.clearUserData();
                 Get.offAllNamed(AppRoutes.login);
               } catch (e) {
@@ -573,6 +581,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                   // User Information Section
                   _buildUserInfoSection(cardColor, textColor, textSecondaryColor, borderColor, isDark),
+                  if (_userData?['role']?.toString().toLowerCase() == 'parent') ...[
+                    _buildStoredGuardianDetailsSection(cardColor, textColor, textSecondaryColor, borderColor, isDark),
+                  ],
                   SizedBox(height: Responsive.h(16)),
 
                   // Logout Button
@@ -765,9 +776,54 @@ class _UserProfilePageState extends State<UserProfilePage> {
               _buildInfoRow('role'.tr, _userData?['role'] ?? 'N/A',
                   Icons.admin_panel_settings_rounded),
               SizedBox(height: Responsive.h(12)),
-              _buildInfoRow(
-                  'user_id'.tr, _userData?['id'] ?? 'N/A', Icons.badge_rounded),
-              SizedBox(height: Responsive.h(12)),
+              // _buildInfoRow(
+              //     'user_id'.tr, _userData?['id'] ?? _userData?['_id'] ?? 'N/A', Icons.badge_rounded),
+              // SizedBox(height: Responsive.h(12)),
+
+              // Show parent specific details
+              if (_userData?['role']?.toString().toLowerCase() == 'parent') ...[
+                // if (_userData?['wallet'] != null) ...[
+                //   _buildInfoRow('wallet'.tr, '${_userData!['wallet']['balance'] ?? 0} ${_userData!['wallet']['currency'] ?? 'EGP'}', Icons.account_balance_wallet_rounded),
+                //   SizedBox(height: Responsive.h(12)),
+                // ],
+                if (_userData?['relation'] != null) ...[
+                  _buildInfoRow('relation'.tr, _userData!['relation'].toString().tr, Icons.family_restroom_rounded),
+                  SizedBox(height: Responsive.h(12)),
+                ],
+                if (_userData?['nationality'] != null) ...[
+                  _buildInfoRow('nationality'.tr, _userData!['nationality'].toString().tr, Icons.flag_rounded),
+                  SizedBox(height: Responsive.h(12)),
+                ],
+                if (_userData?['gender'] != null) ...[
+                  _buildInfoRow('gender'.tr, _userData!['gender'].toString().tr, Icons.wc_rounded),
+                  SizedBox(height: Responsive.h(12)),
+                ],
+                // Show Parent's own National ID from temporaryNationalId or savedGuardianDetails
+                () {
+                  String? parentNationalId = _userData?['temporaryNationalId']?.toString();
+                  if (parentNationalId == null || parentNationalId.isEmpty) {
+                    final relationVal = _userData?['relation']?.toString().toLowerCase();
+                    final guardianDetails = _userData?['savedGuardianDetails'] as Map<String, dynamic>?;
+                    if (guardianDetails != null) {
+                      if (relationVal == 'father' && guardianDetails['father'] != null) {
+                        parentNationalId = guardianDetails['father']['nationalId']?.toString();
+                      } else if (relationVal == 'mother' && guardianDetails['mother'] != null) {
+                        parentNationalId = guardianDetails['mother']['nationalId']?.toString();
+                      }
+                    }
+                  }
+                  if (parentNationalId != null && parentNationalId.isNotEmpty) {
+                    return Column(
+                      children: [
+                        _buildInfoRow('national_id'.tr, parentNationalId, Icons.credit_card_rounded),
+                        SizedBox(height: Responsive.h(12)),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }(),
+              ],
+
               // Language Change Button
               InkWell(
                 onTap: () {
@@ -875,6 +931,159 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               ],
             ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoredGuardianDetailsSection(Color cardColor, Color textColor, Color textSecondaryColor, Color borderColor, bool isDark) {
+    final guardianDetails = _userData?['savedGuardianDetails'] as Map<String, dynamic>?;
+    if (guardianDetails == null) return const SizedBox.shrink();
+
+    final father = guardianDetails['father'] as Map<String, dynamic>?;
+    final mother = guardianDetails['mother'] as Map<String, dynamic>?;
+
+    if (father == null && mother == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: Responsive.all(14),
+      margin: EdgeInsets.only(top: Responsive.h(16)),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(Responsive.r(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: Responsive.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.blue1.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(Responsive.r(8)),
+                ),
+                child: Icon(
+                  Icons.family_restroom_rounded,
+                  color: AppColors.blue1,
+                  size: Responsive.sp(16),
+                ),
+              ),
+              SizedBox(width: Responsive.w(10)),
+              Text(
+                'stored_guardian_details'.tr,
+                style: AppFonts.h4.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(14),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(16)),
+
+          if (father != null) ...[
+            _buildGuardianSubSection(
+              title: 'father_details'.tr,
+              details: father,
+              icon: Icons.male_rounded,
+              textColor: textColor,
+              textSecondaryColor: textSecondaryColor,
+              borderColor: borderColor,
+              isDark: isDark,
+            ),
+            if (mother != null) SizedBox(height: Responsive.h(16)),
+          ],
+
+          if (mother != null) ...[
+            _buildGuardianSubSection(
+              title: 'mother_details'.tr,
+              details: mother,
+              icon: Icons.female_rounded,
+              textColor: textColor,
+              textSecondaryColor: textSecondaryColor,
+              borderColor: borderColor,
+              isDark: isDark,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuardianSubSection({
+    required String title,
+    required Map<String, dynamic> details,
+    required IconData icon,
+    required Color textColor,
+    required Color textSecondaryColor,
+    required Color borderColor,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: Responsive.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(Responsive.r(10)),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppColors.blue1, size: Responsive.sp(18)),
+              SizedBox(width: Responsive.w(8)),
+              Text(
+                title,
+                style: AppFonts.bodyMedium.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(13),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 16),
+          _buildSubInfoRow('name'.tr, details['name']?.toString() ?? 'N/A', textColor),
+          _buildSubInfoRow('national_id'.tr, details['nationalId']?.toString() ?? 'N/A', textColor),
+          _buildSubInfoRow('phone'.tr, details['phone']?.toString() ?? 'N/A', textColor),
+          _buildSubInfoRow('education'.tr, details['education']?.toString() ?? 'N/A', textColor),
+          _buildSubInfoRow('occupation'.tr, details['occupation']?.toString() ?? 'N/A', textColor),
+          _buildSubInfoRow('marital_status'.tr, details['maritalStatus']?.toString()?.tr ?? 'N/A', textColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubInfoRow(String label, String value, Color textColor) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: Responsive.h(4)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: Responsive.sp(11),
+            ),
+          ),
+          Text(
+            value,
+            style: AppFonts.bodySmall.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: Responsive.sp(11),
+            ),
+          ),
         ],
       ),
     );

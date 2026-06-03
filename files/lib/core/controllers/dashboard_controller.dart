@@ -122,4 +122,9 @@ class DashboardController extends GetxController {
       _isLoadingChildren.value = false;
     }
   }
+
+  void clearMemory() {
+    _relatedChildren.clear();
+    _allApplications.clear();
+  }
 }

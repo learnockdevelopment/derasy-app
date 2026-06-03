@@ -118,8 +118,19 @@ class Interview {
   });
 
   factory Interview.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedDate;
+    if (json['date'] != null && json['date'].toString().trim().isNotEmpty) {
+      try {
+        parsedDate = DateTime.parse(json['date'].toString());
+        if (parsedDate.year < 1970) {
+          parsedDate = null;
+        }
+      } catch (_) {
+        parsedDate = null;
+      }
+    }
     return Interview(
-      date: json['date'] != null ? DateTime.parse(json['date']) : null,
+      date: parsedDate,
       time: json['time']?.toString(),
       location: json['location']?.toString(),
       notes: json['notes']?.toString(),
@@ -483,7 +494,7 @@ class TimeRange {
 
 // Request Models
 class ViewSchoolsRequest {
-  final Map<String, dynamic> child;
+  final String child;
   final Map<String, dynamic> filters;
 
   ViewSchoolsRequest({
@@ -494,7 +505,7 @@ class ViewSchoolsRequest {
   Map<String, dynamic> toJson() {
     return {
       'child': child,
-      'filters': filters,
+      ...filters,
     };
   }
 }

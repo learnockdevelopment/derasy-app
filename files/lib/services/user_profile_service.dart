@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import 'user_storage_service.dart';
+import 'auth_error_handler.dart';
 
 class UserProfileService {
   static const String _baseUrl = ApiConstants.parentBaseUrl;
@@ -32,6 +33,10 @@ class UserProfileService {
 
       print('👤 [USER PROFILE API] Response status: ${response.statusCode}');
       print('👤 [USER PROFILE API] Response body: ${response.body}');
+
+      if (await AuthErrorHandler.handleIfUnauthorized(response.statusCode, body: response.body)) {
+        throw Exception('Unauthorized: Invalid token');
+      }
 
       if (response.statusCode == 200) {
         // Check if response is HTML (starts with <!DOCTYPE or <html)
@@ -98,6 +103,10 @@ class UserProfileService {
 
       print('👤 [USER PROFILE API] Response status: ${response.statusCode}');
       print('👤 [USER PROFILE API] Response body: ${response.body}');
+
+      if (await AuthErrorHandler.handleIfUnauthorized(response.statusCode, body: response.body)) {
+        throw Exception('Unauthorized: Invalid token');
+      }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

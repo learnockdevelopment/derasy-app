@@ -79,5 +79,35 @@ class Responsive {
       h(bottom),
     );
   }
+
+  /// Format school name to keep only the first two words if the name is large
+  static String formatSchoolName(String name) {
+    if (name.isEmpty) return '';
+    final words = name.trim().split(RegExp(r'\s+'));
+    if (words.length <= 2) return name;
+    return '${words[0]} ${words[1]}';
+  }
+
+  /// Format time string (e.g. "14:30") to AM/PM format
+  static String formatTimeToAmPm(String timeStr) {
+    if (timeStr.isEmpty) return '';
+    try {
+      final lower = timeStr.toLowerCase();
+      if (lower.contains('am') || lower.contains('pm') || lower.contains('ص') || lower.contains('م')) {
+        return timeStr;
+      }
+      final parts = timeStr.split(':');
+      if (parts.isNotEmpty) {
+        int hour = int.parse(parts[0].trim());
+        int minute = parts.length > 1 ? int.parse(parts[1].trim()) : 0;
+        final period = hour >= 12 ? 'PM' : 'AM';
+        int displayHour = hour % 12;
+        if (displayHour == 0) displayHour = 12;
+        final minuteStr = minute.toString().padLeft(2, '0');
+        return '$displayHour:$minuteStr $period';
+      }
+    } catch (_) {}
+    return timeStr;
+  }
 }
 

@@ -813,8 +813,8 @@ class StudentsService {
 
   /// Submit non-Egyptian child request
   static Future<Map<String, dynamic>> submitNonEgyptianRequest({
-    required File parentPassport,
-    required File childPassport,
+    required String parentPassportNumber,
+    required String childPassportNumber,
     String? fullName,
     String? arabicFullName,
     String? firstName,
@@ -851,13 +851,9 @@ class StudentsService {
         'x-api-key': headers['x-api-key']!,
       });
 
-      // Add files
-      request.files.add(
-        await http.MultipartFile.fromPath('parentPassport', parentPassport.path),
-      );
-      request.files.add(
-        await http.MultipartFile.fromPath('childPassport', childPassport.path),
-      );
+      // Add fields instead of files
+      request.fields['parentPassportNumber'] = parentPassportNumber;
+      request.fields['childPassportNumber'] = childPassportNumber;
 
       // Add form fields
       if (fullName != null && fullName.isNotEmpty) {
@@ -1188,6 +1184,41 @@ class StudentsService {
       } else {
         throw StudentsException('Network error: ${e.toString()}');
       }
+    }
+  }
+
+  /// Get details of a single child from API
+  static Future<Map<String, dynamic>> getChildDetails(String childId) async {
+    try {
+      print('👶 [CHILD_DETAILS_API] Fetching child details: $childId');
+
+      final token = UserStorageService.getAuthToken();
+      if (token == null) {
+        throw StudentsException('No authentication token found');
+      }
+
+      final url = '${_baseUrl}${ApiConstants.updateChildEndpoint}/$childId';
+      final headers = ApiConstants.getAuthHeaders(token);
+
+      print('👶 [CHILD_DETAILS_API] URL: $url');
+      print('👶 [CHILD_DETAILS_API] Headers: $headers');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
+
+      print('👶 [CHILD_DETAILS_API] Response status: ${response.statusCode}');
+      print('👶 [CHILD_DETAILS_API] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        throw Exception('Failed to load child details. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('👶 [CHILD_DETAILS_API] Error: $e');
+      rethrow;
     }
   }
 }

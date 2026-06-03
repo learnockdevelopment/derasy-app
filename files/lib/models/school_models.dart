@@ -148,12 +148,12 @@ class School {
                 .toList() ??
             [],
         ageRequirement: Map<String, dynamic>.from(json['ageRequirement'] ?? {}),
-        bannerImage: json['bannerImage'],
+        bannerImage: json['bannerImage'] is Map ? json['bannerImage']['url']?.toString() : json['bannerImage']?.toString(),
         languages: (json['languages'] as List<dynamic>?)
                 ?.map((lang) => lang.toString())
                 .toList() ??
             [],
-        mainTeachingLanguage: json['mainTeachingLanguage'],
+        mainTeachingLanguage: _parseString(json['mainTeachingLanguage']),
         accreditations: (json['accreditations'] as List<dynamic>?)
                 ?.map((acc) => acc.toString())
                 .toList() ??
@@ -161,7 +161,7 @@ class School {
         isReligious: json['isReligious'] is bool
             ? json['isReligious']
             : (json['isReligious'] == 'true' || json['isReligious'] == true),
-        religionType: json['religionType'],
+        religionType: _parseString(json['religionType']),
         supportsSpecialNeeds: json['supportsSpecialNeeds'] is bool
             ? json['supportsSpecialNeeds']
             : (json['supportsSpecialNeeds'] == 'true' ||

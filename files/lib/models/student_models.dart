@@ -4,6 +4,7 @@ class Student {
   final String? arabicFullName;
   final String studentCode;
   final String nationalId;
+  final String? temporaryNationalId;
   final String gender;
   final String birthDate;
   final int ageInOctober;
@@ -37,6 +38,7 @@ class Student {
     this.arabicFullName,
     required this.studentCode,
     required this.nationalId,
+    this.temporaryNationalId,
     required this.gender,
     required this.birthDate,
     required this.ageInOctober,
@@ -72,6 +74,7 @@ class Student {
       arabicFullName: _parseStringField(json['arabicFullName']),
       studentCode: _parseStringField(json['studentCode']) ?? '',
       nationalId: _parseStringField(json['nationalId']) ?? '',
+      temporaryNationalId: _parseStringField(json['temporaryNationalId']),
       gender: _parseStringField(json['gender']) ?? '',
       birthDate: _parseStringField(json['birthDate']) ?? '',
       ageInOctober: json['ageInOctober'] is int
@@ -510,13 +513,15 @@ class StudentsResponse {
 class StudentsError {
   final String message;
   final String? error;
+  final Map<String, dynamic>? rawJson;
 
-  StudentsError({required this.message, this.error});
+  StudentsError({required this.message, this.error, this.rawJson});
 
   factory StudentsError.fromJson(Map<String, dynamic> json) {
     return StudentsError(
       message: json['message'] ?? '',
       error: json['error'],
+      rawJson: json,
     );
   }
 }

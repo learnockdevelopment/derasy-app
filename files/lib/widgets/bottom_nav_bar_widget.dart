@@ -16,6 +16,8 @@ class BottomNavBarWidget extends StatelessWidget {
     if (route == AppRoutes.home) return 0;
     if (route == AppRoutes.applications) return 1;
     if (route == AppRoutes.myStudents) return 2;
+    if (route == AppRoutes.storeHome) return 3;
+
     return 0; // Default to home
   }
 
@@ -92,6 +94,17 @@ class BottomNavBarWidget extends StatelessWidget {
                       onTap: () {
                         if (Get.currentRoute != AppRoutes.myStudents) {
                           Get.offNamed(AppRoutes.myStudents);
+                        }
+                      },
+                    ),
+                    _buildNavItem(
+                      icon: IconlyBold.buy,
+                      label: 'store'.tr,
+                      index: 3,
+                      isDark: isDark,
+                      onTap: () {
+                        if (Get.currentRoute != AppRoutes.storeHome) {
+                          Get.offNamed(AppRoutes.storeHome);
                         }
                       },
                     ),

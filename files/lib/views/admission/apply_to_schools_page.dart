@@ -441,6 +441,16 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                   _selectedChild!.arabicFullName ?? _selectedChild!.fullName,
                   style: AppFonts.h4.copyWith(color: tp, fontSize: Responsive.sp(14)),
                 ),
+                if (_selectedChild!.nationalId.isNotEmpty || (_selectedChild!.passport != null && _selectedChild!.passport!.isNotEmpty))
+                  Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: Text(
+                      _selectedChild!.nationality == 'Egyptian' || _selectedChild!.nationalId.isNotEmpty
+                          ? '${'national_id'.tr}: ${_selectedChild!.nationalId}'
+                          : '${'passport'.tr}: ${_selectedChild!.passport ?? ''}',
+                      style: AppFonts.bodySmall.copyWith(color: ts, fontSize: Responsive.sp(11)),
+                    ),
+                  ),
                 if (_selectedChild!.schoolId.id.isNotEmpty)
                   Padding(
                     padding: EdgeInsets.only(top: 2.h),
@@ -812,7 +822,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(school.name, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12), color: tp)),
+                            Text(Responsive.formatSchoolName(school.name), style: AppFonts.h4.copyWith(fontSize: Responsive.sp(12), color: tp)),
                             Text(
                               school.location?.city ?? '',
                               style: AppFonts.bodySmall.copyWith(color: ts, fontSize: Responsive.sp(10)),
@@ -894,43 +904,6 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
               ),
               SizedBox(height: Responsive.h(20)),
     
-              // Preferred Interview Slots
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('preferred_interview_slots'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
-                  TextButton.icon(
-                    onPressed: _addInterviewSlot,
-                    icon: const Icon(Icons.add, size: 16),
-                    label: Text('add'.tr, style: TextStyle(fontSize: Responsive.sp(12))),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ],
-              ),
-              if (_preferredInterviewSlots.isEmpty)
-                 Text('no_slots_selected'.tr, style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
-              ..._preferredInterviewSlots.asMap().entries.map((entry) {
-                final idx = entry.key;
-                final slot = entry.value;
-                return Card(
-                  margin: EdgeInsets.only(bottom: 8.h),
-                  child: ListTile(
-                    dense: true,
-                    title: Text('${slot.date.year}-${slot.date.month}-${slot.date.day}'),
-                    subtitle: Text('${slot.timeRange.from} - ${slot.timeRange.to}'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: AppColors.red50, size: 18),
-                      onPressed: () => setState(() => _preferredInterviewSlots.removeAt(idx)),
-                    ),
-                  ),
-                );
-              }).toList(),
-              SizedBox(height: Responsive.h(20)),
-    
               // Notes
               Text('notes'.tr, style: AppFonts.h4.copyWith(fontSize: Responsive.sp(13))),
               SizedBox(height: Responsive.h(8)),
@@ -953,25 +926,7 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
     );
   }
 
-  void _addInterviewSlot() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(const Duration(days: 7)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-    );
-    
-    if (date != null) {
-      // For simplicity, just adding a default time range or opening a time picker
-      // here I'll just use a simple mock time range for now
-      setState(() {
-        _preferredInterviewSlots.add(InterviewSlot(
-          date: date,
-          timeRange: TimeRange(from: '10:00 AM', to: '12:00 PM'),
-        ));
-      });
-    }
-  }
+
 
   Widget _buildSchoolCard(School school, {bool isAISuggested = false}) {
     final isSelected = _selectedSchools.any((s) => s.id == school.id);
@@ -1139,16 +1094,16 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // School name
-                  Text(
-                    school.name,
-                    style: AppFonts.h4.copyWith(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                   Text(
+                     Responsive.formatSchoolName(school.name),
+                     style: AppFonts.h4.copyWith(
+                       fontSize: 14.sp,
+                       fontWeight: FontWeight.w700,
+                       height: 1.2,
+                     ),
+                     maxLines: 2,
+                     overflow: TextOverflow.ellipsis,
+                   ),
                   SizedBox(height: 8.h),
                   
                   // Tags and info
@@ -1169,36 +1124,6 @@ class _ApplyToSchoolsPageState extends State<ApplyToSchoolsPage> {
                         ),
                     ],
                   ),
-                  
-                  if (school.admissionFee != null) ...[
-                    SizedBox(height: Responsive.h(10)),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.payments_outlined,
-                            size: 16.sp,
-                            color: AppColors.success,
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            '${school.admissionFee!.amount} ${'egp'.tr}',
-                            style: AppFonts.bodyMedium.copyWith(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
