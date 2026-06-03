@@ -39,10 +39,14 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.994617670866-ebfdtqfjuc4ku644p1914qvdaovd84gn</string>
+				<string>com.googleusercontent.apps.121260320184-bkhtd36tuhn45u3i9bss0ft654g4tjs3</string>
 			</array>
 		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>121260320184-bkhtd36tuhn45u3i9bss0ft654g4tjs3.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>121260320184-6eepo2cg2l7hn2i7g9hgfcpm6mfsbgdd.apps.googleusercontent.com</string>
 	<key>CFBundleVersion</key>
 	<string>1.0.0</string>
 	<key>GADApplicationIdentifier</key>
