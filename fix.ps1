@@ -1,4 +1,0 @@
-$file = 'c:\Users\dell\apps\apps\derasy-app\files\lib\views\admission\new_admission_flow_page.dart'
-$content = Get-Content $file -Raw
-$content = $content.Replace('color: Colors.white,', 'color: isDark ? Colors.black.withOpacity(0.3) : Colors.white,').Replace('color: Colors.grey[50],', 'color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[50],').Replace('style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),', 'style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: isDark ? Colors.white : Colors.black),').Replace('hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[400]),', 'hintStyle: TextStyle(fontSize: 12.sp, color: isDark ? Colors.grey[500] : Colors.grey[400]),').Replace('prefixIcon: Icon(IconlyLight.search, color: Colors.grey, size: 20),', 'prefixIcon: Icon(IconlyLight.search, color: isDark ? Colors.grey[500] : Colors.grey, size: 20),')
-Set-Content $file $content
