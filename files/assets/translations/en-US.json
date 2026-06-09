@@ -2063,5 +2063,6 @@
   "derasy_store_desc": "Browse and purchase school uniforms, packages, and textbooks.",
   "shop_now": "Shop Now",
   "website": "Website",
-  "location": "Location"
+  "req_account_deletion": "Request Account Deletion",
+  "deletion_requested": "Deletion Requested"
 }

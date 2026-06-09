@@ -2064,5 +2064,7 @@
   "derasy_store_desc": "تصفح واشترِ الزي المدرسي والحزم والكتب المدرسية.",
   "shop_now": "تسوق الآن",
   "website": "الموقع الإلكتروني",
-  "location": "الموقع"
+  "location": "الموقع",
+  "req_account_deletion": "طلب حذف الحساب",
+  "deletion_requested": "تم طلب حذف الحساب"
 }

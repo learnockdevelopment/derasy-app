@@ -211,6 +211,8 @@ class AppTranslations extends Translations {
       _enUs['shop_now'] = 'Shop Now';
       _enUs['website'] = 'Website';
       _enUs['location'] = 'Location';
+      _enUs['req_account_deletion'] = 'req account deletion';
+      _enUs['deletion_requested'] = 'deletion requested';
 
       // Load Arabic translations
       String arJson =
@@ -412,6 +414,8 @@ class AppTranslations extends Translations {
       _arSa['gender'] = 'النوع';
       _arSa['passport'] = 'جواز السفر';
       _arSa['nationality'] = 'الجنسية';
+      _arSa['req_account_deletion'] = 'طلب حذف الحساب';
+      _arSa['deletion_requested'] = 'تم طلب حذف الحساب';
       print('✅ Translations loaded successfully');
       print('English keys: ${_enUs.length}');
       print('Arabic keys: ${_arSa.length}');
