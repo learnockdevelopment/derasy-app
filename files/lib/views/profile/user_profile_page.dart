@@ -40,6 +40,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final _avatarController = TextEditingController();
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  bool _isDeletionPending = false;
 
   // Biometrics
   bool _biometricEnabled = false;
@@ -1557,49 +1558,62 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _buildDeleteAccountButton() {
-    return Container(
-      width: double.infinity,
-      height: Responsive.h(48),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Responsive.r(12)),
-        border: Border.all(
-          color: Colors.red,
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Get.snackbar(
-              'req_account_deletion'.tr,
-              'deletion_requested'.tr,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
-          },
+    return AnimatedOpacity(
+      opacity: _isDeletionPending ? 0.5 : 1.0,
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        width: double.infinity,
+        height: Responsive.h(48),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(Responsive.r(12)),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.delete_forever_rounded,
-                  color: Colors.red,
-                  size: Responsive.sp(18),
-                ),
-                SizedBox(width: Responsive.w(6)),
-                Text(
-                  'req_account_deletion'.tr,
-                  style: AppFonts.bodyMedium.copyWith(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
-                    fontSize: Responsive.sp(14),
+          border: Border.all(
+            color: _isDeletionPending ? Colors.grey : Colors.red,
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _isDeletionPending
+                ? null
+                : () {
+                    setState(() {
+                      _isDeletionPending = true;
+                    });
+                    Get.snackbar(
+                      'req_account_deletion'.tr,
+                      'deletion_requested'.tr,
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
+                    );
+                  },
+            borderRadius: BorderRadius.circular(Responsive.r(12)),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _isDeletionPending
+                        ? Icons.pending_actions_rounded
+                        : Icons.delete_forever_rounded,
+                    color: _isDeletionPending ? Colors.grey : Colors.red,
+                    size: Responsive.sp(18),
                   ),
-                ),
-              ],
+                  SizedBox(width: Responsive.w(6)),
+                  Text(
+                    _isDeletionPending
+                        ? (Responsive.isRTL ? 'الطلب قيد الانتظار' : 'req pending')
+                        : 'req_account_deletion'.tr,
+                    style: AppFonts.bodyMedium.copyWith(
+                      color: _isDeletionPending ? Colors.grey : Colors.red,
+                      fontWeight: FontWeight.w600,
+                      fontSize: Responsive.sp(14),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
