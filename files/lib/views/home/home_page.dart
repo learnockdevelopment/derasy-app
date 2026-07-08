@@ -81,7 +81,14 @@ class _HomePageState extends State<HomePage> {
                       Get.offNamed(AppRoutes.applications);
                     }
                   },
-                  child: Obx(() => _buildHomeContent()),
+                  child: Center(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: Responsive.isMobile ? double.infinity : 680,
+                      ),
+                      child: Obx(() => _buildHomeContent()),
+                    ),
+                  ),
                 ),
 
                 // Floating Navbar

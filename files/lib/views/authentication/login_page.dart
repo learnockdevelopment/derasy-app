@@ -904,249 +904,254 @@ class _LoginPageState extends State<LoginPage>
                   Expanded(
                     child: SingleChildScrollView(
                       physics: const ClampingScrollPhysics(),
-                      child: Padding(
-                        padding: Responsive.symmetric(horizontal: 24),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              SizedBox(height: Responsive.h(8)),
+                      child: Center(
+                        child: Container(
+                          constraints: BoxConstraints(
+                            maxWidth: Responsive.isMobile ? double.infinity : 460,
+                          ),
+                          child: Padding(
+                            padding: Responsive.symmetric(horizontal: 24),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  SizedBox(height: Responsive.h(8)),
 
-                              // Logo
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Image.asset(
-                                  AssetsManager.login,
-                                  width: Responsive.w(35),
-                                  height: Responsive.w(35),
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-
-                              SizedBox(height: Responsive.h(8)),
-
-                              // Title
-                              FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      _isTeacherLogin ? 'login_as_teacher'.tr : 'login'.tr,
-                                      style: AppFonts.AlmaraiBold20.copyWith(
-                                        color: textColor,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                  // Logo
+                                  FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: Image.asset(
+                                      AssetsManager.login,
+                                      width: Responsive.w(35),
+                                      height: Responsive.w(35),
+                                      fit: BoxFit.contain,
                                     ),
-                                    SizedBox(height: Responsive.h(6)),
-                                    Text(
-                                      'sign_in_to_continue'.tr,
-                                      style: AppFonts.AlmaraiRegular12.copyWith(
-                                        color: secondaryTextColor,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                  ),
 
-                              SizedBox(height: Responsive.h(8)),
+                                  SizedBox(height: Responsive.h(8)),
 
-                          
-
-                              SizedBox(height: Responsive.h(24)),
-                              SlideTransition(
-                                position: _slideAnimation, 
-                                child: FadeTransition(
-                                  opacity: _fadeAnimation,
-                                  child: Column(
-                                    children: [
-                                      // Email or Phone Field
-                                      TextFormField(
-                                        controller: _emailController,
-                                        keyboardType: TextInputType.emailAddress,
-                                        style: AppFonts.AlmaraiRegular14.copyWith(color: textColor),
-                                        decoration: InputDecoration(
-                                          labelText: 'email_or_phone'.tr,
-                                          labelStyle: AppFonts.AlmaraiRegular14.copyWith(
-                                            color: secondaryTextColor,
-                                          ),
-                                          hintText: 'enter_email_or_phone'.tr,
-                                          hintStyle: AppFonts.AlmaraiRegular12.copyWith(
-                                            color: isDark ? Colors.white38 : AppColors.grey400,
-                                          ),
-                                          prefixIcon: Icon(
-                                            Icons.person_outline_rounded,
-                                            color: primary,
-                                            size: Responsive.sp(20),
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: borderColor),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: borderColor),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                              color: primary,
-                                              width: Responsive.w(2),
-                                            ),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(color: AppColors.error),
-                                          ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                              color: AppColors.error,
-                                              width: Responsive.w(2),
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor: fieldFillColor,
-                                          contentPadding: Responsive.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'email_or_phone_required'.tr;
-                                          }
-                                          if (!_isValidEmailOrPhone(value)) {
-                                            return 'enter_valid_email_or_phone'.tr;
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(height: Responsive.h(12)),
-
-                                      // Password Field
-                                      TextFormField(
-                                        controller: _passwordController,
-                                        obscureText: !_isPasswordVisible,
-                                        style:
-                                            AppFonts.AlmaraiRegular14.copyWith(
-                                                color: textColor),
-                                        decoration: InputDecoration(
-                                          labelText: 'password'.tr,
-                                          labelStyle: AppFonts.AlmaraiRegular14
-                                              .copyWith(
-                                            color: secondaryTextColor,
-                                          ),
-                                          hintText: 'password_placeholder'.tr,
-                                          hintStyle: AppFonts.AlmaraiRegular12
-                                              .copyWith(
-                                            color: isDark
-                                                ? Colors.white38
-                                                : AppColors.grey400,
-                                          ),
-                                          prefixIcon: Icon(
-                                            Icons.lock_outlined,
-                                            color: primary,
-                                            size: Responsive.sp(20),
-                                          ),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(
-                                              _isPasswordVisible
-                                                  ? Icons.visibility_off
-                                                  : Icons.visibility,
-                                              color: primary,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _isPasswordVisible =
-                                                    !_isPasswordVisible;
-                                              });
-                                            },
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                Responsive.r(12)),
-                                            borderSide:
-                                                BorderSide(color: borderColor),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                Responsive.r(12)),
-                                            borderSide:
-                                                BorderSide(color: borderColor),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                              color: primary,
-                                              width: Responsive.w(2),
-                                            ),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                                color: AppColors.error),
-                                          ),
-                                          focusedErrorBorder:
-                                              OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                Responsive.r(12)),
-                                            borderSide: BorderSide(
-                                              color: AppColors.error,
-                                              width: Responsive.w(2),
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor: fieldFillColor,
-                                          contentPadding: Responsive.symmetric(
-                                            horizontal: 16,
-                                            vertical: 16,
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'password_required'.tr;
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(height: Responsive.h(6)),
-
-                                      if (_canCheckBiometric) ...[
-                                        SizedBox(height: Responsive.h(20)),
-                                        InkWell(
-                                          onTap: _triggerBiometric,
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                          child: Container(
-                                            padding: const EdgeInsets.all(12),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.blue1
-                                                  .withOpacity(0.1),
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                  color: AppColors.blue1
-                                                      .withOpacity(0.3)),
-                                            ),
-                                            child: Icon(
-                                              Icons.fingerprint,
-                                              size: 40,
-                                              color: AppColors.blue1,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
+                                  // Title
+                                  FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: Column(
+                                      children: [
                                         Text(
-                                          'biometric_login'.tr,
-                                          style: TextStyle(
-                                            color: AppColors.blue1,
-                                            fontSize: 12,
+                                          _isTeacherLogin ? 'login_as_teacher'.tr : 'login'.tr,
+                                          style: AppFonts.AlmaraiBold20.copyWith(
+                                            color: textColor,
                                           ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: Responsive.h(6)),
+                                        Text(
+                                          'sign_in_to_continue'.tr,
+                                          style: AppFonts.AlmaraiRegular12.copyWith(
+                                            color: secondaryTextColor,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
                                       ],
-                              SizedBox(height: Responsive.h(24)),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: Responsive.h(8)),
+
+                              
+
+                                  SizedBox(height: Responsive.h(24)),
+                                  SlideTransition(
+                                    position: _slideAnimation, 
+                                    child: FadeTransition(
+                                      opacity: _fadeAnimation,
+                                      child: Column(
+                                        children: [
+                                          // Email or Phone Field
+                                          TextFormField(
+                                            controller: _emailController,
+                                            keyboardType: TextInputType.emailAddress,
+                                            style: AppFonts.AlmaraiRegular14.copyWith(color: textColor),
+                                            decoration: InputDecoration(
+                                              labelText: 'email_or_phone'.tr,
+                                              labelStyle: AppFonts.AlmaraiRegular14.copyWith(
+                                                color: secondaryTextColor,
+                                              ),
+                                              hintText: 'enter_email_or_phone'.tr,
+                                              hintStyle: AppFonts.AlmaraiRegular12.copyWith(
+                                                color: isDark ? Colors.white38 : AppColors.grey400,
+                                              ),
+                                              prefixIcon: Icon(
+                                                Icons.person_outline_rounded,
+                                                color: primary,
+                                                size: Responsive.sp(20),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                borderSide: BorderSide(color: borderColor),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                borderSide: BorderSide(color: borderColor),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                borderSide: BorderSide(
+                                                  color: primary,
+                                                  width: Responsive.w(2),
+                                                ),
+                                              ),
+                                              errorBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                borderSide: BorderSide(color: AppColors.error),
+                                              ),
+                                              focusedErrorBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(Responsive.r(12)),
+                                                borderSide: BorderSide(
+                                                  color: AppColors.error,
+                                                  width: Responsive.w(2),
+                                                ),
+                                              ),
+                                              filled: true,
+                                              fillColor: fieldFillColor,
+                                              contentPadding: Responsive.symmetric(
+                                                horizontal: 16,
+                                                vertical: 12,
+                                              ),
+                                            ),
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'email_or_phone_required'.tr;
+                                              }
+                                              if (!_isValidEmailOrPhone(value)) {
+                                                return 'enter_valid_email_or_phone'.tr;
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                          SizedBox(height: Responsive.h(12)),
+
+                                          // Password Field
+                                          TextFormField(
+                                            controller: _passwordController,
+                                            obscureText: !_isPasswordVisible,
+                                            style:
+                                                AppFonts.AlmaraiRegular14.copyWith(
+                                                    color: textColor),
+                                            decoration: InputDecoration(
+                                              labelText: 'password'.tr,
+                                              labelStyle: AppFonts.AlmaraiRegular14
+                                                  .copyWith(
+                                                color: secondaryTextColor,
+                                              ),
+                                              hintText: 'password_placeholder'.tr,
+                                              hintStyle: AppFonts.AlmaraiRegular12
+                                                  .copyWith(
+                                                color: isDark
+                                                    ? Colors.white38
+                                                    : AppColors.grey400,
+                                              ),
+                                              prefixIcon: Icon(
+                                                Icons.lock_outlined,
+                                                color: primary,
+                                                size: Responsive.sp(20),
+                                              ),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(
+                                                  _isPasswordVisible
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                  color: primary,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _isPasswordVisible =
+                                                        !_isPasswordVisible;
+                                                  });
+                                                },
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(
+                                                    Responsive.r(12)),
+                                                borderSide:
+                                                    BorderSide(color: borderColor),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(
+                                                    Responsive.r(12)),
+                                                borderSide:
+                                                    BorderSide(color: borderColor),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(
+                                                    Responsive.r(12)),
+                                                borderSide: BorderSide(
+                                                  color: primary,
+                                                  width: Responsive.w(2),
+                                                ),
+                                              ),
+                                              errorBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(
+                                                    Responsive.r(12)),
+                                                borderSide: BorderSide(
+                                                    color: AppColors.error),
+                                              ),
+                                              focusedErrorBorder:
+                                                  OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(
+                                                    Responsive.r(12)),
+                                                borderSide: BorderSide(
+                                                  color: AppColors.error,
+                                                  width: Responsive.w(2),
+                                                ),
+                                              ),
+                                              filled: true,
+                                              fillColor: fieldFillColor,
+                                              contentPadding: Responsive.symmetric(
+                                                horizontal: 16,
+                                                vertical: 16,
+                                              ),
+                                            ),
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'password_required'.tr;
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                          SizedBox(height: Responsive.h(6)),
+
+                                          if (_canCheckBiometric) ...[
+                                            SizedBox(height: Responsive.h(20)),
+                                            InkWell(
+                                              onTap: _triggerBiometric,
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.blue1
+                                                      .withOpacity(0.1),
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                      color: AppColors.blue1
+                                                          .withOpacity(0.3)),
+                                                ),
+                                                child: Icon(
+                                                  Icons.fingerprint,
+                                                  size: 40,
+                                                  color: AppColors.blue1,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'biometric_login'.tr,
+                                              style: TextStyle(
+                                                color: AppColors.blue1,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                  SizedBox(height: Responsive.h(24)),
 
                                           // Login Button at Top
                               FadeTransition(

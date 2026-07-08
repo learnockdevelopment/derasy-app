@@ -26,89 +26,96 @@ class BottomNavBarWidget extends StatelessWidget {
     return Obx(() {
       final isDark = AppConfigController.to.isDarkMode;
       
-      return SafeArea(
-        bottom: true,
-        child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          Responsive.w(24),
-          0,
-          Responsive.w(24),
-          Responsive.h(12),
-        ),
+      return Center(
         child: Container(
-          height: Responsive.h(70),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Responsive.r(40)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.12),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-            ],
+          constraints: BoxConstraints(
+            maxWidth: Responsive.isMobile ? double.infinity : 600,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Responsive.r(40)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25), // High iPhone-style blur
-              child: Container(
-                padding: Responsive.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B).withOpacity(0.8) : Colors.white.withOpacity(0.4), // Low opacity glass
-                  borderRadius: BorderRadius.circular(Responsive.r(40)),
-                  border: Border.all(
-                    color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.3),
-                    width: 1.5,
+          child: SafeArea(
+            bottom: true,
+            child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              Responsive.w(24),
+              0,
+              Responsive.w(24),
+              Responsive.h(12),
+            ),
+            child: Container(
+              height: Responsive.h(70),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(Responsive.r(40)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavItem(
-                      icon: IconlyBold.home,
-                      label: 'home'.tr,
-                      index: 0,
-                      isDark: isDark,
-                      onTap: () {
-                        if (Get.currentRoute != AppRoutes.home) {
-                          Get.offNamed(AppRoutes.home);
-                        }
-                      },
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Responsive.r(40)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25), // High iPhone-style blur
+                  child: Container(
+                    padding: Responsive.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B).withOpacity(0.8) : Colors.white.withOpacity(0.4), // Low opacity glass
+                      borderRadius: BorderRadius.circular(Responsive.r(40)),
+                      border: Border.all(
+                        color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
-                    _buildNavItem(
-                      icon: IconlyBold.document,
-                      label: 'applications'.tr,
-                      index: 1,
-                      isDark: isDark,
-                      onTap: () {
-                        if (Get.currentRoute != AppRoutes.applications) {
-                          Get.offNamed(AppRoutes.applications);
-                        }
-                      },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildNavItem(
+                          icon: IconlyBold.home,
+                          label: 'home'.tr,
+                          index: 0,
+                          isDark: isDark,
+                          onTap: () {
+                            if (Get.currentRoute != AppRoutes.home) {
+                              Get.offNamed(AppRoutes.home);
+                            }
+                          },
+                        ),
+                        _buildNavItem(
+                          icon: IconlyBold.document,
+                          label: 'applications'.tr,
+                          index: 1,
+                          isDark: isDark,
+                          onTap: () {
+                            if (Get.currentRoute != AppRoutes.applications) {
+                              Get.offNamed(AppRoutes.applications);
+                            }
+                          },
+                        ),
+                        _buildNavItem(
+                          icon: IconlyBold.profile,
+                          label: 'my_students'.tr,
+                          index: 2,
+                          isDark: isDark,
+                          onTap: () {
+                            if (Get.currentRoute != AppRoutes.myStudents) {
+                              Get.offNamed(AppRoutes.myStudents);
+                            }
+                          },
+                        ),
+                        _buildNavItem(
+                          icon: IconlyBold.buy,
+                          label: 'store'.tr,
+                          index: 3,
+                          isDark: isDark,
+                          onTap: () {
+                            if (Get.currentRoute != AppRoutes.storeHome) {
+                              Get.offNamed(AppRoutes.storeHome);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    _buildNavItem(
-                      icon: IconlyBold.profile,
-                      label: 'my_students'.tr,
-                      index: 2,
-                      isDark: isDark,
-                      onTap: () {
-                        if (Get.currentRoute != AppRoutes.myStudents) {
-                          Get.offNamed(AppRoutes.myStudents);
-                        }
-                      },
-                    ),
-                    _buildNavItem(
-                      icon: IconlyBold.buy,
-                      label: 'store'.tr,
-                      index: 3,
-                      isDark: isDark,
-                      onTap: () {
-                        if (Get.currentRoute != AppRoutes.storeHome) {
-                          Get.offNamed(AppRoutes.storeHome);
-                        }
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

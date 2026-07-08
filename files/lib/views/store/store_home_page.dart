@@ -454,7 +454,7 @@ class _StoreHomePageState extends State<StoreHomePage> {
                       padding: Responsive.symmetric(horizontal: 24, vertical: 16),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                          crossAxisCount: Responsive.isMobile ? 2 : (Responsive.isTablet ? 3 : 4),
                           crossAxisSpacing: Responsive.w(16),
                           mainAxisSpacing: Responsive.h(16),
                           childAspectRatio: 0.72,

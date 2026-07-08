@@ -35,17 +35,49 @@ class Responsive {
     return 0.75;
   }
 
+  static double get _screenHeight {
+    try {
+      return ScreenUtil().screenHeight > 0 ? ScreenUtil().screenHeight : 812.0;
+    } catch (_) {
+      try {
+        return Get.height;
+      } catch (_) {
+        return 812.0;
+      }
+    }
+  }
+
+  /// Master scale factor on tablet/desktop to ensure uniform scaling and prevent layout overflows
+  static double get masterScale {
+    if (isMobile) return 1.0;
+    final rawScale = (_screenWidth / 375.0) * scalingFactor;
+    return rawScale.clamp(1.05, 1.20);
+  }
+
   /// Adaptive width: scales with screen width but clamped for larger screens.
-  static double w(double width) => width.w * scalingFactor;
+  static double w(double width) {
+    if (isMobile) return width.w * scalingFactor;
+    return width * masterScale;
+  }
 
   /// Adaptive height: scales with screen height but clamped for larger screens.
-  static double h(double height) => height.h * scalingFactor;
+  static double h(double height) {
+    if (isMobile) return height.h * scalingFactor;
+    return height * masterScale;
+  }
 
   /// Adaptive font size: scales with screen width but clamped for larger screens.
-  static double sp(double fontSize) => fontSize.sp * scalingFactor;
+  static double sp(double fontSize) {
+    if (isMobile) return fontSize.sp * scalingFactor;
+    final fontScale = masterScale.clamp(1.02, 1.15);
+    return fontSize * fontScale;
+  }
 
   /// Adaptive radius: scales with screen size but clamped for larger screens.
-  static double r(double radius) => radius.r * scalingFactor;
+  static double r(double radius) {
+    if (isMobile) return radius.r * scalingFactor;
+    return radius * masterScale;
+  }
 
   /// Adaptive padding/margin: uses clamped scaling.
   static EdgeInsets symmetric({double horizontal = 0, double vertical = 0}) {
