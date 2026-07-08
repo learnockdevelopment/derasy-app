@@ -117,12 +117,17 @@ class _CartPageState extends State<CartPage> {
     Get.bottomSheet(
       StatefulBuilder(
         builder: (context, setSheetState) {
-          return Container(
-            padding: Responsive.all(24),
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
-            ),
+          return Center(
+            widthFactor: 1.0,
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: Responsive.isMobile ? double.infinity : 600,
+              ),
+              padding: Responsive.all(24),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(Responsive.r(30))),
+              ),
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -400,6 +405,7 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
             ),
+          ),
           );
         },
       ),
@@ -554,38 +560,48 @@ class _CartPageState extends State<CartPage> {
           SizedBox(width: Responsive.w(8)),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.salesAccent))
-          : cartItems.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(IconlyLight.buy, size: 54, color: textSecondary),
-                      const SizedBox(height: 14),
-                      Text(
-                        'cart_is_empty'.tr.isNotEmpty ? 'cart_is_empty'.tr : 'Your Cart is Empty',
-                        style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: Responsive.isMobile ? double.infinity : 680,
+          ),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AppColors.salesAccent))
+              : cartItems.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(IconlyLight.buy, size: 54, color: textSecondary),
+                          const SizedBox(height: 14),
+                          Text(
+                            'cart_is_empty'.tr.isNotEmpty ? 'cart_is_empty'.tr : 'Your Cart is Empty',
+                            style: AppFonts.AlmaraiBold14.copyWith(color: textColor),
+                          ),
+                          const SizedBox(height: 18),
+                          ElevatedButton(
+                            onPressed: () => Get.back(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.salesAccent,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                            ),
+                            child: Text(
+                              'explore_store'.tr.isNotEmpty ? 'explore_store'.tr : 'Explore Store',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 18),
-                      ElevatedButton(
-                        onPressed: () => Get.back(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.salesAccent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
-                        ),
-                        child: Text(
-                          'explore_store'.tr.isNotEmpty ? 'explore_store'.tr : 'Explore Store',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Stack(
-                  children: [
-                    ListView.separated(
-                      padding: Responsive.symmetric(horizontal: 24, vertical: 16),
+                    )
+                  : Stack(
+                      children: [
+                        ListView.separated(
+                          padding: Responsive.only(
+                            left: 24,
+                            right: 24,
+                            top: 16,
+                            bottom: 180,
+                          ),
                       physics: const BouncingScrollPhysics(),
                       itemCount: cartItems.length,
                       separatorBuilder: (c, i) => SizedBox(height: Responsive.h(14)),
@@ -713,15 +729,22 @@ class _CartPageState extends State<CartPage> {
                       ),
                   ],
                 ),
+              ),
+            ),
       bottomSheet: cartItems.isEmpty
           ? null
-          : Container(
-              padding: Responsive.all(20),
-              decoration: BoxDecoration(
-                color: cardBg,
-                border: Border(top: BorderSide(color: borderColor)),
-              ),
-              child: SafeArea(
+          : Center(
+              widthFactor: 1.0,
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: Responsive.isMobile ? double.infinity : 680,
+                ),
+                padding: Responsive.all(20),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  border: Border(top: BorderSide(color: borderColor)),
+                ),
+                child: SafeArea(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -772,6 +795,8 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
             ),
+          ),
+      ),
     );
   }
 }

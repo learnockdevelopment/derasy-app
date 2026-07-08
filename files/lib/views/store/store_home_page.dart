@@ -308,11 +308,11 @@ class _StoreHomePageState extends State<StoreHomePage> {
                     ),
                     SliverToBoxAdapter(
                       child: Container(
-                        height: Responsive.h(130),
+                        height: Responsive.w(135),
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
-                          padding: Responsive.symmetric(horizontal: 20),
+                          padding: Responsive.symmetric(horizontal: 20, vertical: 4),
                           itemCount: _filteredPackages.length,
                           itemBuilder: (context, index) {
                             final pkg = _filteredPackages[index];

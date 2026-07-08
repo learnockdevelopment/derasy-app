@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
         slivers: [
           // Hero Header
           SliverAppBar(
-            expandedHeight: Responsive.h(170),
+            expandedHeight: Responsive.isMobile ? Responsive.h(170) : Responsive.h(220),
             floating: true,
             pinned: false,
             automaticallyImplyLeading: false,
@@ -396,11 +396,11 @@ class _HomePageState extends State<HomePage> {
   Widget _buildStudentsCarousel(bool isDark) {
     final children = DashboardController.to.relatedChildren;
     return SizedBox(
-      height: Responsive.w(118),
+      height: Responsive.w(134),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        padding: Responsive.symmetric(horizontal: 20),
+        padding: Responsive.symmetric(horizontal: 20, vertical: 8),
         itemCount: children.length + 1,
         itemBuilder: (context, index) {
           if (index == children.length) {
