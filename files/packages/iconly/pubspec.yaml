@@ -1,0 +1,29 @@
+name: iconly
+description: Flutter package for using Iconly Icons.
+version: 1.0.1
+homepage: https://github.com/6thsolution/flutter_iconly
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: IconlyBold
+      fonts:
+        - asset: fonts/IconlyBold.ttf
+    - family: IconlyBroken
+      fonts:
+        - asset: fonts/IconlyBroken.ttf
+    - family: IconlyLight
+      fonts:
+        - asset: fonts/IconlyLight.ttf
+        

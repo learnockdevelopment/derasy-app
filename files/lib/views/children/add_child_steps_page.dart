@@ -1489,7 +1489,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
             controller: _birthDateController,
             label: 'birth_date'.tr,
             onTap: _selectBirthDate,
-            enabled: _selectedNationality != 'egyptian',
+            enabled: true,
           ),
           SizedBox(height: 16.h),
           _buildGenderSelector(),
@@ -1592,7 +1592,7 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
             controller: _birthDateController,
             label: 'birth_date'.tr + ' *',
             onTap: _selectBirthDate,
-            enabled: !isEgyptian,
+            enabled: true,
           ),
           SizedBox(height: 16.h),
           _buildGenderSelector(),
@@ -2119,7 +2119,8 @@ class _AddChildStepsPageState extends State<AddChildStepsPage> {
   ButtonStyle _buildButtonStyle() {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.blue1,
-      padding: EdgeInsets.symmetric(vertical: 16.h),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      minimumSize: const Size(88, 48),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
       ),

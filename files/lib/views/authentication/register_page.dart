@@ -1041,51 +1041,51 @@ class _RegisterPageState extends State<RegisterPage>
                           SizedBox(height: Responsive.h(20)),
 
                           // Register Button
-                          SizedBox(
-                            height: Responsive.h(50),
-                            child: ElevatedButton(
-                              onPressed: _isFormValid() && !_isLoading
-                                  ? () {
-                                      _register();
-                                    }
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.blue1,
-                                disabledBackgroundColor: AppColors.grey300,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                ),
-                                elevation: 0,
+                          ElevatedButton(
+                            onPressed: _isFormValid() && !_isLoading
+                                ? () {
+                                    _register();
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.blue1,
+                              disabledBackgroundColor: AppColors.grey300,
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(Responsive.r(12)),
                               ),
-                              child: _isLoading
-                                  ? SizedBox(
-                                      height: Responsive.h(20),
-                                      width: Responsive.w(20),
-                                      child: const CircularProgressIndicator(
+                              elevation: 0,
+                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: Responsive.h(20),
+                                    width: Responsive.w(20),
+                                    child: const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.person_add,
                                         color: Colors.white,
-                                        strokeWidth: 2,
+                                        size: Responsive.sp(18),
                                       ),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.person_add,
-                                          color: Colors.white,
-                                          size: Responsive.sp(18),
-                                        ),
-                                        SizedBox(width: Responsive.w(8)),
-                                        Text(
+                                      SizedBox(width: Responsive.w(8)),
+                                      Flexible(
+                                        child: Text(
                                           'create_account'.tr,
                                           style: AppFonts.AlmaraiBold16
                                               .copyWith(
                                             color: Colors.white,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                            ),
+                                      ),
+                                    ],
+                                  ),
                           ),
                           SizedBox(height: Responsive.h(24)),
                           // Login Button

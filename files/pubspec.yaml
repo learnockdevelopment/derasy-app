@@ -70,5 +70,7 @@ flutter:
           weight: 400
         - asset: assets/fonts/Almarai-Regular.ttf
           weight: 500
-       
-       
+
+dependency_overrides:
+  iconly:
+    path: packages/iconly

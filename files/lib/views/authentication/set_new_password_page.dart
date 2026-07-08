@@ -533,41 +533,41 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         },
                       ),
                       SizedBox(height: Responsive.h(28)),
-                      SizedBox(
-                        height: Responsive.h(56),
-                        child: ElevatedButton(
-                          onPressed: _isFormValid() && !_isLoading ? _setNewPassword : null,
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: AppColors.blue1,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(Responsive.r(16)),
-                            ),
+                      ElevatedButton(
+                        onPressed: _isFormValid() && !_isLoading ? _setNewPassword : null,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: AppColors.blue1,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(Responsive.r(16)),
                           ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: Responsive.h(20),
-                                  width: Responsive.w(20),
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.check_circle_outline, color: Colors.white, size: Responsive.sp(20)),
-                                    SizedBox(width: Responsive.w(8)),
-                                    Text(
+                        ),
+                        child: _isLoading
+                            ? SizedBox(
+                                height: Responsive.h(20),
+                                width: Responsive.w(20),
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check_circle_outline, color: Colors.white, size: Responsive.sp(20)),
+                                  SizedBox(width: Responsive.w(8)),
+                                  Flexible(
+                                    child: Text(
                                       'set_new_password'.tr,
                                       style: AppFonts.AlmaraiBold16.copyWith(
                                         color: Colors.white,
                                         fontSize: Responsive.sp(16),
                                       ),
                                     ),
-                                  ],
-                                ),
-                        ),
+                                  ),
+                                ],
+                              ),
                       ),
                       SizedBox(height: Responsive.h(22)),
                       Row(

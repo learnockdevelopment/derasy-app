@@ -775,6 +775,11 @@ class _LoginPageState extends State<LoginPage>
       });
       print('Apple Sign In Error: $e');
       
+      if (e is SignInWithAppleAuthorizationException &&
+          e.code == AuthorizationErrorCode.canceled) {
+        return;
+      }
+      
       String errorMessage = 'apple_login_failed'.tr;
       if (e is AuthException) {
         errorMessage = e.message;
@@ -1146,32 +1151,29 @@ class _LoginPageState extends State<LoginPage>
                                           // Login Button at Top
                               FadeTransition(
                                 opacity: _fadeAnimation,
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: Responsive.h(45),
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleLogin,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.blue1,
-                                      foregroundColor: Colors.white,
-                                      elevation: 6,
-                                      disabledBackgroundColor: isDark
-                                          ? Colors.white12
-                                          : AppColors.grey300,
-                                      side: BorderSide(
-                                        color: AppColors.blue1,
-                                        width: Responsive.w(2),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            Responsive.r(12)),
-                                      ),
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _handleLogin,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.blue1,
+                                    foregroundColor: Colors.white,
+                                    elevation: 6,
+                                    minimumSize: const Size(double.infinity, 48),
+                                    disabledBackgroundColor: isDark
+                                        ? Colors.white12
+                                        : AppColors.grey300,
+                                    side: BorderSide(
+                                      color: AppColors.blue1,
+                                      width: Responsive.w(2),
                                     ),
-                                    child: Text(
-                                      'login'.tr,
-                                      style: AppFonts.AlmaraiBold16.copyWith(
-                                        color: Colors.white,
-                                      ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          Responsive.r(12)),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'login'.tr,
+                                    style: AppFonts.AlmaraiBold16.copyWith(
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
@@ -1227,16 +1229,51 @@ class _LoginPageState extends State<LoginPage>
                               SizedBox(height: Responsive.h(24)),
 
                               // Google Button
-                              SizedBox(
-                                height: Responsive.h(45),
-                                child: OutlinedButton(
-                                  onPressed:
-                                      _isLoading ? null : _handleGoogleLogin,
+                              OutlinedButton(
+                                onPressed:
+                                    _isLoading ? null : _handleGoogleLogin,
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: borderColor),
+                                  minimumSize: const Size(double.infinity, 48),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        Responsive.r(12)),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      AssetsManager.googleSvg,
+                                      width: Responsive.w(24),
+                                      height: Responsive.w(24),
+                                    ),
+                                    SizedBox(width: Responsive.w(12)),
+                                    Flexible(
+                                      child: Text(
+                                        'continue_with_google'.tr,
+                                        style:
+                                            AppFonts.AlmaraiMedium14.copyWith(
+                                          color: textColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Social Login Buttons
+                              if (Platform.isIOS) ...[
+                                SizedBox(height: Responsive.h(16)),
+                                OutlinedButton(
+                                  onPressed: _isLoading ? null : _handleAppleLogin,
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: borderColor),
+                                    backgroundColor: isDark ? Colors.white : Colors.black,
+                                    side: BorderSide(color: isDark ? Colors.white : Colors.black),
+                                    minimumSize: const Size(double.infinity, 48),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          Responsive.r(12)),
+                                      borderRadius: BorderRadius.circular(Responsive.r(12)),
                                     ),
                                     padding: EdgeInsets.zero,
                                   ),
@@ -1244,56 +1281,24 @@ class _LoginPageState extends State<LoginPage>
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       SvgPicture.asset(
-                                        AssetsManager.googleSvg,
+                                        AssetsManager.appleSvg,
                                         width: Responsive.w(24),
                                         height: Responsive.w(24),
+                                        colorFilter: ColorFilter.mode(
+                                          isDark ? Colors.black : Colors.white,
+                                          BlendMode.srcIn,
+                                        ),
                                       ),
                                       SizedBox(width: Responsive.w(12)),
-                                      Text(
-                                        'continue_with_google'.tr,
-                                        style:
-                                            AppFonts.AlmaraiMedium14.copyWith(
-                                          color: textColor,
+                                      Flexible(
+                                        child: Text(
+                                          'continue_with_apple'.tr,
+                                          style: AppFonts.AlmaraiMedium14.copyWith(
+                                            color: isDark ? Colors.black : Colors.white,
+                                          ),
                                         ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                              ),
-
-                              // Social Login Buttons
-                              if (Platform.isIOS) ...[
-                                SizedBox(height: Responsive.h(16)),
-                                SizedBox(
-                                  height: Responsive.h(45),
-                                   child: OutlinedButton(
-                                    onPressed: _isLoading ? null : _handleAppleLogin,
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor: Colors.black,
-                                      side: BorderSide(color: Colors.black),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(Responsive.r(12)),
-                                      ),
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(
-                                          AssetsManager.appleSvg,
-                                          width: Responsive.w(24),
-                                          height: Responsive.w(24),
-                                           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                        ),
-                                        SizedBox(width: Responsive.w(12)),
-                                        Text(
-                                          'continue_with_apple'.tr,
-                                          style: AppFonts.AlmaraiMedium14.copyWith(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                   ),
                                 ),
                               ],

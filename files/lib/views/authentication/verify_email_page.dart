@@ -415,27 +415,27 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                             ),
                             SizedBox(height: Responsive.h(26)),
                             // Main action button
-                            SizedBox(
-                              height: Responsive.h(50),
-                              child: ElevatedButton(
-                                onPressed: !_isLoading && _otpController.text.isNotEmpty ? _verifyEmail : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.blue1,
-                                  disabledBackgroundColor: AppColors.grey300,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
-                                  elevation: 0,
-                                ),
-                                child: _isLoading
-                                    ? SizedBox(height: Responsive.h(20), width: Responsive.w(20), child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.verified_user, color: Colors.white, size: Responsive.sp(18)),
-                                          SizedBox(width: Responsive.w(8)),
-                                          Text('verify'.tr, style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white)),
-                                        ],
-                                      ),
+                            ElevatedButton(
+                              onPressed: !_isLoading && _otpController.text.isNotEmpty ? _verifyEmail : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.blue1,
+                                disabledBackgroundColor: AppColors.grey300,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.r(12))),
+                                elevation: 0,
                               ),
+                              child: _isLoading
+                                  ? SizedBox(height: Responsive.h(20), width: Responsive.w(20), child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.verified_user, color: Colors.white, size: Responsive.sp(18)),
+                                        SizedBox(width: Responsive.w(8)),
+                                        Flexible(
+                                          child: Text('verify'.tr, style: AppFonts.AlmaraiBold12.copyWith(color: Colors.white)),
+                                        ),
+                                      ],
+                                    ),
                             ),
                             SizedBox(height: Responsive.h(18)),
                             // Resend section

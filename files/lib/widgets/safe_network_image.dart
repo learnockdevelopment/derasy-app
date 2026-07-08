@@ -74,7 +74,7 @@ class _SafeNetworkImageState extends State<SafeNetworkImage> {
     String finalUrl = trimmedUrl;
     if (trimmedUrl.startsWith('/') && !trimmedUrl.startsWith('//')) {
       if (trimmedUrl.startsWith('/api/')) {
-        finalUrl = 'https://parent.derasy.com$trimmedUrl';
+        finalUrl = 'https://derasy.com$trimmedUrl';
       } else {
         finalUrl = '${ApiConstants.parentBaseUrl}$trimmedUrl';
       }
